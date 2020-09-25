@@ -1,0 +1,274 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <groupId>edu.utexas.tacc.tapis</groupId>
+    <artifactId>tapis-apps</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  
+  <artifactId>lib</artifactId>
+  
+  <name>Tapis apps Library</name>
+  <description>Backend library for Tapis apps Service</description>
+
+  <!-- DB connect properties for jOOQ and Flyway -->
+  <properties>
+    <db.url>jdbc:postgresql://localhost:5432/tapisappdb</db.url>
+    <db.username>tapis</db.username>
+    <db.password>password</db.password>
+    <db.schema>tapis_app</db.schema>
+    <!-- If necessary set a specific version of the shared code. Parent pom file from tapis-bom has a range. -->
+    <!-- <tapis-shared-java.version>1.11.2-SNAPSHOT</tapis-shared-java.version> -->
+  </properties>
+ 
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>tapis-shared-lib</artifactId>
+      <version>${tapis-shared-java.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>edu.utexas.tacc.tapis</groupId>
+      <artifactId>tapis-shared-searchlib</artifactId>
+      <version>${tapis-shared-java.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>edu.utexas.tacc.tapis</groupId>
+      <artifactId>tapis-shared-api</artifactId>
+      <version>${tapis-shared-java.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>tapis-shared-db</artifactId>
+      <version>${tapis-shared-java.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>security-client</artifactId>
+      <version>${tapis-client-java.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>tokens-client</artifactId>
+      <version>${tapis-client-java.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>tenants-client</artifactId>
+      <version>${tapis-client-java.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>${okhttp3.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>logging-interceptor</artifactId>
+      <version>${okhttp3.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.threeten</groupId>
+      <artifactId>threetenbp</artifactId>
+      <version>${threetenbp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.gsonfire</groupId>
+      <artifactId>gson-fire</artifactId>
+      <version>${gson-fire.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.test-framework</groupId>
+      <artifactId>jersey-test-framework-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jooq</groupId>
+      <artifactId>jooq</artifactId>
+      <version>${jooq.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jooq</groupId>
+      <artifactId>jooq-meta</artifactId>
+      <version>${jooq.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jooq</groupId>
+      <artifactId>jooq-codegen</artifactId>
+      <version>${jooq.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src/main/java</sourceDirectory>
+
+    <plugins>
+      <!-- Capture the git commit hash and branch identifiers. -->
+      <!-- See parent pom for configuration details. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+      </plugin>
+
+      <!-- surefire plugin is for running unit tests -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <suiteXmlFiles>
+            <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+          </suiteXmlFiles>
+        </configuration>
+      </plugin>
+      <!-- failsafe plugin is for running integration tests -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <skip>${skipIntegrationTests}</skip>
+          <environmentVariables>
+            <APP_ENV>test</APP_ENV>
+          </environmentVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+
+    <finalName>appslib</finalName>
+  </build>
+
+  <profiles>
+  <!-- Profile to conditionally run flyway DB migration and jooq code generation -->
+  <!-- To be used when DB schema is updated                                  -->
+  <!-- When DB schema changes need to re-run flyway and jOOQ code generation -->
+  <!--   To run check that db.password property is set correctly.            -->
+  <!--   Then unless flyway will be making the updates make sure the DB at   -->
+  <!--     db.url has the correct schema. May need to drop the current       -->
+  <!--     the schema if flyway is still on V001__init.sql                   -->
+  <!-- Finally run:                                                          -->
+  <!--   cd tapis-appslib                                                 -->
+  <!--   mvn clean install -Pdb-update                                       -->
+  <profile>
+    <id>db-update</id>
+    <build>
+    <plugins>
+    <!-- **************** Run Flyway **************** -->
+    <plugin>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-maven-plugin</artifactId>
+      <executions>
+        <execution>
+          <phase>generate-sources</phase>
+          <goals> <goal>migrate</goal> </goals>
+        </execution>
+      </executions>
+      <configuration>
+        <url>${db.url}</url>
+        <user>${db.username}</user>
+        <password>${db.password}</password>
+        <schemas>
+          <schema>${db.schema}</schema>
+        </schemas>
+        <locations>
+          <location>filesystem:src/main/resources/db/migration</location>
+        </locations>
+      </configuration>
+    </plugin>
+    <!-- **************** Run jOOQ **************** -->
+    <plugin>
+      <groupId>org.jooq</groupId>
+      <artifactId>jooq-codegen-maven</artifactId>
+      <executions>
+        <execution>
+          <id>jooq-codegen</id>
+          <phase>generate-sources</phase>
+          <goals> <goal>generate</goal> </goals>
+          <configuration>
+            <jdbc>
+              <driver>org.postgresql.Driver</driver>
+              <url>${db.url}</url>
+              <user>${db.username}</user>
+              <password>${db.password}</password>
+            </jdbc>
+            <generator>
+              <name>org.jooq.codegen.JavaGenerator</name>
+              <generate>
+                <javaTimeTypes>true</javaTimeTypes>
+              </generate>
+              <target>
+                <!-- The destination package of your generated classes (within the destination directory) -->
+                <packageName>edu.utexas.tacc.tapis.apps.gen.jooq</packageName>
+                <!-- The destination directory of your generated classes. Using Maven directory layout here -->
+                <directory>src/main/java</directory>
+              </target>
+              <database>
+                <name>org.jooq.meta.postgres.PostgresDatabase</name>
+                <inputSchema>tapis_app</inputSchema>
+                <!-- Include everything from the schema -->
+                <includes>.*</includes>
+
+                  <!-- ****************************************** -->
+                  <!-- Register custom bindings -->
+                  <!-- ****************************************** -->
+                  <!-- Bind Postgresql JSONB type to Gson JsonElement -->
+                <forcedTypes>
+                  <forcedType>
+                    <userType>com.google.gson.JsonElement</userType>
+                    <binding>edu.utexas.tacc.tapis.apps.dao.JSONBToJsonElementBinding</binding>
+                    <!-- Match only certain columns, no need to filter on type -->
+                    <includeExpression>(apps\.notes|app_updates\.upd_json)</includeExpression>
+                    <includeTypes>.*</includeTypes>
+                  </forcedType>
+                  <!-- ****************************************** -->
+                  <!-- Bind our enum types for convenience -->
+                  <!-- ****************************************** -->
+                  <forcedType>
+                    <userType>edu.utexas.tacc.tapis.apps.model.Capability.Category</userType>
+                    <!-- Use built-in enum converter -->
+                    <enumConverter>true</enumConverter>
+                    <!-- Explicitly match one column. -->
+                    <includeExpression>capabilities\.category</includeExpression>
+                    <includeTypes>.*</includeTypes>
+                  </forcedType>
+                  <forcedType>
+                    <userType>edu.utexas.tacc.tapis.apps.model.App.AppOperation</userType>
+                    <enumConverter>true</enumConverter>
+                    <includeExpression>app_updates\.operation</includeExpression>
+                    <includeTypes>.*</includeTypes>
+                  </forcedType>
+                  <forcedType>
+                    <userType>edu.utexas.tacc.tapis.apps.model.App.AppType</userType>
+                    <enumConverter>true</enumConverter>
+                    <includeExpression>apps\.app_type</includeExpression>
+                    <includeTypes>.*</includeTypes>
+                  </forcedType>
+<!--
+                  <forcedType>
+                    <userType>edu.utexas.tacc.tapis.apps.model.App.AccessMethod</userType>
+                    <enumConverter>true</enumConverter>
+                    <includeExpression>apps\.default_access_method</includeExpression>
+                    <includeTypes>.*</includeTypes>
+                  </forcedType>
+-->
+                </forcedTypes>
+              </database>
+            </generator>
+          </configuration>
+        </execution>
+      </executions>
+    </plugin>
+    </plugins>
+    </build>
+  </profile>
+  </profiles>
+</project>

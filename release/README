@@ -1,0 +1,20 @@
+tapis-apps/release directory
+==========================================================================
+Files in active use:
+==========================================================================
+Dockerfile - used for building the release candidate image when the jenkins
+       job Tais jobs -> DEV -> release-apps-image-build is run
+docker_build.sh - Build, tag and optionally push docker image for the service
+docker_run.sh - script to use the image to run the service locally
+       NOTE: Env variables must be set. Please see script.
+run_integration_tests.sh - Use mvn to run the integration tests in the lib directory.
+       NOTE: Env variables must be set. Please see script.
+
+==========================================================================
+Other files kept mainly as examples. Developed while working on k8s deploy
+==========================================================================
+docker_create_db.sh
+docker_drop_db.sh
+docker_create_user_schema.sh
+apps_drop_db.sh
+apps_init_db.sh
