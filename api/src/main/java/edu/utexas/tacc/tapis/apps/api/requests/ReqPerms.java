@@ -1,4 +1,4 @@
-package edu.utexas.tacc.tapis.systems.api.requests;
+package edu.utexas.tacc.tapis.apps.api.requests;
 
 import java.util.List;
 

@@ -1,12 +1,7 @@
-package edu.utexas.tacc.tapis.systems.api.resources;
+package edu.utexas.tacc.tapis.apps.api.resources;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -39,21 +34,19 @@ import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultNameArray;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.sharedapi.utils.RestUtils;
 import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
-import edu.utexas.tacc.tapis.systems.api.requests.ReqPerms;
-import edu.utexas.tacc.tapis.systems.api.utils.ApiUtils;
-import edu.utexas.tacc.tapis.systems.model.TSystem.Permission;
-import edu.utexas.tacc.tapis.systems.service.SystemsService;
+import edu.utexas.tacc.tapis.apps.api.requests.ReqPerms;
+import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
+import edu.utexas.tacc.tapis.apps.model.App.Permission;
+import edu.utexas.tacc.tapis.apps.service.AppsService;
 
 /*
- * JAX-RS REST resource for Tapis System permissions
- * NOTE: Annotations for generating OpenAPI specification not currently used.
- *       Please see tapis-systemsapi/src/main/resources/SystemsAPI.yaml
- *       and note at top of SystemsResource.java
+ * JAX-RS REST resource for Tapis App permissions
+ *  NOTE: For OpenAPI spec please see file located in repo tapis-client-java at apps-client/AppsAPI.yaml
  * Annotations map HTTP verb + endpoint to method invocation.
  * Permissions are stored in the Security Kernel
  *
  */
-@Path("/v3/systems/perms")
+@Path("/v3/apps/perms")
 public class PermsResource
 {
   // ************************************************************************
@@ -63,7 +56,7 @@ public class PermsResource
   private static final Logger _log = LoggerFactory.getLogger(PermsResource.class);
 
   // Json schema resource files.
-  private static final String FILE_PERMS_REQUEST = "/edu/utexas/tacc/tapis/systems/api/jsonschema/PermsRequest.json";
+  private static final String FILE_PERMS_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/PermsRequest.json";
 
   // Field names used in Json
   private static final String PERMISSIONS_FIELD = "permissions";
@@ -109,45 +102,22 @@ public class PermsResource
 
   // **************** Inject Services using HK2 ****************
   @Inject
-  private SystemsService systemsService;
+  private AppsService appsService;
 
   // ************************************************************************
   // *********************** Public Methods *********************************
   // ************************************************************************
 
   /**
-   * Assign specified permissions for given system and user.
+   * Assign specified permissions for given app and user.
    * @param payloadStream - request body
    * @return basic response
    */
   @POST
-  @Path("/{systemName}/user/{userName}")
+  @Path("/{appName}/user/{userName}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-//  @Operation(
-//    summary = "Create permissions in the Security Kernel giving a user access to a system",
-//    description =
-//        "Create permissions in the Security Kernel for a user using a request body. Requester must be owner of " +
-//        "the system. Permissions: READ, MODIFY or ALL.",
-//    tags = "permissions",
-//    requestBody =
-//      @RequestBody(
-//        description = "A JSON object specifying a list of permissions.",
-//        required = true,
-//        content = @Content(schema = @Schema(implementation = ReqPerms.class))
-//      ),
-//    responses = {
-//      @ApiResponse(responseCode = "200", description = "Permissions granted.",
-//        content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class))),
-//      @ApiResponse(responseCode = "400", description = "Input error. Invalid JSON.",
-//        content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class))),
-//      @ApiResponse(responseCode = "401", description = "Not authorized.",
-//        content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class))),
-//      @ApiResponse(responseCode = "500", description = "Server error.",
-//        content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class)))
-//    }
-//  )
-  public Response grantUserPerms(@PathParam("systemName") String systemName,
+  public Response grantUserPerms(@PathParam("appName") String appName,
                                  @PathParam("userName") String userName,
                                  InputStream payloadStream,
                                  @Context SecurityContext securityContext)
@@ -173,8 +143,8 @@ public class PermsResource
     AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
 
     // ------------------------- Check prerequisites -------------------------
-    // Check that the system exists
-    resp = ApiUtils.checkSystemExists(systemsService, authenticatedUser, systemName, prettyPrint, "grantUserPerms");
+    // Check that the app exists
+    resp = ApiUtils.checkAppExists(appsService, authenticatedUser, appName, prettyPrint, "grantUserPerms");
     if (resp != null) return resp;
 
     // Read the payload into a string.
@@ -182,25 +152,25 @@ public class PermsResource
     try { json = IOUtils.toString(payloadStream, StandardCharsets.UTF_8); }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("SYSAPI_PERMS_JSON_ERROR", authenticatedUser, systemName, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_JSON_ERROR", authenticatedUser, appName, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
 
     // ------------------------- Extract and validate payload -------------------------
     var permsList = new HashSet<Permission>();
-    resp = checkAndExtractPayload(authenticatedUser, systemName, userName, prettyPrint, json, permsList);
+    resp = checkAndExtractPayload(authenticatedUser, appName, userName, prettyPrint, json, permsList);
     if (resp != null) return resp;
 
     // ------------------------- Perform the operation -------------------------
     // Make the service call to assign the permissions
     try
     {
-      systemsService.grantUserPermissions(authenticatedUser, systemName, userName, permsList, json);
+      appsService.grantUserPermissions(authenticatedUser, appName, userName, permsList, json);
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("SYSAPI_PERMS_ERROR", authenticatedUser, systemName, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", authenticatedUser, appName, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
@@ -209,7 +179,7 @@ public class PermsResource
     String permsListStr = permsList.stream().map(Enum::name).collect(Collectors.joining(","));
     RespBasic resp1 = new RespBasic();
     return Response.status(Status.CREATED)
-      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("SYSAPI_PERMS_GRANTED", authenticatedUser, systemName,
+      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("APPAPI_PERMS_GRANTED", authenticatedUser, appName,
                                                                        userName, permsListStr),
                                                    prettyPrint, resp1))
       .build();
@@ -220,28 +190,10 @@ public class PermsResource
    * @return Response with list of permissions
    */
   @GET
-  @Path("/{systemName}/user/{userName}")
+  @Path("/{appName}/user/{userName}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-//  @Operation(
-//      summary = "Retrieve system related permissions for given system and user",
-//      description =
-//          "Retrieve all system related permissions for a given system and user.",
-//      tags = "permissions",
-//      responses = {
-//          @ApiResponse(responseCode = "200", description = "Success.",
-//            content = @Content(schema = @Schema(implementation = RespNameArray.class))),
-//          @ApiResponse(responseCode = "400", description = "Input error.",
-//            content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class))),
-//          @ApiResponse(responseCode = "404", description = "System not found.",
-//            content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class))),
-//          @ApiResponse(responseCode = "401", description = "Not authorized.",
-//            content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class))),
-//          @ApiResponse(responseCode = "500", description = "Server error.",
-//            content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class)))
-//      }
-//  )
-  public Response getUserPerms(@PathParam("systemName") String systemName,
+  public Response getUserPerms(@PathParam("appName") String appName,
                                @PathParam("userName") String userName,
                                @Context SecurityContext securityContext)
   {
@@ -266,17 +218,17 @@ public class PermsResource
     AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
 
     // ------------------------- Check prerequisites -------------------------
-    // Check that the system exists
-    resp = ApiUtils.checkSystemExists(systemsService, authenticatedUser, systemName, prettyPrint, "getUserPerms");
+    // Check that the app exists
+    resp = ApiUtils.checkAppExists(appsService, authenticatedUser, appName, prettyPrint, "getUserPerms");
     if (resp != null) return resp;
 
     // ------------------------- Perform the operation -------------------------
     // Make the service call to get the permissions
     Set<Permission> perms;
-    try { perms = systemsService.getUserPermissions(authenticatedUser, systemName, userName); }
+    try { perms = appsService.getUserPermissions(authenticatedUser, appName, userName); }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("SYSAPI_PERMS_ERROR", authenticatedUser, systemName, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", authenticatedUser, appName, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
@@ -289,35 +241,18 @@ public class PermsResource
     names.names = permNames.toArray(new String[0]);
     RespNameArray resp1 = new RespNameArray(names);
     return Response.status(Status.OK).entity(TapisRestUtils.createSuccessResponse(
-      MsgUtils.getMsg("TAPIS_FOUND", "System permissions", perms.size() + " items"), prettyPrint, resp1)).build();
+      MsgUtils.getMsg("TAPIS_FOUND", "App permissions", perms.size() + " items"), prettyPrint, resp1)).build();
   }
 
   /**
-   * Revoke permission for given system and user.
+   * Revoke permission for given app and user.
    * @return basic response
    */
   @DELETE
-  @Path("/{systemName}/user/{userName}/{permission}")
+  @Path("/{appName}/user/{userName}/{permission}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-//  @Operation(
-//    summary = "Revoke specified permission in the Security Kernel",
-//    description =
-//      "Revoke permission in the Security Kernel for a user. Requester must be owner of " +
-//        "the system. Permissions: READ, MODIFY or ALL.",
-//    tags = "permissions",
-//    responses = {
-//      @ApiResponse(responseCode = "200", description = "Permission revoked.",
-//        content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class))),
-//      @ApiResponse(responseCode = "400", description = "Input error. Invalid JSON.",
-//        content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class))),
-//      @ApiResponse(responseCode = "401", description = "Not authorized.",
-//        content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class))),
-//      @ApiResponse(responseCode = "500", description = "Server error.",
-//        content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class)))
-//    }
-//  )
-  public Response revokeUserPerm(@PathParam("systemName") String systemName,
+  public Response revokeUserPerm(@PathParam("appName") String appName,
                                  @PathParam("userName") String userName,
                                  @PathParam("permission") String permissionStr,
                                  @Context SecurityContext securityContext)
@@ -343,8 +278,8 @@ public class PermsResource
     AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
 
     // ------------------------- Check prerequisites -------------------------
-    // Check that the system exists
-    resp = ApiUtils.checkSystemExists(systemsService, authenticatedUser, systemName, prettyPrint, "revokeUserPerm");
+    // Check that the app exists
+    resp = ApiUtils.checkAppExists(appsService, authenticatedUser, appName, prettyPrint, "revokeUserPerm");
     if (resp != null) return resp;
 
     // ------------------------- Perform the operation -------------------------
@@ -354,17 +289,17 @@ public class PermsResource
     {
       Permission perm = Permission.valueOf(permissionStr);
       permsList.add(perm);
-      systemsService.revokeUserPermissions(authenticatedUser, systemName, userName, permsList, null);
+      appsService.revokeUserPermissions(authenticatedUser, appName, userName, permsList, null);
     }
     catch (IllegalArgumentException e)
     {
-      msg = ApiUtils.getMsgAuth("SYSAPI_PERMS_ENUM_ERROR", authenticatedUser, systemName, userName, permissionStr, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ENUM_ERROR", authenticatedUser, appName, userName, permissionStr, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("SYSAPI_PERMS_ERROR", authenticatedUser, systemName, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", authenticatedUser, appName, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
@@ -372,43 +307,22 @@ public class PermsResource
     // ---------------------------- Success -------------------------------
     RespBasic resp1 = new RespBasic();
     return Response.status(Status.CREATED)
-      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("SYSAPI_PERMS_REVOKED", authenticatedUser, systemName,
+      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("APPAPI_PERMS_REVOKED", authenticatedUser, appName,
                                                                        userName, permissionStr),
                                                    prettyPrint, resp1))
       .build();
   }
 
   /**
-   * Revoke permissions for given system and user.
+   * Revoke permissions for given app and user.
    * @param payloadStream - request body
    * @return basic response
    */
   @POST
-  @Path("/{systemName}/user/{userName}/revoke")
+  @Path("/{appName}/user/{userName}/revoke")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-//  @Operation(
-//    summary = "Revoke system permissions in the Security Kernel using request body",
-//    description =
-//      "Revoke permissions in the Security Kernel for a user using a request body. Requester must be owner of " +
-//        "the system. Permissions: READ, MODIFY or ALL.",
-//    tags = "permissions",
-//    requestBody =
-//    @RequestBody(
-//      description = "A JSON object specifying a list of permissions.",
-//      required = true,
-//      content = @Content(schema = @Schema(implementation = ReqPerms.class))
-//    ),
-//    responses = {
-//      @ApiResponse(responseCode = "200", description = "Permission revoked.",
-//        content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class))),
-//      @ApiResponse(responseCode = "401", description = "Not authorized.",
-//        content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class))),
-//      @ApiResponse(responseCode = "500", description = "Server error.",
-//        content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class)))
-//    }
-//  )
-  public Response revokeUserPerms(@PathParam("systemName") String systemName,
+  public Response revokeUserPerms(@PathParam("appName") String appName,
                                   @PathParam("userName") String userName,
                                   InputStream payloadStream,
                                   @Context SecurityContext securityContext)
@@ -434,8 +348,8 @@ public class PermsResource
     AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
 
     // ------------------------- Check prerequisites -------------------------
-    // Check that the system exists
-    resp = ApiUtils.checkSystemExists(systemsService, authenticatedUser, systemName, prettyPrint, "revokeUserPerms");
+    // Check that the app exists
+    resp = ApiUtils.checkAppExists(appsService, authenticatedUser, appName, prettyPrint, "revokeUserPerms");
     if (resp != null) return resp;
 
     // Read the payload into a string.
@@ -443,25 +357,25 @@ public class PermsResource
     try { json = IOUtils.toString(payloadStream, StandardCharsets.UTF_8); }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("SYSAPI_PERMS_JSON_ERROR", authenticatedUser, systemName, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_JSON_ERROR", authenticatedUser, appName, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
 
     // ------------------------- Extract and validate payload -------------------------
     var permsList = new HashSet<Permission>();
-    resp = checkAndExtractPayload(authenticatedUser, systemName, userName, prettyPrint, json, permsList);
+    resp = checkAndExtractPayload(authenticatedUser, appName, userName, prettyPrint, json, permsList);
     if (resp != null) return resp;
 
     // ------------------------- Perform the operation -------------------------
     // Make the service call to revoke the permissions
     try
     {
-      systemsService.revokeUserPermissions(authenticatedUser, systemName, userName, permsList, json);
+      appsService.revokeUserPermissions(authenticatedUser, appName, userName, permsList, json);
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("SYSAPI_PERMS_ERROR", authenticatedUser, systemName, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", authenticatedUser, appName, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
@@ -470,7 +384,7 @@ public class PermsResource
     String permsListStr = permsList.stream().map(Enum::name).collect(Collectors.joining(","));
     RespBasic resp1 = new RespBasic();
     return Response.status(Status.CREATED)
-      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("SYSAPI_PERMS_REVOKED", authenticatedUser, systemName,
+      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("APPAPI_PERMS_REVOKED", authenticatedUser, appName,
                                                                        userName, permsListStr),
                                                    prettyPrint, resp1))
       .build();
@@ -483,14 +397,14 @@ public class PermsResource
 
   /**
    * Check json payload and extract permissions list.
-   * @param systemName - name of the system, for constructing response msg
+   * @param appName - name of the app, for constructing response msg
    * @param userName - name of user associated with the perms request, for constructing response msg
    * @param prettyPrint - print flag used to construct response
    * @param json - Request json extracted from payloadStream
    * @param permsList - List for resulting permissions extracted from payload
    * @return - null if all checks OK else Response containing info
    */
-  private Response checkAndExtractPayload(AuthenticatedUser authenticatedUser, String systemName, String userName, boolean prettyPrint,
+  private Response checkAndExtractPayload(AuthenticatedUser authenticatedUser, String appName, String userName, boolean prettyPrint,
                                           String json, Set<Permission> permsList)
   {
     String msg;
@@ -499,7 +413,7 @@ public class PermsResource
     try { JsonValidator.validate(spec); }
     catch (TapisJSONException e)
     {
-      msg = ApiUtils.getMsgAuth("SYSAPI_PERMS_JSON_INVALID", authenticatedUser, systemName, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_JSON_INVALID", authenticatedUser, appName, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
@@ -519,7 +433,7 @@ public class PermsResource
         try {permsList.add(Permission.valueOf(permStr)); }
         catch (IllegalArgumentException e)
         {
-          msg = ApiUtils.getMsgAuth("SYSAPI_PERMS_ENUM_ERROR", authenticatedUser, systemName, userName, permStr, e.getMessage());
+          msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ENUM_ERROR", authenticatedUser, appName, userName, permStr, e.getMessage());
           _log.error(msg, e);
           return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
         }
@@ -530,7 +444,7 @@ public class PermsResource
     // Check values. We should have at least one permission
     if (perms == null || perms.size() <= 0)
     {
-      msg = ApiUtils.getMsgAuth("SYSAPI_PERMS_NOPERMS", authenticatedUser, systemName, userName);
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_NOPERMS", authenticatedUser, appName, userName);
     }
 
     // If validation failed log error message and return response

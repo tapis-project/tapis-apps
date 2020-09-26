@@ -1,17 +1,17 @@
-package edu.utexas.tacc.tapis.systems.api.responses;
+package edu.utexas.tacc.tapis.apps.api.responses;
 
 import edu.utexas.tacc.tapis.sharedapi.responses.RespAbstract;
-import edu.utexas.tacc.tapis.systems.model.TSystem;
+import edu.utexas.tacc.tapis.apps.model.App;
 
 import java.util.List;
 
-public final class RespSystemArray extends RespAbstract
+public final class RespAppArray extends RespAbstract
 {
   /**
    * Zero arg constructor needed to use jersey's SelectableEntityFilteringFeature
    */
-  public RespSystemArray() { }
+  public RespAppArray() { }
 
-  public RespSystemArray(List<TSystem> result) { this.result = result; }
-  public List<TSystem> result;
+  public RespAppArray(List<App> result) { this.result = result; }
+  public List<App> result;
 }

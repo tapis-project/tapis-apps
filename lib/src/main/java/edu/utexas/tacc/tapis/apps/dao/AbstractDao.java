@@ -1,4 +1,4 @@
-package edu.utexas.tacc.tapis.systems.dao;
+package edu.utexas.tacc.tapis.apps.dao;
 
 import java.sql.Connection;
 
@@ -7,7 +7,7 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.utexas.tacc.tapis.systems.config.RuntimeParameters;
+import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.exceptions.recoverable.TapisDBConnectionException;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
@@ -37,7 +37,7 @@ public abstract class AbstractDao
     DataSource ds = getDataSource();
     
     // Get the connection.
-    Connection conn = null;
+    Connection conn;
     try {conn = ds.getConnection();}
       catch (Exception e) {
         String msg = MsgUtils.getMsg("DB_FAILED_CONNECTION");

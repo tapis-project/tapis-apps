@@ -1,10 +1,8 @@
-package edu.utexas.tacc.tapis.systems.utils;
+package edu.utexas.tacc.tapis.apps.utils;
 
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
-import edu.utexas.tacc.tapis.systems.model.TSystem;
-import edu.utexas.tacc.tapis.systems.model.TSystem.TransferMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,12 +11,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 /*
    Utility class containing general use static methods.
@@ -36,7 +30,7 @@ public class LibUtils
   private static final Logger _log = LoggerFactory.getLogger(LibUtils.class);
 
   // Location of message bundle files
-  private static final String MESSAGE_BUNDLE = "edu.utexas.tacc.tapis.systems.lib.SysLibMessages";
+  private static final String MESSAGE_BUNDLE = "edu.utexas.tacc.tapis.apps.lib.AppLibMessages";
 
   /* **************************************************************************** */
   /*                                Public Methods                                */
@@ -118,40 +112,6 @@ public class LibUtils
       msgValue = sb.toString();
     }
     return msgValue;
-  }
-
-  /**
-   * Return List of transfer methods as a comma delimited list of strings surrounded by curly braces.
-   */
-  public static String getTransferMethodsAsString(List<TransferMethod> txfrMethods)
-  {
-    if (txfrMethods == null || txfrMethods.size() == 0) return TSystem.EMPTY_TRANSFER_METHODS_STR;
-    StringBuilder sb = new StringBuilder("{");
-    for (int i = 0; i < txfrMethods.size()-1; i++)
-    {
-      sb.append(txfrMethods.get(i).name()).append(",");
-    }
-    sb.append(txfrMethods.get(txfrMethods.size()-1).name());
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Return String[] array of transfer methods
-   */
-  public static String[] getTransferMethodsAsStringArray(List<TransferMethod> txfrMethods)
-  {
-    if (txfrMethods == null || txfrMethods.size() == 0) return TSystem.EMPTY_TRANSFER_METHODS_STR_ARRAY;
-    return txfrMethods.stream().map(TransferMethod::name).toArray(String[]::new);
-  }
-
-  /**
-   * Return TransferMethod[] from String[]
-   */
-  public static List<TransferMethod> getTransferMethodsFromStringArray(String[] txfrMethods)
-  {
-    if (txfrMethods == null || txfrMethods.length == 0) return Collections.emptyList();
-    return Arrays.stream(txfrMethods).map(TransferMethod::valueOf).collect(Collectors.toList());
   }
 
   /**

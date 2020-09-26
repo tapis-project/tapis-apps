@@ -1,12 +1,11 @@
-package edu.utexas.tacc.tapis.systems.api.utils;
+package edu.utexas.tacc.tapis.apps.api.utils;
 
 import com.google.gson.JsonElement;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
-import edu.utexas.tacc.tapis.systems.service.SystemsService;
-import org.apache.commons.lang3.StringUtils;
+import edu.utexas.tacc.tapis.apps.service.AppsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +30,7 @@ public class ApiUtils
   private static final Logger _log = LoggerFactory.getLogger(ApiUtils.class);
 
   // Location of message bundle files
-  private static final String MESSAGE_BUNDLE = "edu.utexas.tacc.tapis.systems.api.SysApiMessages";
+  private static final String MESSAGE_BUNDLE = "edu.utexas.tacc.tapis.apps.api.AppApiMessages";
 
   /* **************************************************************************** */
   /*                                Public Methods                                */
@@ -134,59 +133,28 @@ public class ApiUtils
   }
 
   /**
-   * Check that system exists
+   * Check that app exists
    * @param authenticatedUser - principal user containing tenant and user info
-   * @param systemName - name of the system to check
+   * @param appName - name of the app to check
    * @param prettyPrint - print flag used to construct response
    * @param opName - operation name, for constructing response msg
    * @return - null if all checks OK else Response containing info
    */
-  public static Response checkSystemExists(SystemsService systemsService, AuthenticatedUser authenticatedUser,
-                                           String systemName, boolean prettyPrint, String opName)
+  public static Response checkAppExists(AppsService appsService, AuthenticatedUser authenticatedUser,
+                                           String appName, boolean prettyPrint, String opName)
   {
     String msg;
-    boolean systemExists;
-    try { systemExists = systemsService.checkForSystemByName(authenticatedUser, systemName); }
+    boolean appExists;
+    try { appExists = appsService.checkForAppByName(authenticatedUser, appName); }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("SYSAPI_CHECK_ERROR", authenticatedUser, systemName, opName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_CHECK_ERROR", authenticatedUser, appName, opName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
-    if (!systemExists)
+    if (!appExists)
     {
-      msg = ApiUtils.getMsgAuth("SYSAPI_NOSYSTEM", authenticatedUser, systemName, opName);
-      _log.error(msg);
-      return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
-    }
-    return null;
-  }
-
-  /**
-   * Check that both or neither of the secrets are blank.
-   * This is for PKI_KEYS and ACCESS_KEY where if one part of the secret is supplied the other must also be supplied
-   * @param systemName - name of the system, for constructing response msg
-   * @param userName - name of user associated with the perms request, for constructing response msg
-   * @param prettyPrint - print flag used to construct response
-   * @param secretType - secret type (PKI_KEYS, API_KEY), for constructing response msg
-   * @param secretName1 - secret name, for constructing response msg
-   * @param secretName2 - secret name, for constructing response msg
-   * @param secretVal1 - first secret
-   * @param secretVal2 - second secret
-   * @return - null if all checks OK else Response containing info
-   */
-  public static Response checkSecrets(AuthenticatedUser authenticatedUser, String systemName, String userName, boolean prettyPrint,
-                                      String secretType, String secretName1, String secretName2, String secretVal1, String secretVal2)
-  {
-    if ((!StringUtils.isBlank(secretVal1) && StringUtils.isBlank(secretVal2)))
-    {
-      String msg = ApiUtils.getMsgAuth("SYSAPI_CRED_SECRET_MISSING", authenticatedUser, systemName, secretType, secretName2, userName);
-      _log.error(msg);
-      return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
-    }
-    if ((StringUtils.isBlank(secretVal1) && !StringUtils.isBlank(secretVal2)))
-    {
-      String msg = ApiUtils.getMsgAuth("SYSAPI_CRED_SECRET_MISSING", authenticatedUser, systemName, secretType, secretName1, userName);
+      msg = ApiUtils.getMsgAuth("APPAPI_NOAPP", authenticatedUser, appName, opName);
       _log.error(msg);
       return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }

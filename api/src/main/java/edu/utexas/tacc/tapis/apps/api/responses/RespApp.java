@@ -1,15 +1,15 @@
-package edu.utexas.tacc.tapis.systems.api.responses;
+package edu.utexas.tacc.tapis.apps.api.responses;
 
 import edu.utexas.tacc.tapis.sharedapi.responses.RespAbstract;
-import edu.utexas.tacc.tapis.systems.model.TSystem;
+import edu.utexas.tacc.tapis.apps.model.App;
 
-public final class RespSystem extends RespAbstract
+public final class RespApp extends RespAbstract
 {
   /**
    * Zero arg constructor needed to use jersey's SelectableEntityFilteringFeature
    */
-  public RespSystem() { }
+  public RespApp() { }
 
-  public RespSystem(TSystem result) { this.result = result; }
-  public TSystem result;
+  public RespApp(App result) { this.result = result; }
+  public App result;
 }

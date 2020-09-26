@@ -1,4 +1,4 @@
-package edu.utexas.tacc.tapis.systems.api.resources;
+package edu.utexas.tacc.tapis.apps.api.resources;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -24,24 +24,9 @@ import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.sharedapi.dto.ResponseWrapper;
 import edu.utexas.tacc.tapis.sharedapi.security.ServiceJWT;
-import edu.utexas.tacc.tapis.systems.api.utils.ApiUtils;
-import edu.utexas.tacc.tapis.systems.service.SystemsServiceImpl;
-import edu.utexas.tacc.tapis.systems.utils.LibUtils;
-import io.swagger.v3.oas.annotations.ExternalDocumentation;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
-import io.swagger.v3.oas.annotations.info.Contact;
-import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.info.License;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.security.SecurityScheme;
-import io.swagger.v3.oas.annotations.servers.Server;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
+import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
+import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import org.glassfish.grizzly.http.server.Request;
 
 import edu.utexas.tacc.tapis.sharedapi.security.TenantManager;
@@ -52,45 +37,18 @@ import org.jooq.tools.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/* Tapis Systems general resources including healthcheck and readycheck
+/* Tapis Apps general resources including healthcheck and readycheck
  *
- * (NOT currently used) Contains annotations which generate the OpenAPI specification documents.
- *  NOTE: Switching to hand-crafted openapi located in repo tapis-client-java at systems-client/SystemsAPI.yaml
- *        Could not fully automate generation of spec and annotations have some limits. E.g., how to mark a parameter
- *        in a request body as required?, how to better describe query parameters?
+ *  NOTE: For OpenAPI spec please see file located in repo tapis-client-java at apps-client/AppsAPI.yaml
  */
-//@OpenAPIDefinition(
-//    security = {@SecurityRequirement(name = "TapisJWT")},
-//    info = @Info(
-//        title = "Tapis Systems API",
-//        description = "The Tapis Systems API provides for management of Tapis Systems including access and transfer methods, permissions and credentials.",
-//        license = @License(name = "3-Clause BSD License", url = "https://opensource.org/licenses/BSD-3-Clause"),
-//        contact = @Contact(name = "CICSupport", email = "cicsupport@tacc.utexas.edu")),
-//    tags = {
-//        @Tag(name = "systems", description = "manage systems")
-//    },
-//    servers = {
-////      @Server(url = "v3/systems", description = "Base URL")
-//      @Server(url = "http://localhost:8080/", description = "Local test environment"),
-//      @Server(url = "https://dev.develop.tapis.io/", description = "Development environment")
-//    },
-//    externalDocs = @ExternalDocumentation(description = "Tapis Home", url = "https://tacc-cloud.readthedocs.io/projects/agave")
-//)
-//@SecurityScheme(
-//  name="TapisJWT",
-//  description="Tapis signed JWT token authentication",
-//  type= SecuritySchemeType.APIKEY,
-//  in= SecuritySchemeIn.HEADER,
-//  paramName="X-Tapis-Token"
-//)
-@Path("/v3/systems")
-public class SystemsResource
+@Path("/v3/apps")
+public class AppsResource
 {
   /* **************************************************************************** */
   /*                                   Constants                                  */
   /* **************************************************************************** */
   // Local logger.
-  private static final Logger _log = LoggerFactory.getLogger(SystemsResource.class);
+  private static final Logger _log = LoggerFactory.getLogger(AppsResource.class);
 
   /* **************************************************************************** */
   /*                                    Fields                                    */
@@ -144,7 +102,7 @@ public class SystemsResource
 
   // **************** Inject Services using HK2 ****************
   @Inject
-  private SystemsServiceImpl svcImpl;
+  private AppsServiceImpl svcImpl;
   @Inject
   private ServiceJWT serviceJWT;
 
@@ -179,7 +137,7 @@ public class SystemsResource
 
     // Manually create a success response with git info included in version
     resp.status = ResponseWrapper.RESPONSE_STATUS.success.name();
-    resp.message = MsgUtils.getMsg("TAPIS_HEALTHY", "Systems Service");
+    resp.message = MsgUtils.getMsg("TAPIS_HEALTHY", "Apps Service");
     resp.version = TapisUtils.getTapisFullVersion();
     String respStr = TapisGsonUtils.getGson().toJson(resp);
     return Response.status(Status.OK).entity(respStr).build();
@@ -238,20 +196,20 @@ public class SystemsResource
     if (readyCheckException != null)
     {
       RespBasic r = new RespBasic("Readiness tenants check failed. Check number: " + checkNum);
-      String msg = MsgUtils.getMsg("TAPIS_NOT_READY", "Systems Service");
+      String msg = MsgUtils.getMsg("TAPIS_NOT_READY", "Apps Service");
       // We failed so set the log limiter check.
       // TODO/TBD Do we need to also check exception type? Info would get lost if exception type changes.
       if (checkTenantsOK.toggleOff())
       {
         _log.warn(msg, readyCheckException);
-        _log.warn(ApiUtils.getMsg("SYSAPI_READYCHECK_TENANTS_ERRTOGGLE_SET"));
+        _log.warn(ApiUtils.getMsg("APPAPI_READYCHECK_TENANTS_ERRTOGGLE_SET"));
       }
       return Response.status(Status.SERVICE_UNAVAILABLE).entity(TapisRestUtils.createErrorResponse(msg, false, r)).build();
     }
     else
     {
       // We succeeded so clear the log limiter check.
-      if (checkTenantsOK.toggleOn()) _log.info(ApiUtils.getMsg("SYSAPI_READYCHECK_TENANTS_ERRTOGGLE_CLEARED"));
+      if (checkTenantsOK.toggleOn()) _log.info(ApiUtils.getMsg("APPAPI_READYCHECK_TENANTS_ERRTOGGLE_CLEARED"));
     }
 
     // Check that we have a service JWT
@@ -259,20 +217,20 @@ public class SystemsResource
     if (readyCheckException != null)
     {
       RespBasic r = new RespBasic("Readiness JWT check failed. Check number: " + checkNum);
-      String msg = MsgUtils.getMsg("TAPIS_NOT_READY", "Systems Service");
+      String msg = MsgUtils.getMsg("TAPIS_NOT_READY", "Apps Service");
       // We failed so set the log limiter check.
       // TODO/TBD Do we need to also check exception type? Info would get lost if exception type changes.
       if (checkJWTOK.toggleOff())
       {
         _log.warn(msg, readyCheckException);
-        _log.warn(ApiUtils.getMsg("SYSAPI_READYCHECK_JWT_ERRTOGGLE_SET"));
+        _log.warn(ApiUtils.getMsg("APPAPI_READYCHECK_JWT_ERRTOGGLE_SET"));
       }
       return Response.status(Status.SERVICE_UNAVAILABLE).entity(TapisRestUtils.createErrorResponse(msg, false, r)).build();
     }
     else
     {
       // We succeeded so clear the log limiter check.
-      if (checkJWTOK.toggleOn()) _log.info(ApiUtils.getMsg("SYSAPI_READYCHECK_JWT_ERRTOGGLE_CLEARED"));
+      if (checkJWTOK.toggleOn()) _log.info(ApiUtils.getMsg("APPAPI_READYCHECK_JWT_ERRTOGGLE_CLEARED"));
     }
 
     // Check that we can connect to the DB
@@ -280,27 +238,27 @@ public class SystemsResource
     if (readyCheckException != null)
     {
       RespBasic r = new RespBasic("Readiness DB check failed. Check number: " + checkNum);
-      String msg = MsgUtils.getMsg("TAPIS_NOT_READY", "Systems Service");
+      String msg = MsgUtils.getMsg("TAPIS_NOT_READY", "Apps Service");
       // We failed so set the log limiter check.
       // TODO/TBD Do we need to also check exception type? Info would get lost if exception type changes.
       if (checkDBOK.toggleOff())
       {
         _log.warn(msg, readyCheckException);
-        _log.warn(ApiUtils.getMsg("SYSAPI_READYCHECK_DB_ERRTOGGLE_SET"));
+        _log.warn(ApiUtils.getMsg("APPAPI_READYCHECK_DB_ERRTOGGLE_SET"));
       }
       return Response.status(Status.SERVICE_UNAVAILABLE).entity(TapisRestUtils.createErrorResponse(msg, false, r)).build();
     }
     else
     {
       // We succeeded so clear the log limiter check.
-      if (checkDBOK.toggleOn()) _log.info(ApiUtils.getMsg("SYSAPI_READYCHECK_DB_ERRTOGGLE_CLEARED"));
+      if (checkDBOK.toggleOn()) _log.info(ApiUtils.getMsg("APPAPI_READYCHECK_DB_ERRTOGGLE_CLEARED"));
     }
 
     // ---------------------------- Success -------------------------------
     // Create the response payload.
     RespBasic resp = new RespBasic("Ready check passed. Count: " + checkNum);
     return Response.status(Status.OK).entity(TapisRestUtils.createSuccessResponse(
-            MsgUtils.getMsg("TAPIS_READY", "Systems Service"), false, resp)).build();
+            MsgUtils.getMsg("TAPIS_READY", "Apps Service"), false, resp)).build();
   }
 
   /* **************************************************************************** */
@@ -316,7 +274,7 @@ public class SystemsResource
     Exception result = null;
     try {
       String jwt = serviceJWT.getAccessJWT();
-      if (StringUtils.isBlank(jwt)) result = new TapisClientException(LibUtils.getMsg("SYSLIB_CHECKJWT_EMPTY"));
+      if (StringUtils.isBlank(jwt)) result = new TapisClientException(LibUtils.getMsg("APPLIB_CHECKJWT_EMPTY"));
     }
     catch (Exception e) { result = e; }
     return result;
@@ -345,7 +303,7 @@ public class SystemsResource
     {
       // Make sure the cached tenants map is not null or empty.
       var tenantMap = TenantManager.getInstance().getTenants();
-      if (tenantMap == null || tenantMap.isEmpty()) result = new TapisClientException(LibUtils.getMsg("SYSLIB_CHECKTENANTS_EMPTY"));
+      if (tenantMap == null || tenantMap.isEmpty()) result = new TapisClientException(LibUtils.getMsg("APPLIB_CHECKTENANTS_EMPTY"));
     }
     catch (Exception e) { result = e; }
     return result;

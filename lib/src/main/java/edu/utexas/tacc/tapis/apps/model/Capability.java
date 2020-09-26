@@ -1,4 +1,4 @@
-package edu.utexas.tacc.tapis.systems.model;
+package edu.utexas.tacc.tapis.apps.model;
 
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import org.slf4j.Logger;

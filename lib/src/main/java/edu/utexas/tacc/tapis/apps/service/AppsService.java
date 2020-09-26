@@ -1,13 +1,11 @@
-package edu.utexas.tacc.tapis.systems.service;
+package edu.utexas.tacc.tapis.apps.service;
 
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
-import edu.utexas.tacc.tapis.systems.model.Credential;
-import edu.utexas.tacc.tapis.systems.model.PatchSystem;
-import edu.utexas.tacc.tapis.systems.model.TSystem;
-import edu.utexas.tacc.tapis.systems.model.TSystem.AccessMethod;
-import edu.utexas.tacc.tapis.systems.model.TSystem.Permission;
+import edu.utexas.tacc.tapis.apps.model.PatchApp;
+import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import org.jvnet.hk2.annotations.Contract;
 
 import javax.ws.rs.NotAuthorizedException;
@@ -16,57 +14,48 @@ import java.util.List;
 import java.util.Set;
 
 /*
- * Interface for Systems Service
+ * Interface for Apps Service
  * Annotate as an hk2 Contract in case we have multiple implementations
  */
 @Contract
-public interface SystemsService
+public interface AppsService
 {
-  int createSystem(AuthenticatedUser authenticatedUser, TSystem system, String scrubbedText)
+  int createApp(AuthenticatedUser authenticatedUser, App app, String scrubbedText)
           throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, TapisClientException;
 
-  int updateSystem(AuthenticatedUser authenticatedUser, PatchSystem patchSystem, String scrubbedText)
+  int updateApp(AuthenticatedUser authenticatedUser, PatchApp patchApp, String scrubbedText)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
-  int changeSystemOwner(AuthenticatedUser authenticatedUser, String systemName, String newOwnerName)
+  int changeAppOwner(AuthenticatedUser authenticatedUser, String appName, String newOwnerName)
           throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
 
-  int softDeleteSystemByName(AuthenticatedUser authenticatedUser, String systemName)
+  int softDeleteAppByName(AuthenticatedUser authenticatedUser, String appName)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  boolean checkForSystemByName(AuthenticatedUser authenticatedUser, String systemName)
+  boolean checkForAppByName(AuthenticatedUser authenticatedUser, String appName)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  TSystem getSystemByName(AuthenticatedUser authenticatedUser, String systemName, boolean getCreds, AccessMethod accessMethod)
+  App getAppByName(AuthenticatedUser authenticatedUser, String appName)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  List<TSystem> getSystems(AuthenticatedUser authenticatedUser, List<String> searchList)
+  List<App> getApps(AuthenticatedUser authenticatedUser, List<String> searchList)
           throws TapisException, TapisClientException;
 
-  List<TSystem> getSystemsUsingSqlSearchStr(AuthenticatedUser authenticatedUser, String searchStr)
+  List<App> getAppsUsingSqlSearchStr(AuthenticatedUser authenticatedUser, String searchStr)
           throws TapisException, TapisClientException;
 
-  List<String> getSystemNames(AuthenticatedUser authenticatedUser)
+  List<String> getAppNames(AuthenticatedUser authenticatedUser)
           throws TapisException;
 
-  String getSystemOwner(AuthenticatedUser authenticatedUser, String systemName)
+  String getAppOwner(AuthenticatedUser authenticatedUser, String appName)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  void grantUserPermissions(AuthenticatedUser authenticatedUser, String systemName, String userName, Set<Permission> permissions, String updateText)
+  void grantUserPermissions(AuthenticatedUser authenticatedUser, String appName, String userName, Set<Permission> permissions, String updateText)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  int revokeUserPermissions(AuthenticatedUser authenticatedUser, String systemName, String userName, Set<Permission> permissions, String updateText)
+  int revokeUserPermissions(AuthenticatedUser authenticatedUser, String appName, String userName, Set<Permission> permissions, String updateText)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  Set<Permission> getUserPermissions(AuthenticatedUser authenticatedUser, String systemName, String userName)
+  Set<Permission> getUserPermissions(AuthenticatedUser authenticatedUser, String appName, String userName)
           throws TapisException, NotAuthorizedException, TapisClientException;
-
-  void createUserCredential(AuthenticatedUser authenticatedUser, String systemName, String userName, Credential credential, String scrubbedText)
-          throws TapisException, NotAuthorizedException, IllegalStateException, TapisClientException;
-
-  int deleteUserCredential(AuthenticatedUser authenticatedUser, String systemName, String userName)
-          throws TapisException, NotAuthorizedException, IllegalStateException, TapisClientException;
-
-  Credential getUserCredential(AuthenticatedUser authenticatedUser, String systemName, String userName, AccessMethod accessMethod)
-          throws TapisException, TapisClientException, NotAuthorizedException;
 }

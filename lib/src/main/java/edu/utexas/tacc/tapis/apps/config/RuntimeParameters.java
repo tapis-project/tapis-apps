@@ -1,4 +1,4 @@
-package edu.utexas.tacc.tapis.systems.config;
+package edu.utexas.tacc.tapis.apps.config;
 
 import java.text.NumberFormat;
 import java.util.List;
@@ -59,7 +59,7 @@ public final class RuntimeParameters
     // Email defaults.
     private static final String DEFAULT_EMAIL_PROVIDER = "LOG";
     private static final int    DEFAULT_EMAIL_PORT = 25;
-    private static final String DEFAULT_EMAIL_FROM_NAME = "Tapis Systems Service";
+    private static final String DEFAULT_EMAIL_FROM_NAME = "Tapis Apps Service";
     private static final String DEFAULT_EMAIL_FROM_ADDRESS = "no-reply@nowhere.com";
     
     // Support defaults.
@@ -129,13 +129,13 @@ public final class RuntimeParameters
 	{
 	  // --------------------- Get Input Parameters ---------------------
 	  // Get the input parameter values from resource file and environment.
-	  TapisInput tapisInput = new TapisInput(TapisConstants.SERVICE_NAME_SYSTEMS);
+	  TapisInput tapisInput = new TapisInput(TapisConstants.SERVICE_NAME_APPS);
 	  Properties inputProperties = null;
 	  try {inputProperties = tapisInput.getInputParameters();}
 	  catch (TapisException e) {
 	    // Very bad news.
 	    String msg = MsgUtils.getMsg("TAPIS_SERVICE_INITIALIZATION_FAILED",
-	                                 TapisConstants.SERVICE_NAME_SYSTEMS,
+	                                 TapisConstants.SERVICE_NAME_APPS,
 	                                 e.getMessage());
 	    _log.error(msg, e);
 	    throw new TapisRuntimeException(msg, e);
@@ -143,10 +143,10 @@ public final class RuntimeParameters
 
 	  // --------------------- Non-Configurable Parameters --------------
 	  // We decide the pool name.
-	  setDbConnectionPoolName(TapisConstants.SERVICE_NAME_SYSTEMS + "Pool");
+	  setDbConnectionPoolName(TapisConstants.SERVICE_NAME_APPS + "Pool");
     
 	  // --------------------- General Parameters -----------------------
-	  // The name of this instance of the systems library that has meaning to
+	  // The name of this instance of the apps library that has meaning to
 	  // humans, distinguishes this instance of the job service, and is 
 	  // short enough to use to name runtime artifacts.
 	  String parm = inputProperties.getProperty(EnvVar.TAPIS_INSTANCE_NAME.getEnvName());
@@ -155,14 +155,14 @@ public final class RuntimeParameters
 	      // We check the current value to avoid reassigning on reload.  The
 	      // integer suffix can add up to 10 characters to the string.
 	      if (getInstanceName() == null)
-	          setInstanceName(TapisConstants.SERVICE_NAME_SYSTEMS +
+	          setInstanceName(TapisConstants.SERVICE_NAME_APPS +
                               Math.abs(new Random(System.currentTimeMillis()).nextInt()));
 	  } 
 	  else {
 	      // Validate string length.
 	      if (parm.length() > MAX_INSTANCE_NAME_LEN) {
 	          String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_INITIALIZATION_FAILED",
-                                           TapisConstants.SERVICE_NAME_SYSTEMS,
+                                           TapisConstants.SERVICE_NAME_APPS,
                                            "instanceName",
                                            "Instance name exceeds " + MAX_INSTANCE_NAME_LEN + "characters: " + parm);
 	          _log.error(msg);
@@ -170,7 +170,7 @@ public final class RuntimeParameters
       }
       if (!StringUtils.isAlphanumeric(parm)) {
               String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_INITIALIZATION_FAILED",
-                                           TapisConstants.SERVICE_NAME_SYSTEMS,
+                                           TapisConstants.SERVICE_NAME_APPS,
                                            "instanceName",
                                            "Instance name contains non-alphanumeric characters: " + parm);
               _log.error(msg);
@@ -192,7 +192,7 @@ public final class RuntimeParameters
           catch (Exception e) {
             // Stop on bad input.
             String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_INITIALIZATION_FAILED",
-                                         TapisConstants.SERVICE_NAME_SYSTEMS,
+                                         TapisConstants.SERVICE_NAME_APPS,
                                          "allowTestQueryParms",
                                          e.getMessage());
             _log.error(msg, e);
@@ -212,7 +212,7 @@ public final class RuntimeParameters
 		// Security Kernel base URL is optional. Normally it is retrieved from the Tenants service.
 		parm = inputProperties.getProperty(EnvVar.TAPIS_TENANT_SVC_BASEURL.getEnvName());
 		if (StringUtils.isBlank(parm)) {
-			String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_MISSING", TapisConstants.SERVICE_NAME_SYSTEMS, "tenantsSvcUrl");
+			String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_MISSING", TapisConstants.SERVICE_NAME_APPS, "tenantsSvcUrl");
 			_log.error(msg);
 			throw new TapisRuntimeException(msg);
 		}
@@ -232,7 +232,7 @@ public final class RuntimeParameters
           catch (Exception e) {
             // Stop on bad input.
             String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_INITIALIZATION_FAILED",
-                                         TapisConstants.SERVICE_NAME_SYSTEMS,
+                                         TapisConstants.SERVICE_NAME_APPS,
                                          "dbConnectionPoolSize",
                                          e.getMessage());
             _log.error(msg, e);
@@ -245,7 +245,7 @@ public final class RuntimeParameters
     if (StringUtils.isBlank(parm)) {
       // Stop on bad input.
       String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_MISSING",
-                                   TapisConstants.SERVICE_NAME_SYSTEMS,
+                                   TapisConstants.SERVICE_NAME_APPS,
                                    "dbUser");
       _log.error(msg);
       throw new TapisRuntimeException(msg);
@@ -257,7 +257,7 @@ public final class RuntimeParameters
     if (StringUtils.isBlank(parm)) {
       // Stop on bad input.
       String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_MISSING",
-                                   TapisConstants.SERVICE_NAME_SYSTEMS,
+                                   TapisConstants.SERVICE_NAME_APPS,
                                    "dbPassword");
       _log.error(msg);
       throw new TapisRuntimeException(msg);
@@ -269,7 +269,7 @@ public final class RuntimeParameters
     if (StringUtils.isBlank(parm)) {
       // Stop on bad input.
       String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_MISSING",
-                                   TapisConstants.SERVICE_NAME_SYSTEMS,
+                                   TapisConstants.SERVICE_NAME_APPS,
                                    "jdbcUrl");
       _log.error(msg);
       throw new TapisRuntimeException(msg);
@@ -284,7 +284,7 @@ public final class RuntimeParameters
           catch (Exception e) {
             // Stop on bad input.
             String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_INITIALIZATION_FAILED",
-                                         TapisConstants.SERVICE_NAME_SYSTEMS,
+                                         TapisConstants.SERVICE_NAME_APPS,
                                          "dbMeterMinutes",
                                          e.getMessage());
             _log.error(msg, e);
@@ -299,7 +299,7 @@ public final class RuntimeParameters
     try {setEmailProviderType(EmailProviderType.valueOf(parm));}
         catch (Exception e) {
             String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_INITIALIZATION_FAILED",
-                                         TapisConstants.SERVICE_NAME_SYSTEMS,
+                                         TapisConstants.SERVICE_NAME_APPS,
                                          "emalProviderType",
                                          e.getMessage());
             _log.error(msg, e);
@@ -314,7 +314,7 @@ public final class RuntimeParameters
               catch (Exception e) {
                   // Stop on bad input.
                   String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_INITIALIZATION_FAILED",
-                                               TapisConstants.SERVICE_NAME_SYSTEMS,
+                                               TapisConstants.SERVICE_NAME_APPS,
                                                "emailAuth",
                                                e.getMessage());
                   _log.error(msg, e);
@@ -327,7 +327,7 @@ public final class RuntimeParameters
     if (!StringUtils.isBlank(parm)) setEmailHost(parm);
       else if (getEmailProviderType() == EmailProviderType.SMTP) {
           String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_MISSING",
-                                       TapisConstants.SERVICE_NAME_SYSTEMS,
+                                       TapisConstants.SERVICE_NAME_APPS,
                                        "emailHost");
           _log.error(msg);
           throw new TapisRuntimeException(msg);
@@ -341,7 +341,7 @@ public final class RuntimeParameters
           catch (Exception e) {
               // Stop on bad input.
               String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_INITIALIZATION_FAILED",
-                                           TapisConstants.SERVICE_NAME_SYSTEMS,
+                                           TapisConstants.SERVICE_NAME_APPS,
                                            "emailPort",
                                            e.getMessage());
               _log.error(msg, e);
@@ -353,7 +353,7 @@ public final class RuntimeParameters
     if (!StringUtils.isBlank(parm)) setEmailUser(parm);
       else if (isEmailAuth()) {
           String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_MISSING",
-                                       TapisConstants.SERVICE_NAME_SYSTEMS,
+                                       TapisConstants.SERVICE_NAME_APPS,
                                        "emailUser");
           _log.error(msg);
           throw new TapisRuntimeException(msg);
@@ -364,7 +364,7 @@ public final class RuntimeParameters
     if (!StringUtils.isBlank(parm)) setEmailPassword(parm);
       else if (isEmailAuth()) {
         String msg = MsgUtils.getMsg("TAPIS_SERVICE_PARM_MISSING",
-                                     TapisConstants.SERVICE_NAME_SYSTEMS,
+                                     TapisConstants.SERVICE_NAME_APPS,
                                      "emailPassword");
         _log.error(msg);
         throw new TapisRuntimeException(msg);

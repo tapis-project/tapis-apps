@@ -1,4 +1,4 @@
-package edu.utexas.tacc.tapis.systems.api.utils;
+package edu.utexas.tacc.tapis.apps.api.utils;
 
 import com.google.gson.JsonElement;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;

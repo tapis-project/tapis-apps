@@ -156,7 +156,7 @@
   <!--     db.url has the correct schema. May need to drop the current       -->
   <!--     the schema if flyway is still on V001__init.sql                   -->
   <!-- Finally run:                                                          -->
-  <!--   cd tapis-appslib                                                 -->
+  <!--   cd lib                                                              -->
   <!--   mvn clean install -Pdb-update                                       -->
   <profile>
     <id>db-update</id>

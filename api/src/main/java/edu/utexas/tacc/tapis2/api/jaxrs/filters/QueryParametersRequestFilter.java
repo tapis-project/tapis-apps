@@ -19,16 +19,16 @@ import javax.ws.rs.ext.Provider;
  *    pretty - Boolean indicating if response should be pretty printed
  *    TODO limit - Integer indicating maximum number of results to be included.
  *    TODO sort_by, e.g. sort_by=owner(asc),created(desc)
- *    TODO start_after, e.g. systems?limit=10&sort_by=id(asc)&start_after=101
+ *    TODO start_after, e.g. apps?limit=10&sort_by=id(asc)&start_after=101
  *
  *  NOTE: Process "pretty" here because it is a parameter for all endpoints and
- *        is not needed for the java client or the back-end (tapis-systemslib)
+ *        is not needed for the java client or the back-end (tapis-appslib)
  *  NOTE: Returning selected attributes in returned results is provided by Jersey's
- *        dynamic filtering (SelectableEntityFilteringFeature). See SystemsApplication.java
+ *        dynamic filtering (SelectableEntityFilteringFeature). See AppsApplication.java
  *        So no need to process here. Downside is it is therefore not available in
  *        the java client or calls by some some other front-end to the back-end.
  *  NOTE: "search" is not processed here because we do want it available in the java client.
- *        It is a query parameter in SystemResource.java
+ *        It is a query parameter in AppResource.java
  */
 @Provider
 @Priority(TapisConstants.JAXRS_FILTER_PRIORITY_AFTER_AUTHENTICATION)
