@@ -37,7 +37,7 @@ SET search_path TO tapis_app;
 -- GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA tapis_app TO tapis_app;
 
 -- Types
-CREATE TYPE app_type_type AS ENUM ('LINUX', 'OBJECT_STORE');
+CREATE TYPE app_type_type AS ENUM ('BATCH', 'INTERACTIVE');
 CREATE TYPE operation_type AS ENUM ('create', 'modify', 'softDelete', 'hardDelete', 'changeOwner',
                                     'grantPerms', 'revokePerms');
 CREATE TYPE capability_category_type AS ENUM ('SCHEDULER', 'OS', 'HARDWARE', 'SOFTWARE', 'JOB', 'CONTAINER', 'MISC', 'CUSTOM');

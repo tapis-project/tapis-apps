@@ -17,9 +17,9 @@ import org.jooq.Schema;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public enum AppTypeType implements EnumType {
 
-    LINUX("LINUX"),
+    BATCH("BATCH"),
 
-    OBJECT_STORE("OBJECT_STORE");
+    INTERACTIVE("INTERACTIVE");
 
     private final String literal;
 
