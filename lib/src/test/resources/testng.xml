@@ -7,9 +7,9 @@
       <exclude name="notReady"/>
     </run>
   </groups>
-  <test name="systemslib">
+  <test name="appslib">
     <packages>
-      <package name="edu.utexas.tacc.tapis.aps.*" />
+      <package name="edu.utexas.tacc.tapis.apps.*" />
     </packages>
   </test>
 </suite>
