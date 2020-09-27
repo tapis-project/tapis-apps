@@ -45,14 +45,14 @@ public class AppsServiceJWTFactory implements Factory<ServiceJWT>
       String svcPassword = RuntimeParameters.getInstance().getServicePassword();
       if (StringUtils.isBlank(svcPassword))
       {
-        String msg = LibUtils.getMsg("SYSLIB_NO_SVC_PASSWD", svcMasterTenant, tokenSvcUrl);
+        String msg = LibUtils.getMsg("APPLIB_NO_SVC_PASSWD", svcMasterTenant, tokenSvcUrl);
         throw new RuntimeException(msg);
       }
       return new ServiceJWT(svcJWTParms, svcPassword);
     }
     catch (TapisException | TapisClientException te)
     {
-      String msg = LibUtils.getMsg("SYSLIB_SVCJWT_ERROR", svcMasterTenant, tokenSvcUrl);
+      String msg = LibUtils.getMsg("APPLIB_SVCJWT_ERROR", svcMasterTenant, tokenSvcUrl);
       throw new RuntimeException(msg, te);
     }
   }

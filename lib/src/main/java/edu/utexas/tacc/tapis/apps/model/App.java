@@ -124,7 +124,7 @@ public final class App
    */
   public App(App a)
   {
-    if (a==null) throw new IllegalArgumentException(LibUtils.getMsg("SYSLIB_NULL_INPUT"));
+    if (a==null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT"));
     id = a.getId();
     created = a.getCreated();
     updated = a.getUpdated();
