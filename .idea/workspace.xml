@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="34efd738-2b9a-4e43-b14d-018fde0be61f" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tapis-apps.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/AppsAPI.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/README" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/delete_client_test_data.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/docker_run_svc.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/find_port.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/release-pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/run_client_tests.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/src/main/java/edu/utexas/tacc/tapis/apps/client/AppsClient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/src/main/resources/build.time" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/src/main/resources/git.info" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/src/main/resources/logback.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/src/main/resources/tapis.version" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/src/test/java/edu/utexas/tacc/tapis/apps/client/SearchASTTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/src/test/java/edu/utexas/tacc/tapis/apps/client/SearchGetTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/src/test/java/edu/utexas/tacc/tapis/apps/client/UserTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/src/test/java/edu/utexas/tacc/tapis/apps/client/Utils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/src/test/resources/testng.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/api.iml" beforeDir="false" afterPath="$PROJECT_DIR$/api/api.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/src/main/resources/tapis.fullversion" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/main/resources/tapis.fullversion" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/main/resources/sql/reset_db.sql" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/main/resources/sql/reset_db.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../main/tapis-client-java/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../main/tapis-client-java/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../main/tapis-client-java/systems-client/README" beforeDir="false" afterPath="$PROJECT_DIR$/../../main/tapis-client-java/systems-client/README" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../main/tapis-client-java/systems-client/docker_run_sys_svc.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../main/tapis-client-java/systems-client/docker_run_svc.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../main/tapis-client-java/systems-client/run_client_tests.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../main/tapis-client-java/systems-client/run_client_tests.sh" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHome" value="$APPLICATION_HOME_DIR$/plugins/maven/lib/maven3" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectId" id="1iWDrV4KYXgccEPWFMuPs0BKwy2" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+  </component>
+  <component name="RunManager" selected="TestNG.AppsDaoTest">
+    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
+      <option name="arquillianRunConfiguration">
+        <value>
+          <option name="containerStateName" value="" />
+        </value>
+      </option>
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SearchDaoTest.testValidCases" type="TestNG" temporary="true" nameIsGenerated="true">
+      <module name="lib" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="edu.utexas.tacc.tapis.apps.dao.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="edu.utexas.tacc.tapis.apps.dao" />
+      <option name="MAIN_CLASS_NAME" value="edu.utexas.tacc.tapis.apps.dao.SearchDaoTest" />
+      <option name="METHOD_NAME" value="testValidCases" />
+      <option name="TEST_OBJECT" value="METHOD" />
+      <properties />
+      <listeners />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="TestNG.SearchDaoTest.testValidCases" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="414" y="159" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1602015990351">
+      <screen x="67" y="27" width="1853" height="1052" />
+    </state>
+    <state x="414" y="159" key="#com.intellij.execution.impl.EditConfigurationsDialog/67.27.1853.1052@67.27.1853.1052" timestamp="1602015990351" />
+    <state width="1669" height="237" key="GridCell.Tab.0.bottom" timestamp="1602015968620">
+      <screen x="67" y="27" width="1853" height="1052" />
+    </state>
+    <state width="1669" height="237" key="GridCell.Tab.0.bottom/67.27.1853.1052@67.27.1853.1052" timestamp="1602015968620" />
+    <state width="1669" height="237" key="GridCell.Tab.0.center" timestamp="1602015968619">
+      <screen x="67" y="27" width="1853" height="1052" />
+    </state>
+    <state width="1669" height="237" key="GridCell.Tab.0.center/67.27.1853.1052@67.27.1853.1052" timestamp="1602015968619" />
+    <state width="1669" height="237" key="GridCell.Tab.0.left" timestamp="1602015968619">
+      <screen x="67" y="27" width="1853" height="1052" />
+    </state>
+    <state width="1669" height="237" key="GridCell.Tab.0.left/67.27.1853.1052@67.27.1853.1052" timestamp="1602015968619" />
+    <state width="1669" height="237" key="GridCell.Tab.0.right" timestamp="1602015968620">
+      <screen x="67" y="27" width="1853" height="1052" />
+    </state>
+    <state width="1669" height="237" key="GridCell.Tab.0.right/67.27.1853.1052@67.27.1853.1052" timestamp="1602015968620" />
+    <state x="438" y="62" width="1024" height="853" key="SettingsEditor" timestamp="1602015361340">
+      <screen x="67" y="27" width="1853" height="1052" />
+    </state>
+    <state x="438" y="62" width="1024" height="853" key="SettingsEditor/67.27.1853.1052@67.27.1853.1052" timestamp="1602015361340" />
+    <state x="615" y="229" width="672" height="678" key="search.everywhere.popup" timestamp="1602015867141">
+      <screen x="67" y="27" width="1853" height="1052" />
+    </state>
+    <state x="615" y="229" width="672" height="678" key="search.everywhere.popup/67.27.1853.1052@67.27.1853.1052" timestamp="1602015867141" />
+  </component>
+</project>

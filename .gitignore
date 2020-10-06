@@ -37,24 +37,25 @@ target
 testreports
 test-output
 
+# Keep IntelliJ files to help troubleshoot any issues, at least for a while.
 # Intellij metadata files
-.idea/*
-*.iml
-*.ids
-*.eml
-*.imp
-*.ipr
-*.iws
+# .idea/*
+# *.iml
+# *.ids
+# *.eml
+# *.imp
+# *.ipr
+# *.iws
 # Include IntelliJ runConfigurations and some
 # other config files to help troubleshoot IDE issues
-!.idea/runConfigurations/
-!.idea/compiler.xml
-!.idea/misc.xml
-!.idea/modules.xml
-!.idea/sqldialects.xml
-!.idea/tapis-java.iml
-!api/*.iml
-!lib/*.iml
+# !.idea/runConfigurations/
+# !.idea/compiler.xml
+# !.idea/misc.xml
+# !.idea/modules.xml
+# !.idea/sqldialects.xml
+# !.idea/tapis-java.iml
+# !api/*.iml
+# !lib/*.iml
 
 # Eclipse metadata files
 .project

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/lib/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/lib/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/apps-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/apps-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/auth-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/auth-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/meta-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/meta-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/security-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/security-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/shared/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/shared/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/systems-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/systems-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/tenants-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/tenants-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/tokens-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-client-java/tokens-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-shared-java/tapis-shared-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-shared-java/tapis-shared-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-shared-java/tapis-shared-db/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-shared-java/tapis-shared-db/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-shared-java/tapis-shared-lib/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-shared-java/tapis-shared-lib/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-shared-java/tapis-shared-queue/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-shared-java/tapis-shared-queue/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-shared-java/tapis-shared-searchlib/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../../main/tapis-shared-java/tapis-shared-searchlib/src/main/resources" charset="UTF-8" />
+  </component>
+</project>

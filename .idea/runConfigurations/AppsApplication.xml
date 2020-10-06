@@ -1,0 +1,21 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="AppsApplication" type="Application" factoryName="Application">
+    <envs>
+      <env name="TAPIS_REQUEST_LOGGING_FILTER_PREFIXES" value="/v3/apps" />
+      <env name="TAPIS_TENANT_SVC_BASEURL" value="https://master.develop.tapis.io" />
+      <env name="TAPIS_SERVICE_PASSWORD" value="M2Y0YzFhOWY3MGFiYWY2NjA2MGM4ZThi" />
+      <env name="TAPIS_DB_JDBC_URL" value="jdbc:postgresql://localhost:5432/tapisappdb" />
+      <env name="TAPIS_DB_USER" value="tapis" />
+      <env name="TAPIS_DB_PASSWORD" value="password" />
+      <env name="DEVTST_TAPIS_DB_JDBC_URL" value="jdbc:postgresql://c002.rodeo.tacc.utexas.edu:32258/tapisappdb" />
+      <env name="LOCAL_TAPIS_DB_JDBC_URL" value="jdbc:postgresql://localhost:5432/tapisappdb" />
+    </envs>
+    <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
+    <option name="MAIN_CLASS_NAME" value="edu.utexas.tacc.tapis.apps.api.AppsApplication" />
+    <module name="api" />
+    <option name="VM_PARAMETERS" value="-Dp6spy.config.modulelist=" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
