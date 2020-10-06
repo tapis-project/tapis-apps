@@ -146,7 +146,7 @@ public class AppsServiceTest
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
   }
 
-  // Create a app using minimal attributes:
+  // Create an app using minimal attributes:
   //   name, appType
   @Test
   public void testCreateAppMinimal() throws Exception
@@ -156,7 +156,7 @@ public class AppsServiceTest
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
   }
 
-  // Test retrieving a app including default access method
+  // Test retrieving an app including default access method
   //   and test retrieving for specified access method.
   @Test
   public void testGetAppByName() throws Exception
@@ -170,7 +170,7 @@ public class AppsServiceTest
     checkCommonAppAttrs(app0, tmpApp);
   }
 
-  // Test updating a app
+  // Test updating an app
   @Test
   public void testUpdateApp() throws Exception
   {
@@ -230,7 +230,7 @@ public class AppsServiceTest
     Assert.assertFalse(userPerms.contains(Permission.ALL));
   }
 
-  // Check that when a app is created variable substitution is correct for:
+  // Check that when an app is created variable substitution is correct for:
   //   owner, bucketName, rootDir, ...
   // And when app is retrieved effectiveUserId is resolved
   @Test
@@ -323,7 +323,7 @@ public class AppsServiceTest
 
     // Soft delete the app
     int changeCount = svc.softDeleteAppByName(authenticatedOwnerUsr, app0.getName());
-    Assert.assertEquals(changeCount, 1, "Change count incorrect when deleting a app.");
+    Assert.assertEquals(changeCount, 1, "Change count incorrect when deleting an app.");
     App tmpApp2 = svc.getAppByName(authenticatedOwnerUsr, app0.getName());
     Assert.assertNull(tmpApp2, "App not deleted. App name: " + app0.getName());
   }
@@ -353,11 +353,11 @@ public class AppsServiceTest
     svc.createApp(authenticatedOwnerUsr, app0, scrubbedJson);
   }
 
-  // Test creating, reading and deleting user permissions for a app
+  // Test creating, reading and deleting user permissions for an app
   @Test
   public void testUserPerms() throws Exception
   {
-    // Create a app
+    // Create an app
     App app0 = apps[9];//15
     int itemId = svc.createApp(authenticatedOwnerUsr, app0, scrubbedJson);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
@@ -629,7 +629,7 @@ public class AppsServiceTest
   }
 
   /**
-   * Check common attributes after creating and retrieving a app
+   * Check common attributes after creating and retrieving an app
    * @param app0 - Test app
    * @param tmpApp - Retrieved app
    */

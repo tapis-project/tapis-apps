@@ -211,7 +211,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * Update owner of a app given app Id and new owner name
+   * Update owner of an app given app Id and new owner name
    *
    */
   @Override
@@ -249,7 +249,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * Soft delete a app record given the app name.
+   * Soft delete an app record given the app name.
    *
    */
   @Override
@@ -293,7 +293,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * Hard delete a app record given the app name.
+   * Hard delete an app record given the app name.
    */
   @Override
   public int hardDeleteApp(String tenant, String name) throws TapisException
@@ -776,7 +776,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * Persist job capabilities given an sql connection and a app
+   * Persist job capabilities given an sql connection and an app
    */
   private static void persistJobCapabilities(DSLContext db, App app, int appId)
   {
@@ -795,7 +795,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * Get capabilities for a app from an auxiliary table
+   * Get capabilities for an app from an auxiliary table
    * @param db - DB connection
    * @param appId - app
    * @return list of capabilities

@@ -28,14 +28,6 @@ import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
 import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.security.client.SKClient;
 import edu.utexas.tacc.tapis.security.client.gen.model.SkRole;
-import edu.utexas.tacc.tapis.security.client.gen.model.SkSecret;
-import edu.utexas.tacc.tapis.security.client.gen.model.SkSecretVersionMetadata;
-import edu.utexas.tacc.tapis.security.client.model.KeyType;
-import edu.utexas.tacc.tapis.security.client.model.SKSecretDeleteParms;
-import edu.utexas.tacc.tapis.security.client.model.SKSecretMetaParms;
-import edu.utexas.tacc.tapis.security.client.model.SKSecretReadParms;
-import edu.utexas.tacc.tapis.security.client.model.SKSecretWriteParms;
-import edu.utexas.tacc.tapis.security.client.model.SecretType;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
@@ -78,6 +70,7 @@ public class AppsServiceImpl implements AppsService
   private static final String HDR_TAPIS_TENANT = "X-Tapis-Tenant";
   private static final String HDR_TAPIS_USER = "X-Tapis-User";
 
+  // TODO determine if certain services need special permissions
   private static final String FILES_SERVICE = "files";
   private static final String JOBS_SERVICE = "jobs";
   private static final Set<String> SVCLIST_READ = new HashSet<>(Set.of(FILES_SERVICE, JOBS_SERVICE));
@@ -146,7 +139,7 @@ public class AppsServiceImpl implements AppsService
     // Check if app already exists
     if (dao.checkForAppByName(appTenantName, appName, true))
     {
-      throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_SYS_EXISTS", authenticatedUser, appName));
+      throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_EXISTS", authenticatedUser, appName));
     }
 
     // Make sure owner, notes and tags are all set
@@ -175,7 +168,7 @@ public class AppsServiceImpl implements AppsService
     String appsPermSpecR = getPermSpecStr(appTenantName, appName, Permission.READ);
     String appsPermSpecALL = getPermSpecStr(appTenantName, appName, Permission.ALL);
     // TODO remove filesPermSpec related code
-    String filesPermSpec = "files:" + appTenantName + ":*:" + appName;
+//    String filesPermSpec = "files:" + appTenantName + ":*:" + appName;
 
     // Get SK client now. If we cannot get this rollback not needed.
     var skClient = getSKClient(authenticatedUser);
@@ -228,8 +221,8 @@ public class AppsServiceImpl implements AppsService
       try { skClient.revokeUserPermission(appTenantName, app.getOwner(), appsPermSpecALL); }
       catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appName, "revokePermOwner", e.getMessage()));}
       // TODO remove filesPermSpec related code
-      try { skClient.revokeUserPermission(appTenantName, app.getOwner(), filesPermSpec);  }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appName, "revokePermF1", e.getMessage()));}
+//      try { skClient.revokeUserPermission(appTenantName, app.getOwner(), filesPermSpec);  }
+//      catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appName, "revokePermF1", e.getMessage()));}
       // Remove role assignments and roles
       if (!StringUtils.isBlank(roleNameR)) {
         try { skClient.revokeUserRole(appTenantName, app.getOwner(), roleNameR);  }
@@ -365,8 +358,8 @@ public class AppsServiceImpl implements AppsService
       skClient.grantUserPermission(appTenantName, newOwnerName, appsPermSpec);
       // TODO remove addition of files related permSpec
       // Give owner files service related permission for root directory
-      String filesPermSpec = "files:" + appTenantName + ":*:" + appName;
-      skClient.grantUserPermission(appTenantName, newOwnerName, filesPermSpec);
+//      String filesPermSpec = "files:" + appTenantName + ":*:" + appName;
+//      skClient.grantUserPermission(appTenantName, newOwnerName, filesPermSpec);
       // Remove permissions from old owner
       skClient.revokeUserPermission(appTenantName, oldOwnerName, appsPermSpec);
       // TODO: Notify files service of the change
@@ -377,15 +370,15 @@ public class AppsServiceImpl implements AppsService
       try { dao.updateAppOwner(authenticatedUser, appId, oldOwnerName); } catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appName, "updateOwner", e.getMessage()));}
       String appsPermSpec = getPermSpecStr(appTenantName, appName, Permission.ALL);
       // TODO remove filesPermSpec related code
-      String filesPermSpec = "files:" + appName + ":*:" + appName;
+//      String filesPermSpec = "files:" + appName + ":*:" + appName;
       try { skClient.revokeUserPermission(appTenantName, newOwnerName, appsPermSpec); }
       catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appName, "revokePermNewOwner", e.getMessage()));}
-      try { skClient.revokeUserPermission(appTenantName, newOwnerName, filesPermSpec); }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appName, "revokePermF1", e.getMessage()));}
+//      try { skClient.revokeUserPermission(appTenantName, newOwnerName, filesPermSpec); }
+//      catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appName, "revokePermF1", e.getMessage()));}
       try { skClient.grantUserPermission(appTenantName, oldOwnerName, appsPermSpec); }
       catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appName, "grantPermOldOwner", e.getMessage()));}
-      try { skClient.grantUserPermission(appTenantName, oldOwnerName, filesPermSpec); }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appName, "grantPermF1", e.getMessage()));}
+//      try { skClient.grantUserPermission(appTenantName, oldOwnerName, filesPermSpec); }
+//      catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appName, "grantPermF1", e.getMessage()));}
       throw e0;
     }
     return 1;
@@ -588,7 +581,6 @@ public class AppsServiceImpl implements AppsService
     checkAuth(authenticatedUser, op, appName, null, null, null);
 
     App result = dao.getAppByName(appTenantName, appName);
-    if (result == null) return null;
     return result;
   }
 
@@ -1117,7 +1109,7 @@ public class AppsServiceImpl implements AppsService
   {
     // Check service and user requests separately to avoid confusing a service name with a user name
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) {
-      // This is a service request. The user name will be the service name. E.g. files, jobs, etc
+      // This is a service request. The user name will be the service name. E.g. files, jobs, streams, etc
       switch (operation) {
         case read:
           if (SVCLIST_READ.contains(authenticatedUser.getName())) return;

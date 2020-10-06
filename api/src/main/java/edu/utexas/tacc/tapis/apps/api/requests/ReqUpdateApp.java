@@ -11,7 +11,7 @@ public final class ReqUpdateApp
 {
   public String description; // Full description of the app
   public Boolean enabled; // Indicates if apps is currently enabled
-  public List<Capability> jobCapabilities; // List of job related capabilities supported by the system
+  public List<Capability> jobCapabilities; // List of job related capabilities required by the app
   public String[] tags;       // List of arbitrary tags as strings
   public Object notes;      // Simple metadata as json
 }

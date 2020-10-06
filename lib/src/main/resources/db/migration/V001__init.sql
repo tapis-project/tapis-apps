@@ -107,7 +107,7 @@ COMMENT ON COLUMN app_updates.created IS 'UTC time for when record was created';
 --                               CAPABILITIES
 -- ----------------------------------------------------------------------------------------
 -- Capabilities table
--- Capabilities associated with a app
+-- Capabilities associated with an app
 -- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
 CREATE TABLE capabilities
 (

@@ -12,12 +12,11 @@ import org.apache.commons.lang3.StringUtils;
 
 /*
   TODO
- * Tapis System representing a server or collection of servers exposed through a
- * single host name or ip address. Each app is associated with a specific tenant.
- * Name of the system must be URI safe, see RFC 3986.
+ * Tapis App representing TBD
+ * Each app is associated with a specific tenant.
+ * Name of the app must be URI safe, see RFC 3986.
  *   Allowed characters: Alphanumeric  [0-9a-zA-Z] and special characters [-._~].
- * Each system has an owner, effective access user, protocol attributes
- *   and flag indicating if it is currently enabled.
+ * Each app has an owner and flag indicating if it is currently enabled.
  *
  * Tenant + name must be unique
  *
@@ -63,13 +62,11 @@ public final class App
   private String description; // Full description of the app
   private AppType appType; // Type of app, e.g. LINUX, OBJECT_STORE
   private String owner;      // User who owns the app and has full privileges
-  private String host;       // Host name or IP address
-  private boolean enabled; // Indicates if systems is currently enabled
-  private String effectiveUserId; // User to use when accessing system, may be static or dynamic
-  private List<Capability> jobCapabilities; // List of job related capabilities supported by the system
+  private boolean enabled; // Indicates if app is currently enabled
+  private List<Capability> jobCapabilities; // List of job related capabilities required by the app
   private String[] tags;       // List of arbitrary tags as strings
   private Object notes;      // Simple metadata as json
-  private String importRefId; // Optional reference ID for systems created via import
+  private String importRefId; // Optional reference ID for object created via import
   private boolean deleted;
 
   private Instant created; // UTC time for when record was created
@@ -119,7 +116,7 @@ public final class App
   }
 
   /**
-   * Copy constructor. Returns a deep copy of a App object.
+   * Copy constructor. Returns a deep copy of an App object.
    * Make defensive copies as needed. Note Credential is immutable so no need for copy.
    */
   public App(App a)
@@ -164,11 +161,11 @@ public final class App
 
   @Schema(type = "string")
   public Instant getCreated() { return created; }
-  void setCreated(Instant i) { created = i; };
+  void setCreated(Instant i) { created = i; }
 
   @Schema(type = "string")
   public Instant getUpdated() { return updated; }
-  void setUpdated(Instant i) { updated = i; };
+  void setUpdated(Instant i) { updated = i; }
 
   public String getTenant() { return tenant; }
   public App setTenant(String s) { tenant = s; return this; }
@@ -180,7 +177,7 @@ public final class App
   public App setDescription(String d) { description = d; return this; }
 
   public AppType getAppType() { return appType; }
-  void setAppType(AppType s) { appType = s; };
+  void setAppType(AppType s) { appType = s; }
 
   public String getOwner() { return owner; }
   public App setOwner(String s) { owner = s;  return this;}

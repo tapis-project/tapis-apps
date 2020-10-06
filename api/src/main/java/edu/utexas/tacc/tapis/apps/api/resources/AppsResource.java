@@ -120,15 +120,6 @@ public class AppsResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @PermitAll
-//  @Operation(
-//    description = "Health check. Lightweight non-authenticated basic liveness check. Returns full version.",
-//    tags = "general",
-//    responses = {
-//      @ApiResponse(responseCode = "200", description = "Message received.",
-//        content = @Content(schema = @Schema(implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class))),
-//      @ApiResponse(responseCode = "500", description = "Server error.")
-//    }
-//  )
   public Response healthCheck()
   {
     // Get the current check count.
@@ -177,15 +168,6 @@ public class AppsResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @PermitAll
-//  @Operation(
-//          description = "Ready check. Lightweight non-authenticated check that service is ready to accept requests.",
-//          tags = "general",
-//          responses =
-//                  {@ApiResponse(responseCode = "200", description = "Service ready.",
-//                          content = @Content(schema = @Schema(
-//                                  implementation = edu.utexas.tacc.tapis.sharedapi.responses.RespBasic.class))),
-//                          @ApiResponse(responseCode = "503", description = "Service unavailable.")}
-//  )
   public Response readyCheck()
   {
     // Get the current check count.
@@ -286,7 +268,7 @@ public class AppsResource
    */
   private Exception checkDB()
   {
-    Exception result = null;
+    Exception result;
     try { result = svcImpl.checkDB(); }
     catch (Exception e) { result = e; }
     return result;

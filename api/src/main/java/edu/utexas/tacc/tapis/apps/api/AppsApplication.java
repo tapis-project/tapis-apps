@@ -35,17 +35,6 @@ import java.net.URI;
 // container (command line) and in an IDE (eclipse).
 // NOTE: When running using tomcat this path should match the war file name (v3#apps.war) for running
 //       in IntelliJ IDE as well as from a docker container.
-// NOTE: When running using tomcat in IntelliJ IDE the live openapi docs contain /v3/apps in the URL
-//       but when running from a docker container they do not.
-// NOTE: When running using grizzly in IntelliJ IDE or from docker container the live openapi docs do not
-//       contain /v3/apps in the URL.
-// NOTE: When running from IntelliJ IDE the live openapi docs do not contain the top level paths
-//       GET /v3/apps, POST /v3/apps, GET /v3/apps/{sysName} and POST /v3/apps/{sysName}
-//       but the file on disk (tapis-appsapi/src/main/resources/openapi.json) does contains the paths.
-// NOTE: All the paths in the openapi file on disk (tapis-appsapi/src/main/resources/openapi.json) are
-//       missing the prefix /v3/apps
-// NOTE: ApplicationPath changed from "v3/apps" to "/" since each resource class includes "/v3/apps" in the
-//       path set at the class level. See AppResource.java, PermsResource.java, etc.
 @ApplicationPath("/")
 public class AppsApplication extends ResourceConfig
 {
@@ -95,10 +84,9 @@ public class AppsApplication extends ResourceConfig
 
     // Perform remaining init steps in try block so we can print a fatal error message if something goes wrong.
     try {
-
       // Initialize tenant manager singleton. This can be used by all subsequent application code, including filters.
       // The base url of the tenants service is a required input parameter.
-      // Retrieve the tenant list from the tenant service now to fail fast if we can't access the list.
+      // Retrieve the tenant list from the tenant service now to fail fast if we cannot access the list.
       String url = RuntimeParameters.getInstance().getTenantsSvcURL();
       TenantManager.getInstance(url).getTenants();
 
@@ -116,7 +104,7 @@ public class AppsApplication extends ResourceConfig
 
     } catch (Exception e) {
       // This is a fatal error
-      System.out.println("**** FAILURE TO INITIALIZE: tapis-appsapi ****");
+      System.out.println("**** FAILURE TO INITIALIZE: Tapis Applications Service ****");
       e.printStackTrace();
       throw e;
     }

@@ -13,6 +13,10 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="tapis-shared-lib" />
+    <orderEntry type="module" module-name="tapis-shared-searchlib" />
+    <orderEntry type="module" module-name="tapis-shared-api" />
+    <orderEntry type="module" module-name="tapis-shared-db" />
+    <orderEntry type="module" module-name="tapis-shared-lib" />
     <orderEntry type="library" name="Maven: ch.qos.logback:logback-classic:1.2.3" level="project" />
     <orderEntry type="library" name="Maven: ch.qos.logback:logback-core:1.2.3" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.25" level="project" />

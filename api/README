@@ -4,8 +4,8 @@ TapisV3 Apps Web Application Notes
 ------------
 Introduction
 ------------
-This is the TapisV3 Apps web application front end. It was created by copying files from
-the TapisV3 Systems application.
+This is the TapisV3 Apps web application front end.
+It was initially created by copying files from the TapisV3 Systems application (repo tapis-systems).
 
 It integrates the following facilities:
     1. JAX-RS to implement REST endpoints.

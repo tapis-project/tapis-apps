@@ -20,7 +20,7 @@ public final class ReqCreateApp
   public AppType appType; // Type of app, e.g.
   public String owner = DEFAULT_OWNER;      // User who owns the app and has full privileges
   public boolean enabled = DEFAULT_ENABLED; // Indicates if the app is currently enabled
-  public List<Capability> jobCapabilities; // List of job related capabilities supported by the system
+  public List<Capability> jobCapabilities; // List of job related capabilities required by the app
   public String[] tags = DEFAULT_TAGS;       // List of arbitrary tags as strings
   public Object notes = DEFAULT_NOTES;      // Simple metadata as json
   public String refImportId; // Optional reference ID for an app created via import

@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/api/api.iml" filepath="$PROJECT_DIR$/api/api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../main/tapis-client-java/apps-client/apps-client.iml" filepath="$PROJECT_DIR$/../../main/tapis-client-java/apps-client/apps-client.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../main/tapis-client-java/auth-client/auth-client.iml" filepath="$PROJECT_DIR$/../../main/tapis-client-java/auth-client/auth-client.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../main/tapis-client-java/files-client/files-client.iml" filepath="$PROJECT_DIR$/../../main/tapis-client-java/files-client/files-client.iml" />
       <module fileurl="file://$PROJECT_DIR$/lib/lib.iml" filepath="$PROJECT_DIR$/lib/lib.iml" />

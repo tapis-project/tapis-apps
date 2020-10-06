@@ -12,6 +12,7 @@
         <module name="lib" />
         <module name="tapis-shared-api" />
         <module name="meta-client" />
+        <module name="apps-client" />
         <module name="tapis-shared-lib" />
         <module name="tokens-client" />
         <module name="auth-client" />
@@ -25,6 +26,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="api" target="1.13" />
+      <module name="apps-client" target="1.13" />
       <module name="auth-client" target="1.13" />
       <module name="files-client" target="1.13" />
       <module name="lib" target="1.13" />

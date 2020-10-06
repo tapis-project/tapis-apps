@@ -11,7 +11,6 @@ import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PATCH;
@@ -535,7 +534,7 @@ public class AppResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getApps(@QueryParam("search") String searchStr,
-                             @Context SecurityContext securityContext)
+                          @Context SecurityContext securityContext)
   {
     String opName = "getApps";
     // Trace this request.
