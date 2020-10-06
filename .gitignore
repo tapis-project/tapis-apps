@@ -37,8 +37,9 @@ target
 testreports
 test-output
 
-# Keep IntelliJ files to help troubleshoot any issues, at least for a while.
+# Keep most IntelliJ files to help troubleshoot any issues, at least for a while.
 # Intellij metadata files
+.idea/libraries/
 # .idea/*
 # *.iml
 # *.ids
