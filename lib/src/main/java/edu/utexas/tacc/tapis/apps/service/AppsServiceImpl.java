@@ -188,17 +188,6 @@ public class AppsServiceImpl implements AppsService
 //      skClient.deleteRoleByName(appTenantName, "apps", roleNameR);
 //      skClient.deleteRoleByName(appTenantName, app.getOwner(), roleNameR);
       skClient.createRole(appTenantName, roleNameR, "Role allowing READ for app " + appName);
-      // TODO REMOVE DEBUG
-      _log.error("authUser.user=" + authenticatedUser.getName());
-      _log.error("authUser.tenant=" + authenticatedUser.getTenantId());
-      _log.error("authUser.OboUser=" + authenticatedUser.getOboUser());
-      _log.error("authUser.OboTenant=" + authenticatedUser.getOboTenantId());
-      _log.error("appTenantName=" + appTenantName);
-      _log.error("app.getOwner=" + app.getOwner());
-      _log.error("roleNameR="+ roleNameR);
-      _log.error("appsPermSpecR=" + appsPermSpecR);
-      _log.error("authenticatedUser.getJwt=" + authenticatedUser.getJwt());
-      _log.error("serviceJwt.getAccessJWT=" + serviceJWT.getAccessJWT());
       skClient.addRolePermission(appTenantName, roleNameR, appsPermSpecR);
 
       // ------------------- Add permissions and role assignments -----------------------------
