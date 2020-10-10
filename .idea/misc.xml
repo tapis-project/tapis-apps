@@ -6,8 +6,16 @@
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/../../main/tapis-client-java/pom.xml" />
         <option value="$PROJECT_DIR$/../../main/tapis-shared-java/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-client-java/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-shared-java/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-shared-java/release-pom.xml" />
       </list>
     </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/../tapis-client-java/shared/pom.xml" />
+      </set>
+    </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_13" project-jdk-name="13" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_13" default="false" project-jdk-name="13" project-jdk-type="JavaSDK" />
 </project>

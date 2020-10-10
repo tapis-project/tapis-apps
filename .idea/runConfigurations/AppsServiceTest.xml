@@ -23,7 +23,7 @@
     <envs>
       <env name="TAPIS_REQUEST_LOGGING_FILTER_PREFIXES" value="/v3/apps" />
       <env name="TAPIS_TENANT_SVC_BASEURL" value="https://master.develop.tapis.io" />
-      <env name="TAPIS_SERVICE_PASSWORD" value="M2Y0YzFhOWY3MGFiYWY2NjA2MGM4ZThi" />
+      <env name="TAPIS_SERVICE_PASSWORD" value="rVlzNTuYg2R0p2PKV2HRFA" />
       <env name="TAPIS_DB_JDBC_URL" value="jdbc:postgresql://localhost:5432/tapisappdb" />
       <env name="TAPIS_DB_USER" value="tapis" />
       <env name="TAPIS_DB_PASSWORD" value="password" />

@@ -1,10 +1,10 @@
 -- Initial DB schema creation for Tapis Apps Service
 -- postgres commands to create all tables, indices and other database artifacts required.
 -- Prerequisites:
--- Create DB named tapisappdb and user named tapis
+-- Create DB named tapisappdb and user named tapis_app
 --   CREATE DATABASE tapisappdb ENCODING='UTF8' LC_COLLATE='en_US.utf8' LC_CTYPE='en_US.utf8';
---   CREATE USER tapis WITH ENCRYPTED PASSWORD '<password>'
---   GRANT ALL PRIVILEGES ON DATABASE tapisappdb TO tapis;
+--   CREATE USER tapis_app WITH ENCRYPTED PASSWORD '<password>'
+--   GRANT ALL PRIVILEGES ON DATABASE tapisappdb TO tapis_app;
 -- Fast way to check for table. Might use this at startup during an init phase.
 --   SELECT to_regclass('tapis_app.apps');
 --
@@ -25,8 +25,8 @@
 --     Possibly another option would be to create a custom mapper to be used by Record.into()
 --
 -- Create the schema and set the search path
-CREATE SCHEMA IF NOT EXISTS tapis_app AUTHORIZATION tapis;
-ALTER ROLE tapis SET search_path = 'tapis_app';
+CREATE SCHEMA IF NOT EXISTS tapis_app AUTHORIZATION tapis_app;
+ALTER ROLE tapis_app SET search_path = 'tapis_app';
 SET search_path TO tapis_app;
 -- SET search_path TO public;
 
