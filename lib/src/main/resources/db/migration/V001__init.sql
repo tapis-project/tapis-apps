@@ -64,7 +64,7 @@ CREATE TABLE apps
   updated    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
   UNIQUE (tenant,name)
 );
-ALTER TABLE apps OWNER TO tapis;
+ALTER TABLE apps OWNER TO tapis_app;
 CREATE INDEX app_tenant_name_idx ON apps (tenant, name);
 COMMENT ON COLUMN apps.id IS 'App id';
 COMMENT ON COLUMN apps.tenant IS 'Tenant name associated with app';
@@ -93,7 +93,7 @@ CREATE TABLE app_updates
     upd_text VARCHAR,
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
 );
-ALTER TABLE app_updates OWNER TO tapis;
+ALTER TABLE app_updates OWNER TO tapis_app;
 COMMENT ON COLUMN app_updates.id IS 'App update request id';
 COMMENT ON COLUMN app_updates.app_id IS 'Id of app being updated';
 COMMENT ON COLUMN app_updates.user_name IS 'Name of user who requested the update';
@@ -120,7 +120,7 @@ CREATE TABLE capabilities
     updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     UNIQUE (app_id, category, name)
 );
-ALTER TABLE capabilities OWNER TO tapis;
+ALTER TABLE capabilities OWNER TO tapis_app;
 COMMENT ON COLUMN capabilities.id IS 'Capability id';
 COMMENT ON COLUMN capabilities.app_id IS 'Id of app supporting the capability';
 COMMENT ON COLUMN capabilities.category IS 'Category for grouping of capabilities';
