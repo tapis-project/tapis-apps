@@ -17,7 +17,7 @@
   <!-- DB connect properties for jOOQ and Flyway -->
   <properties>
     <db.url>jdbc:postgresql://localhost:5432/tapisappdb</db.url>
-    <db.username>tapis</db.username>
+    <db.username>tapis_app</db.username>
     <db.password>password</db.password>
     <db.schema>tapis_app</db.schema>
     <!-- If necessary set a specific version of the shared code. Parent pom file from tapis-bom has a range. -->
