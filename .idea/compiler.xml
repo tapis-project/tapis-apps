@@ -39,7 +39,6 @@
       <module name="tapis-shared-api" target="1.13" />
       <module name="tapis-shared-db" target="1.13" />
       <module name="tapis-shared-java" target="1.5" />
-      <module name="tapis-shared-java (1)" target="1.5" />
       <module name="tapis-shared-java (2)" target="1.5" />
       <module name="tapis-shared-lib" target="1.13" />
       <module name="tapis-shared-queue" target="1.13" />

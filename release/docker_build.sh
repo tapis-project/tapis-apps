@@ -1,12 +1,15 @@
 #!/bin/sh
 # Build and optionally push docker image for Applications service
 # This is the job run in Jenkins as part of job Java-MultiService-Build-Publish-Deploy-<ENV>
+#   and job Tapis jobs->DEV->release-apps-start
 # Environment name must be passed in as first argument
 # Existing docker login is used for push
 # Docker image is created with a unique tag: tapis/apps-<ENV>-<VER>-<COMMIT>-<YYYYmmddHHMM>
 #   - other tags are created and updated as appropriate
 #
 # REPO env var may be set to push to $REPO/apps. Default is tapis/apps
+# Env var TAPIS_DEPLOY_MANUAL may be set to "true" to indicate it is a manual deployment and the
+#   image should also be tagged with $ENV
 
 PrgName=$(basename "$0")
 
@@ -61,7 +64,8 @@ VER=$(cat classes/tapis.version)
 GIT_BRANCH_LBL=$(awk '{print $1}' classes/git.info)
 GIT_COMMIT_LBL=$(awk '{print $2}' classes/git.info)
 TAG_UNIQ="${REPO}/apps:${ENV}-${VER}-$(date +%Y%m%d%H%M)-${GIT_COMMIT}"
-TAG_ENV_VER="${REPO}/apps:${ENV}-${VER}"
+TAG_RELEASE_CANDIDATE="${REPO}/apps:${VER}-rc"
+# TAG_ENV_VER="${REPO}/apps:${ENV}-${VER}"
 TAG_ENV="${REPO}/apps:${ENV}"
 TAG_LATEST="${REPO}/apps:latest"
 
@@ -82,10 +86,10 @@ docker build -f Dockerfile \
     -t "${TAG_UNIQ}" .
 
 # Create other tags for remote repo
-echo "Creating ENV image tag: $TAG_ENV"
-docker tag "$TAG_UNIQ" "$TAG_ENV"
-echo "Creating ENV_VER image tag: $TAG_ENV_VER"
-docker tag "$TAG_UNIQ" "$TAG_ENV_VER"
+# echo "Creating ENV_VER image tag: $TAG_ENV_VER"
+# docker tag "$TAG_UNIQ" "$TAG_ENV_VER"
+echo "Creating RELEASE_CANDIDATE image tag: $TAG_RELEASE_CANDIDATE"
+docker tag "$TAG_UNIQ" "$TAG_RELEASE_CANDIDATE"
 
 # Push to remote repo
 if [ "x$2" = "x-push" ]; then
@@ -96,8 +100,13 @@ if [ "x$2" = "x-push" ]; then
   echo "Pushing images to docker hub."
   # NOTE: Use current login. Jenkins job does login
   docker push "$TAG_UNIQ"
-  docker push "$TAG_ENV_VER"
-  docker push "$TAG_ENV"
+  docker push "$TAG_RELEASE_CANDIDATE"
+#  docker push "$TAG_ENV_VER"
+  if [ "x$TAPIS_DEPLOY_MANUAL" = "xtrue" ]; then
+    echo "Creating ENV image tag: $TAG_ENV"
+    docker tag "$TAG_UNIQ" "$TAG_ENV"
+    docker push "$TAG_ENV"
+  fi
   if [ "$ENV" = "prod" ]; then
     docker push "$TAG_LATEST"
   fi
