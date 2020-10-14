@@ -5,7 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34efd738-2b9a-4e43-b14d-018fde0be61f" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/api.iml" beforeDir="false" afterPath="$PROJECT_DIR$/api/api.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/lib.iml" beforeDir="false" afterPath="$PROJECT_DIR$/lib/lib.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tapis-client-java/apps-client/AppsAPI.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-client-java/apps-client/AppsAPI.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tapis-client-java/systems-client/SystemsAPI.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-client-java/systems-client/SystemsAPI.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,19 +46,6 @@
     <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
   </component>
   <component name="RunManager" selected="Application.AppsApplication">
-    <configuration default="true" type="ArquillianTestNG" factoryName="" nameIsGenerated="true">
-      <option name="arquillianRunConfiguration">
-        <value>
-          <option name="containerStateName" value="" />
-        </value>
-      </option>
-      <option name="TEST_OBJECT" value="CLASS" />
-      <properties />
-      <listeners />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="SearchDaoTest.testValidCases" type="TestNG" temporary="true" nameIsGenerated="true">
       <module name="lib" />
       <extension name="coverage">
@@ -126,9 +121,10 @@
       <screen x="67" y="27" width="1853" height="1052" />
     </state>
     <state x="534" y="219" width="828" height="515" key="NewModule_or_Project.wizard/67.27.1853.1052@67.27.1853.1052" timestamp="1602341314245" />
-    <state x="438" y="38" width="1024" height="853" key="SettingsEditor" timestamp="1602361487134">
-      <screen x="67" y="27" width="1853" height="1052" />
+    <state x="2250" y="38" width="1024" height="845" key="SettingsEditor" timestamp="1602596339693">
+      <screen x="1879" y="27" width="1853" height="1053" />
     </state>
+    <state x="2250" y="38" width="1024" height="845" key="SettingsEditor/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@1879.27.1853.1053" timestamp="1602596339693" />
     <state x="438" y="38" width="1024" height="853" key="SettingsEditor/67.27.1853.1052@67.27.1853.1052" timestamp="1602361487134" />
     <state x="615" y="229" width="672" height="678" key="search.everywhere.popup" timestamp="1602376819639">
       <screen x="67" y="27" width="1853" height="1052" />

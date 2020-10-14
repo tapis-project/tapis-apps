@@ -8,7 +8,6 @@
         <option value="$PROJECT_DIR$/../../main/tapis-shared-java/pom.xml" />
         <option value="$PROJECT_DIR$/../tapis-client-java/pom.xml" />
         <option value="$PROJECT_DIR$/../tapis-shared-java/pom.xml" />
-        <option value="$PROJECT_DIR$/../tapis-shared-java/release-pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
