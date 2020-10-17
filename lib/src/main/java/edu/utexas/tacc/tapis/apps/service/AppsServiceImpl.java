@@ -58,6 +58,10 @@ public class AppsServiceImpl implements AppsService
   public static final String APPS_ADMIN_DESCRIPTION = "Administrative role for Apps service";
   public static final String APPS_DEFAULT_MASTER_TENANT = "master";
 
+  // TODO: temporary code to just for compilation in associate site environment.
+  // TODO: FIX-FOR-ASSOCIATE-SITES
+  public static final String DEFAULT_SITE = "tacc";
+
   // Tracing.
   private static final Logger _log = LoggerFactory.getLogger(AppsServiceImpl.class);
 
@@ -475,9 +479,10 @@ public class AppsServiceImpl implements AppsService
     String svcMasterTenant = RuntimeParameters.getInstance().getServiceMasterTenant();
     if (StringUtils.isBlank(svcMasterTenant)) svcMasterTenant = APPS_DEFAULT_MASTER_TENANT;
     // Create user for SK client
+    // TODO: FIX-FOR-ASSOCIATE-SITES
     AuthenticatedUser svcUser =
         new AuthenticatedUser(SERVICE_NAME_APPS, svcMasterTenant, TapisThreadContext.AccountType.service.name(),
-                              null, SERVICE_NAME_APPS, svcMasterTenant, null, null);
+                              null, SERVICE_NAME_APPS, svcMasterTenant, null, null, null);
     // Use SK client to check for admin role and create it if necessary
     var skClient = getSKClient(svcUser);
     // Check for admin role
@@ -501,7 +506,7 @@ public class AppsServiceImpl implements AppsService
     {
       _log.info("Apps administrative role found. Role name: " + APPS_ADMIN_ROLE);
     }
-    // Make sure DB is present and updated to latest version
+    // Make sure DB is present and updated to latest version using flyway
     dao.migrateDB();
   }
 
@@ -971,7 +976,7 @@ public class AppsServiceImpl implements AppsService
     skURL = skURL.substring(0, skURL.indexOf("/v3") + 3);
 
     skClient.setBasePath(skURL);
-    skClient.addDefaultHeader(HDR_TAPIS_TOKEN, serviceJWT.getAccessJWT());
+    skClient.addDefaultHeader(HDR_TAPIS_TOKEN, serviceJWT.getAccessJWT(DEFAULT_SITE));
 
     // For service jwt pass along oboTenant and oboUser in OBO headers
     // For user jwt use authenticated user name and tenant in OBO headers

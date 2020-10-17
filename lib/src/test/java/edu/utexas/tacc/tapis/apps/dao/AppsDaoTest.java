@@ -39,7 +39,7 @@ public class AppsDaoTest
     System.out.println("Executing BeforeSuite setup method: " + AppsDaoTest.class.getSimpleName());
     dao = new AppsDaoImpl();
     // Initialize authenticated user
-    authenticatedUser = new AuthenticatedUser(apiUser, tenantName, TapisThreadContext.AccountType.user.name(), null, apiUser, tenantName, null, null);
+    authenticatedUser = new AuthenticatedUser(apiUser, tenantName, TapisThreadContext.AccountType.user.name(), null, apiUser, tenantName, null, null, null);
     // Cleanup anything leftover from previous failed run
     teardown();
   }

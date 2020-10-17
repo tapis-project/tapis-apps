@@ -10,6 +10,7 @@ import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.tenants.client.gen.model.Tenant;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.Factory;
+import java.util.Arrays;
 
 import static edu.utexas.tacc.tapis.apps.service.AppsServiceImpl.APPS_DEFAULT_MASTER_TENANT;
 import static edu.utexas.tacc.tapis.shared.TapisConstants.SERVICE_NAME_APPS;
@@ -33,6 +34,8 @@ public class AppsServiceJWTFactory implements Factory<ServiceJWT>
       if (StringUtils.isBlank(svcMasterTenant)) svcMasterTenant = APPS_DEFAULT_MASTER_TENANT;
       var svcJWTParms = new ServiceJWTParms();
       svcJWTParms.setTenant(svcMasterTenant);
+      // TODO: FIX-FOR-ASSOCIATE-SITES
+      svcJWTParms.setTargetSites(Arrays.asList("tacc"));
       // Use TenantManager to get tenant info. Needed for tokens base URLs. E.g. https://dev.develop.tapis.io
       Tenant tenant = TenantManager.getInstance().getTenant(svcMasterTenant);
       svcJWTParms.setServiceName(SERVICE_NAME_APPS);
