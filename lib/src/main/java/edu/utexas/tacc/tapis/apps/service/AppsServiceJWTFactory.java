@@ -29,13 +29,15 @@ public class AppsServiceJWTFactory implements Factory<ServiceJWT>
     try {
       // TODO: remove hard coded values
       // TODO/TBD: Get master tenant from tenant service or from env? Keep hard coded default?
+      RuntimeParameters runParms = RuntimeParameters.getInstance();
       // Get service master tenant from the env
-      svcMasterTenant = RuntimeParameters.getInstance().getServiceMasterTenant();
+      svcMasterTenant = runParms.getServiceMasterTenant();
       if (StringUtils.isBlank(svcMasterTenant)) svcMasterTenant = APPS_DEFAULT_MASTER_TENANT;
       var svcJWTParms = new ServiceJWTParms();
       svcJWTParms.setTenant(svcMasterTenant);
       // TODO: FIX-FOR-ASSOCIATE-SITES
-      svcJWTParms.setTargetSites(Arrays.asList("tacc"));
+      // TODO: How to get full list of sites?
+      svcJWTParms.setTargetSites(Arrays.asList(runParms.getSiteId()));
       // Use TenantManager to get tenant info. Needed for tokens base URLs. E.g. https://dev.develop.tapis.io
       Tenant tenant = TenantManager.getInstance().getTenant(svcMasterTenant);
       svcJWTParms.setServiceName(SERVICE_NAME_APPS);

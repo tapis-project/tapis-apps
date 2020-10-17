@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
+import edu.utexas.tacc.tapis.apps.api.AppsApplication;
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
 import edu.utexas.tacc.tapis.shared.utils.CallSiteToggle;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
@@ -255,10 +256,7 @@ public class AppsResource
   {
     Exception result = null;
     try {
-      // TODO: FIX-FOR-ASSOCIATE-SITES
-      // Replace hardcoded site value.
-      String site = "tacc";
-      String jwt = serviceJWT.getAccessJWT(site);
+      String jwt = serviceJWT.getAccessJWT(AppsApplication.getSiteId());
       if (StringUtils.isBlank(jwt)) result = new TapisClientException(LibUtils.getMsg("APPLIB_CHECKJWT_EMPTY"));
     }
     catch (Exception e) { result = e; }

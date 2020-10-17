@@ -3,7 +3,9 @@ package edu.utexas.tacc.tapis.apps.api;
 import javax.ws.rs.ApplicationPath;
 
 import edu.utexas.tacc.tapis.security.client.SKClient;
+import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
+import edu.utexas.tacc.tapis.sharedapi.jaxrs.filters.JWTValidateRequestFilter;
 import edu.utexas.tacc.tapis.sharedapi.providers.TapisExceptionMapper;
 import edu.utexas.tacc.tapis.sharedapi.providers.ValidationExceptionMapper;
 import edu.utexas.tacc.tapis.sharedapi.security.ServiceJWT;
@@ -38,6 +40,10 @@ import java.net.URI;
 @ApplicationPath("/")
 public class AppsApplication extends ResourceConfig
 {
+  // We must be running on a specific site and this will never change
+  private static String siteId;
+  public static String getSiteId() {return siteId;}
+
   // For all logging use println or similar so we do not have a dependency on a logging subsystem.
   public AppsApplication()
   {
@@ -84,6 +90,17 @@ public class AppsApplication extends ResourceConfig
 
     // Perform remaining init steps in try block so we can print a fatal error message if something goes wrong.
     try {
+      // Get runtime parameters
+      RuntimeParameters runParms = RuntimeParameters.getInstance();
+
+      // Set site on which we are running. This is a required runtime parameter.
+      siteId = runParms.getSiteId();
+
+      // ---------------- Initialize Security Filter -------
+      // Required to process any requests.
+      JWTValidateRequestFilter.setService(TapisConstants.SERVICE_NAME_SYSTEMS);
+      JWTValidateRequestFilter.setSiteId(siteId);
+
       // Initialize tenant manager singleton. This can be used by all subsequent application code, including filters.
       // The base url of the tenants service is a required input parameter.
       // Retrieve the tenant list from the tenant service now to fail fast if we cannot access the list.
@@ -123,7 +140,7 @@ public class AppsApplication extends ResourceConfig
     // Set base protocol and port. If mainly running in k8s this may not need to be configurable.
     final URI BASE_URI = URI.create("http://0.0.0.0:" + servicePort + "/");
     // Initialize the application container
-    ResourceConfig config = new AppsApplication();
+    AppsApplication config = new AppsApplication();
     // Initialize the service
     // In order to instantiate our service class using HK2 we need to create an application handler
     //   which allows us to get an injection manager which is used to get a locator.
@@ -134,7 +151,7 @@ public class AppsApplication extends ResourceConfig
     InjectionManager im = handler.getInjectionManager();
     ServiceLocator locator = im.getInstance(ServiceLocator.class);
     AppsServiceImpl svcImpl = locator.getService(AppsServiceImpl.class);
-    svcImpl.initService();
+    svcImpl.initService(AppsApplication.getSiteId());
     // Create and start the server
     final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config, false);
     server.start();
