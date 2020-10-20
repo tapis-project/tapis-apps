@@ -19,7 +19,11 @@ public enum AppTypeType implements EnumType {
 
     BATCH("BATCH"),
 
-    INTERACTIVE("INTERACTIVE");
+    DIRECT("DIRECT"),
+
+    BATCH_INTERACTIVE("BATCH_INTERACTIVE"),
+
+    DIRECT_INTERACTIVE("DIRECT_INTERACTIVE");
 
     private final String literal;
 

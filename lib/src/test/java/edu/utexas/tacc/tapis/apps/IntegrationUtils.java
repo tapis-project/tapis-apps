@@ -20,6 +20,7 @@ public final class IntegrationUtils
   public static final String ownerUser2 = "owner2";
   public static final String apiUser = "testApiUser";
   public static final String appNamePrefix = "TestApp";
+  public static final String appVersion = "0.0.1";
   public static final Gson gson =  TapisGsonUtils.getGson();
   public static final String[] tags = {"value1", "value2", "a",
     "a long tag with spaces and numbers (1 3 2) and special characters [_ $ - & * % @ + = ! ^ ? < > , . ( ) { } / \\ | ]. Backslashes must be escaped."};
@@ -50,7 +51,7 @@ public final class IntegrationUtils
       String suffix = key + "_" + String.format("%03d", i+1);
       String name = appNamePrefix + "_" + suffix;
       // Constructor initializes all attributes except for JobCapabilities
-      apps[i] = new App(-1, tenantName, name, "description "+suffix, App.AppType.BATCH, ownerUser, true,
+      apps[i] = new App(-1, tenantName, name, appVersion, "description "+suffix, App.AppType.BATCH, ownerUser, true,
                             tags, notes, null, false, null, null);
       apps[i].setJobCapabilities(capList);
     }

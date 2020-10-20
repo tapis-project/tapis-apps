@@ -24,31 +24,31 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppUpdatesRecord extends UpdatableRecordImpl<AppUpdatesRecord> implements Record8<Integer, Integer, String, String, AppOperation, JsonElement, String, LocalDateTime> {
 
-    private static final long serialVersionUID = 40491253;
+    private static final long serialVersionUID = -2147433929;
 
     /**
-     * Setter for <code>tapis_app.app_updates.id</code>. App update request id
+     * Setter for <code>tapis_app.app_updates.id</code>. Application update request id
      */
     public void setId(Integer value) {
         set(0, value);
     }
 
     /**
-     * Getter for <code>tapis_app.app_updates.id</code>. App update request id
+     * Getter for <code>tapis_app.app_updates.id</code>. Application update request id
      */
     public Integer getId() {
         return (Integer) get(0);
     }
 
     /**
-     * Setter for <code>tapis_app.app_updates.app_id</code>. Id of app being updated
+     * Setter for <code>tapis_app.app_updates.app_id</code>. Id of application being updated
      */
     public void setAppId(Integer value) {
         set(1, value);
     }
 
     /**
-     * Getter for <code>tapis_app.app_updates.app_id</code>. Id of app being updated
+     * Getter for <code>tapis_app.app_updates.app_id</code>. Id of application being updated
      */
     public Integer getAppId() {
         return (Integer) get(1);

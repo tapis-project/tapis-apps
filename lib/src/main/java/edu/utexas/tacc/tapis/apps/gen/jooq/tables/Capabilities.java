@@ -34,7 +34,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Capabilities extends TableImpl<CapabilitiesRecord> {
 
-    private static final long serialVersionUID = 1625316155;
+    private static final long serialVersionUID = 709293147;
 
     /**
      * The reference instance of <code>tapis_app.capabilities</code>
@@ -55,9 +55,9 @@ public class Capabilities extends TableImpl<CapabilitiesRecord> {
     public final TableField<CapabilitiesRecord, Integer> ID = createField(DSL.name("id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('capabilities_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Capability id");
 
     /**
-     * The column <code>tapis_app.capabilities.app_id</code>. Id of app supporting the capability
+     * The column <code>tapis_app.capabilities.app_id</code>. Id of application supporting the capability
      */
-    public final TableField<CapabilitiesRecord, Integer> APP_ID = createField(DSL.name("app_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('capabilities_app_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Id of app supporting the capability");
+    public final TableField<CapabilitiesRecord, Integer> APP_ID = createField(DSL.name("app_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('capabilities_app_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Id of application supporting the capability");
 
     /**
      * The column <code>tapis_app.capabilities.category</code>. Category for grouping of capabilities

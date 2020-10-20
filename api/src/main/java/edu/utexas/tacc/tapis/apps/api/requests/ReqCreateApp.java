@@ -16,6 +16,7 @@ import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_TAGS;
 public final class ReqCreateApp
 {
   public String name;       // Name of the app
+  public String version;    // Version of the app
   public String description; // Full description of the app
   public AppType appType; // Type of app, e.g.
   public String owner = DEFAULT_OWNER;      // User who owns the app and has full privileges

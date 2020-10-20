@@ -88,6 +88,7 @@ public class AppResource
 
   // Field names used in Json
   private static final String NAME_FIELD = "name";
+  private static final String VERSION_FIELD = "version";
   private static final String NOTES_FIELD = "notes";
   private static final String APP_TYPE_FIELD = "appType";
   private static final String SEARCH_FIELD = "search";
@@ -788,7 +789,7 @@ public class AppResource
    */
   private static App createAppFromRequest(ReqCreateApp req)
   {
-    var app = new App(-1, null, req.name, req.description, req.appType, req.owner, req.enabled,
+    var app = new App(-1, null, req.name, req.version, req.description, req.appType, req.owner, req.enabled,
                        req.tags, req.notes, req.refImportId, false, null, null);
     app.setJobCapabilities(req.jobCapabilities);
     return app;
@@ -799,7 +800,7 @@ public class AppResource
    */
   private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String appName)
   {
-    PatchApp patchApp = new PatchApp(req.description, req.enabled, req.jobCapabilities, req.tags, req.notes);
+    PatchApp patchApp = new PatchApp(req.version, req.description, req.enabled, req.jobCapabilities, req.tags, req.notes);
     // Update tenant name and app name
     patchApp.setTenant(tenantName);
     patchApp.setName(appName);
@@ -825,6 +826,11 @@ public class AppResource
     if (StringUtils.isBlank(app1.getName()))
     {
       msg = ApiUtils.getMsg("APPAPI_CREATE_MISSING_ATTR", NAME_FIELD);
+      errMessages.add(msg);
+    }
+    if (StringUtils.isBlank(app1.getVersion()))
+    {
+      msg = ApiUtils.getMsg("APPAPI_CREATE_MISSING_ATTR", VERSION_FIELD);
       errMessages.add(msg);
     }
     if (app1.getAppType() == null)

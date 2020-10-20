@@ -23,7 +23,7 @@ import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row13;
+import org.jooq.Row14;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -39,7 +39,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Apps extends TableImpl<AppsRecord> {
 
-    private static final long serialVersionUID = 1315346002;
+    private static final long serialVersionUID = -566831140;
 
     /**
      * The reference instance of <code>tapis_app.apps</code>
@@ -55,39 +55,44 @@ public class Apps extends TableImpl<AppsRecord> {
     }
 
     /**
-     * The column <code>tapis_app.apps.id</code>. App id
+     * The column <code>tapis_app.apps.id</code>. Application id
      */
-    public final TableField<AppsRecord, Integer> ID = createField(DSL.name("id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('apps_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "App id");
+    public final TableField<AppsRecord, Integer> ID = createField(DSL.name("id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('apps_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Application id");
 
     /**
-     * The column <code>tapis_app.apps.tenant</code>. Tenant name associated with app
+     * The column <code>tapis_app.apps.tenant</code>. Tenant name associated with the application
      */
-    public final TableField<AppsRecord, String> TENANT = createField(DSL.name("tenant"), org.jooq.impl.SQLDataType.VARCHAR(24).nullable(false), this, "Tenant name associated with app");
+    public final TableField<AppsRecord, String> TENANT = createField(DSL.name("tenant"), org.jooq.impl.SQLDataType.VARCHAR(24).nullable(false), this, "Tenant name associated with the application");
 
     /**
-     * The column <code>tapis_app.apps.name</code>. Unique name for the app
+     * The column <code>tapis_app.apps.name</code>. Unique name for the application
      */
-    public final TableField<AppsRecord, String> NAME = createField(DSL.name("name"), org.jooq.impl.SQLDataType.VARCHAR(256).nullable(false), this, "Unique name for the app");
+    public final TableField<AppsRecord, String> NAME = createField(DSL.name("name"), org.jooq.impl.SQLDataType.VARCHAR(256).nullable(false), this, "Unique name for the application");
 
     /**
-     * The column <code>tapis_app.apps.description</code>. App description
+     * The column <code>tapis_app.apps.version</code>. Application version
      */
-    public final TableField<AppsRecord, String> DESCRIPTION = createField(DSL.name("description"), org.jooq.impl.SQLDataType.VARCHAR(2048), this, "App description");
+    public final TableField<AppsRecord, String> VERSION = createField(DSL.name("version"), org.jooq.impl.SQLDataType.VARCHAR(64).nullable(false), this, "Application version");
 
     /**
-     * The column <code>tapis_app.apps.app_type</code>. Type of app
+     * The column <code>tapis_app.apps.description</code>. Application description
      */
-    public final TableField<AppsRecord, AppType> APP_TYPE = createField(DSL.name("app_type"), org.jooq.impl.SQLDataType.VARCHAR.nullable(false).asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.AppTypeType.class), this, "Type of app", new org.jooq.impl.EnumConverter<edu.utexas.tacc.tapis.apps.gen.jooq.enums.AppTypeType, edu.utexas.tacc.tapis.apps.model.App.AppType>(edu.utexas.tacc.tapis.apps.gen.jooq.enums.AppTypeType.class, edu.utexas.tacc.tapis.apps.model.App.AppType.class));
+    public final TableField<AppsRecord, String> DESCRIPTION = createField(DSL.name("description"), org.jooq.impl.SQLDataType.VARCHAR(2048), this, "Application description");
 
     /**
-     * The column <code>tapis_app.apps.owner</code>. User name of app owner
+     * The column <code>tapis_app.apps.app_type</code>. Type of application
      */
-    public final TableField<AppsRecord, String> OWNER = createField(DSL.name("owner"), org.jooq.impl.SQLDataType.VARCHAR(60).nullable(false), this, "User name of app owner");
+    public final TableField<AppsRecord, AppType> APP_TYPE = createField(DSL.name("app_type"), org.jooq.impl.SQLDataType.VARCHAR.nullable(false).asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.AppTypeType.class), this, "Type of application", new org.jooq.impl.EnumConverter<edu.utexas.tacc.tapis.apps.gen.jooq.enums.AppTypeType, edu.utexas.tacc.tapis.apps.model.App.AppType>(edu.utexas.tacc.tapis.apps.gen.jooq.enums.AppTypeType.class, edu.utexas.tacc.tapis.apps.model.App.AppType.class));
 
     /**
-     * The column <code>tapis_app.apps.enabled</code>. Indicates if app is currently active and available for use
+     * The column <code>tapis_app.apps.owner</code>. User name of application owner
      */
-    public final TableField<AppsRecord, Boolean> ENABLED = createField(DSL.name("enabled"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "Indicates if app is currently active and available for use");
+    public final TableField<AppsRecord, String> OWNER = createField(DSL.name("owner"), org.jooq.impl.SQLDataType.VARCHAR(60).nullable(false), this, "User name of application owner");
+
+    /**
+     * The column <code>tapis_app.apps.enabled</code>. Indicates if application is currently active and available for use
+     */
+    public final TableField<AppsRecord, Boolean> ENABLED = createField(DSL.name("enabled"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "Indicates if application is currently active and available for use");
 
     /**
      * The column <code>tapis_app.apps.tags</code>. Tags for user supplied key:value pairs
@@ -100,14 +105,14 @@ public class Apps extends TableImpl<AppsRecord> {
     public final TableField<AppsRecord, JsonElement> NOTES = createField(DSL.name("notes"), org.jooq.impl.SQLDataType.JSONB.nullable(false), this, "Notes for general information stored as JSON", new JSONBToJsonElementBinding());
 
     /**
-     * The column <code>tapis_app.apps.import_ref_id</code>. Optional reference ID for apps created via import
+     * The column <code>tapis_app.apps.import_ref_id</code>. Optional reference ID for applications created via import
      */
-    public final TableField<AppsRecord, String> IMPORT_REF_ID = createField(DSL.name("import_ref_id"), org.jooq.impl.SQLDataType.VARCHAR(256), this, "Optional reference ID for apps created via import");
+    public final TableField<AppsRecord, String> IMPORT_REF_ID = createField(DSL.name("import_ref_id"), org.jooq.impl.SQLDataType.VARCHAR(256), this, "Optional reference ID for applications created via import");
 
     /**
-     * The column <code>tapis_app.apps.deleted</code>. Indicates if app has been soft deleted
+     * The column <code>tapis_app.apps.deleted</code>. Indicates if application has been soft deleted
      */
-    public final TableField<AppsRecord, Boolean> DELETED = createField(DSL.name("deleted"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("false", org.jooq.impl.SQLDataType.BOOLEAN)), this, "Indicates if app has been soft deleted");
+    public final TableField<AppsRecord, Boolean> DELETED = createField(DSL.name("deleted"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("false", org.jooq.impl.SQLDataType.BOOLEAN)), this, "Indicates if application has been soft deleted");
 
     /**
      * The column <code>tapis_app.apps.created</code>. UTC time for when record was created
@@ -174,7 +179,7 @@ public class Apps extends TableImpl<AppsRecord> {
 
     @Override
     public List<UniqueKey<AppsRecord>> getKeys() {
-        return Arrays.<UniqueKey<AppsRecord>>asList(Keys.APPS_PKEY, Keys.APPS_TENANT_NAME_KEY);
+        return Arrays.<UniqueKey<AppsRecord>>asList(Keys.APPS_PKEY, Keys.APPS_TENANT_NAME_VERSION_KEY);
     }
 
     @Override
@@ -204,11 +209,11 @@ public class Apps extends TableImpl<AppsRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row13 type methods
+    // Row14 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row13<Integer, String, String, String, AppType, String, Boolean, String[], JsonElement, String, Boolean, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row13) super.fieldsRow();
+    public Row14<Integer, String, String, String, String, AppType, String, Boolean, String[], JsonElement, String, Boolean, LocalDateTime, LocalDateTime> fieldsRow() {
+        return (Row14) super.fieldsRow();
     }
 }

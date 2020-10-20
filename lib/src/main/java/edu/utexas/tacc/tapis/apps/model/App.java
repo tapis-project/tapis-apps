@@ -59,6 +59,7 @@ public final class App
 
   private String tenant;     // Name of the tenant for which the app is defined
   private String name;       // Name of the app
+  private String version;    // Version of the app
   private String description; // Full description of the app
   private AppType appType; // Type of app, e.g. LINUX, OBJECT_STORE
   private String owner;      // User who owns the app and has full privileges
@@ -86,9 +87,10 @@ public final class App
   /**
    * Constructor using only required attributes.
    */
-  public App(String name1, AppType appType1)
+  public App(String name1, String version1, AppType appType1)
   {
     name = name1;
+    version = version1;
     appType = appType1;
   }
 
@@ -96,13 +98,14 @@ public final class App
    * Constructor for jOOQ with input parameter matching order of columns in DB
    * Also useful for testing
    */
-  public App(int id1, String tenant1, String name1, String description1, AppType appType1,
+  public App(int id1, String tenant1, String name1, String version1, String description1, AppType appType1,
              String owner1, boolean enabled1, String[] tags1, Object notes1, String importRefId1, boolean deleted1,
              Instant created1, Instant updated1)
   {
     id = id1;
     tenant = tenant1;
     name = name1;
+    version = version1;
     description = description1;
     appType = appType1;
     owner = owner1;
@@ -172,6 +175,9 @@ public final class App
 
   public String getName() { return name; }
   public App setName(String s) { name = s; return this; }
+
+  public String getVersion() { return version; }
+  public App setVersion(String s) { version = s; return this; }
 
   public String getDescription() { return description; }
   public App setDescription(String d) { description = d; return this; }

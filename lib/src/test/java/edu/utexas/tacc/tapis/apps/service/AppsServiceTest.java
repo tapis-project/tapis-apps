@@ -54,6 +54,8 @@ public class AppsServiceTest
   private AuthenticatedUser authenticatedOwnerUsr, authenticatedTestUsr0, authenticatedTestUsr1, authenticatedTestUsr2,
           authenticatedTestUsr3, authenticatedAdminUsr, authenticatedFilesSvc;
   // Test data
+  private static final String svcName = "apps";
+  private static final String siteId = "tacc";
   // TODO: Currently admin user for a tenant is hard coded to be 'testuser9'
   private static final String adminUser = "testuser9";
   private static final String masterTenantName = "master";
@@ -101,6 +103,7 @@ public class AppsServiceTest
     // Initialize services
     svc = locator.getService(AppsService.class);
     svcImpl = locator.getService(AppsServiceImpl.class);
+    svcImpl.initService(siteId);
 
     // Initialize authenticated user and service
     authenticatedOwnerUsr = new AuthenticatedUser(ownerUser, tenantName, TapisThreadContext.AccountType.user.name(), null, ownerUser, tenantName, null, null, null);
@@ -178,7 +181,7 @@ public class AppsServiceTest
     app0.setJobCapabilities(capList);
     String createText = "{\"testUpdate\": \"0-create\"}";
     String patch1Text = "{\"testUpdate\": \"1-patch1\"}";
-    PatchApp patchApp = new PatchApp("description PATCHED", false, cap2List, tags2, notes2);
+    PatchApp patchApp = new PatchApp(appVersion, "description PATCHED", false, cap2List, tags2, notes2);
     patchApp.setName(app0.getName());
     patchApp.setTenant(tenantName);
     int itemId = svc.createApp(authenticatedOwnerUsr, app0, createText);
@@ -429,7 +432,7 @@ public class AppsServiceTest
   public void testAuthDeny() throws Exception
   {
     App app0 = apps[12];//17
-    PatchApp patchApp = new PatchApp("description PATCHED", false, cap2List, tags2, notes2);
+    PatchApp patchApp = new PatchApp(appVersion, "description PATCHED", false, cap2List, tags2, notes2);
     patchApp.setName(app0.getName());
     patchApp.setTenant(tenantName);
     // CREATE - Deny user not owner/admin, deny service

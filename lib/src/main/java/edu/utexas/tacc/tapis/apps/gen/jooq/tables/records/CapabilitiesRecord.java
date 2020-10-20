@@ -22,7 +22,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CapabilitiesRecord extends UpdatableRecordImpl<CapabilitiesRecord> implements Record7<Integer, Integer, Category, String, String, LocalDateTime, LocalDateTime> {
 
-    private static final long serialVersionUID = -633107016;
+    private static final long serialVersionUID = -834558506;
 
     /**
      * Setter for <code>tapis_app.capabilities.id</code>. Capability id
@@ -39,14 +39,14 @@ public class CapabilitiesRecord extends UpdatableRecordImpl<CapabilitiesRecord> 
     }
 
     /**
-     * Setter for <code>tapis_app.capabilities.app_id</code>. Id of app supporting the capability
+     * Setter for <code>tapis_app.capabilities.app_id</code>. Id of application supporting the capability
      */
     public void setAppId(Integer value) {
         set(1, value);
     }
 
     /**
-     * Getter for <code>tapis_app.capabilities.app_id</code>. Id of app supporting the capability
+     * Getter for <code>tapis_app.capabilities.app_id</code>. Id of application supporting the capability
      */
     public Integer getAppId() {
         return (Integer) get(1);

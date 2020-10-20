@@ -1266,6 +1266,7 @@ public class AppsServiceImpl implements AppsService
   private App createPatchedApp(App o, PatchApp p)
   {
     App p1 = new App(o);
+    if (p.getVersion() != null) p1.setVersion(p.getVersion());
     if (p.getDescription() != null) p1.setDescription(p.getDescription());
     if (p.isEnabled() != null) p1.setEnabled(p.isEnabled());
     if (p.getJobCapabilities() != null) p1.setJobCapabilities(p.getJobCapabilities());

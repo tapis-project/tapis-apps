@@ -100,6 +100,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       Record record = db.insertInto(APPS)
               .set(APPS.TENANT, app.getTenant())
               .set(APPS.NAME, app.getName())
+              .set(APPS.VERSION, app.getVersion())
               .set(APPS.DESCRIPTION, app.getDescription())
               .set(APPS.APP_TYPE, app.getAppType())
               .set(APPS.OWNER, owner)
@@ -135,7 +136,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Update an existing app.
    * Following columns will be updated:
-   *  description, enabled, jobCapabilities, tags, notes
+   *  version, description, enabled, jobCapabilities, tags, notes
    * @return Sequence id of object created
    * @throws TapisException - on error
    * @throws IllegalStateException - if app already exists
@@ -178,6 +179,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
 
       db.update(APPS)
+              .set(APPS.VERSION, patchedApp.getVersion())
               .set(APPS.DESCRIPTION, patchedApp.getDescription())
               .set(APPS.ENABLED, patchedApp.isEnabled())
               .set(APPS.TAGS, tagsStrArray)

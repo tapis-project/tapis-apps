@@ -5,7 +5,7 @@
   "additionalProperties": false,
 
   "type": "object",
-  "required": [ "name", "appType" ],
+  "required": [ "name", "version", "appType" ],
   "properties": {
     "name": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/appName" },
     "version": { "type": "string", "maxLength": 64 },

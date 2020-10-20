@@ -6,6 +6,7 @@
 
   "type": "object",
   "properties": {
+    "version": { "type": "string", "maxLength": 64 },
     "description": { "type": "string", "maxLength": 2048 },
     "enabled": { "type": "boolean", "default": true },
     "jobCapabilities": {

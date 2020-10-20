@@ -37,7 +37,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppUpdates extends TableImpl<AppUpdatesRecord> {
 
-    private static final long serialVersionUID = -1252383210;
+    private static final long serialVersionUID = -1780122858;
 
     /**
      * The reference instance of <code>tapis_app.app_updates</code>
@@ -53,14 +53,14 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     }
 
     /**
-     * The column <code>tapis_app.app_updates.id</code>. App update request id
+     * The column <code>tapis_app.app_updates.id</code>. Application update request id
      */
-    public final TableField<AppUpdatesRecord, Integer> ID = createField(DSL.name("id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_updates_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "App update request id");
+    public final TableField<AppUpdatesRecord, Integer> ID = createField(DSL.name("id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_updates_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Application update request id");
 
     /**
-     * The column <code>tapis_app.app_updates.app_id</code>. Id of app being updated
+     * The column <code>tapis_app.app_updates.app_id</code>. Id of application being updated
      */
-    public final TableField<AppUpdatesRecord, Integer> APP_ID = createField(DSL.name("app_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_updates_app_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Id of app being updated");
+    public final TableField<AppUpdatesRecord, Integer> APP_ID = createField(DSL.name("app_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_updates_app_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Id of application being updated");
 
     /**
      * The column <code>tapis_app.app_updates.user_name</code>. Name of user who requested the update

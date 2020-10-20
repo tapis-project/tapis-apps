@@ -226,10 +226,10 @@ public class AppsDaoTest
   @Test
   public void testMissingApp() throws Exception {
     String fakeAppName = "AMissingAppName";
-    PatchApp patchApp = new PatchApp("description PATCHED", false, capList, tags, notes);
+    PatchApp patchApp = new PatchApp(appVersion, "description PATCHED", false, capList, tags, notes);
     patchApp.setTenant(tenantName);
     patchApp.setName(fakeAppName);
-    App patchedApp = new App(1, tenantName, fakeAppName, "description", AppType.INTERACTIVE, "owner", true,
+    App patchedApp = new App(1, tenantName, fakeAppName, appVersion, "description", AppType.INTERACTIVE, "owner", true,
             tags, notes, null, false, null, null);
     // Make sure app does not exist
     Assert.assertFalse(dao.checkForAppByName(tenantName, fakeAppName, true));
