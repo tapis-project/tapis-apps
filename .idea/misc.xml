@@ -12,7 +12,20 @@
     </option>
     <option name="ignoredFiles">
       <set>
+        <option value="$PROJECT_DIR$/../tapis-client-java/apps-client/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-client-java/auth-client/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-client-java/files-client/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-client-java/meta-client/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-client-java/security-client/pom.xml" />
         <option value="$PROJECT_DIR$/../tapis-client-java/shared/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-client-java/systems-client/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-client-java/tenants-client/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-client-java/tokens-client/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-api/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-db/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-lib/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-queue/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-searchlib/pom.xml" />
       </set>
     </option>
   </component>

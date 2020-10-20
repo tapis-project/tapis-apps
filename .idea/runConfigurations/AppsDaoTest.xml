@@ -20,6 +20,9 @@
       <value defaultName="moduleWithDependencies" />
     </option>
     <option name="PROPERTIES_FILE" value="" />
+    <envs>
+      <env name="TAPIS_SITE_ID" value="tacc" />
+    </envs>
     <properties />
     <listeners />
     <method v="2">

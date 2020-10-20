@@ -6,21 +6,8 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="tapis-shared-db" />
-        <module name="files-client" />
         <module name="lib" />
-        <module name="tapis-shared-api" />
-        <module name="meta-client" />
-        <module name="apps-client" />
-        <module name="tapis-shared-lib" />
-        <module name="tokens-client" />
-        <module name="auth-client" />
-        <module name="tapis-shared-searchlib" />
-        <module name="security-client" />
-        <module name="systems-client" />
-        <module name="tapis-shared-queue" />
         <module name="api" />
-        <module name="tenants-client" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

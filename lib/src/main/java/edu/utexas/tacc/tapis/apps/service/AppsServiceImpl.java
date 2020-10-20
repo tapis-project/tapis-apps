@@ -479,9 +479,12 @@ public class AppsServiceImpl implements AppsService
     String svcMasterTenant = RuntimeParameters.getInstance().getServiceMasterTenant();
     if (StringUtils.isBlank(svcMasterTenant)) svcMasterTenant = APPS_DEFAULT_MASTER_TENANT;
     // Create user for SK client
+    // NOTE: getSKClient() does not require the jwt to be set in AuthenticatedUser but we keep it here as a reminder
+    //       that in general this is the pattern to follow.
+    String svcJwt = serviceJWT.getAccessJWT(siteId);
     AuthenticatedUser svcUser =
         new AuthenticatedUser(SERVICE_NAME_APPS, svcMasterTenant, TapisThreadContext.AccountType.service.name(),
-                              null, SERVICE_NAME_APPS, svcMasterTenant, null, siteId, null);
+                              null, SERVICE_NAME_APPS, svcMasterTenant, null, siteId, svcJwt);
     // Use SK client to check for admin role and create it if necessary
     var skClient = getSKClient(svcUser);
     // Check for admin role

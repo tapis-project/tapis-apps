@@ -47,7 +47,7 @@ public class AppsServiceJWTFactory implements Factory<ServiceJWT>
       tokenSvcUrl = tokenSvcUrl.substring(0, tokenSvcUrl.indexOf("/v3"));
       svcJWTParms.setTokensBaseUrl(tokenSvcUrl);
       // Get service password from the env
-      String svcPassword = RuntimeParameters.getInstance().getServicePassword();
+      String svcPassword = runParms.getServicePassword();
       if (StringUtils.isBlank(svcPassword))
       {
         String msg = LibUtils.getMsg("APPLIB_NO_SVC_PASSWD", svcMasterTenant, tokenSvcUrl);

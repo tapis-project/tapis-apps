@@ -37,7 +37,7 @@ SET search_path TO tapis_app;
 -- GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA tapis_app TO tapis_app;
 
 -- Types
-CREATE TYPE app_type_type AS ENUM ('BATCH', 'INTERACTIVE');
+CREATE TYPE app_type_type AS ENUM ('BATCH', 'DIRECT', 'BATCH_INTERACTIVE', 'DIRECT_INTERACTIVE');
 CREATE TYPE operation_type AS ENUM ('create', 'modify', 'softDelete', 'hardDelete', 'changeOwner',
                                     'grantPerms', 'revokePerms');
 CREATE TYPE capability_category_type AS ENUM ('SCHEDULER', 'OS', 'HARDWARE', 'SOFTWARE', 'JOB', 'CONTAINER', 'MISC', 'CUSTOM');
@@ -52,6 +52,7 @@ CREATE TABLE apps
   id          SERIAL PRIMARY KEY,
   tenant      VARCHAR(24) NOT NULL,
   name        VARCHAR(256) NOT NULL,
+  version     VARCHAR(64) NOT NULL,
   description VARCHAR(2048),
   app_type app_type_type NOT NULL,
   owner       VARCHAR(60) NOT NULL,
@@ -62,21 +63,22 @@ CREATE TABLE apps
   deleted    BOOLEAN NOT NULL DEFAULT false,
   created    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
   updated    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-  UNIQUE (tenant,name)
+  UNIQUE (tenant,name,version)
 );
 ALTER TABLE apps OWNER TO tapis_app;
 CREATE INDEX app_tenant_name_idx ON apps (tenant, name);
-COMMENT ON COLUMN apps.id IS 'App id';
-COMMENT ON COLUMN apps.tenant IS 'Tenant name associated with app';
-COMMENT ON COLUMN apps.name IS 'Unique name for the app';
-COMMENT ON COLUMN apps.description IS 'App description';
-COMMENT ON COLUMN apps.app_type IS 'Type of app';
-COMMENT ON COLUMN apps.owner IS 'User name of app owner';
-COMMENT ON COLUMN apps.enabled IS 'Indicates if app is currently active and available for use';
+COMMENT ON COLUMN apps.id IS 'Application id';
+COMMENT ON COLUMN apps.tenant IS 'Tenant name associated with the application';
+COMMENT ON COLUMN apps.name IS 'Unique name for the application';
+COMMENT ON COLUMN apps.version IS 'Application version';
+COMMENT ON COLUMN apps.description IS 'Application description';
+COMMENT ON COLUMN apps.app_type IS 'Type of application';
+COMMENT ON COLUMN apps.owner IS 'User name of application owner';
+COMMENT ON COLUMN apps.enabled IS 'Indicates if application is currently active and available for use';
 COMMENT ON COLUMN apps.tags IS 'Tags for user supplied key:value pairs';
 COMMENT ON COLUMN apps.notes IS 'Notes for general information stored as JSON';
-COMMENT ON COLUMN apps.import_ref_id IS 'Optional reference ID for apps created via import';
-COMMENT ON COLUMN apps.deleted IS 'Indicates if app has been soft deleted';
+COMMENT ON COLUMN apps.import_ref_id IS 'Optional reference ID for applications created via import';
+COMMENT ON COLUMN apps.deleted IS 'Indicates if application has been soft deleted';
 COMMENT ON COLUMN apps.created IS 'UTC time for when record was created';
 COMMENT ON COLUMN apps.updated IS 'UTC time for when record was last updated';
 
@@ -94,8 +96,8 @@ CREATE TABLE app_updates
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
 );
 ALTER TABLE app_updates OWNER TO tapis_app;
-COMMENT ON COLUMN app_updates.id IS 'App update request id';
-COMMENT ON COLUMN app_updates.app_id IS 'Id of app being updated';
+COMMENT ON COLUMN app_updates.id IS 'Application update request id';
+COMMENT ON COLUMN app_updates.app_id IS 'Id of application being updated';
 COMMENT ON COLUMN app_updates.user_name IS 'Name of user who requested the update';
 COMMENT ON COLUMN app_updates.user_tenant IS 'Tenant of user who requested the update';
 COMMENT ON COLUMN app_updates.operation IS 'Type of update operation';
@@ -122,7 +124,7 @@ CREATE TABLE capabilities
 );
 ALTER TABLE capabilities OWNER TO tapis_app;
 COMMENT ON COLUMN capabilities.id IS 'Capability id';
-COMMENT ON COLUMN capabilities.app_id IS 'Id of app supporting the capability';
+COMMENT ON COLUMN capabilities.app_id IS 'Id of application supporting the capability';
 COMMENT ON COLUMN capabilities.category IS 'Category for grouping of capabilities';
 COMMENT ON COLUMN capabilities.name IS 'Name of capability';
 COMMENT ON COLUMN capabilities.value IS 'Value for the capability';

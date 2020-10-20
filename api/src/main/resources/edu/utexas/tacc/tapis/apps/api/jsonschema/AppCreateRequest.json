@@ -8,6 +8,7 @@
   "required": [ "name", "appType" ],
   "properties": {
     "name": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/appName" },
+    "version": { "type": "string", "maxLength": 64 },
     "description": { "type": "string", "maxLength": 2048 },
     "appType": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/appTypeEnum" },
     "owner": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/userName" },
