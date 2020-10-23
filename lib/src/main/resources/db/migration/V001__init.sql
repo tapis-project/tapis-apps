@@ -51,7 +51,7 @@ CREATE TABLE apps
 (
   id          SERIAL PRIMARY KEY,
   tenant      VARCHAR(24) NOT NULL,
-  name        VARCHAR(256) NOT NULL,
+  name        VARCHAR(80) NOT NULL,
   version     VARCHAR(64) NOT NULL,
   description VARCHAR(2048),
   app_type app_type_type NOT NULL,
@@ -59,7 +59,7 @@ CREATE TABLE apps
   enabled     BOOLEAN NOT NULL DEFAULT true,
   tags       TEXT[] NOT NULL,
   notes      JSONB NOT NULL,
-  import_ref_id VARCHAR(256),
+  import_ref_id VARCHAR(80),
   deleted    BOOLEAN NOT NULL DEFAULT false,
   created    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
   updated    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
@@ -116,8 +116,8 @@ CREATE TABLE capabilities
     id     SERIAL PRIMARY KEY,
     app_id SERIAL REFERENCES apps(id) ON DELETE CASCADE,
     category capability_category_type NOT NULL,
-    name   VARCHAR(256) NOT NULL DEFAULT '',
-    value  VARCHAR(256) NOT NULL DEFAULT '',
+    name   VARCHAR(128) NOT NULL DEFAULT '',
+    value  VARCHAR(128) NOT NULL DEFAULT '',
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     UNIQUE (app_id, category, name)
