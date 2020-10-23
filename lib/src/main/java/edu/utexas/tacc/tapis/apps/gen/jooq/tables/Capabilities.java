@@ -34,7 +34,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Capabilities extends TableImpl<CapabilitiesRecord> {
 
-    private static final long serialVersionUID = 709293147;
+    private static final long serialVersionUID = -325133861;
 
     /**
      * The reference instance of <code>tapis_app.capabilities</code>
@@ -67,12 +67,12 @@ public class Capabilities extends TableImpl<CapabilitiesRecord> {
     /**
      * The column <code>tapis_app.capabilities.name</code>. Name of capability
      */
-    public final TableField<CapabilitiesRecord, String> NAME = createField(DSL.name("name"), org.jooq.impl.SQLDataType.VARCHAR(256).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "Name of capability");
+    public final TableField<CapabilitiesRecord, String> NAME = createField(DSL.name("name"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "Name of capability");
 
     /**
      * The column <code>tapis_app.capabilities.value</code>. Value for the capability
      */
-    public final TableField<CapabilitiesRecord, String> VALUE = createField(DSL.name("value"), org.jooq.impl.SQLDataType.VARCHAR(256).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "Value for the capability");
+    public final TableField<CapabilitiesRecord, String> VALUE = createField(DSL.name("value"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "Value for the capability");
 
     /**
      * The column <code>tapis_app.capabilities.created</code>. UTC time for when record was created

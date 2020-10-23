@@ -39,7 +39,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Apps extends TableImpl<AppsRecord> {
 
-    private static final long serialVersionUID = -566831140;
+    private static final long serialVersionUID = -1921987844;
 
     /**
      * The reference instance of <code>tapis_app.apps</code>
@@ -67,7 +67,7 @@ public class Apps extends TableImpl<AppsRecord> {
     /**
      * The column <code>tapis_app.apps.name</code>. Unique name for the application
      */
-    public final TableField<AppsRecord, String> NAME = createField(DSL.name("name"), org.jooq.impl.SQLDataType.VARCHAR(256).nullable(false), this, "Unique name for the application");
+    public final TableField<AppsRecord, String> NAME = createField(DSL.name("name"), org.jooq.impl.SQLDataType.VARCHAR(80).nullable(false), this, "Unique name for the application");
 
     /**
      * The column <code>tapis_app.apps.version</code>. Application version
@@ -107,7 +107,7 @@ public class Apps extends TableImpl<AppsRecord> {
     /**
      * The column <code>tapis_app.apps.import_ref_id</code>. Optional reference ID for applications created via import
      */
-    public final TableField<AppsRecord, String> IMPORT_REF_ID = createField(DSL.name("import_ref_id"), org.jooq.impl.SQLDataType.VARCHAR(256), this, "Optional reference ID for applications created via import");
+    public final TableField<AppsRecord, String> IMPORT_REF_ID = createField(DSL.name("import_ref_id"), org.jooq.impl.SQLDataType.VARCHAR(80), this, "Optional reference ID for applications created via import");
 
     /**
      * The column <code>tapis_app.apps.deleted</code>. Indicates if application has been soft deleted

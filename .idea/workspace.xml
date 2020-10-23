@@ -12,8 +12,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34efd738-2b9a-4e43-b14d-018fde0be61f" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/main/resources/db/migration/V001__init.sql" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/main/resources/db/migration/V001__init.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-lib/src/main/java/edu/utexas/tacc/tapis/shared/threadlocal/TapisThreadContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-lib/src/main/java/edu/utexas/tacc/tapis/shared/threadlocal/TapisThreadContext.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
