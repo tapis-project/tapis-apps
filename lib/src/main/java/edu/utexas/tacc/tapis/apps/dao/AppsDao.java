@@ -32,7 +32,7 @@ public interface AppsDao
 
   boolean checkForAppByName(String tenant, String name, boolean includeDeleted) throws TapisException;
 
-  App getAppByName(String tenant, String name) throws TapisException;
+  App getApp(String tenant, String name) throws TapisException;
 
   List<App> getApps(String tenant, List<String> searchList, List<Integer> IDs) throws TapisException;
 

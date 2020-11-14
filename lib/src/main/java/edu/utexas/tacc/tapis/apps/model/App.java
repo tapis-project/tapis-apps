@@ -4,7 +4,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.shared.utils.JsonObjectSerializer;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -46,8 +48,8 @@ public final class App
   // *********************** Enums ******************************************
   // ************************************************************************
   public enum AppType {BATCH, INTERACTIVE}
-  public enum Permission {ALL, READ, MODIFY}
-  public enum AppOperation {create, read, modify, softDelete, hardDelete, changeOwner, getPerms,
+  public enum Permission {ALL, READ, MODIFY, EXECUTE}
+  public enum AppOperation {create, read, modify, execute, softDelete, hardDelete, changeOwner, getPerms,
                                grantPerms, revokePerms}
 
   // ************************************************************************
@@ -66,7 +68,10 @@ public final class App
   private boolean enabled; // Indicates if app is currently enabled
   private List<Capability> jobCapabilities; // List of job related capabilities required by the app
   private String[] tags;       // List of arbitrary tags as strings
+
+  @JsonSerialize(using = JsonObjectSerializer.class)
   private Object notes;      // Simple metadata as json
+
   private String importRefId; // Optional reference ID for object created via import
   private boolean deleted;
 

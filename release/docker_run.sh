@@ -1,6 +1,8 @@
 #!/bin/sh
 # Start up local docker image for tapis/apps service.
 # Environment value must be passed in as first argument: dev, staging, prod
+# Special argument "dev_local" means use a special tag that should only be available
+#   locally and use services from dev enviornment
 # Service password must be set as the env variable TAPIS_SERVICE_PASSWORD
 # Following services from a running tapis3 are required: tenants, tokens, security-kernel
 # Base URL for remote services is determined by environment value passed in.
@@ -8,8 +10,8 @@
 
 PrgName=$(basename "$0")
 
-USAGE1="Usage: $PRG_NAME { dev, staging, prod }"
-set -xv
+USAGE1="Usage: $PRG_NAME { dev_local, dev, staging, prod }"
+
 SVC_NAME="apps"
 
 # Run docker image for the service
@@ -33,7 +35,7 @@ if [ -z "$TAPIS_SERVICE_PASSWORD" ]; then
 fi
 
 # Set base url for services we depend on (tenants, tokens, security-kernel)
-if [ "$ENV" = "dev" ]; then
+if [ "$ENV" = "dev" -o "$ENV" = "dev_local" ]; then
  BASE_URL="https://master.develop.tapis.io"
 elif [ "$ENV" = "staging" ]; then
  BASE_URL="https://master.staging.tapis.io"
@@ -43,8 +45,6 @@ else
   echo $USAGE1
   exit 1
 fi
-
-
 
 # Determine absolute path to location from which we are running.
 export RUN_DIR=$(pwd)
@@ -66,8 +66,6 @@ echo
 # Running with network=host exposes ports directly. Only works for linux
 docker run -e TAPIS_SERVICE_PASSWORD="${TAPIS_SERVICE_PASSWORD}" \
            -e TAPIS_TENANT_SVC_BASEURL="$BASE_URL" \
-           -e TAPIS_SITE_ID="tacc" \
-           -d --network="host" "${TAG}"
-#           -d --rm --network="host" "${TAG}"
-
+           -e TAPIS_SITE_ID="$TAPIS_SITE_ID" \
+           -d --rm --network="host" "${TAG}"
 cd "$RUN_DIR"

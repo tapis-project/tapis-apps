@@ -373,8 +373,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   public void migrateDB() throws TapisException
   {
     Flyway flyway = Flyway.configure().dataSource(getDataSource()).load();
+    // TODO remove workaround if possible. Figure out how to deploy X.Y.Z-SNAPSHOT repeatedly.
     // Workaround to avoid checksum error during develop/deploy of SNAPSHOT versions when it is not a true migration.
-//    flyway.repair();
+    flyway.repair();
     flyway.migrate();
   }
 
@@ -421,7 +422,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @throws TapisException - on error
    */
   @Override
-  public App getAppByName(String tenant, String name) throws TapisException {
+  public App getApp(String tenant, String name) throws TapisException {
     // Initialize result.
     App result = null;
 

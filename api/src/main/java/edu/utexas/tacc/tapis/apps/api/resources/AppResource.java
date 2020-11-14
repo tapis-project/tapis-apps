@@ -472,7 +472,7 @@ public class AppResource
   }
 
   /**
-   * getAppByName
+   * getApp
    * @param appName - name of the app
    * @param securityContext - user identity
    * @return Response with app object as the result
@@ -481,10 +481,10 @@ public class AppResource
   @Path("{appName}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getAppByName(@PathParam("appName") String appName,
-                                  @Context SecurityContext securityContext)
+  public Response getApp(@PathParam("appName") String appName,
+                         @Context SecurityContext securityContext)
   {
-    String opName = "getAppByName";
+    String opName = "getApp";
     if (_log.isTraceEnabled()) logRequest(opName);
 
     // Check that we have all we need from the context, the tenant name and apiUserId
@@ -500,7 +500,7 @@ public class AppResource
     App app;
     try
     {
-      app = appsService.getAppByName(authenticatedUser, appName);
+      app = appsService.getApp(authenticatedUser, appName, false);
     }
     catch (Exception e)
     {

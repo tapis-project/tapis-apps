@@ -269,7 +269,7 @@ public class AppsResource
    */
   private Exception checkDB()
   {
-    Exception result;
+    Exception result = null;
     try { result = svcImpl.checkDB(); }
     catch (Exception e) { result = e; }
     return result;

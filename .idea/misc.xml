@@ -24,6 +24,7 @@
         <option value="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-api/pom.xml" />
         <option value="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-db/pom.xml" />
         <option value="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-lib/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-notifications/pom.xml" />
         <option value="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-queue/pom.xml" />
         <option value="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-searchlib/pom.xml" />
       </set>

@@ -53,7 +53,7 @@ public class AppsDaoTest
       dao.hardDeleteApp(tenantName, apps[i].getName());
     }
 
-    App tmpApp = dao.getAppByName(tenantName, apps[0].getName());
+    App tmpApp = dao.getApp(tenantName, apps[0].getName());
     Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getName());
   }
 
@@ -72,7 +72,7 @@ public class AppsDaoTest
     App app0 = apps[1];
     int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
-    App tmpApp = dao.getAppByName(app0.getTenant(), app0.getName());
+    App tmpApp = dao.getApp(app0.getTenant(), app0.getName());
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getName());
     System.out.println("Found item: " + app0.getName());
     Assert.assertEquals(tmpApp.getName(), app0.getName());
@@ -172,7 +172,7 @@ public class AppsDaoTest
     System.out.println("Created item with id: " + itemId);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
     dao.updateAppOwner(authenticatedUser, itemId, "newOwner");
-    App tmpApp = dao.getAppByName(app0.getTenant(), app0.getName());
+    App tmpApp = dao.getApp(app0.getTenant(), app0.getName());
     Assert.assertEquals(tmpApp.getOwner(), "newOwner");
   }
 
@@ -209,7 +209,7 @@ public class AppsDaoTest
     App app0 = apps[10];
     int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
-    App tmpApp = dao.getAppByName(app0.getTenant(), app0.getName());
+    App tmpApp = dao.getApp(app0.getTenant(), app0.getName());
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getName());
     System.out.println("Found item: " + app0.getName());
     Assert.assertEquals(tmpApp.getName(), app0.getName());
@@ -243,7 +243,7 @@ public class AppsDaoTest
       pass = true;
     }
     Assert.assertTrue(pass);
-    Assert.assertNull(dao.getAppByName(tenantName, fakeAppName));
+    Assert.assertNull(dao.getApp(tenantName, fakeAppName));
     Assert.assertNull(dao.getAppOwner(tenantName, fakeAppName));
   }
 }

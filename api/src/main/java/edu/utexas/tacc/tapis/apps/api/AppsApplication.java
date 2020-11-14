@@ -6,6 +6,7 @@ import edu.utexas.tacc.tapis.security.client.SKClient;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.sharedapi.jaxrs.filters.JWTValidateRequestFilter;
+import edu.utexas.tacc.tapis.sharedapi.providers.ObjectMapperContextResolver;
 import edu.utexas.tacc.tapis.sharedapi.providers.TapisExceptionMapper;
 import edu.utexas.tacc.tapis.sharedapi.providers.ValidationExceptionMapper;
 import edu.utexas.tacc.tapis.sharedapi.security.ServiceJWT;
@@ -15,20 +16,17 @@ import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
 import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
-
 import edu.utexas.tacc.tapis.apps.service.AppsServiceJWTFactory;
+
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.internal.inject.InjectionManager;
-import org.glassfish.jersey.message.filtering.SelectableEntityFilteringFeature;
-import org.glassfish.jersey.moxy.json.MoxyJsonConfig;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ApplicationHandler;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import io.swagger.v3.jaxrs2.integration.resources.AcceptHeaderOpenApiResource;
-import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
 import org.jooq.tools.StringUtils;
 
 import java.net.URI;
@@ -51,23 +49,25 @@ public class AppsApplication extends ResourceConfig
     // Output version information on startup
     System.out.println("**** Starting tapis-apps. Version: " + TapisUtils.getTapisFullVersion() + " ****");
 
-    // Register the swagger resources that allow the
-    // documentation endpoints to be automatically generated.
-    register(OpenApiResource.class);
-    register(AcceptHeaderOpenApiResource.class);
-
     // Setup and register Jersey's dynamic filtering
     // This allows for returning selected attributes in a return result
     //   using the query parameter select, e.g.
     //   /v3/apps?select=result.id,result.name,result.host,result.enabled
-    property(SelectableEntityFilteringFeature.QUERY_PARAM_NAME, "select");
-    register(SelectableEntityFilteringFeature.class);
+//    property(SelectableEntityFilteringFeature.QUERY_PARAM_NAME, "select");
+//    register(SelectableEntityFilteringFeature.class);
     // Register either Jackson or Moxy for SelectableEntityFiltering
     // NOTE: Using shaded jar and Moxy works when running from Intellij IDE but breaks things when running in docker.
     // NOTE: Using Jackson results in following TApp attributes not being returned: notes, created, updated.
     // NOTE: Using unshaded jar and Moxy appears to resolve all issues.
-    register(new MoxyJsonConfig().resolver());
-//    register(JacksonFeature.class);
+//    register(new MoxyJsonConfig().resolver());
+// NOTE on Selectable feature: gave up on this (for now) as too cumbersome and limited. Awkward to specify attributes
+//      and could not get it to work when list of systems nested in results->search.
+// Use jackson as is done for files? Yes, breaks getting notes but allows for Credential
+// With a custom objectmapper and custom jsonobject serializer this now works for both notes and accessCredential
+    register(JacksonFeature.class);
+
+    // Needed for properly returning timestamps
+    register(ObjectMapperContextResolver.class);
 
     // Register classes needed for returning a standard Tapis response for non-Tapis exceptions.
     register(TapisExceptionMapper.class);
@@ -82,7 +82,6 @@ public class AppsApplication extends ResourceConfig
     // tapis-sharedapi will be discovered whenever that project is
     // included as a maven dependency.
     packages("edu.utexas.tacc.tapis");
-    packages("edu.utexas.tacc.tapis2");
 
     // Set the application name.
     // Note that this has no impact on base URL
@@ -151,6 +150,8 @@ public class AppsApplication extends ResourceConfig
     InjectionManager im = handler.getInjectionManager();
     ServiceLocator locator = im.getInstance(ServiceLocator.class);
     AppsServiceImpl svcImpl = locator.getService(AppsServiceImpl.class);
+    // Make sure we can get a service JWT. Better to fail here than later.
+    ServiceJWT serviceJWT = locator.getService(ServiceJWT.class);
     svcImpl.initService(AppsApplication.getSiteId());
     // Create and start the server
     final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config, false);

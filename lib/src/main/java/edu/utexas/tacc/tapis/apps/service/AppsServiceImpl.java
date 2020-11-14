@@ -6,11 +6,8 @@ import static edu.utexas.tacc.tapis.apps.model.App.OWNER_VAR;
 import static edu.utexas.tacc.tapis.apps.model.App.TENANT_VAR;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -272,7 +269,7 @@ public class AppsServiceImpl implements AppsService
     }
 
     // Retrieve the app being patched and create fully populated App with changes merged in
-    App origApp = dao.getAppByName(appTenantName, appName);
+    App origApp = dao.getApp(appTenantName, appName);
     App patchedApp = createPatchedApp(origApp, patchApp);
 
     // ------------------------- Check service level authorization -------------------------
@@ -327,7 +324,7 @@ public class AppsServiceImpl implements AppsService
          throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", authenticatedUser, appName));
 
     // Retrieve the app being updated
-    App tmpApp = dao.getAppByName(appTenantName, appName);
+    App tmpApp = dao.getApp(appTenantName, appName);
     int appId = tmpApp.getId();
     String oldOwnerName = tmpApp.getOwner();
 
@@ -404,7 +401,7 @@ public class AppsServiceImpl implements AppsService
     // ------------------------- Check service level authorization -------------------------
     checkAuth(authenticatedUser, op, appName, null, null, null);
 
-    App app = dao.getAppByName(appTenantName, appName);
+    App app = dao.getApp(appTenantName, appName);
     String owner = app.getOwner();
 
     var skClient = getSKClient(authenticatedUser);
@@ -480,14 +477,15 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(svcMasterTenant)) svcMasterTenant = APPS_DEFAULT_MASTER_TENANT;
     // Create user for SK client
     // NOTE: getSKClient() does not require the jwt to be set in AuthenticatedUser but we keep it here as a reminder
-    //       that in general this is the pattern to follow.
+    //       that in general this may be the pattern to follow.
     String svcJwt = serviceJWT.getAccessJWT(siteId);
     AuthenticatedUser svcUser =
         new AuthenticatedUser(SERVICE_NAME_APPS, svcMasterTenant, TapisThreadContext.AccountType.service.name(),
                               null, SERVICE_NAME_APPS, svcMasterTenant, null, siteId, svcJwt);
     // Use SK client to check for admin role and create it if necessary
     var skClient = getSKClient(svcUser);
-    // Check for admin role
+    // Check for admin role, continue if error getting role.
+    // TODO: Move msgs to properties file
     SkRole adminRole = null;
     try
     {
@@ -495,9 +493,13 @@ public class AppsServiceImpl implements AppsService
     }
     catch (TapisClientException e)
     {
-      if (!e.getTapisMessage().startsWith("TAPIS_NOT_FOUND")) throw e;
+      String msg = e.getTapisMessage();
+      // If we have a special message then log it
+      if (!StringUtils.isBlank(msg)) _log.error("Unable to get Admin Role. Caught TapisClientException: " + msg);
+      // If there is no message or the message is something other than "role does not exist" then log the exception.
+      // There may be a problem with SK but do not throw (i.e. fail) just because we cannot get the role at this point.
+      if (msg == null || !msg.startsWith("TAPIS_NOT_FOUND")) _log.error("Unable to get Admin Role. Caught Exception: " + e);
     }
-    // TODO: Move msgs to properties file
     if (adminRole == null)
     {
       _log.info("Apps administrative role not found. Role name: " + APPS_ADMIN_ROLE);
@@ -549,15 +551,16 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * getAppByName
+   * getApp
    * @param authenticatedUser - principal user containing tenant and user info
    * @param appName - Name of the app
-   * @return App - populated instance or null if not found or user not authorized.
+   * @param requireExecPerm - check for EXECUTE permission as well as READ permission
+   * @return populated instance of an App or null if not found or user not authorized.
    * @throws TapisException - for Tapis related exceptions
    * @throws NotAuthorizedException - unauthorized
    */
   @Override
-  public App getAppByName(AuthenticatedUser authenticatedUser, String appName)
+  public App getApp(AuthenticatedUser authenticatedUser, String appName, boolean requireExecPerm)
           throws TapisException, NotAuthorizedException, TapisClientException
   {
     AppOperation op = AppOperation.read;
@@ -575,8 +578,9 @@ public class AppsServiceImpl implements AppsService
 
     // ------------------------- Check service level authorization -------------------------
     checkAuth(authenticatedUser, op, appName, null, null, null);
+    if (requireExecPerm) checkAuth(authenticatedUser, AppOperation.execute, appName, null, null, null);
 
-    App result = dao.getAppByName(appTenantName, appName);
+    App result = dao.getApp(appTenantName, appName);
     return result;
   }
 
@@ -1088,6 +1092,7 @@ public class AppsServiceImpl implements AppsService
    *  Read - must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
    *  Delete - must be owner or have admin role
    *  Modify - must be owner or have admin role or have MODIFY permission
+   *  Execute - must be owner or have admin role or have EXECUTE permission
    *  ChangeOwner - must be owner or have admin role
    *  GrantPerm -  must be owner or have admin role
    *  RevokePerm -  must be owner or have admin role or apiUserId=targetUser and meet certain criteria (allowUserRevokePerm)
@@ -1140,6 +1145,10 @@ public class AppsServiceImpl implements AppsService
         case modify:
           if (owner.equals(authenticatedUser.getName()) || hasAdminRole(authenticatedUser) ||
               isPermitted(authenticatedUser, appName, Permission.MODIFY)) return;
+          break;
+        case execute:
+          if (owner.equals(authenticatedUser.getName()) || hasAdminRole(authenticatedUser) ||
+                  isPermitted(authenticatedUser, appName, Permission.EXECUTE)) return;
           break;
         case revokePerms:
           if (owner.equals(authenticatedUser.getName()) || hasAdminRole(authenticatedUser) ||

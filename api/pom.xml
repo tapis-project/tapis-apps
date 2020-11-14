@@ -22,45 +22,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.servlet</groupId>
-      <artifactId>jakarta.servlet-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.containers</groupId>
-      <artifactId>jersey-container-servlet</artifactId>
-    </dependency>
-    <!-- Include jersey-media-moxy to allow for parsing of json if found on classpath -->
-    <dependency>
-      <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-moxy</artifactId>
-    </dependency>
-    <!-- Include jersey-entity-filtering and jersey-media-json-jackson for SelectableEntityFilteringFeature -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.ext</groupId>
-      <artifactId>jersey-entity-filtering</artifactId>
-      <version>${jersey-container-servlet.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-json-jackson</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.glassfish.jersey.inject</groupId>
-        <artifactId>jersey-hk2</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.containers</groupId>
-      <artifactId>jersey-container-grizzly2-http</artifactId>
-    </dependency>
-    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>tapis-shared-api</artifactId>
       <version>${tapis-shared-java.version}</version>
@@ -75,10 +36,54 @@
       <artifactId>lib</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+<!-- TODO not needed? -->
+<!--    <dependency>-->
+<!--      <groupId>javax.ws.rs</groupId>-->
+<!--      <artifactId>javax.ws.rs-api</artifactId>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>jakarta.servlet</groupId>-->
+<!--      <artifactId>jakarta.servlet-api</artifactId>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>org.glassfish.jersey.containers</groupId>-->
+<!--      <artifactId>jersey-container-servlet</artifactId>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--      <artifactId>jackson-databind</artifactId>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>org.glassfish.jersey.ext</groupId>-->
+<!--      <artifactId>jersey-entity-filtering</artifactId>-->
+<!--      <version>${jersey-container-servlet.version}</version>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>org.glassfish.jersey.inject</groupId>-->
+<!--      <artifactId>jersey-hk2</artifactId>-->
+<!--    </dependency>-->
+      <!-- TODO not needed? -->
+
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-json-jackson</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-grizzly2-http</artifactId>
+    </dependency>
+    <!-- Needed for JavaTimeModule in ObjectMapper -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
+
     <plugins>
       <!-- Capture the git commit hash and branch identifiers. -->
       <!-- See parent pom for configuration details. -->
@@ -86,6 +91,7 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
       </plugin>
+
       <plugin>
         <!-- The version is set in the parent pom -->
         <groupId>org.apache.maven.plugins</groupId>
@@ -96,6 +102,7 @@
           </suiteXmlFiles>
         </configuration>
       </plugin>
+
       <!-- *** Create executable jar *** -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -113,7 +120,7 @@
 <!-- Looks like removing shaded jar and copying dependencies instead
      may solve SelectableEntityFilteringFeature problem. Needs more testing.
      Previously found needed to use JacksonFeature instead of moxy to avoid error when running under docker
-     but needed to run moxy instead of JacksonFeature to avoid problem with not returning these attributes: notes, created, upddated.
+     but needed to run moxy instead of JacksonFeature to avoid problem with not returning these attributes: notes, created, updated.
 -->
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -134,4 +141,5 @@
     </plugins>
     <finalName>v3#apps</finalName>
   </build>
+
 </project>

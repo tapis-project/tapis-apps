@@ -12,7 +12,34 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34efd738-2b9a-4e43-b14d-018fde0be61f" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-lib/src/main/java/edu/utexas/tacc/tapis/shared/threadlocal/TapisThreadContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-lib/src/main/java/edu/utexas/tacc/tapis/shared/threadlocal/TapisThreadContext.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/FilesSvcTest.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/FilesSvcTest_testGetSystem.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/api.iml" beforeDir="false" afterPath="$PROJECT_DIR$/api/api.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/api/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/src/main/java/edu/utexas/tacc/tapis/apps/api/AppsApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/main/java/edu/utexas/tacc/tapis/apps/api/AppsApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppsResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppsResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/src/main/java/edu/utexas/tacc/tapis2/api/jaxrs/filters/QueryParametersRequestFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/src/main/resources/edu/utexas/tacc/tapis/apps/api/jsonschema/PermsRequest.json" beforeDir="false" afterPath="$PROJECT_DIR$/api/src/main/resources/edu/utexas/tacc/tapis/apps/api/jsonschema/PermsRequest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/lib.iml" beforeDir="false" afterPath="$PROJECT_DIR$/lib/lib.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDao.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/main/java/edu/utexas/tacc/tapis/apps/model/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/main/java/edu/utexas/tacc/tapis/apps/model/App.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/main/java/edu/utexas/tacc/tapis/apps/service/AppsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/main/java/edu/utexas/tacc/tapis/apps/service/AppsService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/main/java/edu/utexas/tacc/tapis/apps/service/AppsServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/main/java/edu/utexas/tacc/tapis/apps/service/AppsServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/test/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/test/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/test/java/edu/utexas/tacc/tapis/apps/dao/SearchASTDaoTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/test/java/edu/utexas/tacc/tapis/apps/dao/SearchASTDaoTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/test/java/edu/utexas/tacc/tapis/apps/dao/SearchDaoTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/test/java/edu/utexas/tacc/tapis/apps/dao/SearchDaoTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/test/java/edu/utexas/tacc/tapis/apps/service/AppsServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/test/java/edu/utexas/tacc/tapis/apps/service/AppsServiceTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/release/docker_build.sh" beforeDir="false" afterPath="$PROJECT_DIR$/release/docker_build.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/release/docker_run.sh" beforeDir="false" afterPath="$PROJECT_DIR$/release/docker_run.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tapis-client-java/systems-client/src/main/java/edu/utexas/tacc/tapis/systems/client/SystemsClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-client-java/systems-client/src/main/java/edu/utexas/tacc/tapis/systems/client/SystemsClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tapis-client-java/systems-client/src/test/java/edu/utexas/tacc/tapis/systems/client/FilesSvcTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-client-java/systems-client/src/test/java/edu/utexas/tacc/tapis/systems/client/FilesSvcTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -106,41 +133,52 @@
       <screen x="67" y="27" width="1853" height="1052" />
     </state>
     <state x="736" y="181" width="424" height="575" key="FileChooserDialogImpl/67.27.1853.1052@67.27.1853.1052" timestamp="1602341334919" />
-    <state width="1708" height="239" key="GridCell.Tab.0.bottom" timestamp="1603313324839">
+    <state width="1708" height="239" key="GridCell.Tab.0.bottom" timestamp="1603495295579">
       <screen x="3732" y="0" width="1920" height="1080" />
     </state>
-    <state width="1708" height="239" key="GridCell.Tab.0.bottom/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@3732.0.1920.1080" timestamp="1603313324839" />
+    <state width="1708" height="239" key="GridCell.Tab.0.bottom/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@3732.0.1920.1080" timestamp="1603495295579" />
     <state width="1708" height="237" key="GridCell.Tab.0.bottom/67.27.1853.1052@67.27.1853.1052" timestamp="1602283907973" />
-    <state width="1708" height="239" key="GridCell.Tab.0.center" timestamp="1603313324839">
+    <state width="1708" height="239" key="GridCell.Tab.0.center" timestamp="1603495295579">
       <screen x="3732" y="0" width="1920" height="1080" />
     </state>
-    <state width="1708" height="239" key="GridCell.Tab.0.center/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@3732.0.1920.1080" timestamp="1603313324839" />
+    <state width="1708" height="239" key="GridCell.Tab.0.center/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@3732.0.1920.1080" timestamp="1603495295579" />
     <state width="1708" height="237" key="GridCell.Tab.0.center/67.27.1853.1052@67.27.1853.1052" timestamp="1602283907971" />
-    <state width="1708" height="239" key="GridCell.Tab.0.left" timestamp="1603313324839">
+    <state width="1708" height="239" key="GridCell.Tab.0.left" timestamp="1603495295579">
       <screen x="3732" y="0" width="1920" height="1080" />
     </state>
-    <state width="1708" height="239" key="GridCell.Tab.0.left/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@3732.0.1920.1080" timestamp="1603313324839" />
+    <state width="1708" height="239" key="GridCell.Tab.0.left/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@3732.0.1920.1080" timestamp="1603495295579" />
     <state width="1708" height="237" key="GridCell.Tab.0.left/67.27.1853.1052@67.27.1853.1052" timestamp="1602283907971" />
-    <state width="1708" height="239" key="GridCell.Tab.0.right" timestamp="1603313324839">
+    <state width="1708" height="239" key="GridCell.Tab.0.right" timestamp="1603495295579">
       <screen x="3732" y="0" width="1920" height="1080" />
     </state>
-    <state width="1708" height="239" key="GridCell.Tab.0.right/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@3732.0.1920.1080" timestamp="1603313324839" />
+    <state width="1708" height="239" key="GridCell.Tab.0.right/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@3732.0.1920.1080" timestamp="1603495295579" />
     <state width="1708" height="237" key="GridCell.Tab.0.right/67.27.1853.1052@67.27.1853.1052" timestamp="1602283907972" />
     <state x="534" y="219" width="828" height="515" key="NewModule_or_Project.wizard" timestamp="1602341314245">
       <screen x="67" y="27" width="1853" height="1052" />
     </state>
     <state x="534" y="219" width="828" height="515" key="NewModule_or_Project.wizard/67.27.1853.1052@67.27.1853.1052" timestamp="1602341314245" />
-    <state x="4116" y="11" width="1024" height="845" key="SettingsEditor" timestamp="1603208960441">
+    <state x="4116" y="11" width="1024" height="845" key="SettingsEditor" timestamp="1605387289477">
       <screen x="3732" y="0" width="1920" height="1080" />
     </state>
     <state x="2250" y="38" width="1024" height="845" key="SettingsEditor/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@1879.27.1853.1053" timestamp="1602596339693" />
-    <state x="4116" y="11" width="1024" height="845" key="SettingsEditor/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@3732.0.1920.1080" timestamp="1603208960441" />
+    <state x="4116" y="11" width="1024" height="845" key="SettingsEditor/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@3732.0.1920.1080" timestamp="1605387289477" />
     <state x="438" y="38" width="1024" height="853" key="SettingsEditor/67.27.1853.1052@67.27.1853.1052" timestamp="1602361487134" />
-    <state x="4300" y="207" width="697" height="697" key="search.everywhere.popup" timestamp="1603313313275">
+    <state x="4300" y="207" width="697" height="697" key="search.everywhere.popup" timestamp="1605386975154">
       <screen x="3732" y="0" width="1920" height="1080" />
     </state>
-    <state x="2427" y="229" width="673" height="680" key="search.everywhere.popup/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@1879.27.1853.1053" timestamp="1602966217099" />
-    <state x="4300" y="207" width="697" height="697" key="search.everywhere.popup/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@3732.0.1920.1080" timestamp="1603313313275" />
+    <state x="2427" y="229" width="673" height="680" key="search.everywhere.popup/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@1879.27.1853.1053" timestamp="1605309052321" />
+    <state x="4300" y="207" width="697" height="697" key="search.everywhere.popup/1879.27.1853.1053/3732.0.1920.1080/0.1080.1920.1080@3732.0.1920.1080" timestamp="1605386975154" />
     <state x="615" y="229" width="672" height="678" key="search.everywhere.popup/67.27.1853.1052@67.27.1853.1052" timestamp="1602376819639" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/lib/src/main/java/edu/utexas/tacc/tapis/apps/model/App.java</url>
+          <line>15</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

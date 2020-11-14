@@ -35,7 +35,7 @@ public interface AppsService
   boolean checkForAppByName(AuthenticatedUser authenticatedUser, String appName)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  App getAppByName(AuthenticatedUser authenticatedUser, String appName)
+  App getApp(AuthenticatedUser authenticatedUser, String appName, boolean requireExecPerm)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
   List<App> getApps(AuthenticatedUser authenticatedUser, List<String> searchList)

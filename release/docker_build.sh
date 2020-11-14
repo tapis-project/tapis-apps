@@ -70,6 +70,7 @@ TAG_RELEASE_CANDIDATE="${REPO}/${SVC_NAME}:${VER}-rc"
 # TAG_ENV_VER="${REPO}/${SVC_NAME}:${ENV}-${VER}"
 TAG_ENV="${REPO}/${SVC_NAME}:${ENV}"
 TAG_LATEST="${REPO}/${SVC_NAME}:latest"
+TAG_LOCAL="${REPO}/${SVC_NAME}:dev_local"
 
 # If branch name is UNKNOWN or empty as might be the case in a jenkins job then
 #   set it to GIT_BRANCH. Jenkins jobs should have this set in the env.
@@ -92,6 +93,9 @@ docker build -f Dockerfile \
 # docker tag "$TAG_UNIQ" "$TAG_ENV_VER"
 echo "Creating RELEASE_CANDIDATE image tag: $TAG_RELEASE_CANDIDATE"
 docker tag "$TAG_UNIQ" "$TAG_RELEASE_CANDIDATE"
+
+echo "Creating image for local testing user tag: $TAG_LOCAL"
+docker tag "$TAG_UNIQ" "$TAG_LOCAL"
 
 # Push to remote repo
 if [ "x$2" = "x-push" ]; then
