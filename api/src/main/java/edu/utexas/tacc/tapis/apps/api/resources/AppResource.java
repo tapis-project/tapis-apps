@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
-import edu.utexas.tacc.tapis.apps.api.responses.RespAppArray;
+import edu.utexas.tacc.tapis.apps.api.responses.RespAppsArray;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisJSONException;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
@@ -580,7 +580,7 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     if (apps == null) apps = Collections.emptyList();
     int cnt = apps.size();
-    RespAppArray resp1 = new RespAppArray(apps);
+    RespAppsArray resp1 = new RespAppsArray(apps);
     return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
   }
 
@@ -640,7 +640,7 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     if (apps == null) apps = Collections.emptyList();
     int cnt = apps.size();
-    RespAppArray resp1 = new RespAppArray(apps);
+    RespAppsArray resp1 = new RespAppsArray(apps);
     return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
   }
 
@@ -726,7 +726,7 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     if (apps == null) apps = Collections.emptyList();
     int cnt = apps.size();
-    RespAppArray resp1 = new RespAppArray(apps);
+    RespAppsArray resp1 = new RespAppsArray(apps);
     return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
   }
 

@@ -3,14 +3,14 @@ package edu.utexas.tacc.tapis.apps.api;
 import javax.ws.rs.ApplicationPath;
 
 import edu.utexas.tacc.tapis.security.client.SKClient;
+import edu.utexas.tacc.tapis.shared.security.ServiceJWT;
+import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.sharedapi.jaxrs.filters.JWTValidateRequestFilter;
 import edu.utexas.tacc.tapis.sharedapi.providers.ObjectMapperContextResolver;
 import edu.utexas.tacc.tapis.sharedapi.providers.TapisExceptionMapper;
 import edu.utexas.tacc.tapis.sharedapi.providers.ValidationExceptionMapper;
-import edu.utexas.tacc.tapis.sharedapi.security.ServiceJWT;
-import edu.utexas.tacc.tapis.sharedapi.security.TenantManager;
 import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
 import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
@@ -57,7 +57,7 @@ public class AppsApplication extends ResourceConfig
 //    register(SelectableEntityFilteringFeature.class);
     // Register either Jackson or Moxy for SelectableEntityFiltering
     // NOTE: Using shaded jar and Moxy works when running from Intellij IDE but breaks things when running in docker.
-    // NOTE: Using Jackson results in following TApp attributes not being returned: notes, created, updated.
+    // NOTE: Using Jackson results in following App attributes not being returned: notes, created, updated.
     // NOTE: Using unshaded jar and Moxy appears to resolve all issues.
 //    register(new MoxyJsonConfig().resolver());
 // NOTE on Selectable feature: gave up on this (for now) as too cumbersome and limited. Awkward to specify attributes
@@ -103,7 +103,7 @@ public class AppsApplication extends ResourceConfig
       // Initialize tenant manager singleton. This can be used by all subsequent application code, including filters.
       // The base url of the tenants service is a required input parameter.
       // Retrieve the tenant list from the tenant service now to fail fast if we cannot access the list.
-      String url = RuntimeParameters.getInstance().getTenantsSvcURL();
+      String url = runParms.getTenantsSvcURL();
       TenantManager.getInstance(url).getTenants();
 
       // Initialize bindings for HK2 dependency injection

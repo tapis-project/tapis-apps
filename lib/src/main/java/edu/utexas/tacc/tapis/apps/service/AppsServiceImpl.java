@@ -1,10 +1,5 @@
 package edu.utexas.tacc.tapis.apps.service;
 
-import static edu.utexas.tacc.tapis.shared.TapisConstants.SERVICE_NAME_APPS;
-import static edu.utexas.tacc.tapis.apps.model.App.APIUSERID_VAR;
-import static edu.utexas.tacc.tapis.apps.model.App.OWNER_VAR;
-import static edu.utexas.tacc.tapis.apps.model.App.TENANT_VAR;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,11 +21,11 @@ import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.security.client.SKClient;
 import edu.utexas.tacc.tapis.security.client.gen.model.SkRole;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
+import edu.utexas.tacc.tapis.shared.security.ServiceJWT;
+import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
-import edu.utexas.tacc.tapis.sharedapi.security.ServiceJWT;
-import edu.utexas.tacc.tapis.sharedapi.security.TenantManager;
 import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
 import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
@@ -39,6 +34,10 @@ import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.tenants.client.gen.model.Tenant;
+import static edu.utexas.tacc.tapis.shared.TapisConstants.SERVICE_NAME_APPS;
+import static edu.utexas.tacc.tapis.apps.model.App.APIUSERID_VAR;
+import static edu.utexas.tacc.tapis.apps.model.App.OWNER_VAR;
+import static edu.utexas.tacc.tapis.apps.model.App.TENANT_VAR;
 
 /*
  * Service level methods for Apps.
@@ -569,8 +568,12 @@ public class AppsServiceImpl implements AppsService
     // Extract various names for convenience
     String apiUserId = authenticatedUser.getName();
     String appTenantName = authenticatedUser.getTenantId();
-    // For service request use oboTenant for tenant associated with the app
-    if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
+    // For service request use oboTenant for tenant associated with the app and oboUser as apiUserId
+    if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()))
+    {
+      appTenantName = authenticatedUser.getOboTenantId();
+      apiUserId = authenticatedUser.getOboUser();
+    }
 
     // We need owner to check auth and if app not there cannot find owner, so
     // if app does not exist then return null
@@ -578,7 +581,12 @@ public class AppsServiceImpl implements AppsService
 
     // ------------------------- Check service level authorization -------------------------
     checkAuth(authenticatedUser, op, appName, null, null, null);
-    if (requireExecPerm) checkAuth(authenticatedUser, AppOperation.execute, appName, null, null, null);
+    // If flag is set to also require EXECUTE perm then make a special auth call
+    if (requireExecPerm)
+    {
+      checkAuthUser(authenticatedUser, AppOperation.execute, appTenantName, authenticatedUser.getOboUser(),
+                    appName, null, null, null);
+    }
 
     App result = dao.getApp(appTenantName, appName);
     return result;
@@ -1083,19 +1091,9 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Check service level authorization
+   * Standard service level authorization check. Check is different for service and user requests.
    * A check should be made for app existence before calling this method.
-   * If no owner is passed in and one cannot be found then an error is logged and
-   *   authorization is denied.
-   * Operations:
-   *  Create - must be owner or have admin role
-   *  Read - must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
-   *  Delete - must be owner or have admin role
-   *  Modify - must be owner or have admin role or have MODIFY permission
-   *  Execute - must be owner or have admin role or have EXECUTE permission
-   *  ChangeOwner - must be owner or have admin role
-   *  GrantPerm -  must be owner or have admin role
-   *  RevokePerm -  must be owner or have admin role or apiUserId=targetUser and meet certain criteria (allowUserRevokePerm)
+   * If no owner is passed in and one cannot be found then an error is logged and authorization is denied.
    *
    * @param authenticatedUser - principal user containing tenant and user info
    * @param operation - operation name
@@ -1120,42 +1118,83 @@ public class AppsServiceImpl implements AppsService
     else
     {
       // User check
-      // Requires owner. If no owner specified and owner cannot be determined then log an error and deny.
-      if (StringUtils.isBlank(owner)) owner = dao.getAppOwner(authenticatedUser.getTenantId(), appName);
-      if (StringUtils.isBlank(owner)) {
-        String msg = LibUtils.getMsgAuth("APPLIB_AUTH_NO_OWNER", authenticatedUser, appName, operation.name());
-        _log.error(msg);
-        throw new NotAuthorizedException(msg);
-      }
-      switch(operation) {
-        case create:
-        case softDelete:
-        case changeOwner:
-        case grantPerms:
-          if (owner.equals(authenticatedUser.getName()) || hasAdminRole(authenticatedUser)) return;
-          break;
-        case hardDelete:
-          if (hasAdminRole(authenticatedUser)) return;
-          break;
-        case read:
-        case getPerms:
-          if (owner.equals(authenticatedUser.getName()) || hasAdminRole(authenticatedUser) ||
-              isPermittedAny(authenticatedUser, appName, READMODIFY_PERMS)) return;
-          break;
-        case modify:
-          if (owner.equals(authenticatedUser.getName()) || hasAdminRole(authenticatedUser) ||
-              isPermitted(authenticatedUser, appName, Permission.MODIFY)) return;
-          break;
-        case execute:
-          if (owner.equals(authenticatedUser.getName()) || hasAdminRole(authenticatedUser) ||
-                  isPermitted(authenticatedUser, appName, Permission.EXECUTE)) return;
-          break;
-        case revokePerms:
-          if (owner.equals(authenticatedUser.getName()) || hasAdminRole(authenticatedUser) ||
-              (authenticatedUser.getName().equals(targetUser) &&
-                      allowUserRevokePerm(authenticatedUser, appName, perms))) return;
-          break;
-      }
+      checkAuthUser(authenticatedUser, operation, null, null, appName, owner, targetUser, perms);
+      return;
+    }
+    // Not authorized, throw an exception
+    String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH", authenticatedUser, appName, operation.name());
+    throw new NotAuthorizedException(msg);
+  }
+
+  /**
+   * User based authorization check.
+   * Can be used for OBOUser type checks.
+   * By default use tenant and user from authenticatedUser, allow for optional tenant or user.
+   * A check should be made for app existence before calling this method.
+   * If no owner is passed in and one cannot be found then an error is logged and
+   *   authorization is denied.
+   * Operations:
+   *  Create - must be owner or have admin role
+   *  Read - must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
+   *  Delete - must be owner or have admin role
+   *  Modify - must be owner or have admin role or have MODIFY permission
+   *  Execute - must be owner or have admin role or have EXECUTE permission
+   *  ChangeOwner - must be owner or have admin role
+   *  GrantPerm -  must be owner or have admin role
+   *  RevokePerm -  must be owner or have admin role or apiUserId=targetUser and meet certain criteria (allowUserRevokePerm)
+   *
+   * @param authenticatedUser - principal user containing tenant and user info
+   * @param operation - operation name
+   * @param tenantToCheck - optional name of the tenant to use. Default is to use authenticatedUser.
+   * @param userToCheck - optional name of the user to check. Default is to use authenticatedUser.
+   * @param appName - name of the system
+   * @param owner - system owner
+   * @param perms - List of permissions for the revokePerm case
+   * @throws NotAuthorizedException - apiUserId not authorized to perform operation
+   */
+  private void checkAuthUser(AuthenticatedUser authenticatedUser, AppOperation operation,
+                             String tenantToCheck, String userToCheck,
+                             String appName, String owner, String targetUser, Set<Permission> perms)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
+  {
+    // Use tenant and user from authenticatedUsr or optional provided values
+    String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
+    String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
+    // Requires owner. If no owner specified and owner cannot be determined then log an error and deny.
+    if (StringUtils.isBlank(owner)) owner = dao.getAppOwner(tenantName, appName);
+    if (StringUtils.isBlank(owner)) {
+      String msg = LibUtils.getMsgAuth("APPLIB_AUTH_NO_OWNER", authenticatedUser, appName, operation.name());
+      _log.error(msg);
+      throw new NotAuthorizedException(msg);
+    }
+    switch(operation) {
+      case create:
+      case softDelete:
+      case changeOwner:
+      case grantPerms:
+        if (owner.equals(userName) || hasAdminRole(authenticatedUser, tenantName, userName)) return;
+        break;
+      case hardDelete:
+        if (hasAdminRole(authenticatedUser, tenantName, userName)) return;
+        break;
+      case read:
+      case getPerms:
+        if (owner.equals(userName) || hasAdminRole(authenticatedUser, tenantName, userName) ||
+              isPermittedAny(authenticatedUser, tenantName, userName, appName, READMODIFY_PERMS)) return;
+        break;
+      case modify:
+        if (owner.equals(userName) || hasAdminRole(authenticatedUser, tenantName, userName) ||
+                isPermitted(authenticatedUser, tenantName, userName, appName, Permission.MODIFY)) return;
+        break;
+      case execute:
+        if (owner.equals(userName) || hasAdminRole(authenticatedUser, tenantName, userName) ||
+                isPermitted(authenticatedUser, tenantName, userName, appName, Permission.EXECUTE)) return;
+        break;
+      case revokePerms:
+        if (owner.equals(userName) || hasAdminRole(authenticatedUser, tenantName, userName) ||
+                (userName.equals(targetUser) &&
+                        allowUserRevokePerm(authenticatedUser, tenantName, userName, appName, perms))) return;
+        break;
     }
     // Not authorized, throw an exception
     String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH", authenticatedUser, appName, operation.name());
@@ -1173,7 +1212,7 @@ public class AppsServiceImpl implements AppsService
     // If requester is a service or an admin then all apps allowed
     // TODO: for all services or just some, such as files and jobs?
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()) ||
-        hasAdminRole(authenticatedUser)) return null;
+        hasAdminRole(authenticatedUser, null, null)) return null;
     var appIDs = new ArrayList<Integer>();
     // Get roles for user and extract app IDs
     // TODO: Need a way to make sure roles that a user has created and assigned to themselves are not included
@@ -1199,53 +1238,73 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Check to see if apiUserId has the service admin role
+   * Check to see if a user has the service admin role
+   * By default use tenant and user from authenticatedUser, allow for optional tenant or user.
    */
-  private boolean hasAdminRole(AuthenticatedUser authenticatedUser) throws TapisException
+  private boolean hasAdminRole(AuthenticatedUser authenticatedUser, String tenantToCheck, String userToCheck) throws TapisException
   {
-    // TODO Temporarily just require that user has AppsAdmin in the name.
+    // TODO NOTE that tenantName is not yet used but will be once we make the SK call.
+    // Use tenant and user from authenticatedUsr or optional provided values
+    String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
+    String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
+    // TODO Temporarily just require that user has SystemsAdmin in the name.
     // TODO: Use sk isAdmin method ot require that user have the tenant admin role
 //    var skClient = getSKClient(authenticatedUser);
-//    return skClient.hasRole(authenticatedUser.getTenantId(), authenticatedUser.getName(), APPS_ADMIN_ROLE);
-    if (authenticatedUser.getName().contains("AppsAdmin") ||
-        authenticatedUser.getName().contains("admin") ||
-        authenticatedUser.getName().equalsIgnoreCase("testuser9")) return true;
+//    return skClient.hasRole(tenantName, userName, APPS_ADMIN_ROLE);
+    if (userName.contains("AppsAdmin") ||
+        userName.contains("admin") ||
+        userName.equalsIgnoreCase("testuser9")) return true;
     else return false;
   }
 
   /**
-   * Check to see if apiUserId has the specified permission
+   * Check to see if a user has the specified permission
+   * By default use tenant and user from authenticatedUser, allow for optional tenant or user.
    */
-  private boolean isPermitted(AuthenticatedUser authenticatedUser, String appName, Permission perm)
+  private boolean isPermitted(AuthenticatedUser authenticatedUser, String tenantToCheck, String userToCheck,
+                              String appName, Permission perm)
           throws TapisException, TapisClientException
   {
+    // Use tenant and user from authenticatedUsr or optional provided values
+    String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
+    String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
     var skClient = getSKClient(authenticatedUser);
-    String permSpecStr = getPermSpecStr(authenticatedUser.getTenantId(), appName, perm);
-    return skClient.isPermitted(authenticatedUser.getTenantId(), authenticatedUser.getName(), permSpecStr);
+    String permSpecStr = getPermSpecStr(tenantName, appName, perm);
+    return skClient.isPermitted(tenantName, userName, permSpecStr);
   }
 
   /**
-   * Check to see if apiUserId has any of the set of permissions
+   * Check to see if a user has any of the set of permissions
+   * By default use tenant and user from authenticatedUser, allow for optional tenant or user.
    */
-  private boolean isPermittedAny(AuthenticatedUser authenticatedUser, String appName, Set<Permission> perms)
+  private boolean isPermittedAny(AuthenticatedUser authenticatedUser, String tenantToCheck, String userToCheck,
+                                 String appName, Set<Permission> perms)
           throws TapisException, TapisClientException
   {
+    // Use tenant and user from authenticatedUsr or optional provided values
+    String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
+    String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
     var skClient = getSKClient(authenticatedUser);
     var permSpecs = new ArrayList<String>();
     for (Permission perm : perms) {
-      permSpecs.add(getPermSpecStr(authenticatedUser.getTenantId(), appName, perm));
+      permSpecs.add(getPermSpecStr(tenantName, appName, perm));
     }
-    return skClient.isPermittedAny(authenticatedUser.getTenantId(), authenticatedUser.getName(), permSpecs.toArray(new String[0]));
+    return skClient.isPermittedAny(tenantName, userName, permSpecs.toArray(new String[0]));
   }
 
   /**
-   * Check to see if apiUserId who is not owner or admin is authorized to revoke permissions
+   * Check to see if a user who is not owner or admin is authorized to revoke permissions
+   * By default use tenant and user from authenticatedUser, allow for optional tenant or user.
    */
-  private boolean allowUserRevokePerm(AuthenticatedUser authenticatedUser, String appName, Set<Permission> perms)
+  private boolean allowUserRevokePerm(AuthenticatedUser authenticatedUser, String tenantToCheck, String userToCheck,
+                                      String appName, Set<Permission> perms)
           throws TapisException, TapisClientException
   {
-    if (perms.contains(Permission.MODIFY)) return isPermitted(authenticatedUser, appName, Permission.MODIFY);
-    if (perms.contains(Permission.READ)) return isPermittedAny(authenticatedUser, appName, READMODIFY_PERMS);
+    // Use tenant and user from authenticatedUsr or optional provided values
+    String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
+    String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
+    if (perms.contains(Permission.MODIFY)) return isPermitted(authenticatedUser, tenantName, userName, appName, Permission.MODIFY);
+    if (perms.contains(Permission.READ)) return isPermittedAny(authenticatedUser, tenantName, userName, appName, READMODIFY_PERMS);
     // TODO what if perms contains ALL?
     return false;
   }
