@@ -5,6 +5,7 @@ import edu.utexas.tacc.tapis.security.client.SKClient;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
+import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.ServiceJWT;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
@@ -90,7 +91,7 @@ public class AppsServiceTest
         bind(AppsServiceImpl.class).to(AppsService.class);
         bind(AppsServiceImpl.class).to(AppsServiceImpl.class);
         bind(AppsDaoImpl.class).to(AppsDao.class);
-        bindFactory(AppsServiceJWTFactory.class).to(ServiceJWT.class);
+        bindFactory(AppsServiceContextFactory.class).to(ServiceContext.class);
         bind(SKClient.class).to(SKClient.class);
       }
     });

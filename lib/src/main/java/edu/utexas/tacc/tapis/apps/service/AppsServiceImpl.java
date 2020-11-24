@@ -21,6 +21,7 @@ import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.security.client.SKClient;
 import edu.utexas.tacc.tapis.security.client.gen.model.SkRole;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
+import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.ServiceJWT;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
@@ -87,7 +88,7 @@ public class AppsServiceImpl implements AppsService
   private SKClient skClient;
 
   @Inject
-  private ServiceJWT serviceJWT;
+  private ServiceContext serviceContext;
 
   // We must be running on a specific site and this will never change.
   private static String siteId;
@@ -472,12 +473,12 @@ public class AppsServiceImpl implements AppsService
   {
     siteId = svcSiteId;
     // Get service master tenant
-    String svcMasterTenant = RuntimeParameters.getInstance().getServiceMasterTenant();
+    String svcMasterTenant = TenantManager.getInstance().getSiteMasterTenantId(siteId);
     if (StringUtils.isBlank(svcMasterTenant)) svcMasterTenant = APPS_DEFAULT_MASTER_TENANT;
     // Create user for SK client
     // NOTE: getSKClient() does not require the jwt to be set in AuthenticatedUser but we keep it here as a reminder
     //       that in general this may be the pattern to follow.
-    String svcJwt = serviceJWT.getAccessJWT(siteId);
+    String svcJwt = serviceContext.getAccessJWT(svcMasterTenant, SERVICE_NAME_APPS);
     AuthenticatedUser svcUser =
         new AuthenticatedUser(SERVICE_NAME_APPS, svcMasterTenant, TapisThreadContext.AccountType.service.name(),
                               null, SERVICE_NAME_APPS, svcMasterTenant, null, siteId, svcJwt);
@@ -485,6 +486,7 @@ public class AppsServiceImpl implements AppsService
     var skClient = getSKClient(svcUser);
     // Check for admin role, continue if error getting role.
     // TODO: Move msgs to properties file
+    // TODO/TBD: Do we still need the special service admin role "AppsAdmin" or should be use the tenant admin role?
     SkRole adminRole = null;
     try
     {
@@ -969,6 +971,7 @@ public class AppsServiceImpl implements AppsService
   // ************************************************************************
 
   /**
+   *  TODO: revisit this. There is now ServiceContext which will probably help.
    * Get Security Kernel client associated with specified tenant
    * @param authenticatedUser - name of tenant
    * @return SK client
@@ -990,7 +993,7 @@ public class AppsServiceImpl implements AppsService
     skURL = skURL.substring(0, skURL.indexOf("/v3") + 3);
 
     skClient.setBasePath(skURL);
-    skClient.addDefaultHeader(HDR_TAPIS_TOKEN, serviceJWT.getAccessJWT(siteId));
+    skClient.addDefaultHeader(HDR_TAPIS_TOKEN, serviceContext.getServiceJWT().getAccessJWT(siteId));
 
     // For service jwt pass along oboTenant and oboUser in OBO headers
     // For user jwt use authenticated user name and tenant in OBO headers

@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
-import edu.utexas.tacc.tapis.shared.security.ServiceJWT;
+import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.shared.utils.CallSiteToggle;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
@@ -106,7 +106,7 @@ public class AppsResource
   @Inject
   private AppsServiceImpl svcImpl;
   @Inject
-  private ServiceJWT serviceJWT;
+  private ServiceContext serviceContext;
 
   /* **************************************************************************** */
   /*                                Public Methods                                */
@@ -257,7 +257,7 @@ public class AppsResource
   {
     Exception result = null;
     try {
-      String jwt = serviceJWT.getAccessJWT(AppsApplication.getSiteId());
+      String jwt = serviceContext.getServiceJWT().getAccessJWT(AppsApplication.getSiteId());
       if (StringUtils.isBlank(jwt)) result = new TapisClientException(LibUtils.getMsg("APPLIB_CHECKJWT_EMPTY"));
     }
     catch (Exception e) { result = e; }
@@ -270,7 +270,7 @@ public class AppsResource
    */
   private Exception checkDB()
   {
-    Exception result = null;
+    Exception result;
     try { result = svcImpl.checkDB(); }
     catch (Exception e) { result = e; }
     return result;

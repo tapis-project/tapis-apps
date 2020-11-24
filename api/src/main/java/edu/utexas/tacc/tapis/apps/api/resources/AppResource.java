@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.StringJoiner;
 
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
@@ -57,7 +56,6 @@ import edu.utexas.tacc.tapis.sharedapi.responses.RespResourceUrl;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultChangeCount;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultResourceUrl;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqCreateApp;
-import edu.utexas.tacc.tapis.apps.api.requests.ReqSearchApps;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqUpdateApp;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApp;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
@@ -694,10 +692,13 @@ public class AppResource
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
 
-    // Create array of search strings form the json object
-    ReqSearchApps req;
-    try {
-      req = TapisGsonUtils.getGson().fromJson(rawJson, ReqSearchApps.class);
+    // Construct final SQL-like search string using the json
+    // When put together full string must be a valid SQL-like where clause. This will be validated in the service call.
+    // Not all SQL syntax is supported. See SqlParser.jj in tapis-shared-searchlib.
+    String searchStr;
+    try
+    {
+      searchStr = SearchUtils.getSearchFromRequestJson(rawJson);
     }
     catch (JsonSyntaxException e)
     {
@@ -705,12 +706,6 @@ public class AppResource
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
-    // Concatenate all strings into a single SQL-like search string
-    // When put together full string must be a valid SQL-like where clause. This will be validated in the service call.
-    // Not all SQL syntax is supported. See SqlParser.jj in tapis-shared-searchlib.
-    StringJoiner sj = new StringJoiner(" ");
-    for (String s : req.search) { sj.add(s); }
-    String searchStr = sj.toString();
     _log.debug("Using search string: " + searchStr);
 
     // ------------------------- Retrieve all records -----------------------------

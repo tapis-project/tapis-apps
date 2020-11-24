@@ -3,7 +3,7 @@ package edu.utexas.tacc.tapis.apps.api;
 import javax.ws.rs.ApplicationPath;
 
 import edu.utexas.tacc.tapis.security.client.SKClient;
-import edu.utexas.tacc.tapis.shared.security.ServiceJWT;
+import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
@@ -16,7 +16,7 @@ import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
 import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
-import edu.utexas.tacc.tapis.apps.service.AppsServiceJWTFactory;
+import edu.utexas.tacc.tapis.apps.service.AppsServiceContextFactory;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -113,7 +113,7 @@ public class AppsApplication extends ResourceConfig
           bind(AppsServiceImpl.class).to(AppsService.class); // Used in Resource classes for most service calls
           bind(AppsServiceImpl.class).to(AppsServiceImpl.class); // Used in AppsResource for checkDB
           bind(AppsDaoImpl.class).to(AppsDao.class); // Used in service impl
-          bindFactory(AppsServiceJWTFactory.class).to(ServiceJWT.class); // Used in service impl and AppsResource
+          bindFactory(AppsServiceContextFactory.class).to(ServiceContext.class); // Used in service impl and AppsResource
           bind(SKClient.class).to(SKClient.class); // Used in service impl
         }
       });
@@ -150,8 +150,6 @@ public class AppsApplication extends ResourceConfig
     InjectionManager im = handler.getInjectionManager();
     ServiceLocator locator = im.getInstance(ServiceLocator.class);
     AppsServiceImpl svcImpl = locator.getService(AppsServiceImpl.class);
-    // Make sure we can get a service JWT. Better to fail here than later.
-    ServiceJWT serviceJWT = locator.getService(ServiceJWT.class);
     svcImpl.initService(AppsApplication.getSiteId());
     // Create and start the server
     final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config, false);
