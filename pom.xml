@@ -99,8 +99,8 @@
   </dependencies>
 
   <modules>
-    <module>api</module>
-    <module>lib</module>
+    <module>tapis-appsapi</module>
+    <module>tapis-appslib</module>
   </modules>
 
 </project>

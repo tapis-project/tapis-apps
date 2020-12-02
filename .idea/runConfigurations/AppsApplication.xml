@@ -13,7 +13,7 @@
     </envs>
     <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
     <option name="MAIN_CLASS_NAME" value="edu.utexas.tacc.tapis.apps.api.AppsApplication" />
-    <module name="api" />
+    <module name="tapis-appsapi" />
     <option name="VM_PARAMETERS" value="-Dp6spy.config.modulelist=" />
     <method v="2">
       <option name="Make" enabled="true" />

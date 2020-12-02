@@ -25,6 +25,7 @@
   </properties>
  
   <dependencies>
+    <!-- Tapis shared modules -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>tapis-shared-lib</artifactId>
@@ -61,10 +62,7 @@
       <artifactId>tenants-client</artifactId>
       <version>${tapis-client-java.version}</version>
     </dependency>
-    <dependency>
-      <groupId>io.swagger.core.v3</groupId>
-      <artifactId>swagger-annotations</artifactId>
-    </dependency>
+    <!-- HTTP for client calls -->
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
@@ -80,15 +78,13 @@
       <artifactId>threetenbp</artifactId>
       <version>${threetenbp.version}</version>
     </dependency>
+    <!-- Gson -->
     <dependency>
       <groupId>io.gsonfire</groupId>
       <artifactId>gson-fire</artifactId>
       <version>${gson-fire.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.test-framework</groupId>
-      <artifactId>jersey-test-framework-core</artifactId>
-    </dependency>
+    <!-- jOOQ and flyway -->
     <dependency>
       <groupId>org.jooq</groupId>
       <artifactId>jooq</artifactId>

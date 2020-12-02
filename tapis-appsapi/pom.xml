@@ -21,6 +21,13 @@
   </properties>
 
   <dependencies>
+    <!-- Local project modules -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>lib</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <!-- Tapis shared modules -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>tapis-shared-api</artifactId>
@@ -31,40 +38,7 @@
       <artifactId>tapis-shared-searchlib</artifactId>
       <version>${tapis-shared-java.version}</version>
     </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>lib</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-<!-- TODO not needed? -->
-<!--    <dependency>-->
-<!--      <groupId>javax.ws.rs</groupId>-->
-<!--      <artifactId>javax.ws.rs-api</artifactId>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>jakarta.servlet</groupId>-->
-<!--      <artifactId>jakarta.servlet-api</artifactId>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>org.glassfish.jersey.containers</groupId>-->
-<!--      <artifactId>jersey-container-servlet</artifactId>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--      <artifactId>jackson-databind</artifactId>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>org.glassfish.jersey.ext</groupId>-->
-<!--      <artifactId>jersey-entity-filtering</artifactId>-->
-<!--      <version>${jersey-container-servlet.version}</version>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>org.glassfish.jersey.inject</groupId>-->
-<!--      <artifactId>jersey-hk2</artifactId>-->
-<!--    </dependency>-->
-      <!-- TODO not needed? -->
-
+    <!-- Jersey/Jackson jax-rs modules -->
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-json-jackson</artifactId>

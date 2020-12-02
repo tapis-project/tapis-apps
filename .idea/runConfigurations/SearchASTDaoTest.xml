@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="SearchASTDaoTest" type="TestNG" nameIsGenerated="true">
-    <module name="lib" />
+    <module name="tapis-appslib" />
     <useClassPathOnly />
     <extension name="coverage">
       <pattern>
