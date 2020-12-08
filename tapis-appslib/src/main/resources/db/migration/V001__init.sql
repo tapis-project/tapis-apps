@@ -40,7 +40,7 @@ SET search_path TO tapis_app;
 CREATE TYPE app_type_type AS ENUM ('BATCH', 'DIRECT', 'BATCH_INTERACTIVE', 'DIRECT_INTERACTIVE');
 CREATE TYPE operation_type AS ENUM ('create', 'modify', 'softDelete', 'hardDelete', 'changeOwner',
                                     'grantPerms', 'revokePerms');
-CREATE TYPE capability_category_type AS ENUM ('SCHEDULER', 'OS', 'HARDWARE', 'SOFTWARE', 'JOB', 'CONTAINER', 'MISC', 'CUSTOM');
+CREATE TYPE container_runtime_type AS ENUM ('DOCKER', 'SINGULARITY');
 
 -- ----------------------------------------------------------------------------------------
 --                                     APPS
@@ -49,27 +49,52 @@ CREATE TYPE capability_category_type AS ENUM ('SCHEDULER', 'OS', 'HARDWARE', 'SO
 -- Basic app attributes
 CREATE TABLE apps
 (
-  id          SERIAL PRIMARY KEY,
+  seq_id          SERIAL PRIMARY KEY,
   tenant      VARCHAR(24) NOT NULL,
-  name        VARCHAR(80) NOT NULL,
+  id        VARCHAR(80) NOT NULL,
   version     VARCHAR(64) NOT NULL,
   description VARCHAR(2048),
   app_type app_type_type NOT NULL,
   owner       VARCHAR(60) NOT NULL,
   enabled     BOOLEAN NOT NULL DEFAULT true,
+  containerized BOOLEAN NOT NULL DEFAULT true,
+  container_runtime container_runtime_type NOT NULL,
+  container_image VARCHAR(128),
+  command VARCHAR(128),
+  exec_codes TEXT[] NOT NULL,
+  dynamic_exec_system BOOLEAN NOT NULL DEFAULT false,
+  exec_system_constraints TEXT[] NOT NULL,
+  exec_system_id VARCHAR(80) NOT NULL,
+  exec_system_exec_dir VARCHAR(4096),
+  exec_system_input_dir VARCHAR(4096),
+  exec_system_output_dir VARCHAR(4096),
+  exec_system_logical_queue VARCHAR(128),
+  archive_system_id VARCHAR(80),
+  archive_system_dir VARCHAR(4096),
+  archive_on_app_error BOOLEAN NOT NULL DEFAULT true,
+  use_dtn_if_defined BOOLEAN NOT NULL DEFAULT true,
+  job_description VARCHAR(2048),
+  max_jobs INTEGER NOT NULL DEFAULT -1,
+  max_jobs_per_user INTEGER NOT NULL DEFAULT -1,
+  node_count INTEGER NOT NULL DEFAULT -1,
+  cores_per_node INTEGER NOT NULL DEFAULT -1,
+  memory_mb INTEGER NOT NULL DEFAULT -1,
+  max_minutes INTEGER NOT NULL DEFAULT -1,
+  archive_includes TEXT[] NOT NULL,
+  archive_excludes TEXT[] NOT NULL,
   tags       TEXT[] NOT NULL,
   notes      JSONB NOT NULL,
   import_ref_id VARCHAR(80),
   deleted    BOOLEAN NOT NULL DEFAULT false,
   created    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
   updated    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-  UNIQUE (tenant,name,version)
+  UNIQUE (tenant,id,version)
 );
 ALTER TABLE apps OWNER TO tapis_app;
-CREATE INDEX app_tenant_name_idx ON apps (tenant, name);
-COMMENT ON COLUMN apps.id IS 'Application id';
+CREATE INDEX app_tenant_name_idx ON apps (tenant, id);
+COMMENT ON COLUMN apps.seq_id IS 'Application sequence id';
 COMMENT ON COLUMN apps.tenant IS 'Tenant name associated with the application';
-COMMENT ON COLUMN apps.name IS 'Unique name for the application';
+COMMENT ON COLUMN apps.id IS 'Unique name for the application';
 COMMENT ON COLUMN apps.version IS 'Application version';
 COMMENT ON COLUMN apps.description IS 'Application description';
 COMMENT ON COLUMN apps.app_type IS 'Type of application';
@@ -86,8 +111,8 @@ COMMENT ON COLUMN apps.updated IS 'UTC time for when record was last updated';
 -- Track update requests for apps
 CREATE TABLE app_updates
 (
-    id SERIAL PRIMARY KEY,
-    app_id SERIAL REFERENCES apps(id) ON DELETE CASCADE,
+    seq_id SERIAL PRIMARY KEY,
+    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
     user_name VARCHAR(60) NOT NULL,
     user_tenant VARCHAR(24) NOT NULL,
     operation operation_type NOT NULL,
@@ -96,8 +121,8 @@ CREATE TABLE app_updates
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
 );
 ALTER TABLE app_updates OWNER TO tapis_app;
-COMMENT ON COLUMN app_updates.id IS 'Application update request id';
-COMMENT ON COLUMN app_updates.app_id IS 'Id of application being updated';
+COMMENT ON COLUMN app_updates.seq_id IS 'Application update request id';
+COMMENT ON COLUMN app_updates.app_seq_id IS 'Sequence id of application being updated';
 COMMENT ON COLUMN app_updates.user_name IS 'Name of user who requested the update';
 COMMENT ON COLUMN app_updates.user_tenant IS 'Tenant of user who requested the update';
 COMMENT ON COLUMN app_updates.operation IS 'Type of update operation';
@@ -106,30 +131,84 @@ COMMENT ON COLUMN app_updates.upd_text IS 'Text data supplied by client - secret
 COMMENT ON COLUMN app_updates.created IS 'UTC time for when record was created';
 
 -- ----------------------------------------------------------------------------------------
---                               CAPABILITIES
+--                           FILE INPUTS
 -- ----------------------------------------------------------------------------------------
--- Capabilities table
--- Capabilities associated with an app
+-- File Inputs table
+-- Inputs associated with an app
 -- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
-CREATE TABLE capabilities
+CREATE TABLE file_inputs
 (
-    id     SERIAL PRIMARY KEY,
-    app_id SERIAL REFERENCES apps(id) ON DELETE CASCADE,
-    category capability_category_type NOT NULL,
-    name   VARCHAR(128) NOT NULL DEFAULT '',
-    value  VARCHAR(128) NOT NULL DEFAULT '',
+    seq_id     SERIAL PRIMARY KEY,
+    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    source_url VARCHAR(128) NOT NULL DEFAULT '',
+    target_path VARCHAR(128) NOT NULL DEFAULT '',
+    meta_name VARCHAR(128) NOT NULL DEFAULT '',
+    meta_required boolean NOT NULL DEFAULT true,
+    meta_kv TEXT[] NOT NULL,
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-    UNIQUE (app_id, category, name)
+    UNIQUE (app_seq_id, source_url, target_path)
 );
-ALTER TABLE capabilities OWNER TO tapis_app;
-COMMENT ON COLUMN capabilities.id IS 'Capability id';
-COMMENT ON COLUMN capabilities.app_id IS 'Id of application supporting the capability';
-COMMENT ON COLUMN capabilities.category IS 'Category for grouping of capabilities';
-COMMENT ON COLUMN capabilities.name IS 'Name of capability';
-COMMENT ON COLUMN capabilities.value IS 'Value for the capability';
-COMMENT ON COLUMN capabilities.created IS 'UTC time for when record was created';
-COMMENT ON COLUMN capabilities.updated IS 'UTC time for when record was last updated';
+ALTER TABLE file_inputs OWNER TO tapis_app;
+COMMENT ON COLUMN file_inputs.seq_id IS 'File input sequence id';
+COMMENT ON COLUMN file_inputs.app_seq_id IS 'Sequence id of application requiring the file input';
+
+-- ----------------------------------------------------------------------------------------
+--                           ARGS
+-- ----------------------------------------------------------------------------------------
+-- Container args table
+-- Container arguments associated with an app
+-- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
+CREATE TABLE container_args
+(
+    seq_id SERIAL PRIMARY KEY,
+    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    arg_val VARCHAR(128) NOT NULL DEFAULT '',
+    meta_name VARCHAR(128) NOT NULL DEFAULT '',
+    meta_required boolean NOT NULL DEFAULT true,
+    meta_kv TEXT[] NOT NULL,
+    created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
+    updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
+);
+ALTER TABLE container_args OWNER TO tapis_app;
+COMMENT ON COLUMN container_args.seq_id IS 'Arg sequence id';
+COMMENT ON COLUMN container_args.app_seq_id IS 'Sequence id of application';
+
+-- Command args table
+-- Command arguments associated with an app
+-- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
+CREATE TABLE command_args
+(
+    seq_id SERIAL PRIMARY KEY,
+    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    arg_val VARCHAR(128) NOT NULL DEFAULT '',
+    meta_name VARCHAR(128) NOT NULL DEFAULT '',
+    meta_required boolean NOT NULL DEFAULT true,
+    meta_kv TEXT[] NOT NULL,
+    created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
+    updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
+);
+ALTER TABLE command_args OWNER TO tapis_app;
+COMMENT ON COLUMN command_args.seq_id IS 'Arg sequence id';
+COMMENT ON COLUMN command_args.app_seq_id IS 'Sequence id of application';
+
+-- Scheduler options table
+-- Scheduler options associated with an app
+-- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
+CREATE TABLE scheduler_options
+(
+    seq_id SERIAL PRIMARY KEY,
+    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    arg_val VARCHAR(128) NOT NULL DEFAULT '',
+    meta_name VARCHAR(128) NOT NULL DEFAULT '',
+    meta_required boolean NOT NULL DEFAULT true,
+    meta_kv TEXT[] NOT NULL,
+    created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
+    updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
+);
+ALTER TABLE scheduler_options OWNER TO tapis_app;
+COMMENT ON COLUMN scheduler_options.seq_id IS 'Arg sequence id';
+COMMENT ON COLUMN scheduler_options.app_seq_id IS 'Sequence id of application';
 
 -- ******************************************************************************
 --                         PROCEDURES and TRIGGERS
@@ -146,6 +225,15 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER app_updated
   BEFORE UPDATE ON apps
   EXECUTE PROCEDURE trigger_set_updated();
-CREATE TRIGGER capability_updated
-    BEFORE UPDATE ON capabilities
+CREATE TRIGGER file_inputs_updated
+    BEFORE UPDATE ON file_inputs
+EXECUTE PROCEDURE trigger_set_updated();
+CREATE TRIGGER container_args_updated
+    BEFORE UPDATE ON container_args
+EXECUTE PROCEDURE trigger_set_updated();
+CREATE TRIGGER command_args_updated
+    BEFORE UPDATE ON command_args
+EXECUTE PROCEDURE trigger_set_updated();
+CREATE TRIGGER scheduler_options_updated
+    BEFORE UPDATE ON scheduler_options
 EXECUTE PROCEDURE trigger_set_updated();

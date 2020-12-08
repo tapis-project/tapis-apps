@@ -37,7 +37,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppUpdates extends TableImpl<AppUpdatesRecord> {
 
-    private static final long serialVersionUID = -1780122858;
+    private static final long serialVersionUID = 300247810;
 
     /**
      * The reference instance of <code>tapis_app.app_updates</code>
@@ -53,14 +53,14 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     }
 
     /**
-     * The column <code>tapis_app.app_updates.id</code>. Application update request id
+     * The column <code>tapis_app.app_updates.seq_id</code>. Application update request id
      */
-    public final TableField<AppUpdatesRecord, Integer> ID = createField(DSL.name("id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_updates_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Application update request id");
+    public final TableField<AppUpdatesRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_updates_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Application update request id");
 
     /**
-     * The column <code>tapis_app.app_updates.app_id</code>. Id of application being updated
+     * The column <code>tapis_app.app_updates.app_seq_id</code>. Sequence id of application being updated
      */
-    public final TableField<AppUpdatesRecord, Integer> APP_ID = createField(DSL.name("app_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_updates_app_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Id of application being updated");
+    public final TableField<AppUpdatesRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_updates_app_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application being updated");
 
     /**
      * The column <code>tapis_app.app_updates.user_name</code>. Name of user who requested the update
@@ -147,11 +147,11 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
 
     @Override
     public List<ForeignKey<AppUpdatesRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<AppUpdatesRecord, ?>>asList(Keys.APP_UPDATES__APP_UPDATES_APP_ID_FKEY);
+        return Arrays.<ForeignKey<AppUpdatesRecord, ?>>asList(Keys.APP_UPDATES__APP_UPDATES_APP_SEQ_ID_FKEY);
     }
 
     public Apps apps() {
-        return new Apps(this, Keys.APP_UPDATES__APP_UPDATES_APP_ID_FKEY);
+        return new Apps(this, Keys.APP_UPDATES__APP_UPDATES_APP_SEQ_ID_FKEY);
     }
 
     @Override

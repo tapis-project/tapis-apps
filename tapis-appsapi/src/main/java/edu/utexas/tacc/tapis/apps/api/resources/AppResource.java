@@ -212,7 +212,7 @@ public class AppResource
     // ---------------------------- Make service call to create the app -------------------------------
     // Update tenant name and pull out app name for convenience
     app.setTenant(authenticatedUser.getTenantId());
-    String appName = app.getName();
+    String appName = app.getId();
     try
     {
       appsService.createApp(authenticatedUser, app, scrubbedJson);
@@ -786,7 +786,7 @@ public class AppResource
   {
     var app = new App(-1, null, req.name, req.version, req.description, req.appType, req.owner, req.enabled,
                        req.tags, req.notes, req.refImportId, false, null, null);
-    app.setJobCapabilities(req.jobCapabilities);
+//    app.setJobCapabilities(req.jobCapabilities);
     return app;
   }
 
@@ -795,7 +795,9 @@ public class AppResource
    */
   private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String appName)
   {
-    PatchApp patchApp = new PatchApp(req.version, req.description, req.enabled, req.jobCapabilities, req.tags, req.notes);
+    PatchApp patchApp = new PatchApp(req.version, req.description, req.enabled,
+//            req.jobCapabilities,
+            req.tags, req.notes);
     // Update tenant name and app name
     patchApp.setTenant(tenantName);
     patchApp.setName(appName);
@@ -815,10 +817,10 @@ public class AppResource
     // Make sure owner, notes and tags are all set
     App app1 = App.checkAndSetDefaults(app);
 
-    String name = app1.getName();
+    String name = app1.getId();
     String msg;
     var errMessages = new ArrayList<String>();
-    if (StringUtils.isBlank(app1.getName()))
+    if (StringUtils.isBlank(app1.getId()))
     {
       msg = ApiUtils.getMsg("APPAPI_CREATE_MISSING_ATTR", NAME_FIELD);
       errMessages.add(msg);

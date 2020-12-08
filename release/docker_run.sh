@@ -36,11 +36,11 @@ fi
 
 # Set base url for services we depend on (tenants, tokens, security-kernel)
 if [ "$ENV" = "dev" -o "$ENV" = "dev_local" ]; then
- BASE_URL="https://master.develop.tapis.io"
+ BASE_URL="https://admin.develop.tapis.io"
 elif [ "$ENV" = "staging" ]; then
- BASE_URL="https://master.staging.tapis.io"
+ BASE_URL="https://admin.staging.tapis.io"
 elif [ "$ENV" = "prod" ]; then
- BASE_URL="https://master.tapis.io"
+ BASE_URL="https://admin.tapis.io"
 else
   echo $USAGE1
   exit 1

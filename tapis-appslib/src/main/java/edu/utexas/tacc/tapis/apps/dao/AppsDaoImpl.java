@@ -13,7 +13,6 @@ import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.search.parser.ASTUnaryExpression;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
-import org.apache.activemq.filter.UnaryExpression;
 import org.apache.commons.lang3.StringUtils;
 import org.flywaydb.core.Flyway;
 import org.jooq.Condition;
@@ -34,7 +33,6 @@ import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.search.SearchUtils.SearchOperator;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
-import edu.utexas.tacc.tapis.apps.model.Capability;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
@@ -68,13 +66,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
           throws TapisException, IllegalStateException {
     String opName = "createApp";
     // Generated sequence id
-    int appId = -1;
+    int appSeqId = -1;
     // ------------------------- Check Input -------------------------
     if (app == null) LibUtils.logAndThrowNullParmException(opName, "app");
     if (authenticatedUser == null) LibUtils.logAndThrowNullParmException(opName, "authenticatedUser");
     if (StringUtils.isBlank(createJsonStr)) LibUtils.logAndThrowNullParmException(opName, "createJson");
     if (StringUtils.isBlank(app.getTenant())) LibUtils.logAndThrowNullParmException(opName, "tenant");
-    if (StringUtils.isBlank(app.getName())) LibUtils.logAndThrowNullParmException(opName, "appName");
+    if (StringUtils.isBlank(app.getId())) LibUtils.logAndThrowNullParmException(opName, "appName");
     if (app.getAppType() == null) LibUtils.logAndThrowNullParmException(opName, "appType");
 
     // ------------------------- Call SQL ----------------------------
@@ -86,8 +84,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       DSLContext db = DSL.using(conn);
 
       // Check to see if app exists or has been soft deleted. If yes then throw IllegalStateException
-      boolean doesExist = checkForApp(db, app.getTenant(), app.getName(), true);
-      if (doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_SYS_EXISTS", authenticatedUser, app.getName()));
+      boolean doesExist = checkForApp(db, app.getTenant(), app.getId(), true);
+      if (doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_SYS_EXISTS", authenticatedUser, app.getId()));
 
       // Make sure owner, notes and tags are all set
       String owner = App.DEFAULT_OWNER;
@@ -99,7 +97,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
       Record record = db.insertInto(APPS)
               .set(APPS.TENANT, app.getTenant())
-              .set(APPS.NAME, app.getName())
+              .set(APPS.ID, app.getId())
               .set(APPS.VERSION, app.getVersion())
               .set(APPS.DESCRIPTION, app.getDescription())
               .set(APPS.APP_TYPE, app.getAppType())
@@ -107,15 +105,15 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS.ENABLED, app.isEnabled())
               .set(APPS.TAGS, tagsStrArray)
               .set(APPS.NOTES, notesObj)
-              .returningResult(APPS.ID)
+              .returningResult(APPS.SEQ_ID)
               .fetchOne();
-      appId = record.getValue(APPS.ID);
+      appSeqId = record.getValue(APPS.SEQ_ID);
 
       // Persist job capabilities
-      persistJobCapabilities(db, app, appId);
+//      persistJobCapabilities(db, app, appSeqId);
 
       // Persist update record
-      addUpdate(db, authenticatedUser, appId, AppOperation.create, createJsonStr, scrubbedText);
+      addUpdate(db, authenticatedUser, appSeqId, AppOperation.create, createJsonStr, scrubbedText);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -130,7 +128,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Always return the connection back to the connection pool.
       LibUtils.finalCloseDB(conn);
     }
-    return appId;
+    return appSeqId;
   }
 
   /**
@@ -152,13 +150,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (authenticatedUser == null) LibUtils.logAndThrowNullParmException(opName, "authenticatedUser");
     if (StringUtils.isBlank(updateJsonStr)) LibUtils.logAndThrowNullParmException(opName, "updateJson");
     if (StringUtils.isBlank(patchedApp.getTenant())) LibUtils.logAndThrowNullParmException(opName, "tenant");
-    if (StringUtils.isBlank(patchedApp.getName())) LibUtils.logAndThrowNullParmException(opName, "appName");
+    if (StringUtils.isBlank(patchedApp.getId())) LibUtils.logAndThrowNullParmException(opName, "appName");
     if (patchedApp.getAppType() == null) LibUtils.logAndThrowNullParmException(opName, "appType");
-    if (patchedApp.getId() < 1) LibUtils.logAndThrowNullParmException(opName, "appId");
+    if (patchedApp.getSeqId() < 1) LibUtils.logAndThrowNullParmException(opName, "appSeqId");
     // Pull out some values for convenience
     String tenant = patchedApp.getTenant();
-    String name = patchedApp.getName();
-    int appId = patchedApp.getId();
+    String name = patchedApp.getId();
+    int appSeqId = patchedApp.getSeqId();
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -184,17 +182,17 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS.ENABLED, patchedApp.isEnabled())
               .set(APPS.TAGS, tagsStrArray)
               .set(APPS.NOTES, notesObj)
-              .where(APPS.ID.eq(appId))
+              .where(APPS.SEQ_ID.eq(appSeqId))
               .execute();
 
-      // If jobCapabilities updated then replace them
-      if (patchApp.getJobCapabilities() != null) {
-        db.deleteFrom(CAPABILITIES).where(CAPABILITIES.APP_ID.eq(appId)).execute();
-        persistJobCapabilities(db, patchedApp, appId);
-      }
+//      // If jobCapabilities updated then replace them
+//      if (patchApp.getJobCapabilities() != null) {
+//        db.deleteFrom(CAPABILITIES).where(CAPABILITIES.APP_ID.eq(appSeqId)).execute();
+//        persistJobCapabilities(db, patchedApp, appSeqId);
+//      }
 
       // Persist update record
-      addUpdate(db, authenticatedUser, appId, AppOperation.modify, updateJsonStr, scrubbedText);
+      addUpdate(db, authenticatedUser, appSeqId, AppOperation.modify, updateJsonStr, scrubbedText);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -209,7 +207,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Always return the connection back to the connection pool.
       LibUtils.finalCloseDB(conn);
     }
-    return appId;
+    return appSeqId;
   }
 
   /**
@@ -217,11 +215,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *
    */
   @Override
-  public void updateAppOwner(AuthenticatedUser authenticatedUser, int appId, String newOwnerName) throws TapisException
+  public void updateAppOwner(AuthenticatedUser authenticatedUser, int appSeqId, String newOwnerName) throws TapisException
   {
     String opName = "changeOwner";
     // ------------------------- Check Input -------------------------
-    if (appId < 1) LibUtils.logAndThrowNullParmException(opName, "appId");
+    if (appSeqId < 1) LibUtils.logAndThrowNullParmException(opName, "appSeqId");
     if (StringUtils.isBlank(newOwnerName)) LibUtils.logAndThrowNullParmException(opName, "newOwnerName");
 
     // ------------------------- Call SQL ----------------------------
@@ -231,10 +229,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      db.update(APPS).set(APPS.OWNER, newOwnerName).where(APPS.ID.eq(appId)).execute();
+      db.update(APPS).set(APPS.OWNER, newOwnerName).where(APPS.SEQ_ID.eq(appSeqId)).execute();
       // Persist update record
       String updateJsonStr = TapisGsonUtils.getGson().toJson(newOwnerName);
-      addUpdate(db, authenticatedUser, appId, AppOperation.changeOwner, updateJsonStr , null);
+      addUpdate(db, authenticatedUser, appSeqId, AppOperation.changeOwner, updateJsonStr , null);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
@@ -255,12 +253,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *
    */
   @Override
-  public int softDeleteApp(AuthenticatedUser authenticatedUser, int appId) throws TapisException
+  public int softDeleteApp(AuthenticatedUser authenticatedUser, int appSeqId) throws TapisException
   {
     String opName = "softDeleteApp";
     int rows = -1;
     // ------------------------- Check Input -------------------------
-    if (appId < 1) LibUtils.logAndThrowNullParmException(opName, "appId");
+    if (appSeqId < 1) LibUtils.logAndThrowNullParmException(opName, "appSeqId");
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -270,13 +268,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
       // If app does not exist or has been soft deleted return 0
-      if (!db.fetchExists(APPS, APPS.ID.eq(appId), APPS.DELETED.eq(false)))
+      if (!db.fetchExists(APPS, APPS.SEQ_ID.eq(appSeqId), APPS.DELETED.eq(false)))
       {
         return 0;
       }
-      rows = db.update(APPS).set(APPS.DELETED, true).where(APPS.ID.eq(appId)).execute();
+      rows = db.update(APPS).set(APPS.DELETED, true).where(APPS.SEQ_ID.eq(appSeqId)).execute();
       // Persist update record
-      addUpdate(db, authenticatedUser, appId, AppOperation.softDelete, EMPTY_JSON, null);
+      addUpdate(db, authenticatedUser, appSeqId, AppOperation.softDelete, EMPTY_JSON, null);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -312,7 +310,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     {
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      db.deleteFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.NAME.eq(name)).execute();
+      db.deleteFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(name)).execute();
       LibUtils.closeAndCommitDB(conn, null, null);
     }
     catch (Exception e)
@@ -434,13 +432,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
       AppsRecord r = db.selectFrom(APPS)
-              .where(APPS.TENANT.eq(tenant),APPS.NAME.eq(name),APPS.DELETED.eq(false))
+              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(name),APPS.DELETED.eq(false))
               .fetchOne();
       if (r == null) return null;
       else result = r.into(App.class);
 
-      // Retrieve and set job capabilities
-      result.setJobCapabilities(retrieveJobCaps(db, result.getId()));
+//      // Retrieve and set job capabilities
+//      result.setJobCapabilities(retrieveJobCaps(db, result.getSeqId()));
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -464,18 +462,18 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *   prior to this call for proper validation and treatment of special characters.
    * @param tenant - tenant name
    * @param searchList - optional list of conditions used for searching
-   * @param IDs - list of app IDs to consider. null indicates no restriction.
+   * @param seqIDs - list of app seqIDs to consider. null indicates no restriction.
    * @return - list of App objects
    * @throws TapisException - on error
    */
   @Override
-  public List<App> getApps(String tenant, List<String> searchList, List<Integer> IDs) throws TapisException
+  public List<App> getApps(String tenant, List<String> searchList, List<Integer> seqIDs) throws TapisException
   {
     // The result list should always be non-null.
     var retList = new ArrayList<App>();
 
-    // If no IDs in list then we are done.
-    if (IDs != null && IDs.isEmpty()) return retList;
+    // If no seqIDs in list then we are done.
+    if (seqIDs != null && seqIDs.isEmpty()) return retList;
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -503,20 +501,20 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Add searchList to where condition
       whereCondition = addSearchListToWhere(whereCondition, searchList);
 
-      // Add IN condition for list of IDs
-      if (IDs != null && !IDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(IDs));
+      // Add IN condition for list of seqIDs
+      if (seqIDs != null && !seqIDs.isEmpty()) whereCondition = whereCondition.and(APPS.SEQ_ID.in(seqIDs));
 
       // Execute the select
       Result<AppsRecord> results = db.selectFrom(APPS).where(whereCondition).fetch();
       if (results == null || results.isEmpty()) return retList;
 
-      // Fill in job capabilities list from aux table
-      for (AppsRecord r : results)
-      {
-        App s = r.into(App.class);
-        s.setJobCapabilities(retrieveJobCaps(db, s.getId()));
-        retList.add(s);
-      }
+//      // Fill in job capabilities list from aux table
+//      for (AppsRecord r : results)
+//      {
+//        App s = r.into(App.class);
+//        s.setJobCapabilities(retrieveJobCaps(db, s.getSeqId()));
+//        retList.add(s);
+//      }
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -540,20 +538,20 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Search for apps using an abstract syntax tree (AST).
    * @param tenant - tenant name
    * @param searchAST - AST containing search conditions
-   * @param IDs - list of app IDs to consider. null indicates no restriction.
+   * @param seqIDs - list of app seqIDs to consider. null indicates no restriction.
    * @return - list of App objects
    * @throws TapisException - on error
    */
   @Override
-  public List<App> getAppsUsingSearchAST(String tenant, ASTNode searchAST, List<Integer> IDs) throws TapisException
+  public List<App> getAppsUsingSearchAST(String tenant, ASTNode searchAST, List<Integer> seqIDs) throws TapisException
   {
     // If searchAST null or empty delegate to getApps
-    if (searchAST == null) return getApps(tenant, null, IDs);
+    if (searchAST == null) return getApps(tenant, null, seqIDs);
     // The result list should always be non-null.
     var retList = new ArrayList<App>();
 
-    // If no IDs in list then we are done.
-    if (IDs != null && IDs.isEmpty()) return retList;
+    // If no seqIDs in list then we are done.
+    if (seqIDs != null && seqIDs.isEmpty()) return retList;
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -570,20 +568,20 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       Condition astCondition = createConditionFromAst(searchAST);
       if (astCondition != null) whereCondition = whereCondition.and(astCondition);
 
-      // Add IN condition for list of IDs
-      if (IDs != null && !IDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(IDs));
+      // Add IN condition for list of seqIDs
+      if (seqIDs != null && !seqIDs.isEmpty()) whereCondition = whereCondition.and(APPS.SEQ_ID.in(seqIDs));
 
       // Execute the select
       Result<AppsRecord> results = db.selectFrom(APPS).where(whereCondition).fetch();
       if (results == null || results.isEmpty()) return retList;
 
-      // Fill in job capabilities list from aux table
-      for (AppsRecord r : results)
-      {
-        App s = r.into(App.class);
-        s.setJobCapabilities(retrieveJobCaps(db, s.getId()));
-        retList.add(s);
-      }
+//      // Fill in job capabilities list from aux table
+//      for (AppsRecord r : results)
+//      {
+//        App s = r.into(App.class);
+//        s.setJobCapabilities(retrieveJobCaps(db, s.getSeqId()));
+//        retList.add(s);
+//      }
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -621,9 +619,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // ------------------------- Call SQL ----------------------------
       // Use jOOQ to build query string
       DSLContext db = DSL.using(conn);
-      Result<?> result = db.select(APPS.NAME).from(APPS).where(APPS.TENANT.eq(tenant)).fetch();
+      Result<?> result = db.select(APPS.ID).from(APPS).where(APPS.TENANT.eq(tenant)).fetch();
       // Iterate over result
-      for (Record r : result) { list.add(r.get(APPS.NAME)); }
+      for (Record r : result) { list.add(r.get(APPS.ID)); }
     }
     catch (Exception e)
     {
@@ -656,7 +654,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      owner = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.NAME.eq(name)).fetchOne(APPS.OWNER);
+      owner = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(name)).fetchOne(APPS.OWNER);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -682,9 +680,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @throws TapisException - on error
    */
   @Override
-  public int getAppId(String tenant, String name) throws TapisException
+  public int getAppSeqId(String tenant, String name) throws TapisException
   {
-    int appId = -1;
+    int appSeqId = -1;
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -693,7 +691,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      appId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.NAME.eq(name)).fetchOne(APPS.ID);
+      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(name)).fetchOne(APPS.SEQ_ID);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -708,7 +706,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Always return the connection back to the connection pool.
       LibUtils.finalCloseDB(conn);
     }
-    return appId;
+    return appSeqId;
   }
 
   /**
@@ -751,13 +749,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Given an sql connection and basic info add an update record
    *
    */
-  private void addUpdate(DSLContext db, AuthenticatedUser authenticatedUser, int appId,
+  private void addUpdate(DSLContext db, AuthenticatedUser authenticatedUser, int appSeqId,
                          AppOperation op, String upd_json, String upd_text)
   {
     String updJsonStr = (StringUtils.isBlank(upd_json)) ? EMPTY_JSON : upd_json;
     // Persist update record
     db.insertInto(APP_UPDATES)
-            .set(APP_UPDATES.APP_ID, appId)
+            .set(APP_UPDATES.APP_SEQ_ID, appSeqId)
             .set(APP_UPDATES.USER_NAME, authenticatedUser.getOboUser())
             .set(APP_UPDATES.USER_TENANT, authenticatedUser.getOboTenantId())
             .set(APP_UPDATES.OPERATION, op)
@@ -776,40 +774,40 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    */
   private static boolean checkForApp(DSLContext db, String tenant, String name, boolean includeDeleted)
   {
-    if (includeDeleted) return db.fetchExists(APPS, APPS.NAME.eq(name),APPS.TENANT.eq(tenant));
-    else return db.fetchExists(APPS, APPS.NAME.eq(name),APPS.TENANT.eq(tenant),APPS.DELETED.eq(false));
+    if (includeDeleted) return db.fetchExists(APPS, APPS.ID.eq(name),APPS.TENANT.eq(tenant));
+    else return db.fetchExists(APPS, APPS.ID.eq(name),APPS.TENANT.eq(tenant),APPS.DELETED.eq(false));
   }
 
-  /**
-   * Persist job capabilities given an sql connection and an app
-   */
-  private static void persistJobCapabilities(DSLContext db, App app, int appId)
-  {
-    var jobCapabilities = app.getJobCapabilities();
-    if (jobCapabilities == null || jobCapabilities.isEmpty()) return;
-
-    for (Capability cap : jobCapabilities) {
-      String valStr = "";
-      if (cap.getValue() != null ) valStr = cap.getValue();
-      db.insertInto(CAPABILITIES).set(CAPABILITIES.APP_ID, appId)
-              .set(CAPABILITIES.CATEGORY, cap.getCategory())
-              .set(CAPABILITIES.NAME, cap.getName())
-              .set(CAPABILITIES.VALUE, valStr)
-              .execute();
-    }
-  }
-
-  /**
-   * Get capabilities for an app from an auxiliary table
-   * @param db - DB connection
-   * @param appId - app
-   * @return list of capabilities
-   */
-  private static List<Capability> retrieveJobCaps(DSLContext db, int appId)
-  {
-    List<Capability> capRecords = db.selectFrom(CAPABILITIES).where(CAPABILITIES.APP_ID.eq(appId)).fetchInto(Capability.class);
-    return capRecords;
-  }
+//  /**
+//   * Persist job capabilities given an sql connection and an app
+//   */
+//  private static void persistJobCapabilities(DSLContext db, App app, int appId)
+//  {
+//    var jobCapabilities = app.getJobCapabilities();
+//    if (jobCapabilities == null || jobCapabilities.isEmpty()) return;
+//
+//    for (Capability cap : jobCapabilities) {
+//      String valStr = "";
+//      if (cap.getValue() != null ) valStr = cap.getValue();
+//      db.insertInto(CAPABILITIES).set(CAPABILITIES.APP_ID, appId)
+//              .set(CAPABILITIES.CATEGORY, cap.getCategory())
+//              .set(CAPABILITIES.NAME, cap.getName())
+//              .set(CAPABILITIES.VALUE, valStr)
+//              .execute();
+//    }
+//  }
+//
+//  /**
+//   * Get capabilities for an app from an auxiliary table
+//   * @param db - DB connection
+//   * @param appId - app
+//   * @return list of capabilities
+//   */
+//  private static List<Capability> retrieveJobCaps(DSLContext db, int appId)
+//  {
+//    List<Capability> capRecords = db.selectFrom(CAPABILITIES).where(CAPABILITIES.APP_ID.eq(appId)).fetchInto(Capability.class);
+//    return capRecords;
+//  }
 
   /**
    * Add searchList to where condition. All conditions are joined using AND

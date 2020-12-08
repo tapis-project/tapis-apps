@@ -24,33 +24,33 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppUpdatesRecord extends UpdatableRecordImpl<AppUpdatesRecord> implements Record8<Integer, Integer, String, String, AppOperation, JsonElement, String, LocalDateTime> {
 
-    private static final long serialVersionUID = -2147433929;
+    private static final long serialVersionUID = -275311695;
 
     /**
-     * Setter for <code>tapis_app.app_updates.id</code>. Application update request id
+     * Setter for <code>tapis_app.app_updates.seq_id</code>. Application update request id
      */
-    public void setId(Integer value) {
+    public void setSeqId(Integer value) {
         set(0, value);
     }
 
     /**
-     * Getter for <code>tapis_app.app_updates.id</code>. Application update request id
+     * Getter for <code>tapis_app.app_updates.seq_id</code>. Application update request id
      */
-    public Integer getId() {
+    public Integer getSeqId() {
         return (Integer) get(0);
     }
 
     /**
-     * Setter for <code>tapis_app.app_updates.app_id</code>. Id of application being updated
+     * Setter for <code>tapis_app.app_updates.app_seq_id</code>. Sequence id of application being updated
      */
-    public void setAppId(Integer value) {
+    public void setAppSeqId(Integer value) {
         set(1, value);
     }
 
     /**
-     * Getter for <code>tapis_app.app_updates.app_id</code>. Id of application being updated
+     * Getter for <code>tapis_app.app_updates.app_seq_id</code>. Sequence id of application being updated
      */
-    public Integer getAppId() {
+    public Integer getAppSeqId() {
         return (Integer) get(1);
     }
 
@@ -163,12 +163,12 @@ public class AppUpdatesRecord extends UpdatableRecordImpl<AppUpdatesRecord> impl
 
     @Override
     public Field<Integer> field1() {
-        return AppUpdates.APP_UPDATES.ID;
+        return AppUpdates.APP_UPDATES.SEQ_ID;
     }
 
     @Override
     public Field<Integer> field2() {
-        return AppUpdates.APP_UPDATES.APP_ID;
+        return AppUpdates.APP_UPDATES.APP_SEQ_ID;
     }
 
     @Override
@@ -203,12 +203,12 @@ public class AppUpdatesRecord extends UpdatableRecordImpl<AppUpdatesRecord> impl
 
     @Override
     public Integer component1() {
-        return getId();
+        return getSeqId();
     }
 
     @Override
     public Integer component2() {
-        return getAppId();
+        return getAppSeqId();
     }
 
     @Override
@@ -243,12 +243,12 @@ public class AppUpdatesRecord extends UpdatableRecordImpl<AppUpdatesRecord> impl
 
     @Override
     public Integer value1() {
-        return getId();
+        return getSeqId();
     }
 
     @Override
     public Integer value2() {
-        return getAppId();
+        return getAppSeqId();
     }
 
     @Override
@@ -283,13 +283,13 @@ public class AppUpdatesRecord extends UpdatableRecordImpl<AppUpdatesRecord> impl
 
     @Override
     public AppUpdatesRecord value1(Integer value) {
-        setId(value);
+        setSeqId(value);
         return this;
     }
 
     @Override
     public AppUpdatesRecord value2(Integer value) {
-        setAppId(value);
+        setAppSeqId(value);
         return this;
     }
 
@@ -356,11 +356,11 @@ public class AppUpdatesRecord extends UpdatableRecordImpl<AppUpdatesRecord> impl
     /**
      * Create a detached, initialised AppUpdatesRecord
      */
-    public AppUpdatesRecord(Integer id, Integer appId, String userName, String userTenant, AppOperation operation, JsonElement updJson, String updText, LocalDateTime created) {
+    public AppUpdatesRecord(Integer seqId, Integer appSeqId, String userName, String userTenant, AppOperation operation, JsonElement updJson, String updText, LocalDateTime created) {
         super(AppUpdates.APP_UPDATES);
 
-        set(0, id);
-        set(1, appId);
+        set(0, seqId);
+        set(1, appSeqId);
         set(2, userName);
         set(3, userTenant);
         set(4, operation);

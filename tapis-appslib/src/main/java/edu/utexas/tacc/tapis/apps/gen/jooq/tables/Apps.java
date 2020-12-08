@@ -12,6 +12,7 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.Keys;
 import edu.utexas.tacc.tapis.apps.gen.jooq.TapisApp;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsRecord;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
+import edu.utexas.tacc.tapis.apps.model.App.ContainerRuntime;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -23,7 +24,6 @@ import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row14;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -39,7 +39,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Apps extends TableImpl<AppsRecord> {
 
-    private static final long serialVersionUID = -1921987844;
+    private static final long serialVersionUID = 1113043058;
 
     /**
      * The reference instance of <code>tapis_app.apps</code>
@@ -55,9 +55,9 @@ public class Apps extends TableImpl<AppsRecord> {
     }
 
     /**
-     * The column <code>tapis_app.apps.id</code>. Application id
+     * The column <code>tapis_app.apps.seq_id</code>. Application sequence id
      */
-    public final TableField<AppsRecord, Integer> ID = createField(DSL.name("id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('apps_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Application id");
+    public final TableField<AppsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('apps_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Application sequence id");
 
     /**
      * The column <code>tapis_app.apps.tenant</code>. Tenant name associated with the application
@@ -65,9 +65,9 @@ public class Apps extends TableImpl<AppsRecord> {
     public final TableField<AppsRecord, String> TENANT = createField(DSL.name("tenant"), org.jooq.impl.SQLDataType.VARCHAR(24).nullable(false), this, "Tenant name associated with the application");
 
     /**
-     * The column <code>tapis_app.apps.name</code>. Unique name for the application
+     * The column <code>tapis_app.apps.id</code>. Unique name for the application
      */
-    public final TableField<AppsRecord, String> NAME = createField(DSL.name("name"), org.jooq.impl.SQLDataType.VARCHAR(80).nullable(false), this, "Unique name for the application");
+    public final TableField<AppsRecord, String> ID = createField(DSL.name("id"), org.jooq.impl.SQLDataType.VARCHAR(80).nullable(false), this, "Unique name for the application");
 
     /**
      * The column <code>tapis_app.apps.version</code>. Application version
@@ -93,6 +93,131 @@ public class Apps extends TableImpl<AppsRecord> {
      * The column <code>tapis_app.apps.enabled</code>. Indicates if application is currently active and available for use
      */
     public final TableField<AppsRecord, Boolean> ENABLED = createField(DSL.name("enabled"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "Indicates if application is currently active and available for use");
+
+    /**
+     * The column <code>tapis_app.apps.containerized</code>.
+     */
+    public final TableField<AppsRecord, Boolean> CONTAINERIZED = createField(DSL.name("containerized"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.container_runtime</code>.
+     */
+    public final TableField<AppsRecord, ContainerRuntime> CONTAINER_RUNTIME = createField(DSL.name("container_runtime"), org.jooq.impl.SQLDataType.VARCHAR.nullable(false).asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.ContainerRuntimeType.class), this, "", new org.jooq.impl.EnumConverter<edu.utexas.tacc.tapis.apps.gen.jooq.enums.ContainerRuntimeType, edu.utexas.tacc.tapis.apps.model.App.ContainerRuntime>(edu.utexas.tacc.tapis.apps.gen.jooq.enums.ContainerRuntimeType.class, edu.utexas.tacc.tapis.apps.model.App.ContainerRuntime.class));
+
+    /**
+     * The column <code>tapis_app.apps.container_image</code>.
+     */
+    public final TableField<AppsRecord, String> CONTAINER_IMAGE = createField(DSL.name("container_image"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.command</code>.
+     */
+    public final TableField<AppsRecord, String> COMMAND = createField(DSL.name("command"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.exec_codes</code>.
+     */
+    public final TableField<AppsRecord, String[]> EXEC_CODES = createField(DSL.name("exec_codes"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.dynamic_exec_system</code>.
+     */
+    public final TableField<AppsRecord, Boolean> DYNAMIC_EXEC_SYSTEM = createField(DSL.name("dynamic_exec_system"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("false", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.exec_system_constraints</code>.
+     */
+    public final TableField<AppsRecord, String[]> EXEC_SYSTEM_CONSTRAINTS = createField(DSL.name("exec_system_constraints"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.exec_system_id</code>.
+     */
+    public final TableField<AppsRecord, String> EXEC_SYSTEM_ID = createField(DSL.name("exec_system_id"), org.jooq.impl.SQLDataType.VARCHAR(80).nullable(false), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.exec_system_exec_dir</code>.
+     */
+    public final TableField<AppsRecord, String> EXEC_SYSTEM_EXEC_DIR = createField(DSL.name("exec_system_exec_dir"), org.jooq.impl.SQLDataType.VARCHAR(4096), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.exec_system_input_dir</code>.
+     */
+    public final TableField<AppsRecord, String> EXEC_SYSTEM_INPUT_DIR = createField(DSL.name("exec_system_input_dir"), org.jooq.impl.SQLDataType.VARCHAR(4096), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.exec_system_output_dir</code>.
+     */
+    public final TableField<AppsRecord, String> EXEC_SYSTEM_OUTPUT_DIR = createField(DSL.name("exec_system_output_dir"), org.jooq.impl.SQLDataType.VARCHAR(4096), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.exec_system_logical_queue</code>.
+     */
+    public final TableField<AppsRecord, String> EXEC_SYSTEM_LOGICAL_QUEUE = createField(DSL.name("exec_system_logical_queue"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.archive_system_id</code>.
+     */
+    public final TableField<AppsRecord, String> ARCHIVE_SYSTEM_ID = createField(DSL.name("archive_system_id"), org.jooq.impl.SQLDataType.VARCHAR(80), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.archive_system_dir</code>.
+     */
+    public final TableField<AppsRecord, String> ARCHIVE_SYSTEM_DIR = createField(DSL.name("archive_system_dir"), org.jooq.impl.SQLDataType.VARCHAR(4096), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.archive_on_app_error</code>.
+     */
+    public final TableField<AppsRecord, Boolean> ARCHIVE_ON_APP_ERROR = createField(DSL.name("archive_on_app_error"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.use_dtn_if_defined</code>.
+     */
+    public final TableField<AppsRecord, Boolean> USE_DTN_IF_DEFINED = createField(DSL.name("use_dtn_if_defined"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.job_description</code>.
+     */
+    public final TableField<AppsRecord, String> JOB_DESCRIPTION = createField(DSL.name("job_description"), org.jooq.impl.SQLDataType.VARCHAR(2048), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.max_jobs</code>.
+     */
+    public final TableField<AppsRecord, Integer> MAX_JOBS = createField(DSL.name("max_jobs"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("'-1'::integer", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.max_jobs_per_user</code>.
+     */
+    public final TableField<AppsRecord, Integer> MAX_JOBS_PER_USER = createField(DSL.name("max_jobs_per_user"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("'-1'::integer", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.node_count</code>.
+     */
+    public final TableField<AppsRecord, Integer> NODE_COUNT = createField(DSL.name("node_count"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("'-1'::integer", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.cores_per_node</code>.
+     */
+    public final TableField<AppsRecord, Integer> CORES_PER_NODE = createField(DSL.name("cores_per_node"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("'-1'::integer", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.memory_mb</code>.
+     */
+    public final TableField<AppsRecord, Integer> MEMORY_MB = createField(DSL.name("memory_mb"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("'-1'::integer", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.max_minutes</code>.
+     */
+    public final TableField<AppsRecord, Integer> MAX_MINUTES = createField(DSL.name("max_minutes"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("'-1'::integer", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.archive_includes</code>.
+     */
+    public final TableField<AppsRecord, String[]> ARCHIVE_INCLUDES = createField(DSL.name("archive_includes"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.archive_excludes</code>.
+     */
+    public final TableField<AppsRecord, String[]> ARCHIVE_EXCLUDES = createField(DSL.name("archive_excludes"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
 
     /**
      * The column <code>tapis_app.apps.tags</code>. Tags for user supplied key:value pairs
@@ -179,7 +304,7 @@ public class Apps extends TableImpl<AppsRecord> {
 
     @Override
     public List<UniqueKey<AppsRecord>> getKeys() {
-        return Arrays.<UniqueKey<AppsRecord>>asList(Keys.APPS_PKEY, Keys.APPS_TENANT_NAME_VERSION_KEY);
+        return Arrays.<UniqueKey<AppsRecord>>asList(Keys.APPS_PKEY, Keys.APPS_TENANT_ID_VERSION_KEY);
     }
 
     @Override
@@ -206,14 +331,5 @@ public class Apps extends TableImpl<AppsRecord> {
     @Override
     public Apps rename(Name name) {
         return new Apps(name, null);
-    }
-
-    // -------------------------------------------------------------------------
-    // Row14 type methods
-    // -------------------------------------------------------------------------
-
-    @Override
-    public Row14<Integer, String, String, String, String, AppType, String, Boolean, String[], JsonElement, String, Boolean, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row14) super.fieldsRow();
     }
 }

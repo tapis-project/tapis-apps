@@ -3,7 +3,6 @@ package edu.utexas.tacc.tapis.apps;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
-import edu.utexas.tacc.tapis.apps.model.Capability;
 import edu.utexas.tacc.tapis.apps.model.App;
 
 import java.util.ArrayList;
@@ -28,11 +27,11 @@ public final class IntegrationUtils
   public static final JsonObject notesObj = (JsonObject) notes;
   public static final String scrubbedJson = "{}";
 
-  public static final Capability capA = new Capability(Capability.Category.SCHEDULER, "Type", "Slurm");
-  public static final Capability capB = new Capability(Capability.Category.HARDWARE, "CoresPerNode", "4");
-  public static final Capability capC = new Capability(Capability.Category.SOFTWARE, "OpenMP", "4.5");
-  public static final Capability capD = new Capability(Capability.Category.CONTAINER, "Singularity", null);
-  public static final List<Capability> capList = new ArrayList<>(List.of(capA, capB, capC, capD));
+//  public static final Capability capA = new Capability(Capability.Category.SCHEDULER, "Type", "Slurm");
+//  public static final Capability capB = new Capability(Capability.Category.HARDWARE, "CoresPerNode", "4");
+//  public static final Capability capC = new Capability(Capability.Category.SOFTWARE, "OpenMP", "4.5");
+//  public static final Capability capD = new Capability(Capability.Category.CONTAINER, "Singularity", null);
+//  public static final List<Capability> capList = new ArrayList<>(List.of(capA, capB, capC, capD));
 
   /**
    * Create an array of App objects in memory
@@ -53,7 +52,7 @@ public final class IntegrationUtils
       // Constructor initializes all attributes except for JobCapabilities
       apps[i] = new App(-1, tenantName, name, appVersion, "description "+suffix, App.AppType.BATCH, ownerUser, true,
                             tags, notes, null, false, null, null);
-      apps[i].setJobCapabilities(capList);
+//      apps[i].setJobCapabilities(capList);
     }
     return apps;
   }

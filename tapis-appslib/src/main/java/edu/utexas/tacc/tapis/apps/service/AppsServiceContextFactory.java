@@ -21,7 +21,7 @@ public class AppsServiceContextFactory implements Factory<ServiceContext>
   {
     ServiceContext svcContext = ServiceContext.getInstance();
 
-    String svcMasterTenant = null;
+    String svcAdminTenant = null;
     String tokenSvcUrl = null;
     RuntimeParameters runParms = RuntimeParameters.getInstance();
     try {
@@ -30,7 +30,7 @@ public class AppsServiceContextFactory implements Factory<ServiceContext>
     }
     catch (TapisException | TapisClientException te)
     {
-      String msg = LibUtils.getMsg("APPLIB_SVCJWT_ERROR", svcMasterTenant, tokenSvcUrl);
+      String msg = LibUtils.getMsg("APPLIB_SVCJWT_ERROR", svcAdminTenant, tokenSvcUrl);
       throw new RuntimeException(msg, te);
     }
   }

@@ -87,7 +87,7 @@ public final class RuntimeParameters
 
 	// Service config
 	private String servicePassword;
-	private String serviceMasterTenant;
+	private String serviceAdminTenant;
 
     // Site on which we are running
     private String siteId;
@@ -207,8 +207,8 @@ public final class RuntimeParameters
 		parm = inputProperties.getProperty(EnvVar.TAPIS_SERVICE_PASSWORD.getEnvName());
 		if (!StringUtils.isBlank(parm)) setServicePassword(parm);
 
-		parm = inputProperties.getProperty(EnvVar2.TAPIS_SVC_MASTER_TENANT.getEnvName());
-		if (!StringUtils.isBlank(parm)) setServiceMasterTenant(parm);
+		parm = inputProperties.getProperty(EnvVar2.TAPIS_SVC_ADMIN_TENANT.getEnvName());
+		if (!StringUtils.isBlank(parm)) setServiceAdminTenant(parm);
 
       // --------------------- Site on which we are running ----------------------------
       // Site is required. Throw runtime exception if not found.
@@ -646,8 +646,8 @@ public final class RuntimeParameters
 		this.jdbcURL = jdbcURL;
 	}
 
-	public String getServiceMasterTenant() { return serviceMasterTenant; }
-	private void setServiceMasterTenant(String t) { serviceMasterTenant = t; }
+	public String getServiceAdminTenant() { return serviceAdminTenant; }
+	private void setServiceAdminTenant(String t) { serviceAdminTenant = t; }
 
 	public String getServicePassword() { return servicePassword; }
 	private void setServicePassword(String p) {servicePassword = p; }
@@ -790,7 +790,7 @@ public final class RuntimeParameters
     // TODO/TBD Remove sk url. Always look up from tenants svc
 	private enum EnvVar2 {
 		TAPIS_SVC_URL_SK("tapis.svc.url.sk"),
-		TAPIS_SVC_MASTER_TENANT("tapis.svc.master.tenant");
+		TAPIS_SVC_ADMIN_TENANT("tapis.svc.admin.tenant");
 
 		private final String _envName;
 

@@ -30,7 +30,7 @@ public class Indexes {
     // -------------------------------------------------------------------------
 
     private static class Indexes0 {
-        public static Index APP_TENANT_NAME_IDX = Internal.createIndex("app_tenant_name_idx", Apps.APPS, new OrderField[] { Apps.APPS.TENANT, Apps.APPS.NAME }, false);
+        public static Index APP_TENANT_NAME_IDX = Internal.createIndex("app_tenant_name_idx", Apps.APPS, new OrderField[] { Apps.APPS.TENANT, Apps.APPS.ID }, false);
         public static Index FLYWAY_SCHEMA_HISTORY_S_IDX = Internal.createIndex("flyway_schema_history_s_idx", FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY, new OrderField[] { FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY.SUCCESS }, false);
     }
 }

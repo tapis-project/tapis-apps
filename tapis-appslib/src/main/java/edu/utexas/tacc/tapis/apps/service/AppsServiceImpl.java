@@ -22,7 +22,6 @@ import edu.utexas.tacc.tapis.security.client.SKClient;
 import edu.utexas.tacc.tapis.security.client.gen.model.SkRole;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
-import edu.utexas.tacc.tapis.shared.security.ServiceJWT;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
@@ -53,7 +52,7 @@ public class AppsServiceImpl implements AppsService
   // ************************************************************************
   public static final String APPS_ADMIN_ROLE = "AppsAdmin";
   public static final String APPS_ADMIN_DESCRIPTION = "Administrative role for Apps service";
-  public static final String APPS_DEFAULT_MASTER_TENANT = "master";
+  public static final String APPS_DEFAULT_ADMIN_TENANT = "admin";
 
   // Tracing.
   private static final Logger _log = LoggerFactory.getLogger(AppsServiceImpl.class);
@@ -123,7 +122,7 @@ public class AppsServiceImpl implements AppsService
     // Extract various names for convenience
     String tenantName = authenticatedUser.getTenantId();
     String apiUserId = authenticatedUser.getName();
-    String appName = app.getName();
+    String appName = app.getId();
     String appTenantName = authenticatedUser.getTenantId();
     // For service request use oboTenant for tenant associated with the app
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
@@ -151,7 +150,7 @@ public class AppsServiceImpl implements AppsService
     resolveVariables(app, authenticatedUser.getOboUser());
 
     // ------------------------- Check service level authorization -------------------------
-    checkAuth(authenticatedUser, op, app.getName(), app.getOwner(), null, null);
+    checkAuth(authenticatedUser, op, app.getId(), app.getOwner(), null, null);
 
     // ---------------- Check constraints on App attributes ------------------------
     validateApp(authenticatedUser, app);
@@ -285,7 +284,7 @@ public class AppsServiceImpl implements AppsService
     // No distributed transactions so no distributed rollback needed
     // ------------------- Make Dao call to persist the app -----------------------------------
     dao.updateApp(authenticatedUser, patchedApp, patchApp, updateJsonStr, scrubbedText);
-    return origApp.getId();
+    return origApp.getSeqId();
   }
 
   /**
@@ -325,7 +324,7 @@ public class AppsServiceImpl implements AppsService
 
     // Retrieve the app being updated
     App tmpApp = dao.getApp(appTenantName, appName);
-    int appId = tmpApp.getId();
+    int appId = tmpApp.getSeqId();
     String oldOwnerName = tmpApp.getOwner();
 
     // ------------------------- Check service level authorization -------------------------
@@ -406,7 +405,7 @@ public class AppsServiceImpl implements AppsService
 
     var skClient = getSKClient(authenticatedUser);
     // Delete the app
-    return dao.softDeleteApp(authenticatedUser, app.getId());
+    return dao.softDeleteApp(authenticatedUser, app.getSeqId());
   }
 
   /**
@@ -438,7 +437,7 @@ public class AppsServiceImpl implements AppsService
     checkAuth(authenticatedUser, op, appName, null, null, null);
 
     String owner = dao.getAppOwner(appTenantName, appName);
-    int appId = dao.getAppId(appTenantName, appName);
+    int appId = dao.getAppSeqId(appTenantName, appName);
 
     var skClient = getSKClient(authenticatedUser);
 
@@ -472,16 +471,16 @@ public class AppsServiceImpl implements AppsService
   public void initService(String svcSiteId) throws TapisException, TapisClientException
   {
     siteId = svcSiteId;
-    // Get service master tenant
-    String svcMasterTenant = TenantManager.getInstance().getSiteMasterTenantId(siteId);
-    if (StringUtils.isBlank(svcMasterTenant)) svcMasterTenant = APPS_DEFAULT_MASTER_TENANT;
+    // Get service admin tenant
+    String svcAdminTenant = TenantManager.getInstance().getSiteAdminTenantId(siteId);
+    if (StringUtils.isBlank(svcAdminTenant)) svcAdminTenant = APPS_DEFAULT_ADMIN_TENANT;
     // Create user for SK client
     // NOTE: getSKClient() does not require the jwt to be set in AuthenticatedUser but we keep it here as a reminder
     //       that in general this may be the pattern to follow.
-    String svcJwt = serviceContext.getAccessJWT(svcMasterTenant, SERVICE_NAME_APPS);
+    String svcJwt = serviceContext.getAccessJWT(svcAdminTenant, SERVICE_NAME_APPS);
     AuthenticatedUser svcUser =
-        new AuthenticatedUser(SERVICE_NAME_APPS, svcMasterTenant, TapisThreadContext.AccountType.service.name(),
-                              null, SERVICE_NAME_APPS, svcMasterTenant, null, siteId, svcJwt);
+        new AuthenticatedUser(SERVICE_NAME_APPS, svcAdminTenant, TapisThreadContext.AccountType.service.name(),
+                              null, SERVICE_NAME_APPS, svcAdminTenant, null, siteId, svcJwt);
     // Use SK client to check for admin role and create it if necessary
     var skClient = getSKClient(svcUser);
     // Check for admin role, continue if error getting role.
@@ -490,7 +489,7 @@ public class AppsServiceImpl implements AppsService
     SkRole adminRole = null;
     try
     {
-      adminRole = skClient.getRoleByName(svcMasterTenant, APPS_ADMIN_ROLE);
+      adminRole = skClient.getRoleByName(svcAdminTenant, APPS_ADMIN_ROLE);
     }
     catch (TapisClientException e)
     {
@@ -504,7 +503,7 @@ public class AppsServiceImpl implements AppsService
     if (adminRole == null)
     {
       _log.info("Apps administrative role not found. Role name: " + APPS_ADMIN_ROLE);
-      skClient.createRole(svcMasterTenant, APPS_ADMIN_ROLE, APPS_ADMIN_DESCRIPTION);
+      skClient.createRole(svcAdminTenant, APPS_ADMIN_ROLE, APPS_ADMIN_DESCRIPTION);
       _log.info("Apps administrative created. Role name: " + APPS_ADMIN_ROLE);
     }
     else
@@ -793,7 +792,7 @@ public class AppsServiceImpl implements AppsService
     // ------------------------- Check service level authorization -------------------------
     checkAuth(authenticatedUser, op, appName, null, null, null);
 
-    int appId = dao.getAppId(appTenantName, appName);
+    int appId = dao.getAppSeqId(appTenantName, appName);
 
     // Extract various names for convenience
     String tenantName = authenticatedUser.getTenantId();
@@ -876,7 +875,7 @@ public class AppsServiceImpl implements AppsService
     checkAuth(authenticatedUser, op, appName, null, null, null);
 
     // Retrieve the app Id. Used to add an update record.
-    int appId = dao.getAppId(appTenantName, appName);
+    int appId = dao.getAppSeqId(appTenantName, appName);
 
     // Extract various names for convenience
     String tenantName = authenticatedUser.getTenantId();
@@ -1048,7 +1047,7 @@ public class AppsServiceImpl implements AppsService
     if (!errMessages.isEmpty())
     {
       // Construct message reporting all errors
-      String allErrors = getListOfErrors(authenticatedUser, app.getName(), errMessages);
+      String allErrors = getListOfErrors(authenticatedUser, app.getId(), errMessages);
       _log.error(allErrors);
       throw new IllegalStateException(allErrors);
     }
@@ -1340,7 +1339,7 @@ public class AppsServiceImpl implements AppsService
     if (p.getVersion() != null) p1.setVersion(p.getVersion());
     if (p.getDescription() != null) p1.setDescription(p.getDescription());
     if (p.isEnabled() != null) p1.setEnabled(p.isEnabled());
-    if (p.getJobCapabilities() != null) p1.setJobCapabilities(p.getJobCapabilities());
+//    if (p.getJobCapabilities() != null) p1.setJobCapabilities(p.getJobCapabilities());
     if (p.getTags() != null) p1.setTags(p.getTags());
     if (p.getNotes() != null) p1.setNotes(p.getNotes());
     return p1;

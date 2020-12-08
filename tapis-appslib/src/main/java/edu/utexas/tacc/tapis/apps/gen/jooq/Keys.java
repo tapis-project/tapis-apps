@@ -6,12 +6,18 @@ package edu.utexas.tacc.tapis.apps.gen.jooq;
 
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppUpdates;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Capabilities;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.CommandArgs;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.ContainerArgs;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FileInputs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.SchedulerOptions;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppUpdatesRecord;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsRecord;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.CapabilitiesRecord;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.CommandArgsRecord;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.ContainerArgsRecord;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.FileInputsRecord;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.FlywaySchemaHistoryRecord;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.SchedulerOptionsRecord;
 
 import org.jooq.ForeignKey;
 import org.jooq.Identity;
@@ -33,7 +39,10 @@ public class Keys {
 
     public static final Identity<AppUpdatesRecord, Integer> IDENTITY_APP_UPDATES = Identities0.IDENTITY_APP_UPDATES;
     public static final Identity<AppsRecord, Integer> IDENTITY_APPS = Identities0.IDENTITY_APPS;
-    public static final Identity<CapabilitiesRecord, Integer> IDENTITY_CAPABILITIES = Identities0.IDENTITY_CAPABILITIES;
+    public static final Identity<CommandArgsRecord, Integer> IDENTITY_COMMAND_ARGS = Identities0.IDENTITY_COMMAND_ARGS;
+    public static final Identity<ContainerArgsRecord, Integer> IDENTITY_CONTAINER_ARGS = Identities0.IDENTITY_CONTAINER_ARGS;
+    public static final Identity<FileInputsRecord, Integer> IDENTITY_FILE_INPUTS = Identities0.IDENTITY_FILE_INPUTS;
+    public static final Identity<SchedulerOptionsRecord, Integer> IDENTITY_SCHEDULER_OPTIONS = Identities0.IDENTITY_SCHEDULER_OPTIONS;
 
     // -------------------------------------------------------------------------
     // UNIQUE and PRIMARY KEY definitions
@@ -41,39 +50,54 @@ public class Keys {
 
     public static final UniqueKey<AppUpdatesRecord> APP_UPDATES_PKEY = UniqueKeys0.APP_UPDATES_PKEY;
     public static final UniqueKey<AppsRecord> APPS_PKEY = UniqueKeys0.APPS_PKEY;
-    public static final UniqueKey<AppsRecord> APPS_TENANT_NAME_VERSION_KEY = UniqueKeys0.APPS_TENANT_NAME_VERSION_KEY;
-    public static final UniqueKey<CapabilitiesRecord> CAPABILITIES_PKEY = UniqueKeys0.CAPABILITIES_PKEY;
-    public static final UniqueKey<CapabilitiesRecord> CAPABILITIES_APP_ID_CATEGORY_NAME_KEY = UniqueKeys0.CAPABILITIES_APP_ID_CATEGORY_NAME_KEY;
+    public static final UniqueKey<AppsRecord> APPS_TENANT_ID_VERSION_KEY = UniqueKeys0.APPS_TENANT_ID_VERSION_KEY;
+    public static final UniqueKey<CommandArgsRecord> COMMAND_ARGS_PKEY = UniqueKeys0.COMMAND_ARGS_PKEY;
+    public static final UniqueKey<ContainerArgsRecord> CONTAINER_ARGS_PKEY = UniqueKeys0.CONTAINER_ARGS_PKEY;
+    public static final UniqueKey<FileInputsRecord> FILE_INPUTS_PKEY = UniqueKeys0.FILE_INPUTS_PKEY;
+    public static final UniqueKey<FileInputsRecord> FILE_INPUTS_APP_SEQ_ID_SOURCE_URL_TARGET_PATH_KEY = UniqueKeys0.FILE_INPUTS_APP_SEQ_ID_SOURCE_URL_TARGET_PATH_KEY;
     public static final UniqueKey<FlywaySchemaHistoryRecord> FLYWAY_SCHEMA_HISTORY_PK = UniqueKeys0.FLYWAY_SCHEMA_HISTORY_PK;
+    public static final UniqueKey<SchedulerOptionsRecord> SCHEDULER_OPTIONS_PKEY = UniqueKeys0.SCHEDULER_OPTIONS_PKEY;
 
     // -------------------------------------------------------------------------
     // FOREIGN KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final ForeignKey<AppUpdatesRecord, AppsRecord> APP_UPDATES__APP_UPDATES_APP_ID_FKEY = ForeignKeys0.APP_UPDATES__APP_UPDATES_APP_ID_FKEY;
-    public static final ForeignKey<CapabilitiesRecord, AppsRecord> CAPABILITIES__CAPABILITIES_APP_ID_FKEY = ForeignKeys0.CAPABILITIES__CAPABILITIES_APP_ID_FKEY;
+    public static final ForeignKey<AppUpdatesRecord, AppsRecord> APP_UPDATES__APP_UPDATES_APP_SEQ_ID_FKEY = ForeignKeys0.APP_UPDATES__APP_UPDATES_APP_SEQ_ID_FKEY;
+    public static final ForeignKey<CommandArgsRecord, AppsRecord> COMMAND_ARGS__COMMAND_ARGS_APP_SEQ_ID_FKEY = ForeignKeys0.COMMAND_ARGS__COMMAND_ARGS_APP_SEQ_ID_FKEY;
+    public static final ForeignKey<ContainerArgsRecord, AppsRecord> CONTAINER_ARGS__CONTAINER_ARGS_APP_SEQ_ID_FKEY = ForeignKeys0.CONTAINER_ARGS__CONTAINER_ARGS_APP_SEQ_ID_FKEY;
+    public static final ForeignKey<FileInputsRecord, AppsRecord> FILE_INPUTS__FILE_INPUTS_APP_SEQ_ID_FKEY = ForeignKeys0.FILE_INPUTS__FILE_INPUTS_APP_SEQ_ID_FKEY;
+    public static final ForeignKey<SchedulerOptionsRecord, AppsRecord> SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_SEQ_ID_FKEY = ForeignKeys0.SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_SEQ_ID_FKEY;
 
     // -------------------------------------------------------------------------
     // [#1459] distribute members to avoid static initialisers > 64kb
     // -------------------------------------------------------------------------
 
     private static class Identities0 {
-        public static Identity<AppUpdatesRecord, Integer> IDENTITY_APP_UPDATES = Internal.createIdentity(AppUpdates.APP_UPDATES, AppUpdates.APP_UPDATES.ID);
-        public static Identity<AppsRecord, Integer> IDENTITY_APPS = Internal.createIdentity(Apps.APPS, Apps.APPS.ID);
-        public static Identity<CapabilitiesRecord, Integer> IDENTITY_CAPABILITIES = Internal.createIdentity(Capabilities.CAPABILITIES, Capabilities.CAPABILITIES.ID);
+        public static Identity<AppUpdatesRecord, Integer> IDENTITY_APP_UPDATES = Internal.createIdentity(AppUpdates.APP_UPDATES, AppUpdates.APP_UPDATES.SEQ_ID);
+        public static Identity<AppsRecord, Integer> IDENTITY_APPS = Internal.createIdentity(Apps.APPS, Apps.APPS.SEQ_ID);
+        public static Identity<CommandArgsRecord, Integer> IDENTITY_COMMAND_ARGS = Internal.createIdentity(CommandArgs.COMMAND_ARGS, CommandArgs.COMMAND_ARGS.SEQ_ID);
+        public static Identity<ContainerArgsRecord, Integer> IDENTITY_CONTAINER_ARGS = Internal.createIdentity(ContainerArgs.CONTAINER_ARGS, ContainerArgs.CONTAINER_ARGS.SEQ_ID);
+        public static Identity<FileInputsRecord, Integer> IDENTITY_FILE_INPUTS = Internal.createIdentity(FileInputs.FILE_INPUTS, FileInputs.FILE_INPUTS.SEQ_ID);
+        public static Identity<SchedulerOptionsRecord, Integer> IDENTITY_SCHEDULER_OPTIONS = Internal.createIdentity(SchedulerOptions.SCHEDULER_OPTIONS, SchedulerOptions.SCHEDULER_OPTIONS.SEQ_ID);
     }
 
     private static class UniqueKeys0 {
-        public static final UniqueKey<AppUpdatesRecord> APP_UPDATES_PKEY = Internal.createUniqueKey(AppUpdates.APP_UPDATES, "app_updates_pkey", new TableField[] { AppUpdates.APP_UPDATES.ID }, true);
-        public static final UniqueKey<AppsRecord> APPS_PKEY = Internal.createUniqueKey(Apps.APPS, "apps_pkey", new TableField[] { Apps.APPS.ID }, true);
-        public static final UniqueKey<AppsRecord> APPS_TENANT_NAME_VERSION_KEY = Internal.createUniqueKey(Apps.APPS, "apps_tenant_name_version_key", new TableField[] { Apps.APPS.TENANT, Apps.APPS.NAME, Apps.APPS.VERSION }, true);
-        public static final UniqueKey<CapabilitiesRecord> CAPABILITIES_PKEY = Internal.createUniqueKey(Capabilities.CAPABILITIES, "capabilities_pkey", new TableField[] { Capabilities.CAPABILITIES.ID }, true);
-        public static final UniqueKey<CapabilitiesRecord> CAPABILITIES_APP_ID_CATEGORY_NAME_KEY = Internal.createUniqueKey(Capabilities.CAPABILITIES, "capabilities_app_id_category_name_key", new TableField[] { Capabilities.CAPABILITIES.APP_ID, Capabilities.CAPABILITIES.CATEGORY, Capabilities.CAPABILITIES.NAME }, true);
+        public static final UniqueKey<AppUpdatesRecord> APP_UPDATES_PKEY = Internal.createUniqueKey(AppUpdates.APP_UPDATES, "app_updates_pkey", new TableField[] { AppUpdates.APP_UPDATES.SEQ_ID }, true);
+        public static final UniqueKey<AppsRecord> APPS_PKEY = Internal.createUniqueKey(Apps.APPS, "apps_pkey", new TableField[] { Apps.APPS.SEQ_ID }, true);
+        public static final UniqueKey<AppsRecord> APPS_TENANT_ID_VERSION_KEY = Internal.createUniqueKey(Apps.APPS, "apps_tenant_id_version_key", new TableField[] { Apps.APPS.TENANT, Apps.APPS.ID, Apps.APPS.VERSION }, true);
+        public static final UniqueKey<CommandArgsRecord> COMMAND_ARGS_PKEY = Internal.createUniqueKey(CommandArgs.COMMAND_ARGS, "command_args_pkey", new TableField[] { CommandArgs.COMMAND_ARGS.SEQ_ID }, true);
+        public static final UniqueKey<ContainerArgsRecord> CONTAINER_ARGS_PKEY = Internal.createUniqueKey(ContainerArgs.CONTAINER_ARGS, "container_args_pkey", new TableField[] { ContainerArgs.CONTAINER_ARGS.SEQ_ID }, true);
+        public static final UniqueKey<FileInputsRecord> FILE_INPUTS_PKEY = Internal.createUniqueKey(FileInputs.FILE_INPUTS, "file_inputs_pkey", new TableField[] { FileInputs.FILE_INPUTS.SEQ_ID }, true);
+        public static final UniqueKey<FileInputsRecord> FILE_INPUTS_APP_SEQ_ID_SOURCE_URL_TARGET_PATH_KEY = Internal.createUniqueKey(FileInputs.FILE_INPUTS, "file_inputs_app_seq_id_source_url_target_path_key", new TableField[] { FileInputs.FILE_INPUTS.APP_SEQ_ID, FileInputs.FILE_INPUTS.SOURCE_URL, FileInputs.FILE_INPUTS.TARGET_PATH }, true);
         public static final UniqueKey<FlywaySchemaHistoryRecord> FLYWAY_SCHEMA_HISTORY_PK = Internal.createUniqueKey(FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY, "flyway_schema_history_pk", new TableField[] { FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY.INSTALLED_RANK }, true);
+        public static final UniqueKey<SchedulerOptionsRecord> SCHEDULER_OPTIONS_PKEY = Internal.createUniqueKey(SchedulerOptions.SCHEDULER_OPTIONS, "scheduler_options_pkey", new TableField[] { SchedulerOptions.SCHEDULER_OPTIONS.SEQ_ID }, true);
     }
 
     private static class ForeignKeys0 {
-        public static final ForeignKey<AppUpdatesRecord, AppsRecord> APP_UPDATES__APP_UPDATES_APP_ID_FKEY = Internal.createForeignKey(Keys.APPS_PKEY, AppUpdates.APP_UPDATES, "app_updates_app_id_fkey", new TableField[] { AppUpdates.APP_UPDATES.APP_ID }, true);
-        public static final ForeignKey<CapabilitiesRecord, AppsRecord> CAPABILITIES__CAPABILITIES_APP_ID_FKEY = Internal.createForeignKey(Keys.APPS_PKEY, Capabilities.CAPABILITIES, "capabilities_app_id_fkey", new TableField[] { Capabilities.CAPABILITIES.APP_ID }, true);
+        public static final ForeignKey<AppUpdatesRecord, AppsRecord> APP_UPDATES__APP_UPDATES_APP_SEQ_ID_FKEY = Internal.createForeignKey(Keys.APPS_PKEY, AppUpdates.APP_UPDATES, "app_updates_app_seq_id_fkey", new TableField[] { AppUpdates.APP_UPDATES.APP_SEQ_ID }, true);
+        public static final ForeignKey<CommandArgsRecord, AppsRecord> COMMAND_ARGS__COMMAND_ARGS_APP_SEQ_ID_FKEY = Internal.createForeignKey(Keys.APPS_PKEY, CommandArgs.COMMAND_ARGS, "command_args_app_seq_id_fkey", new TableField[] { CommandArgs.COMMAND_ARGS.APP_SEQ_ID }, true);
+        public static final ForeignKey<ContainerArgsRecord, AppsRecord> CONTAINER_ARGS__CONTAINER_ARGS_APP_SEQ_ID_FKEY = Internal.createForeignKey(Keys.APPS_PKEY, ContainerArgs.CONTAINER_ARGS, "container_args_app_seq_id_fkey", new TableField[] { ContainerArgs.CONTAINER_ARGS.APP_SEQ_ID }, true);
+        public static final ForeignKey<FileInputsRecord, AppsRecord> FILE_INPUTS__FILE_INPUTS_APP_SEQ_ID_FKEY = Internal.createForeignKey(Keys.APPS_PKEY, FileInputs.FILE_INPUTS, "file_inputs_app_seq_id_fkey", new TableField[] { FileInputs.FILE_INPUTS.APP_SEQ_ID }, true);
+        public static final ForeignKey<SchedulerOptionsRecord, AppsRecord> SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_SEQ_ID_FKEY = Internal.createForeignKey(Keys.APPS_PKEY, SchedulerOptions.SCHEDULER_OPTIONS, "scheduler_options_app_seq_id_fkey", new TableField[] { SchedulerOptions.SCHEDULER_OPTIONS.APP_SEQ_ID }, true);
     }
 }

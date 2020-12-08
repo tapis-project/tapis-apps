@@ -6,8 +6,11 @@ package edu.utexas.tacc.tapis.apps.gen.jooq;
 
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppUpdates;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Capabilities;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.CommandArgs;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.ContainerArgs;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FileInputs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.SchedulerOptions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,7 +27,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class TapisApp extends SchemaImpl {
 
-    private static final long serialVersionUID = 750994060;
+    private static final long serialVersionUID = 2031915246;
 
     /**
      * The reference instance of <code>tapis_app</code>
@@ -42,14 +45,29 @@ public class TapisApp extends SchemaImpl {
     public final Apps APPS = Apps.APPS;
 
     /**
-     * The table <code>tapis_app.capabilities</code>.
+     * The table <code>tapis_app.command_args</code>.
      */
-    public final Capabilities CAPABILITIES = Capabilities.CAPABILITIES;
+    public final CommandArgs COMMAND_ARGS = CommandArgs.COMMAND_ARGS;
+
+    /**
+     * The table <code>tapis_app.container_args</code>.
+     */
+    public final ContainerArgs CONTAINER_ARGS = ContainerArgs.CONTAINER_ARGS;
+
+    /**
+     * The table <code>tapis_app.file_inputs</code>.
+     */
+    public final FileInputs FILE_INPUTS = FileInputs.FILE_INPUTS;
 
     /**
      * The table <code>tapis_app.flyway_schema_history</code>.
      */
     public final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
+
+    /**
+     * The table <code>tapis_app.scheduler_options</code>.
+     */
+    public final SchedulerOptions SCHEDULER_OPTIONS = SchedulerOptions.SCHEDULER_OPTIONS;
 
     /**
      * No further instances allowed
@@ -67,11 +85,17 @@ public class TapisApp extends SchemaImpl {
     @Override
     public final List<Sequence<?>> getSequences() {
         return Arrays.<Sequence<?>>asList(
-            Sequences.APP_UPDATES_APP_ID_SEQ,
-            Sequences.APP_UPDATES_ID_SEQ,
-            Sequences.APPS_ID_SEQ,
-            Sequences.CAPABILITIES_APP_ID_SEQ,
-            Sequences.CAPABILITIES_ID_SEQ);
+            Sequences.APP_UPDATES_APP_SEQ_ID_SEQ,
+            Sequences.APP_UPDATES_SEQ_ID_SEQ,
+            Sequences.APPS_SEQ_ID_SEQ,
+            Sequences.COMMAND_ARGS_APP_SEQ_ID_SEQ,
+            Sequences.COMMAND_ARGS_SEQ_ID_SEQ,
+            Sequences.CONTAINER_ARGS_APP_SEQ_ID_SEQ,
+            Sequences.CONTAINER_ARGS_SEQ_ID_SEQ,
+            Sequences.FILE_INPUTS_APP_SEQ_ID_SEQ,
+            Sequences.FILE_INPUTS_SEQ_ID_SEQ,
+            Sequences.SCHEDULER_OPTIONS_APP_SEQ_ID_SEQ,
+            Sequences.SCHEDULER_OPTIONS_SEQ_ID_SEQ);
     }
 
     @Override
@@ -79,7 +103,10 @@ public class TapisApp extends SchemaImpl {
         return Arrays.<Table<?>>asList(
             AppUpdates.APP_UPDATES,
             Apps.APPS,
-            Capabilities.CAPABILITIES,
-            FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY);
+            CommandArgs.COMMAND_ARGS,
+            ContainerArgs.CONTAINER_ARGS,
+            FileInputs.FILE_INPUTS,
+            FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY,
+            SchedulerOptions.SCHEDULER_OPTIONS);
     }
 }

@@ -3,19 +3,72 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Common definitions for requests",
   "additionalProperties": false,
-
-  "appName": { "type": "string", "minLength": 1, "maxLength": 80 },
-  "userName": { "type": "string", "minLength": 1, "maxLength": 60 },
-  "dirPath": { "type": "string", "minLength": 1, "maxLength": 4096 },
-  "appTypeEnum": { "type": "string", "enum": ["BATCH","INTERACTIVE"] },
-  "capabilityCategoryEnum": { "type": "string", "enum": ["SCHEDULER", "OS", "HARDWARE", "SOFTWARE", "JOB", "CONTAINER", "MISC", "CUSTOM"] },
-  "capability": {
+  "AppId": {
+    "type": "string",
+    "minLength": 1,
+    "maxLength": 80
+  },
+  "UserName": {
+    "type": "string",
+    "minLength": 1,
+    "maxLength": 60
+  },
+  "DirPath": {
+    "type": "string",
+    "minLength": 1,
+    "maxLength": 4096
+  },
+  "AppTypeEnum": {
+    "type": "string",
+    "enum": [
+      "BATCH",
+      "INTERACTIVE"
+    ]
+  },
+  "capabilityCategoryEnum": {
+    "type": "string",
+    "enum": [
+      "SCHEDULER",
+      "OS",
+      "HARDWARE",
+      "SOFTWARE",
+      "JOB",
+      "CONTAINER",
+      "MISC",
+      "CUSTOM"
+    ]
+  },
+  "FileInput": {
     "type": "object",
-    "required": [ "category", "name" ],
+    "required": [
+      "sourceUrl"
+    ],
     "properties": {
-      "category": { "$ref": "#/capabilityCategoryEnum" },
-      "name": { "type": "string", "minLength": 1, "maxLength": 128 },
-      "value": { "type": "string", "maxLength": 128 }
+      "sourceUrl": {
+        "type": "string",
+        "minLength": 1,
+        "format": "uri"
+      },
+      "targetPath": {
+        "type": "string"
+      },
+      "metaName": {
+        "type": "string",
+        "minLength": 1
+      },
+      "metaRequired": {
+        "type": "boolean"
+      },
+      "metaKeyValuePairs": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "value": { "type": "string" }
+          }
+        }
+      }
     }
   }
 }

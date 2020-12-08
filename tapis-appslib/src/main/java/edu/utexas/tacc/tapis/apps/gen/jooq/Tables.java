@@ -6,8 +6,11 @@ package edu.utexas.tacc.tapis.apps.gen.jooq;
 
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppUpdates;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Capabilities;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.CommandArgs;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.ContainerArgs;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FileInputs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.SchedulerOptions;
 
 
 /**
@@ -27,12 +30,27 @@ public class Tables {
     public static final Apps APPS = Apps.APPS;
 
     /**
-     * The table <code>tapis_app.capabilities</code>.
+     * The table <code>tapis_app.command_args</code>.
      */
-    public static final Capabilities CAPABILITIES = Capabilities.CAPABILITIES;
+    public static final CommandArgs COMMAND_ARGS = CommandArgs.COMMAND_ARGS;
+
+    /**
+     * The table <code>tapis_app.container_args</code>.
+     */
+    public static final ContainerArgs CONTAINER_ARGS = ContainerArgs.CONTAINER_ARGS;
+
+    /**
+     * The table <code>tapis_app.file_inputs</code>.
+     */
+    public static final FileInputs FILE_INPUTS = FileInputs.FILE_INPUTS;
 
     /**
      * The table <code>tapis_app.flyway_schema_history</code>.
      */
     public static final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
+
+    /**
+     * The table <code>tapis_app.scheduler_options</code>.
+     */
+    public static final SchedulerOptions SCHEDULER_OPTIONS = SchedulerOptions.SCHEDULER_OPTIONS;
 }

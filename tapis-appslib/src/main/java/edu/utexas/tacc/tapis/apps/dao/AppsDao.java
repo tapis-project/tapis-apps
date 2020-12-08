@@ -42,5 +42,5 @@ public interface AppsDao
 
   String getAppOwner(String tenant, String name) throws TapisException;
 
-  int getAppId(String tenant, String name) throws TapisException;
+  int getAppSeqId(String tenant, String name) throws TapisException;
 }

@@ -115,11 +115,11 @@ public class SearchDaoTest
     //Remove all objects created by tests
     for (App app : apps)
     {
-      dao.hardDeleteApp(tenantName, app.getName());
+      dao.hardDeleteApp(tenantName, app.getId());
     }
 
-    App tmpApp = dao.getApp(tenantName, apps[0].getName());
-    Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getName());
+    App tmpApp = dao.getApp(tenantName, apps[0].getId());
+    Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getId());
   }
 
   /*
@@ -129,7 +129,7 @@ public class SearchDaoTest
   public void testValidCases() throws Exception
   {
     App app0 = apps[0];
-    String app0Name = app0.getName();
+    String app0Name = app0.getId();
     String nameList = "noSuchName1,noSuchName2," + app0Name + ",noSuchName3";
     // Create all input and validation data for tests
     // NOTE: Some cases require "name.like." + appNameLikeAll in the list of conditions since maven runs the tests in

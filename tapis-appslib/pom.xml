@@ -229,14 +229,6 @@
                   <!-- Bind our enum types for convenience -->
                   <!-- ****************************************** -->
                   <forcedType>
-                    <userType>edu.utexas.tacc.tapis.apps.model.Capability.Category</userType>
-                    <!-- Use built-in enum converter -->
-                    <enumConverter>true</enumConverter>
-                    <!-- Explicitly match one column. -->
-                    <includeExpression>capabilities\.category</includeExpression>
-                    <includeTypes>.*</includeTypes>
-                  </forcedType>
-                  <forcedType>
                     <userType>edu.utexas.tacc.tapis.apps.model.App.AppOperation</userType>
                     <enumConverter>true</enumConverter>
                     <includeExpression>app_updates\.operation</includeExpression>
@@ -248,14 +240,12 @@
                     <includeExpression>apps\.app_type</includeExpression>
                     <includeTypes>.*</includeTypes>
                   </forcedType>
-<!--
                   <forcedType>
-                    <userType>edu.utexas.tacc.tapis.apps.model.App.AccessMethod</userType>
-                    <enumConverter>true</enumConverter>
-                    <includeExpression>apps\.default_access_method</includeExpression>
-                    <includeTypes>.*</includeTypes>
-                  </forcedType>
--->
+                    <userType>edu.utexas.tacc.tapis.apps.model.App.ContainerRuntime</userType>
+                        <enumConverter>true</enumConverter>
+                        <includeExpression>apps\.container_runtime</includeExpression>
+                        <includeTypes>.*</includeTypes>
+                    </forcedType>
                 </forcedTypes>
               </database>
             </generator>

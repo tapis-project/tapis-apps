@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.apps.IntegrationUtils;
-import edu.utexas.tacc.tapis.apps.model.Capability;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
@@ -50,11 +49,11 @@ public class AppsDaoTest
     //Remove all objects created by tests
     for (int i = 0; i < numApps; i++)
     {
-      dao.hardDeleteApp(tenantName, apps[i].getName());
+      dao.hardDeleteApp(tenantName, apps[i].getId());
     }
 
-    App tmpApp = dao.getApp(tenantName, apps[0].getName());
-    Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getName());
+    App tmpApp = dao.getApp(tenantName, apps[0].getId());
+    Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getId());
   }
 
   // Test create for a single item
@@ -72,10 +71,10 @@ public class AppsDaoTest
     App app0 = apps[1];
     int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
-    App tmpApp = dao.getApp(app0.getTenant(), app0.getName());
-    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getName());
-    System.out.println("Found item: " + app0.getName());
-    Assert.assertEquals(tmpApp.getName(), app0.getName());
+    App tmpApp = dao.getApp(app0.getTenant(), app0.getId());
+    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
+    System.out.println("Found item: " + app0.getId());
+    Assert.assertEquals(tmpApp.getId(), app0.getId());
     Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
     Assert.assertEquals(tmpApp.getAppType().name(), app0.getAppType().name());
     Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
@@ -96,19 +95,19 @@ public class AppsDaoTest
     Assert.assertEquals(obj.get("project").getAsString(), notesObj.get("project").getAsString());
     Assert.assertTrue(obj.has("testdata"));
     Assert.assertEquals(obj.get("testdata").getAsString(), notesObj.get("testdata").getAsString());
-    // Verify capabilities
-    List<Capability> origCaps = app0.getJobCapabilities();
-    List<Capability> jobCaps = tmpApp.getJobCapabilities();
-    Assert.assertNotNull(origCaps, "Orig Caps was null");
-    Assert.assertNotNull(jobCaps, "Fetched Caps was null");
-    Assert.assertEquals(jobCaps.size(), origCaps.size());
-    var capNamesFound = new ArrayList<String>();
-    for (Capability capFound : jobCaps) {capNamesFound.add(capFound.getName());}
-    for (Capability capSeedItem : origCaps)
-    {
-      Assert.assertTrue(capNamesFound.contains(capSeedItem.getName()),
-              "List of capabilities did not contain a capability named: " + capSeedItem.getName());
-    }
+//    // Verify capabilities
+//    List<Capability> origCaps = app0.getJobCapabilities();
+//    List<Capability> jobCaps = tmpApp.getJobCapabilities();
+//    Assert.assertNotNull(origCaps, "Orig Caps was null");
+//    Assert.assertNotNull(jobCaps, "Fetched Caps was null");
+//    Assert.assertEquals(jobCaps.size(), origCaps.size());
+//    var capNamesFound = new ArrayList<String>();
+//    for (Capability capFound : jobCaps) {capNamesFound.add(capFound.getName());}
+//    for (Capability capSeedItem : origCaps)
+//    {
+//      Assert.assertTrue(capNamesFound.contains(capSeedItem.getName()),
+//              "List of capabilities did not contain a capability named: " + capSeedItem.getName());
+//    }
   }
 
   // Test retrieving all app names
@@ -126,8 +125,8 @@ public class AppsDaoTest
     for (String name : appNames) {
       System.out.println("Found item: " + name);
     }
-    Assert.assertTrue(appNames.contains(apps[2].getName()), "List of apps did not contain app name: " + apps[2].getName());
-    Assert.assertTrue(appNames.contains(apps[3].getName()), "List of apps did not contain app name: " + apps[3].getName());
+    Assert.assertTrue(appNames.contains(apps[2].getId()), "List of apps did not contain app name: " + apps[2].getId());
+    Assert.assertTrue(appNames.contains(apps[3].getId()), "List of apps did not contain app name: " + apps[3].getId());
   }
 
   // Test retrieving all apps
@@ -138,7 +137,7 @@ public class AppsDaoTest
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
     List<App> apps = dao.getApps(tenantName, null, null);
     for (App app : apps) {
-      System.out.println("Found item with id: " + app.getId() + " and name: " + app.getName());
+      System.out.println("Found item with id: " + app.getSeqId() + " and name: " + app.getId());
     }
   }
 
@@ -158,8 +157,8 @@ public class AppsDaoTest
     // Get all apps in list of IDs
     List<App> apps = dao.getApps(tenantName, null, idList);
     for (App app : apps) {
-      System.out.println("Found item with id: " + app.getId() + " and name: " + app.getName());
-      Assert.assertTrue(idList.contains(app.getId()));
+      System.out.println("Found item with id: " + app.getSeqId() + " and name: " + app.getId());
+      Assert.assertTrue(idList.contains(app.getSeqId()));
     }
     Assert.assertEquals(idList.size(), apps.size());
   }
@@ -172,7 +171,7 @@ public class AppsDaoTest
     System.out.println("Created item with id: " + itemId);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
     dao.updateAppOwner(authenticatedUser, itemId, "newOwner");
-    App tmpApp = dao.getApp(app0.getTenant(), app0.getName());
+    App tmpApp = dao.getApp(app0.getTenant(), app0.getId());
     Assert.assertEquals(tmpApp.getOwner(), "newOwner");
   }
 
@@ -187,8 +186,8 @@ public class AppsDaoTest
     Assert.assertEquals(numDeleted, 1);
     numDeleted = dao.softDeleteApp(authenticatedUser, itemId);
     Assert.assertEquals(numDeleted, 0);
-    Assert.assertFalse(dao.checkForAppByName(app0.getTenant(), app0.getName(), false ),
-            "App not deleted. App name: " + app0.getName());
+    Assert.assertFalse(dao.checkForAppByName(app0.getTenant(), app0.getId(), false ),
+            "App not deleted. App name: " + app0.getId());
   }
 
   // Test hard deleting a single item
@@ -198,8 +197,8 @@ public class AppsDaoTest
     int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     System.out.println("Created item with id: " + itemId);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
-    dao.hardDeleteApp(app0.getTenant(), app0.getName());
-    Assert.assertFalse(dao.checkForAppByName(app0.getTenant(), app0.getName(), true),"App not deleted. App name: " + app0.getName());
+    dao.hardDeleteApp(app0.getTenant(), app0.getId());
+    Assert.assertFalse(dao.checkForAppByName(app0.getTenant(), app0.getId(), true),"App not deleted. App name: " + app0.getId());
   }
 
   // Test create and get for a single item with no transfer methods supported and unusual port settings
@@ -209,10 +208,10 @@ public class AppsDaoTest
     App app0 = apps[10];
     int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
-    App tmpApp = dao.getApp(app0.getTenant(), app0.getName());
-    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getName());
-    System.out.println("Found item: " + app0.getName());
-    Assert.assertEquals(tmpApp.getName(), app0.getName());
+    App tmpApp = dao.getApp(app0.getTenant(), app0.getId());
+    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
+    System.out.println("Found item: " + app0.getId());
+    Assert.assertEquals(tmpApp.getId(), app0.getId());
     Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
     Assert.assertEquals(tmpApp.getAppType().name(), app0.getAppType().name());
     Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
@@ -226,7 +225,9 @@ public class AppsDaoTest
   @Test
   public void testMissingApp() throws Exception {
     String fakeAppName = "AMissingAppName";
-    PatchApp patchApp = new PatchApp(appVersion, "description PATCHED", false, capList, tags, notes);
+    PatchApp patchApp = new PatchApp(appVersion, "description PATCHED", false,
+//            capList,
+            tags, notes);
     patchApp.setTenant(tenantName);
     patchApp.setName(fakeAppName);
     App patchedApp = new App(1, tenantName, fakeAppName, appVersion, "description", AppType.INTERACTIVE, "owner", true,

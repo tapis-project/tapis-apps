@@ -6,7 +6,7 @@
 # To run against DEV environment services (tenants, tokens) and a local DB
 #   with default DB username and password as set in service.properties then
 #   set the following:
-#     TAPIS_TENANT_SVC_BASEURL=https://master.develop.tapis.io
+#     TAPIS_TENANT_SVC_BASEURL=https://admin.develop.tapis.io
 #     TAPIS_SERVICE_PASSWORD=****
 #
 # In general the following env variables should be set prior to running this script:
@@ -19,7 +19,7 @@
 #   TAPIS_DB_USER=tapis
 #   TAPIS_DB_PASSWORD=******
 #   TAPIS_DB_JDBC_URL=jdbc:postgresql://localhost:5432/tapisappdb
-#   TAPIS_TENANT_SVC_BASEURL=https://master.develop.tapis.io
+#   TAPIS_TENANT_SVC_BASEURL=https://admin.develop.tapis.io
 #   TAPIS_SERVICE_PASSWORD=****
 #
 # The following env variables must be set
