@@ -230,7 +230,12 @@ public class AppsDaoTest
             tags, notes);
     patchApp.setTenant(tenantName);
     patchApp.setName(fakeAppName);
-    App patchedApp = new App(1, tenantName, fakeAppName, appVersion, "description", AppType.INTERACTIVE, "owner", true,
+    App patchedApp = new App(1, tenantName, fakeAppName, appVersion, "description", App.AppType.BATCH, ownerUser, enabled,
+            isInteractive, containerized, containerRuntime, containerImage, command, dynamicExecSystem,
+            execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
+            execSystemLogicalQueue,
+            archiveSystemId, archiveSystemDir, archiveOnAppError, jobDescription, maxJobs, maxJobsPerUser,
+            nodeCount, coresPerNode, memoryMb, maxMinutes, archiveIncludes, archiveExcludes,
             tags, notes, null, false, null, null);
     // Make sure app does not exist
     Assert.assertFalse(dao.checkForAppByName(tenantName, fakeAppName, true));

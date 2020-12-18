@@ -784,8 +784,14 @@ public class AppResource
    */
   private static App createAppFromRequest(ReqCreateApp req)
   {
-    var app = new App(-1, null, req.name, req.version, req.description, req.appType, req.owner, req.enabled,
-                       req.tags, req.notes, req.refImportId, false, null, null);
+    var app = new App(-1, null, req.id, req.version, req.description, req.appType, req.owner, req.enabled,
+                      req.isInteractive, req.containerized, req.containerRuntime, req.containerImage, req.command,
+                      req.dynamicExecSystem, req.execSystemConstraints, req.execSystemId, req.execSystemExecDir,
+                      req.execSystemInputDir, req.execSystemOutputDir, req.execSystemLogicalQueue,
+                      req.archiveSystemId, req.archiveSystemDir,
+                      req.archiveOnAppError, req.jobDescription, req.maxJobs, req.maxJobsPerUser, req.nodeCount,
+                      req.coresPerNode, req.memoryMB, req.maxMinutes, req.archiveIncludes, req.archiveExcludes,
+                      req.tags, req.notes, req.refImportId, false, null, null);
 //    app.setJobCapabilities(req.jobCapabilities);
     return app;
   }

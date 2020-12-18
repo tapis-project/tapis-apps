@@ -1,6 +1,8 @@
 package edu.utexas.tacc.tapis.apps.api.requests;
 
+import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
+import edu.utexas.tacc.tapis.apps.model.App.ContainerRuntime;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 
 import java.util.List;
@@ -15,30 +17,37 @@ import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_TAGS;
  */
 public final class ReqCreateApp
 {
-  public String name;       // Name of the app
+  public String id;       // Name of the app
   public String version;    // Version of the app
   public String description; // Full description of the app
   public AppType appType; // Type of app, e.g.
   public String owner = DEFAULT_OWNER;      // User who owns the app and has full privileges
   public boolean enabled = DEFAULT_ENABLED; // Indicates if the app is currently enabled
-  private boolean dynamicExecSystem; // Indicates if constraints are to be used
-  private String[] execSystemConstraints; // List of constraints
-  private String execSystemId;
-  private String execSystemExecDir;
-  private String execSystemInputDir;
-  private String execSystemOutputDir;
-  private String archiveSystemId;
-  private String archiveSystemDir;
-  private boolean archiveOnAppError;
-  private boolean useDTNIfDefined;
-  private String[] envVariables;
-  private String jobDescriptionTemplate;
-  private int maxJobs;
-  private int maxJobsPerUser;
-  private int nodeCount;
-  private int coresPerNode;
-  private int memoryMB;
-  private int maxMinutes;
+  public boolean isInteractive;
+  public boolean containerized;
+  public ContainerRuntime containerRuntime;
+  public String containerImage;
+  public String command;
+  public String[] envVariables;
+  public boolean dynamicExecSystem; // Indicates if constraints are to be used
+  public String[] execSystemConstraints; // List of constraints
+  public String execSystemId;
+  public String execSystemExecDir;
+  public String execSystemInputDir;
+  public String execSystemOutputDir;
+  public String execSystemLogicalQueue;
+  public String archiveSystemId;
+  public String archiveSystemDir;
+  public boolean archiveOnAppError;
+  public String jobDescription;
+  public int maxJobs;
+  public int maxJobsPerUser;
+  public int nodeCount;
+  public int coresPerNode;
+  public int memoryMB;
+  public int maxMinutes;
+  public String[] archiveIncludes;
+  public String[] archiveExcludes;
 
   public List<FileInput> fileInputs;
   public String[] tags = DEFAULT_TAGS;       // List of arbitrary tags as strings

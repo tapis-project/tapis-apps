@@ -9,10 +9,6 @@
     "version": { "type": "string", "maxLength": 64 },
     "description": { "type": "string", "maxLength": 2048 },
     "enabled": { "type": "boolean", "default": true },
-    "jobCapabilities": {
-      "type": "array",
-      "items": {"$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/capability" }
-    },
     "tags": {
       "type": "array",
       "items": { "type":  "string", "minLength": 1, "maxLength": 128 }

@@ -59,9 +59,14 @@ CREATE TABLE apps
   enabled     BOOLEAN NOT NULL DEFAULT true,
   containerized BOOLEAN NOT NULL DEFAULT true,
   container_runtime container_runtime_type NOT NULL,
+  container_runtime_version VARCHAR(128),
   container_image VARCHAR(128),
-  command VARCHAR(128),
-  exec_codes TEXT[] NOT NULL,
+--  command VARCHAR(128),
+--  exec_codes TEXT[] NOT NULL, -- TODO these will be FileInputs? need type in FileInputs table?
+  max_jobs INTEGER NOT NULL DEFAULT -1,
+  max_jobs_per_user INTEGER NOT NULL DEFAULT -1,
+-- Start jobAttributes ==========================================
+  job_description VARCHAR(2048),
   dynamic_exec_system BOOLEAN NOT NULL DEFAULT false,
   exec_system_constraints TEXT[] NOT NULL,
   exec_system_id VARCHAR(80) NOT NULL,
@@ -72,16 +77,19 @@ CREATE TABLE apps
   archive_system_id VARCHAR(80),
   archive_system_dir VARCHAR(4096),
   archive_on_app_error BOOLEAN NOT NULL DEFAULT true,
-  use_dtn_if_defined BOOLEAN NOT NULL DEFAULT true,
-  job_description VARCHAR(2048),
-  max_jobs INTEGER NOT NULL DEFAULT -1,
-  max_jobs_per_user INTEGER NOT NULL DEFAULT -1,
+--   parameterSet location in jobAttributes ===================
+--   parameterSet attributes flattened into this table ========
+  env_variables TEXT[] NOT NULL,
+  archive_includes TEXT[] NOT NULL,
+  archive_excludes TEXT[] NOT NULL,
+--   fileInputs location in jobAttributes =====================
   node_count INTEGER NOT NULL DEFAULT -1,
   cores_per_node INTEGER NOT NULL DEFAULT -1,
   memory_mb INTEGER NOT NULL DEFAULT -1,
   max_minutes INTEGER NOT NULL DEFAULT -1,
-  archive_includes TEXT[] NOT NULL,
-  archive_excludes TEXT[] NOT NULL,
+--   subscriptions location in jobAttributes ==================
+  job_tags TEXT[] NOT NULL,
+-- End jobAttributes ==========================================
   tags       TEXT[] NOT NULL,
   notes      JSONB NOT NULL,
   import_ref_id VARCHAR(80),
@@ -133,6 +141,7 @@ COMMENT ON COLUMN app_updates.created IS 'UTC time for when record was created';
 -- ----------------------------------------------------------------------------------------
 --                           FILE INPUTS
 -- ----------------------------------------------------------------------------------------
+-- TODO 2 tables? one for file inputs and one for exec codes?
 -- File Inputs table
 -- Inputs associated with an app
 -- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
@@ -142,7 +151,9 @@ CREATE TABLE file_inputs
     app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
     source_url VARCHAR(128) NOT NULL DEFAULT '',
     target_path VARCHAR(128) NOT NULL DEFAULT '',
+    in_place BOOLEAN NOT NULL DEFAULT false,
     meta_name VARCHAR(128) NOT NULL DEFAULT '',
+    meta_description VARCHAR(128) NOT NULL DEFAULT '',
     meta_required boolean NOT NULL DEFAULT true,
     meta_kv TEXT[] NOT NULL,
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
@@ -154,8 +165,33 @@ COMMENT ON COLUMN file_inputs.seq_id IS 'File input sequence id';
 COMMENT ON COLUMN file_inputs.app_seq_id IS 'Sequence id of application requiring the file input';
 
 -- ----------------------------------------------------------------------------------------
+--                           SUBSCRIPTIONS
+-- ----------------------------------------------------------------------------------------
+-- Notification subscriptions table
+CREATE TABLE notification_subscriptions
+(
+    seq_id     SERIAL PRIMARY KEY,
+    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    filter VARCHAR(128) NOT NULL DEFAULT '', -- TODO length?
+    -- TODO
+--     target_path VARCHAR(128) NOT NULL DEFAULT '',
+--     in_place BOOLEAN NOT NULL DEFAULT false,
+--     meta_name VARCHAR(128) NOT NULL DEFAULT '',
+--     meta_description VARCHAR(128) NOT NULL DEFAULT '',
+--     meta_required boolean NOT NULL DEFAULT true,
+--     meta_kv TEXT[] NOT NULL,
+--     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
+--     updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
+    UNIQUE (app_seq_id)
+);
+ALTER TABLE file_inputs OWNER TO tapis_app;
+COMMENT ON COLUMN file_inputs.seq_id IS 'File input sequence id';
+COMMENT ON COLUMN file_inputs.app_seq_id IS 'Sequence id of application requiring the file input';
+
+-- ----------------------------------------------------------------------------------------
 --                           ARGS
 -- ----------------------------------------------------------------------------------------
+-- TODO could have one table with an arg_type column?
 -- Container args table
 -- Container arguments associated with an app
 -- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
@@ -165,6 +201,7 @@ CREATE TABLE container_args
     app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
     arg_val VARCHAR(128) NOT NULL DEFAULT '',
     meta_name VARCHAR(128) NOT NULL DEFAULT '',
+    meta_description VARCHAR(128) NOT NULL DEFAULT '',
     meta_required boolean NOT NULL DEFAULT true,
     meta_kv TEXT[] NOT NULL,
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
@@ -174,23 +211,24 @@ ALTER TABLE container_args OWNER TO tapis_app;
 COMMENT ON COLUMN container_args.seq_id IS 'Arg sequence id';
 COMMENT ON COLUMN container_args.app_seq_id IS 'Sequence id of application';
 
--- Command args table
--- Command arguments associated with an app
+-- App args table
+-- App arguments associated with an app
 -- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
-CREATE TABLE command_args
+CREATE TABLE app_args
 (
     seq_id SERIAL PRIMARY KEY,
     app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
     arg_val VARCHAR(128) NOT NULL DEFAULT '',
     meta_name VARCHAR(128) NOT NULL DEFAULT '',
+    meta_description VARCHAR(128) NOT NULL DEFAULT '',
     meta_required boolean NOT NULL DEFAULT true,
     meta_kv TEXT[] NOT NULL,
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
 );
-ALTER TABLE command_args OWNER TO tapis_app;
-COMMENT ON COLUMN command_args.seq_id IS 'Arg sequence id';
-COMMENT ON COLUMN command_args.app_seq_id IS 'Sequence id of application';
+ALTER TABLE app_args OWNER TO tapis_app;
+COMMENT ON COLUMN app_args.seq_id IS 'Arg sequence id';
+COMMENT ON COLUMN app_args.app_seq_id IS 'Sequence id of application';
 
 -- Scheduler options table
 -- Scheduler options associated with an app
@@ -201,6 +239,7 @@ CREATE TABLE scheduler_options
     app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
     arg_val VARCHAR(128) NOT NULL DEFAULT '',
     meta_name VARCHAR(128) NOT NULL DEFAULT '',
+    meta_description VARCHAR(128) NOT NULL DEFAULT '',
     meta_required boolean NOT NULL DEFAULT true,
     meta_kv TEXT[] NOT NULL,
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
@@ -231,8 +270,8 @@ EXECUTE PROCEDURE trigger_set_updated();
 CREATE TRIGGER container_args_updated
     BEFORE UPDATE ON container_args
 EXECUTE PROCEDURE trigger_set_updated();
-CREATE TRIGGER command_args_updated
-    BEFORE UPDATE ON command_args
+CREATE TRIGGER app_args_updated
+    BEFORE UPDATE ON app_args
 EXECUTE PROCEDURE trigger_set_updated();
 CREATE TRIGGER scheduler_options_updated
     BEFORE UPDATE ON scheduler_options

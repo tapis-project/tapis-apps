@@ -50,7 +50,7 @@ public final class App
   public enum ContainerRuntime {DOCKER, SINGULARITY}
   public enum Permission {ALL, READ, MODIFY, EXECUTE}
   public enum AppOperation {create, read, modify, execute, softDelete, hardDelete, changeOwner, getPerms,
-                               grantPerms, revokePerms}
+                            grantPerms, revokePerms}
 
   // ************************************************************************
   // *********************** Fields *****************************************
@@ -66,11 +66,16 @@ public final class App
   private AppType appType; // Type of app, e.g. LINUX, OBJECT_STORE
   private String owner;      // User who owns the app and has full privileges
   private boolean enabled; // Indicates if app is currently enabled
+  private boolean isInteractive;
   private boolean containerized;
   private ContainerRuntime containerRuntime;
   private String containerImage;
+  private List<AppArg> containerArgs;
   private String command;
-  private String[] execCodes;
+  private List<AppArg> commandArgs;
+  private List<FileInput> execCodes;
+  private String[] envVariables;
+  private List<FileInput> fileInputs;
   private boolean dynamicExecSystem; // Indicates if constraints are to be used
   private String[] execSystemConstraints; // List of constraints
   private String execSystemId;
@@ -81,8 +86,6 @@ public final class App
   private String archiveSystemId;
   private String archiveSystemDir;
   private boolean archiveOnAppError;
-  private boolean useDtnIfDefined;
-  private String[] envVariables;
   private String jobDescription;
   private int maxJobs;
   private int maxJobsPerUser;
@@ -90,7 +93,6 @@ public final class App
   private int coresPerNode;
   private int memoryMB;
   private int maxMinutes;
-  private List<FileInput> fileInputs;
   private String[] archiveIncludes;
   private String[] archiveExcludes;
   private String[] tags;       // List of arbitrary tags as strings
@@ -130,7 +132,14 @@ public final class App
    * Also useful for testing
    */
   public App(int seqId1, String tenant1, String id1, String version1, String description1, AppType appType1,
-             String owner1, boolean enabled1, String[] tags1, Object notes1, String importRefId1, boolean deleted1,
+             String owner1, boolean enabled1, boolean isInteractive1, boolean containerized1, ContainerRuntime containerRuntime1,
+             String containerImage1, String command1, boolean dynamicExecSystem1, String[] execSystemConstraints1,
+             String execSystemId1, String execSystemExecDir1, String execSystemInputDir1, String execSystemOutputDir1,
+             String execSystemLogicalQueue1, String archiveSystemId1, String archiveSystemDir1,
+             boolean archiveOnAppError1, String jobDescription1, int maxJobs1,
+             int maxJobsPerUser1, int nodeCount1, int coresPerNode1, int memoryMB1, int maxMinutes1,
+             String[] archiveIncludes1, String[] archiveExcludes1,
+             String[] tags1, Object notes1, String importRefId1, boolean deleted1,
              Instant created1, Instant updated1)
   {
     seqId = seqId1;
@@ -141,6 +150,30 @@ public final class App
     appType = appType1;
     owner = owner1;
     enabled = enabled1;
+    isInteractive = isInteractive1;
+    containerized = containerized1;
+    containerRuntime = containerRuntime1;
+    containerImage = containerImage1;
+    command = command1;
+    dynamicExecSystem = dynamicExecSystem1;
+    execSystemConstraints = (execSystemConstraints1 == null) ? null : execSystemConstraints1.clone();
+    execSystemId = execSystemId1;
+    execSystemExecDir = execSystemExecDir1;
+    execSystemInputDir = execSystemInputDir1;
+    execSystemOutputDir = execSystemOutputDir1;
+    execSystemLogicalQueue = execSystemLogicalQueue1;
+    archiveSystemId = archiveSystemId1;
+    archiveSystemDir = archiveSystemDir1;
+    archiveOnAppError = archiveOnAppError1;
+    jobDescription = jobDescription1;
+    maxJobs = maxJobs1;
+    maxJobsPerUser = maxJobsPerUser1;
+    nodeCount = nodeCount1;
+    coresPerNode = coresPerNode1;
+    memoryMB = memoryMB1;
+    maxMinutes = maxMinutes1;
+    archiveIncludes = (archiveIncludes1 == null) ? null : archiveIncludes1.clone();
+    archiveExcludes = (archiveExcludes1 == null) ? null : archiveExcludes1.clone();
     tags = (tags1 == null) ? null : tags1.clone();
     notes = notes1;
     importRefId = importRefId1;
@@ -165,6 +198,29 @@ public final class App
     appType = a.getAppType();
     owner = a.getOwner();
     enabled = a.isEnabled();
+    containerized = a.isContainerized();
+    containerRuntime = a.getContainerRuntime();
+    containerImage = a.getContainerImage();
+    command = a.getCommand();
+    dynamicExecSystem = a.isDynamicExecSystem();
+    execSystemConstraints = (a.getExecSystemConstraints() == null) ? null : a.getExecSystemConstraints().clone();
+    execSystemId = a.getExecSystemId();
+    execSystemExecDir = a.getExecSystemExecDir();
+    execSystemInputDir = a.getExecSystemInputDir();
+    execSystemOutputDir = a.getExecSystemOutputDir();
+    execSystemLogicalQueue = a.getExecSystemLogicalQueue();
+    archiveSystemId = a.getArchiveSystemId();
+    archiveSystemDir = a.getArchiveSystemDir();
+    archiveOnAppError = a.isArchiveOnAppError();
+    jobDescription = a.getJobDescription();
+    maxJobs = a.getMaxJobs();
+    maxJobsPerUser = a.getMaxJobsPerUser();
+    nodeCount = a.getNodeCount();
+    coresPerNode = a.getCoresPerNode();
+    memoryMB = a.getMemoryMB();
+    maxMinutes = a.getMaxMinutes();
+    archiveIncludes = (a.getArchiveIncludes() == null) ? null : a.getArchiveIncludes().clone();
+    archiveExcludes = (a.getArchiveExcludes() == null) ? null : a.getArchiveExcludes().clone();
     tags = (a.getTags() == null) ? null : a.getTags().clone();
     notes = a.getNotes();
     importRefId = a.getImportRefId();
@@ -187,18 +243,13 @@ public final class App
   // *********************** Accessors **************************************
   // ************************************************************************
 
-  // NOTE: Setters that are not public are in place in order to use jersey's SelectableEntityFilteringFeature.
-
   public int getSeqId() { return seqId; }
-  void setSeqId(int i) { seqId = i; };
 
   @Schema(type = "string")
   public Instant getCreated() { return created; }
-  void setCreated(Instant i) { created = i; }
 
   @Schema(type = "string")
   public Instant getUpdated() { return updated; }
-  void setUpdated(Instant i) { updated = i; }
 
   public String getTenant() { return tenant; }
   public App setTenant(String s) { tenant = s; return this; }
@@ -213,7 +264,6 @@ public final class App
   public App setDescription(String d) { description = d; return this; }
 
   public AppType getAppType() { return appType; }
-  void setAppType(AppType s) { appType = s; }
 
   public String getOwner() { return owner; }
   public App setOwner(String s) { owner = s;  return this;}
@@ -221,8 +271,9 @@ public final class App
   public boolean isEnabled() { return enabled; }
   public App setEnabled(boolean b) { enabled = b;  return this; }
 
+  public boolean isInteractive() { return isInteractive; }
+
   public boolean isContainerized() { return containerized; }
-  public App setContainerized(boolean b) { containerized = b;  return this; }
 
   public ContainerRuntime getContainerRuntime() { return containerRuntime; }
   void setContainerRuntime(ContainerRuntime r) { containerRuntime = r; }
@@ -233,11 +284,11 @@ public final class App
   public String getCommand() { return command; }
   public App setCommand(String s) { command = s; return this; }
 
-  public String[] getExecCodes() {
-    return (execCodes == null) ? null : execCodes.clone();
+  public List<FileInput> getExecCodes() {
+    return (execCodes == null) ? null :  new ArrayList<>(execCodes);
   }
-  public App setExecCodes(String[] sa) {
-    execCodes = (sa == null) ? null : sa.clone();
+  public App setExecCodes(List<FileInput> fi) {
+    execCodes = (fi == null) ? null : new ArrayList<>(fi);
     return this;
   }
 
@@ -263,6 +314,9 @@ public final class App
   public String getExecSystemOutputDir() { return execSystemOutputDir; }
   public App setExecSystemOutputDir(String s) { execSystemOutputDir = s; return this; }
 
+  public String getExecSystemLogicalQueue() { return execSystemLogicalQueue; }
+  public App setExecSystemLogicalQueue(String s) { execSystemLogicalQueue = s; return this; }
+
   public String getArchiveSystemId() { return archiveSystemId; }
   public App setArchiveSystemId(String s) { archiveSystemId = s; return this; }
 
@@ -271,9 +325,6 @@ public final class App
 
   public boolean isArchiveOnAppError() { return archiveOnAppError; }
   public App setArchiveOnAppError(boolean b) { archiveOnAppError = b; return this; }
-
-  public boolean isUseDtnIfDefined() { return useDtnIfDefined; }
-  public App setUseDtnIfDefined(boolean b) { useDtnIfDefined = b; return this; }
 
   public String[] getEnvVariables() { return (envVariables == null) ? null : envVariables.clone(); }
   public App setEnvVariables(String[] sa)
@@ -355,5 +406,4 @@ public final class App
   public App setNotes(Object n) { notes = n; return this; }
 
   public boolean isDeleted() { return deleted; }
-  void setDeleted(boolean b) { deleted = b; }
 }

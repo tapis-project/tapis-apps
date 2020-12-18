@@ -3,72 +3,84 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Common definitions for requests",
   "additionalProperties": false,
-  "AppId": {
-    "type": "string",
-    "minLength": 1,
-    "maxLength": 80
-  },
-  "UserName": {
-    "type": "string",
-    "minLength": 1,
-    "maxLength": 60
-  },
-  "DirPath": {
-    "type": "string",
-    "minLength": 1,
-    "maxLength": 4096
-  },
-  "AppTypeEnum": {
-    "type": "string",
-    "enum": [
-      "BATCH",
-      "INTERACTIVE"
-    ]
-  },
-  "capabilityCategoryEnum": {
-    "type": "string",
-    "enum": [
-      "SCHEDULER",
-      "OS",
-      "HARDWARE",
-      "SOFTWARE",
-      "JOB",
-      "CONTAINER",
-      "MISC",
-      "CUSTOM"
-    ]
+
+  "AppId": { "type": "string", "minLength": 1, "maxLength": 80 },
+  "SystemId": { "type": "string", "minLength": 1, "maxLength": 80 },
+  "UserName": { "type": "string", "minLength": 1, "maxLength": 60 },
+  "DirPath": { "type": "string", "minLength": 1, "maxLength": 4096 },
+  "AppTypeEnum": { "type": "string", "enum": [ "BATCH", "INTERACTIVE" ] },
+  "RuntimeEnum": { "type": "string", "enum": [ "SINGULARITY", "DOCKER" ] },
+  "NotificationMechanismEnum": { "type": "string", "enum": [ "WEBHOOK", "EMAIL", "QUEUE", "ACTOR" ] },
+
+  "ParameterSet": {
+    "type": "object",
+    "properties": {
+      "appArgs": {
+        "type": "array", "items":  { "$ref": "#/Arg" }
+      },
+      "containerArgs": {
+        "type": "array", "items":  { "$ref": "#/Arg" }
+      },
+      "schedulerOptions": {
+        "type": "array", "items":  { "$ref": "#/Arg" }
+      },
+      "envVariables": {
+        "type": "array", "items":  { "$ref": "#/KeyValue" }
+      },
+      "archiveFilter": { "$ref": "#/ArchiveFilter" }
+    }
   },
   "FileInput": {
     "type": "object",
-    "required": [
-      "sourceUrl"
-    ],
+    "required": [ "sourceUrl" ],
     "properties": {
-      "sourceUrl": {
-        "type": "string",
-        "minLength": 1,
-        "format": "uri"
-      },
-      "targetPath": {
-        "type": "string"
-      },
-      "metaName": {
-        "type": "string",
-        "minLength": 1
-      },
-      "metaRequired": {
-        "type": "boolean"
-      },
-      "metaKeyValuePairs": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "name": { "type": "string", "minLength": 1 },
-            "value": { "type": "string" }
-          }
-        }
+      "sourceUrl": { "type": "string", "minLength": 1, "format": "uri" },
+      "targetPath": { "type": "string" },
+      "meta": { "$ref": "#/Meta" }
+    }
+  },
+  "NotificationSubscription": {
+    "type": "object",
+    "properties": {
+    }
+  },
+  "NotificationMechanism": {
+    "mechanism": { "$ref": "#/NotificationMechanismEnum" },
+    "webhookURL": { "type": "string" },
+    "emailAddress": { "type":  "string" }
+  },
+  "ArchiveFilter" : {
+    "type": "object",
+    "properties": {
+      "includes": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+      "excludes": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+    }
+  },
+  "Arg" : {
+    "type": "object",
+    "required": [ "value" ],
+    "properties": {
+      "value": { "type":  "string" },
+      "meta": { "$ref": "#/Meta" }
+    }
+  },
+  "Meta" : {
+    "type": "object",
+    "properties": {
+      "name": { "type": "string", "minLength": 1 },
+      "description": { "type": "string", "minLength": 1 },
+      "required": { "type": "boolean", "default": false },
+      "keyValues": {
+        "type": "array", "items": { "$ref": "#/KeyValue" }
       }
+    }
+  },
+  "KeyValue" : {
+    "type": "object",
+    "required": [ "key" ],
+    "properties": {
+      "key": { "type":  "string", "minLength": 1 },
+      "value": { "type":  "string" }
     }
   }
 }

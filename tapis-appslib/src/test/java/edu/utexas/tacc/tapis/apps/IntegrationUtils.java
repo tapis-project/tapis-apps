@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.App.ContainerRuntime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.List;
  */
 public final class IntegrationUtils
 {
+  public static final Gson gson =  TapisGsonUtils.getGson();
   // Test data
   public static final String tenantName = "dev";
   public static final String ownerUser = "owner1";
@@ -20,7 +22,34 @@ public final class IntegrationUtils
   public static final String apiUser = "testApiUser";
   public static final String appNamePrefix = "TestApp";
   public static final String appVersion = "0.0.1";
-  public static final Gson gson =  TapisGsonUtils.getGson();
+  public static final boolean enabled = true;
+  public static final boolean isInteractive = false;
+  public static final boolean containerized = true;
+  public static final ContainerRuntime containerRuntime = ContainerRuntime.DOCKER;
+  public static final String containerImage = "containerImage1";
+  public static final String command = "/command1";
+  public static final boolean dynamicExecSystem = true;
+  public static final String[] execSystemConstraints = {"Constraint1 AND", "Constraint2"};
+  public static final String execSystemId = "execSystem1";
+  public static final String execSystemExecDir = "execSystemExecDir1";
+  public static final String execSystemInputDir = "execSystemInputDir1";
+  public static final String execSystemOutputDir = "execSystemOutputDir1";
+  public static final String execSystemLogicalQueue = "execSystemLogicalQueue1";
+  public static final String archiveSystemId = "archiveSystem1";
+  public static final String archiveSystemDir = "archiveSystemDir1";
+  public static final boolean archiveOnAppError = true;
+  public static final String jobDescription = "job description 1";
+  public static final int maxJobs = 1;
+  public static final int maxJobsPerUser = 1;
+  public static final int nodeCount = 1;
+  public static final int coresPerNode = 1;
+  public static final int memoryMb = 1;
+  public static final int maxMinutes = 1;
+
+
+  public static final String[] archiveIncludes = {"/include1", "/include2"};
+  public static final String[] archiveExcludes = {"/exclude1", "/exclude2"};
+
   public static final String[] tags = {"value1", "value2", "a",
     "a long tag with spaces and numbers (1 3 2) and special characters [_ $ - & * % @ + = ! ^ ? < > , . ( ) { } / \\ | ]. Backslashes must be escaped."};
   public static final Object notes = TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj1\", \"testdata\": \"abc1\"}", JsonObject.class);
@@ -50,8 +79,13 @@ public final class IntegrationUtils
       String suffix = key + "_" + String.format("%03d", i+1);
       String name = appNamePrefix + "_" + suffix;
       // Constructor initializes all attributes except for JobCapabilities
-      apps[i] = new App(-1, tenantName, name, appVersion, "description "+suffix, App.AppType.BATCH, ownerUser, true,
-                            tags, notes, null, false, null, null);
+      apps[i] = new App(-1, tenantName, name, appVersion, "description "+suffix, App.AppType.BATCH, ownerUser, enabled,
+                        isInteractive, containerized, containerRuntime, containerImage, command, dynamicExecSystem,
+                        execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
+                        execSystemLogicalQueue,
+                        archiveSystemId, archiveSystemDir, archiveOnAppError, jobDescription, maxJobs, maxJobsPerUser,
+                        nodeCount, coresPerNode, memoryMb, maxMinutes, archiveIncludes, archiveExcludes,
+                        tags, notes, null, false, null, null);
 //      apps[i].setJobCapabilities(capList);
     }
     return apps;
