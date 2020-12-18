@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PATCH;
@@ -85,7 +86,7 @@ public class AppResource
   private static final String FILE_APP_SEARCH_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppSearchRequest.json";
 
   // Field names used in Json
-  private static final String NAME_FIELD = "name";
+  private static final String ID_FIELD = "id";
   private static final String VERSION_FIELD = "version";
   private static final String NOTES_FIELD = "notes";
   private static final String APP_TYPE_FIELD = "appType";
@@ -94,29 +95,6 @@ public class AppResource
   // ************************************************************************
   // *********************** Fields *****************************************
   // ************************************************************************
-  /* Jax-RS context dependency injection allows implementations of these abstract
-   * types to be injected (ch 9, jax-rs 2.0):
-   *
-   *      javax.ws.rs.container.ResourceContext
-   *      javax.ws.rs.core.Application
-   *      javax.ws.rs.core.HttpHeaders
-   *      javax.ws.rs.core.Request
-   *      javax.ws.rs.core.SecurityContext
-   *      javax.ws.rs.core.UriInfo
-   *      javax.ws.rs.core.Configuration
-   *      javax.ws.rs.ext.Providers
-   *
-   * In a servlet environment, Jersey context dependency injection can also
-   * initialize these concrete types (ch 3.6, jersey spec):
-   *
-   *      javax.servlet.HttpServletRequest
-   *      javax.servlet.HttpServletResponse
-   *      javax.servlet.ServletConfig
-   *      javax.servlet.ServletContext
-   *
-   * Inject takes place after constructor invocation, so fields initialized in this
-   * way can not be accessed in constructors.
-   */
   @Context
   private HttpHeaders _httpHeaders;
   @Context
@@ -212,7 +190,7 @@ public class AppResource
     // ---------------------------- Make service call to create the app -------------------------------
     // Update tenant name and pull out app name for convenience
     app.setTenant(authenticatedUser.getTenantId());
-    String appName = app.getId();
+    String appId = app.getId();
     try
     {
       appsService.createApp(authenticatedUser, app, scrubbedJson);
@@ -222,21 +200,21 @@ public class AppResource
       if (e.getMessage().contains("APPLIB_APP_EXISTS"))
       {
         // IllegalStateException with msg containing APP_EXISTS indicates object exists - return 409 - Conflict
-        msg = ApiUtils.getMsgAuth("APPAPI_APP_EXISTS", authenticatedUser, appName);
+        msg = ApiUtils.getMsgAuth("APPAPI_APP_EXISTS", authenticatedUser, appId);
         _log.warn(msg);
         return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
       }
       else if (e.getMessage().contains("APPLIB_UNAUTH"))
       {
         // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
-        msg = ApiUtils.getMsgAuth("APPAPI_APP_UNAUTH", authenticatedUser, appName, opName);
+        msg = ApiUtils.getMsgAuth("APPAPI_APP_UNAUTH", authenticatedUser, appId, opName);
         _log.warn(msg);
         return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
       }
       else
       {
         // IllegalStateException indicates an Invalid App was passed in
-        msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, appName, e.getMessage());
+        msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, appId, e.getMessage());
         _log.error(msg);
         return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
       }
@@ -244,13 +222,13 @@ public class AppResource
     catch (IllegalArgumentException e)
     {
       // IllegalArgumentException indicates somehow a bad argument made it this far
-      msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, appName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, appName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
@@ -258,24 +236,24 @@ public class AppResource
     // ---------------------------- Success ------------------------------- 
     // Success means the object was created.
     ResultResourceUrl respUrl = new ResultResourceUrl();
-    respUrl.url = _request.getRequestURL().toString() + "/" + appName;
+    respUrl.url = _request.getRequestURL().toString() + "/" + appId;
     RespResourceUrl resp1 = new RespResourceUrl(respUrl);
     return Response.status(Status.CREATED).entity(TapisRestUtils.createSuccessResponse(
-      ApiUtils.getMsgAuth("APPAPI_CREATED", authenticatedUser, appName), prettyPrint, resp1)).build();
+      ApiUtils.getMsgAuth("APPAPI_CREATED", authenticatedUser, appId), prettyPrint, resp1)).build();
   }
 
   /**
    * Update an app
-   * @param appName - name of the app
+   * @param appId - name of the app
    * @param payloadStream - request body
    * @param securityContext - user identity
    * @return response containing reference to updated object
    */
   @PATCH
-  @Path("{appName}")
+  @Path("{appId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response updateApp(@PathParam("appName") String appName,
+  public Response updateApp(@PathParam("appId") String appId,
                                InputStream payloadStream,
                                @Context SecurityContext securityContext)
   {
@@ -325,7 +303,7 @@ public class AppResource
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
-    PatchApp patchApp = createPatchAppFromRequest(req, authenticatedUser.getTenantId(), appName);
+    PatchApp patchApp = createPatchAppFromRequest(req, authenticatedUser.getTenantId(), appId);
 
     // Extract Notes from the raw json.
     Object notes = extractNotes(rawJson);
@@ -341,7 +319,7 @@ public class AppResource
     }
     catch (NotFoundException e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appName);
+      msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appId);
       _log.warn(msg);
       return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
@@ -350,14 +328,14 @@ public class AppResource
       if (e.getMessage().contains("APPLIB_UNAUTH"))
       {
         // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
-        msg = ApiUtils.getMsgAuth("APPAPI_APP_UNAUTH", authenticatedUser, appName, opName);
+        msg = ApiUtils.getMsgAuth("APPAPI_APP_UNAUTH", authenticatedUser, appId, opName);
         _log.warn(msg);
         return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
       }
       else
       {
         // IllegalStateException indicates an Invalid PatchApp was passed in
-        msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appName, e.getMessage());
+        msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, e.getMessage());
         _log.error(msg);
         return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
       }
@@ -365,13 +343,13 @@ public class AppResource
     catch (IllegalArgumentException e)
     {
       // IllegalArgumentException indicates somehow a bad argument made it this far
-      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
@@ -382,21 +360,21 @@ public class AppResource
     respUrl.url = _request.getRequestURL().toString();
     RespResourceUrl resp1 = new RespResourceUrl(respUrl);
     return Response.status(Status.OK).entity(TapisRestUtils.createSuccessResponse(
-            ApiUtils.getMsgAuth("APPAPI_UPDATED", authenticatedUser, appName), prettyPrint, resp1)).build();
+            ApiUtils.getMsgAuth("APPAPI_UPDATED", authenticatedUser, appId), prettyPrint, resp1)).build();
   }
 
   /**
    * Change owner of an app
-   * @param appName - name of the app
+   * @param appId - name of the app
    * @param userName - name of the new owner
    * @param securityContext - user identity
    * @return response containing reference to updated object
    */
   @POST
-  @Path("{appName}/changeOwner/{userName}")
+  @Path("{appId}/changeOwner/{userName}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response changeAppOwner(@PathParam("appName") String appName,
+  public Response changeAppOwner(@PathParam("appId") String appId,
                                     @PathParam("userName") String userName,
                                     @Context SecurityContext securityContext)
   {
@@ -420,11 +398,11 @@ public class AppResource
     String msg;
     try
     {
-      changeCount = appsService.changeAppOwner(authenticatedUser, appName, userName);
+      changeCount = appsService.changeAppOwner(authenticatedUser, appId, userName);
     }
     catch (NotFoundException e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appName);
+      msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appId);
       _log.warn(msg);
       return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
@@ -433,14 +411,14 @@ public class AppResource
       if (e.getMessage().contains("APPLIB_UNAUTH"))
       {
         // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
-        msg = ApiUtils.getMsgAuth("APPAPI_APP_UNAUTH", authenticatedUser, appName, opName);
+        msg = ApiUtils.getMsgAuth("APPAPI_APP_UNAUTH", authenticatedUser, appId, opName);
         _log.warn(msg);
         return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
       }
       else
       {
         // IllegalStateException indicates an Invalid PatchApp was passed in
-        msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appName, e.getMessage());
+        msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, e.getMessage());
         _log.error(msg);
         return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
       }
@@ -448,13 +426,13 @@ public class AppResource
     catch (IllegalArgumentException e)
     {
       // IllegalArgumentException indicates somehow a bad argument made it this far
-      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
@@ -466,21 +444,23 @@ public class AppResource
     count.changes = changeCount;
     RespChangeCount resp1 = new RespChangeCount(count);
     return Response.status(Status.OK).entity(TapisRestUtils.createSuccessResponse(
-            ApiUtils.getMsgAuth("APPAPI_UPDATED", authenticatedUser, appName), prettyPrint, resp1)).build();
+            ApiUtils.getMsgAuth("APPAPI_UPDATED", authenticatedUser, appId), prettyPrint, resp1)).build();
   }
 
   /**
    * getApp
-   * @param appName - name of the app
+   * @param appId - name of the app
+   * @param requireExecPerm - check for EXECUTE permission as well as READ permission
    * @param securityContext - user identity
    * @return Response with app object as the result
    */
   @GET
-  @Path("{appName}")
+  @Path("{appId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getApp(@PathParam("appName") String appName,
-                         @Context SecurityContext securityContext)
+  public Response getSystem(@PathParam("appId") String appId,
+                            @QueryParam("requireExecPerm") @DefaultValue("false") boolean requireExecPerm,
+                            @Context SecurityContext securityContext)
   {
     String opName = "getApp";
     if (_log.isTraceEnabled()) logRequest(opName);
@@ -498,11 +478,11 @@ public class AppResource
     App app;
     try
     {
-      app = appsService.getApp(authenticatedUser, appName, false);
+      app = appsService.getApp(authenticatedUser, appId, requireExecPerm);
     }
     catch (Exception e)
     {
-      String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", authenticatedUser, appName, e.getMessage());
+      String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg, e);
       return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
@@ -510,7 +490,7 @@ public class AppResource
     // Resource was not found.
     if (app == null)
     {
-      String msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appName);
+      String msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appId);
       _log.warn(msg);
       return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
@@ -518,7 +498,7 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     // Success means we retrieved the app information.
     RespApp resp1 = new RespApp(app);
-    return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "App", appName), resp1);
+    return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
   }
 
   /**
@@ -726,20 +706,20 @@ public class AppResource
   }
 
   /**
-   * deleteAppByName
-   * @param appName - name of the app to delete
+   * deleteApp
+   * @param appId - name of the app to delete
    * @param securityContext - user identity
    * @return - response with change count as the result
    */
   @DELETE
-  @Path("{appName}")
+  @Path("{appId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
 // TODO Add query parameter "confirm" which must be set to true since this is an operation that cannot be undone by a user
-  public Response deleteAppByName(@PathParam("appName") String appName,
-                                     @Context SecurityContext securityContext)
+  public Response deleteApp(@PathParam("appId") String appId,
+                            @Context SecurityContext securityContext)
   {
-    String opName = "deleteAppByName";
+    String opName = "deleteApp";
     // Trace this request.
     if (_log.isTraceEnabled()) logRequest(opName);
 
@@ -756,11 +736,11 @@ public class AppResource
     int changeCount;
     try
     {
-      changeCount = appsService.softDeleteAppByName(authenticatedUser, appName);
+      changeCount = appsService.softDeleteApp(authenticatedUser, appId);
     }
     catch (Exception e)
     {
-      String msg = ApiUtils.getMsgAuth("APPAPI_DELETE_NAME_ERROR", authenticatedUser, appName, e.getMessage());
+      String msg = ApiUtils.getMsgAuth("APPAPI_DELETE_NAME_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg, e);
       return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
@@ -772,7 +752,7 @@ public class AppResource
     count.changes = changeCount;
     RespChangeCount resp1 = new RespChangeCount(count);
     return Response.status(Status.OK).entity(TapisRestUtils.createSuccessResponse(
-      MsgUtils.getMsg("TAPIS_DELETED", "App", appName), prettyPrint, resp1)).build();
+      MsgUtils.getMsg("TAPIS_DELETED", "App", appId), prettyPrint, resp1)).build();
   }
 
   /* **************************************************************************** */
@@ -799,14 +779,14 @@ public class AppResource
   /**
    * Create a PatchApp from a ReqUpdateApp
    */
-  private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String appName)
+  private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String appId)
   {
     PatchApp patchApp = new PatchApp(req.version, req.description, req.enabled,
 //            req.jobCapabilities,
             req.tags, req.notes);
     // Update tenant name and app name
     patchApp.setTenant(tenantName);
-    patchApp.setName(appName);
+    patchApp.setId(appId);
     return patchApp;
   }
 
@@ -823,12 +803,12 @@ public class AppResource
     // Make sure owner, notes and tags are all set
     App app1 = App.checkAndSetDefaults(app);
 
-    String name = app1.getId();
+    String appId = app1.getId();
     String msg;
     var errMessages = new ArrayList<String>();
     if (StringUtils.isBlank(app1.getId()))
     {
-      msg = ApiUtils.getMsg("APPAPI_CREATE_MISSING_ATTR", NAME_FIELD);
+      msg = ApiUtils.getMsg("APPAPI_CREATE_MISSING_ATTR", ID_FIELD);
       errMessages.add(msg);
     }
     if (StringUtils.isBlank(app1.getVersion()))
@@ -846,7 +826,7 @@ public class AppResource
     if (!errMessages.isEmpty())
     {
       // Construct message reporting all errors
-      String allErrors = getListOfErrors(errMessages, authenticatedUser, name);
+      String allErrors = getListOfErrors(errMessages, authenticatedUser, appId);
       _log.error(allErrors);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(allErrors, prettyPrint)).build();
     }

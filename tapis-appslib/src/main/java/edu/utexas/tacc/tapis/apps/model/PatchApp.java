@@ -1,8 +1,5 @@
 package edu.utexas.tacc.tapis.apps.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /*
  * Class representing an update to a Tapis App.
  * Fields set to null indicate attribute not updated.
@@ -15,7 +12,7 @@ public final class PatchApp
   // *********************** Fields *****************************************
   // ************************************************************************
   private String tenant;     // Name of the tenant for which the app is defined
-  private String name;       // Name of the app
+  private String id;       // Name of the app
   private String version;    // Version of the app
   private final String description; // Full description of the app
   private final Boolean enabled; // Indicates if app is currently enabled
@@ -48,8 +45,8 @@ public final class PatchApp
   public String getTenant() { return tenant; }
   public void setTenant(String s) { tenant = s; }
 
-  public String getName() { return name; }
-  public void setName(String s) { name = s; }
+  public String getId() { return id; }
+  public void setId(String s) { id = s; }
 
   public String getVersion() { return version; }
   public void setVersion(String s) { version = s; }

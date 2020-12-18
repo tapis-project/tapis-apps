@@ -145,7 +145,7 @@ public class ApiUtils
   {
     String msg;
     boolean appExists;
-    try { appExists = appsService.checkForAppByName(authenticatedUser, appName); }
+    try { appExists = appsService.checkForApp(authenticatedUser, appName); }
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth("APPAPI_CHECK_ERROR", authenticatedUser, appName, opName, e.getMessage());

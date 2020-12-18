@@ -75,16 +75,12 @@ public class AppsApplication extends ResourceConfig
     // Register service class for calling init method during application startup
     register(AppsServiceImpl.class);
 
-    // We specify what packages JAX-RS should recursively scan
-    // to find annotations.  By setting the value to the top-level
-    // tapis directory in all projects, we can use JAX-RS annotations
-    // in any tapis class.  In particular, the filter classes in
-    // tapis-sharedapi will be discovered whenever that project is
-    // included as a maven dependency.
+    // We specify what packages JAX-RS should recursively scan to find annotations. By setting the value to the
+    // top-level directory in all projects, we can use JAX-RS annotations in any tapis class. In particular, the filter
+    // classes in tapis-sharedapi will be discovered whenever that project is included as a maven dependency.
     packages("edu.utexas.tacc.tapis");
 
-    // Set the application name.
-    // Note that this has no impact on base URL
+    // Set the application name. Note that this has no impact on base URL
     setApplicationName("apps");
 
     // Perform remaining init steps in try block so we can print a fatal error message if something goes wrong.
@@ -95,8 +91,7 @@ public class AppsApplication extends ResourceConfig
       // Set site on which we are running. This is a required runtime parameter.
       siteId = runParms.getSiteId();
 
-      // ---------------- Initialize Security Filter -------
-      // Required to process any requests.
+      // Initialize security filter used when processing a request.
       JWTValidateRequestFilter.setService(TapisConstants.SERVICE_NAME_SYSTEMS);
       JWTValidateRequestFilter.setSiteId(siteId);
 
@@ -150,6 +145,7 @@ public class AppsApplication extends ResourceConfig
     InjectionManager im = handler.getInjectionManager();
     ServiceLocator locator = im.getInstance(ServiceLocator.class);
     AppsServiceImpl svcImpl = locator.getService(AppsServiceImpl.class);
+    // Call the main service init method
     svcImpl.initService(AppsApplication.getSiteId());
     // Create and start the server
     final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config, false);

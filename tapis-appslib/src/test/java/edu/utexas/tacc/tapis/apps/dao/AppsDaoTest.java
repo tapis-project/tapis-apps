@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.App.AppType;
 
 import static edu.utexas.tacc.tapis.apps.IntegrationUtils.*;
 
@@ -186,7 +185,7 @@ public class AppsDaoTest
     Assert.assertEquals(numDeleted, 1);
     numDeleted = dao.softDeleteApp(authenticatedUser, itemId);
     Assert.assertEquals(numDeleted, 0);
-    Assert.assertFalse(dao.checkForAppByName(app0.getTenant(), app0.getId(), false ),
+    Assert.assertFalse(dao.checkForApp(app0.getTenant(), app0.getId(), false ),
             "App not deleted. App name: " + app0.getId());
   }
 
@@ -198,7 +197,7 @@ public class AppsDaoTest
     System.out.println("Created item with id: " + itemId);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
     dao.hardDeleteApp(app0.getTenant(), app0.getId());
-    Assert.assertFalse(dao.checkForAppByName(app0.getTenant(), app0.getId(), true),"App not deleted. App name: " + app0.getId());
+    Assert.assertFalse(dao.checkForApp(app0.getTenant(), app0.getId(), true),"App not deleted. App name: " + app0.getId());
   }
 
   // Test create and get for a single item with no transfer methods supported and unusual port settings
@@ -229,7 +228,7 @@ public class AppsDaoTest
 //            capList,
             tags, notes);
     patchApp.setTenant(tenantName);
-    patchApp.setName(fakeAppName);
+    patchApp.setId(fakeAppName);
     App patchedApp = new App(1, tenantName, fakeAppName, appVersion, "description", App.AppType.BATCH, ownerUser, enabled,
             isInteractive, containerized, containerRuntime, containerImage, command, dynamicExecSystem,
             execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
@@ -238,8 +237,8 @@ public class AppsDaoTest
             nodeCount, coresPerNode, memoryMb, maxMinutes, archiveIncludes, archiveExcludes,
             tags, notes, null, false, null, null);
     // Make sure app does not exist
-    Assert.assertFalse(dao.checkForAppByName(tenantName, fakeAppName, true));
-    Assert.assertFalse(dao.checkForAppByName(tenantName, fakeAppName, false));
+    Assert.assertFalse(dao.checkForApp(tenantName, fakeAppName, true));
+    Assert.assertFalse(dao.checkForApp(tenantName, fakeAppName, false));
     // update should throw not found exception
     boolean pass = false;
     try { dao.updateApp(authenticatedUser, patchedApp, patchApp, scrubbedJson, null); }

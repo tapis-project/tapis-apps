@@ -29,10 +29,10 @@ public interface AppsService
   int changeAppOwner(AuthenticatedUser authenticatedUser, String appName, String newOwnerName)
           throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
 
-  int softDeleteAppByName(AuthenticatedUser authenticatedUser, String appName)
+  int softDeleteApp(AuthenticatedUser authenticatedUser, String appName)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  boolean checkForAppByName(AuthenticatedUser authenticatedUser, String appName)
+  boolean checkForApp(AuthenticatedUser authenticatedUser, String appName)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
   App getApp(AuthenticatedUser authenticatedUser, String appName, boolean requireExecPerm)

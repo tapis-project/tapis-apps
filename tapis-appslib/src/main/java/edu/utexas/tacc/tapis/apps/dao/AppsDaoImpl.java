@@ -296,13 +296,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Hard delete an app record given the app name.
    */
   @Override
-  public int hardDeleteApp(String tenant, String name) throws TapisException
+  public int hardDeleteApp(String tenant, String appId) throws TapisException
   {
     String opName = "hardDeleteApp";
     int rows = -1;
     // ------------------------- Check Input -------------------------
     if (StringUtils.isBlank(tenant)) LibUtils.logAndThrowNullParmException(opName, "tenant");
-    if (StringUtils.isBlank(name)) LibUtils.logAndThrowNullParmException(opName, "name");
+    if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "name");
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -310,7 +310,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     {
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      db.deleteFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(name)).execute();
+      db.deleteFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
       LibUtils.closeAndCommitDB(conn, null, null);
     }
     catch (Exception e)
@@ -379,12 +379,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
   /**
    * checkForAppByName
-   * @param name - app name
+   * @param appId - app name
    * @return true if found else false
    * @throws TapisException - on error
    */
   @Override
-  public boolean checkForAppByName(String tenant, String name, boolean includeDeleted) throws TapisException {
+  public boolean checkForApp(String tenant, String appId, boolean includeDeleted) throws TapisException {
     // Initialize result.
     boolean result = false;
 
@@ -396,14 +396,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
       // Run the sql
-      result = checkForApp(db, tenant, name, includeDeleted);
+      result = checkForApp(db, tenant, appId, includeDeleted);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
     catch (Exception e)
     {
       // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", tenant, name, e.getMessage());
+      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", tenant, appId, e.getMessage());
     }
     finally
     {
@@ -415,12 +415,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
   /**
    * getAppByName
-   * @param name - app name
+   * @param appId - app name
    * @return App object if found, null if not found
    * @throws TapisException - on error
    */
   @Override
-  public App getApp(String tenant, String name) throws TapisException {
+  public App getApp(String tenant, String appId) throws TapisException {
     // Initialize result.
     App result = null;
 
@@ -432,7 +432,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
       AppsRecord r = db.selectFrom(APPS)
-              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(name),APPS.DELETED.eq(false))
+              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false))
               .fetchOne();
       if (r == null) return null;
       else result = r.into(App.class);
@@ -446,7 +446,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     catch (Exception e)
     {
       // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", tenant, name, e.getMessage());
+      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", tenant, appId, e.getMessage());
     }
     finally
     {
@@ -639,12 +639,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * getAppOwner
    * @param tenant - name of tenant
-   * @param name - name of app
+   * @param appId - name of app
    * @return Owner or null if no app found
    * @throws TapisException - on error
    */
   @Override
-  public String getAppOwner(String tenant, String name) throws TapisException
+  public String getAppOwner(String tenant, String appId) throws TapisException
   {
     String owner = null;
     // ------------------------- Call SQL ----------------------------
@@ -654,7 +654,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      owner = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(name)).fetchOne(APPS.OWNER);
+      owner = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(appId)).fetchOne(APPS.OWNER);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -675,12 +675,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * getAppId
    * @param tenant - name of tenant
-   * @param name - name of app
+   * @param appId - name of app
    * @return appId or -1 if no app found
    * @throws TapisException - on error
    */
   @Override
-  public int getAppSeqId(String tenant, String name) throws TapisException
+  public int getAppSeqId(String tenant, String appId) throws TapisException
   {
     int appSeqId = -1;
 
@@ -691,7 +691,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(name)).fetchOne(APPS.SEQ_ID);
+      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(appId)).fetchOne(APPS.SEQ_ID);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -714,7 +714,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *
    */
   @Override
-  public void addUpdateRecord(AuthenticatedUser authenticatedUser, int appId, AppOperation op, String upd_json,
+  public void addUpdateRecord(AuthenticatedUser authenticatedUser, int appSeqId, AppOperation op, String upd_json,
                               String upd_text) throws TapisException
   {
     // ------------------------- Call SQL ----------------------------
@@ -724,7 +724,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      addUpdate(db, authenticatedUser, appId, op, upd_json, upd_text);
+      addUpdate(db, authenticatedUser, appSeqId, op, upd_json, upd_text);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);

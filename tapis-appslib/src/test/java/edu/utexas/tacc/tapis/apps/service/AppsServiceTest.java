@@ -25,7 +25,6 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 
 import javax.ws.rs.NotAuthorizedException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -132,7 +131,7 @@ public class AppsServiceTest
     //Remove all objects created by tests
     for (int i = 0; i < numApps; i++)
     {
-      svcImpl.hardDeleteAppByName(authenticatedAdminUsr, apps[i].getId());
+      svcImpl.hardDeleteApp(authenticatedAdminUsr, apps[i].getId());
     }
 
     App tmpApp = svc.getApp(authenticatedAdminUsr, apps[0].getId(), false);
@@ -182,7 +181,7 @@ public class AppsServiceTest
     PatchApp patchApp = new PatchApp(appVersion, "description PATCHED", false,
 //            cap2List,
             tags2, notes2);
-    patchApp.setName(app0.getId());
+    patchApp.setId(app0.getId());
     patchApp.setTenant(tenantName);
     int itemId = svc.createApp(authenticatedOwnerUsr, app0, createText);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
@@ -325,7 +324,7 @@ public class AppsServiceTest
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
 
     // Soft delete the app
-    int changeCount = svc.softDeleteAppByName(authenticatedOwnerUsr, app0.getId());
+    int changeCount = svc.softDeleteApp(authenticatedOwnerUsr, app0.getId());
     Assert.assertEquals(changeCount, 1, "Change count incorrect when deleting an app.");
     App tmpApp2 = svc.getApp(authenticatedOwnerUsr, app0.getId(), false);
     Assert.assertNull(tmpApp2, "App not deleted. App name: " + app0.getId());
@@ -335,12 +334,12 @@ public class AppsServiceTest
   public void testAppExists() throws Exception
   {
     // If app not there we should get false
-    Assert.assertFalse(svc.checkForAppByName(authenticatedOwnerUsr, apps[6].getId()));
+    Assert.assertFalse(svc.checkForApp(authenticatedOwnerUsr, apps[6].getId()));
     // After creating app we should get true
     App app0 = apps[6];//13
     int itemId = svc.createApp(authenticatedOwnerUsr, app0, scrubbedJson);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
-    Assert.assertTrue(svc.checkForAppByName(authenticatedOwnerUsr, apps[6].getId()));
+    Assert.assertTrue(svc.checkForApp(authenticatedOwnerUsr, apps[6].getId()));
   }
 
   // Check that if apps already exists we get an IllegalStateException when attempting to create
@@ -351,7 +350,7 @@ public class AppsServiceTest
     App app0 = apps[8];//14
     int itemId = svc.createApp(authenticatedOwnerUsr, app0, scrubbedJson);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
-    Assert.assertTrue(svc.checkForAppByName(authenticatedOwnerUsr, app0.getId()));
+    Assert.assertTrue(svc.checkForApp(authenticatedOwnerUsr, app0.getId()));
     // Now attempt to create again, should get IllegalStateException with msg APPLIB_APP_EXISTS
     svc.createApp(authenticatedOwnerUsr, app0, scrubbedJson);
   }
@@ -390,14 +389,14 @@ public class AppsServiceTest
     String fakeAppName = "AMissingAppName";
     String fakeUserName = "AMissingUserName";
     // Make sure app does not exist
-    Assert.assertFalse(svc.checkForAppByName(authenticatedOwnerUsr, fakeAppName));
+    Assert.assertFalse(svc.checkForApp(authenticatedOwnerUsr, fakeAppName));
 
     // Get App with no app should return null
     App tmpApp = svc.getApp(authenticatedOwnerUsr, fakeAppName, false);
     Assert.assertNull(tmpApp, "App not null for non-existent app");
 
     // Delete app with no app should return 0 changes
-    int changeCount = svc.softDeleteAppByName(authenticatedOwnerUsr, fakeAppName);
+    int changeCount = svc.softDeleteApp(authenticatedOwnerUsr, fakeAppName);
     Assert.assertEquals(changeCount, 0, "Change count incorrect when deleting non-existent app.");
 
     // Get owner with no app should return null
@@ -435,7 +434,7 @@ public class AppsServiceTest
     PatchApp patchApp = new PatchApp(appVersion, "description PATCHED", false,
 //            cap2List,
             tags2, notes2);
-    patchApp.setName(app0.getId());
+    patchApp.setId(app0.getId());
     patchApp.setTenant(tenantName);
     // CREATE - Deny user not owner/admin, deny service
     boolean pass = false;
@@ -499,7 +498,7 @@ public class AppsServiceTest
 
     // DELETE - deny user not owner/admin, deny service
     pass = false;
-    try { svc.softDeleteAppByName(authenticatedTestUsr1, app0.getId()); }
+    try { svc.softDeleteApp(authenticatedTestUsr1, app0.getId()); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -507,7 +506,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.softDeleteAppByName(authenticatedFilesSvc, app0.getId()); }
+    try { svc.softDeleteApp(authenticatedFilesSvc, app0.getId()); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
