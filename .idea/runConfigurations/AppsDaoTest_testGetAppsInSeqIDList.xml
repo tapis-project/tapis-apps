@@ -1,0 +1,33 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="AppsDaoTest.testGetAppsInSeqIDList" type="TestNG" nameIsGenerated="true">
+    <module name="tapis-appslib" />
+    <useClassPathOnly />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="edu.utexas.tacc.tapis.apps.dao.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <option name="SUITE_NAME" value="" />
+    <option name="PACKAGE_NAME" value="edu.utexas.tacc.tapis.apps.dao" />
+    <option name="MAIN_CLASS_NAME" value="edu.utexas.tacc.tapis.apps.dao.AppsDaoTest" />
+    <option name="METHOD_NAME" value="testGetAppsInSeqIDList" />
+    <option name="GROUP_NAME" value="" />
+    <option name="TEST_OBJECT" value="METHOD" />
+    <option name="VM_PARAMETERS" value="-ea -Dp6spy.config.modulelist=" />
+    <option name="PARAMETERS" value="" />
+    <option name="OUTPUT_DIRECTORY" value="" />
+    <option name="TEST_SEARCH_SCOPE">
+      <value defaultName="moduleWithDependencies" />
+    </option>
+    <option name="PROPERTIES_FILE" value="" />
+    <envs>
+      <env name="TAPIS_SITE_ID" value="tacc" />
+    </envs>
+    <properties />
+    <listeners />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

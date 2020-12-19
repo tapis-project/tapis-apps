@@ -67,7 +67,7 @@ CREATE TABLE apps
   job_description VARCHAR(2048),
   dynamic_exec_system BOOLEAN NOT NULL DEFAULT false,
   exec_system_constraints TEXT[] NOT NULL,
-  exec_system_id VARCHAR(80) NOT NULL,
+  exec_system_id VARCHAR(80),
   exec_system_exec_dir VARCHAR(4096),
   exec_system_input_dir VARCHAR(4096),
   exec_system_output_dir VARCHAR(4096),
@@ -180,24 +180,6 @@ ALTER TABLE notification_subscriptions OWNER TO tapis_app;
 --                           ARGS
 -- ----------------------------------------------------------------------------------------
 -- TODO could have one table with an arg_type column?
--- Container args table
--- Container arguments associated with an app
--- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
-CREATE TABLE container_args
-(
-    seq_id SERIAL PRIMARY KEY,
-    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
-    arg_val VARCHAR(128) NOT NULL DEFAULT '',
-    meta_name VARCHAR(128) NOT NULL DEFAULT '',
-    meta_description VARCHAR(128) NOT NULL DEFAULT '',
-    meta_required boolean NOT NULL DEFAULT true,
-    meta_kv TEXT[] NOT NULL,
-    created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-    updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
-);
-ALTER TABLE container_args OWNER TO tapis_app;
-COMMENT ON COLUMN container_args.seq_id IS 'Arg sequence id';
-COMMENT ON COLUMN container_args.app_seq_id IS 'Sequence id of application';
 
 -- App args table
 -- App arguments associated with an app
@@ -217,6 +199,25 @@ CREATE TABLE app_args
 ALTER TABLE app_args OWNER TO tapis_app;
 COMMENT ON COLUMN app_args.seq_id IS 'Arg sequence id';
 COMMENT ON COLUMN app_args.app_seq_id IS 'Sequence id of application';
+
+-- Container args table
+-- Container arguments associated with an app
+-- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
+CREATE TABLE container_args
+(
+    seq_id SERIAL PRIMARY KEY,
+    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    arg_val VARCHAR(128) NOT NULL DEFAULT '',
+    meta_name VARCHAR(128) NOT NULL DEFAULT '',
+    meta_description VARCHAR(128) NOT NULL DEFAULT '',
+    meta_required boolean NOT NULL DEFAULT true,
+    meta_kv TEXT[] NOT NULL,
+    created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
+    updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
+);
+ALTER TABLE container_args OWNER TO tapis_app;
+COMMENT ON COLUMN container_args.seq_id IS 'Arg sequence id';
+COMMENT ON COLUMN container_args.app_seq_id IS 'Sequence id of application';
 
 -- Scheduler options table
 -- Scheduler options associated with an app

@@ -241,11 +241,17 @@
                     <includeTypes>.*</includeTypes>
                   </forcedType>
                   <forcedType>
-                    <userType>edu.utexas.tacc.tapis.apps.model.App.ContainerRuntime</userType>
-                        <enumConverter>true</enumConverter>
-                        <includeExpression>apps\.container_runtime</includeExpression>
-                        <includeTypes>.*</includeTypes>
-                    </forcedType>
+                    <userType>edu.utexas.tacc.tapis.apps.model.App.Runtime</userType>
+                    <enumConverter>true</enumConverter>
+                    <includeExpression>apps\.runtime</includeExpression>
+                    <includeTypes>.*</includeTypes>
+                  </forcedType>
+                  <forcedType>
+                    <userType>edu.utexas.tacc.tapis.apps.model.App.NotificationMechanism</userType>
+                    <enumConverter>true</enumConverter>
+                    <includeExpression>apps\.notification_mechanism</includeExpression>
+                    <includeTypes>.*</includeTypes>
+                  </forcedType>
                 </forcedTypes>
               </database>
             </generator>

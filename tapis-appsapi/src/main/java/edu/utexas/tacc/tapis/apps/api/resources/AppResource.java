@@ -769,7 +769,7 @@ public class AppResource
                       req.jobDescription, req.dynamicExecSystem, req.execSystemConstraints, req.execSystemId,
                       req.execSystemExecDir, req.execSystemInputDir, req.execSystemOutputDir, req.execSystemLogicalQueue,
                       req.archiveSystemId, req.archiveSystemDir, req.archiveOnAppError, req.nodeCount,
-                      req.coresPerNode, req.memoryMB, req.maxMinutes, req.archiveIncludes, req.archiveExcludes,
+                      req.coresPerNode, req.memoryMb, req.maxMinutes, req.envVariables, req.archiveIncludes, req.archiveExcludes,
                       req.jobTags, req.tags, req.notes, req.refImportId, false, null, null);
     // Data from aux tables
 //    app.setFileInputs(req.fileInputs);

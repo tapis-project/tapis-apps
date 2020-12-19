@@ -9,7 +9,7 @@ import java.util.List;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_ENABLED;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NOTES;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_OWNER;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_TAGS;
+import static edu.utexas.tacc.tapis.apps.model.App.EMPTY_STR_ARRAY;
 
 /*
  * Class representing all app attributes that can be set in an incoming create request json body
@@ -44,15 +44,15 @@ public final class ReqCreateApp
   public String[] archiveExcludes; // from parameterSet
   public int nodeCount;
   public int coresPerNode;
-  public int memoryMB;
+  public int memoryMb;
   public int maxMinutes;
-  public String[] jobTags = DEFAULT_TAGS;       // List of arbitrary tags as strings
+  public String[] jobTags = EMPTY_STR_ARRAY;       // List of arbitrary tags as strings
   // === End jobAttributes ===
 
 
   public List<FileInput> fileInputs;
 
-  public String[] tags = DEFAULT_TAGS;       // List of arbitrary tags as strings
+  public String[] tags = EMPTY_STR_ARRAY;       // List of arbitrary tags as strings
   public Object notes = DEFAULT_NOTES;      // Simple metadata as json
   public String refImportId; // Optional reference ID for an app created via import
 }

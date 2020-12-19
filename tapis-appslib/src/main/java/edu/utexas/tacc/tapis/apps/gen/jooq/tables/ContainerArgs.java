@@ -17,7 +17,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row8;
+import org.jooq.Row9;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -33,7 +33,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ContainerArgs extends TableImpl<ContainerArgsRecord> {
 
-    private static final long serialVersionUID = 1959718340;
+    private static final long serialVersionUID = 1915649800;
 
     /**
      * The reference instance of <code>tapis_app.container_args</code>
@@ -67,6 +67,11 @@ public class ContainerArgs extends TableImpl<ContainerArgsRecord> {
      * The column <code>tapis_app.container_args.meta_name</code>.
      */
     public final TableField<ContainerArgsRecord, String> META_NAME = createField(DSL.name("meta_name"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
+
+    /**
+     * The column <code>tapis_app.container_args.meta_description</code>.
+     */
+    public final TableField<ContainerArgsRecord, String> META_DESCRIPTION = createField(DSL.name("meta_description"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
 
     /**
      * The column <code>tapis_app.container_args.meta_required</code>.
@@ -177,11 +182,11 @@ public class ContainerArgs extends TableImpl<ContainerArgsRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row8 type methods
+    // Row9 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row8<Integer, Integer, String, String, Boolean, String[], LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row8) super.fieldsRow();
+    public Row9<Integer, Integer, String, String, String, Boolean, String[], LocalDateTime, LocalDateTime> fieldsRow() {
+        return (Row9) super.fieldsRow();
     }
 }

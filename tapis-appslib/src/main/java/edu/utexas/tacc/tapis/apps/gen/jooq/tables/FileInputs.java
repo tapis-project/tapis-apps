@@ -17,7 +17,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row9;
+import org.jooq.Row11;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -33,7 +33,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class FileInputs extends TableImpl<FileInputsRecord> {
 
-    private static final long serialVersionUID = -1341262096;
+    private static final long serialVersionUID = -1934951248;
 
     /**
      * The reference instance of <code>tapis_app.file_inputs</code>
@@ -69,14 +69,24 @@ public class FileInputs extends TableImpl<FileInputsRecord> {
     public final TableField<FileInputsRecord, String> TARGET_PATH = createField(DSL.name("target_path"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
 
     /**
+     * The column <code>tapis_app.file_inputs.in_place</code>.
+     */
+    public final TableField<FileInputsRecord, Boolean> IN_PLACE = createField(DSL.name("in_place"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("false", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
+
+    /**
      * The column <code>tapis_app.file_inputs.meta_name</code>.
      */
-    public final TableField<FileInputsRecord, String> META_NAME = createField(DSL.name("meta_name"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
+    public final TableField<FileInputsRecord, String> META_NAME = createField(DSL.name("meta_name"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+
+    /**
+     * The column <code>tapis_app.file_inputs.meta_description</code>.
+     */
+    public final TableField<FileInputsRecord, String> META_DESCRIPTION = createField(DSL.name("meta_description"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
 
     /**
      * The column <code>tapis_app.file_inputs.meta_required</code>.
      */
-    public final TableField<FileInputsRecord, Boolean> META_REQUIRED = createField(DSL.name("meta_required"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
+    public final TableField<FileInputsRecord, Boolean> META_REQUIRED = createField(DSL.name("meta_required"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("false", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
 
     /**
      * The column <code>tapis_app.file_inputs.meta_kv</code>.
@@ -182,11 +192,11 @@ public class FileInputs extends TableImpl<FileInputsRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row9 type methods
+    // Row11 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row9<Integer, Integer, String, String, String, Boolean, String[], LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row9) super.fieldsRow();
+    public Row11<Integer, Integer, String, String, Boolean, String, String, Boolean, String[], LocalDateTime, LocalDateTime> fieldsRow() {
+        return (Row11) super.fieldsRow();
     }
 }

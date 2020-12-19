@@ -4,12 +4,13 @@
 package edu.utexas.tacc.tapis.apps.gen.jooq;
 
 
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppArgs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppUpdates;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.CommandArgs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.ContainerArgs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FileInputs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationSubscriptions;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.SchedulerOptions;
 
 
@@ -20,6 +21,11 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.tables.SchedulerOptions;
 public class Tables {
 
     /**
+     * The table <code>tapis_app.app_args</code>.
+     */
+    public static final AppArgs APP_ARGS = AppArgs.APP_ARGS;
+
+    /**
      * The table <code>tapis_app.app_updates</code>.
      */
     public static final AppUpdates APP_UPDATES = AppUpdates.APP_UPDATES;
@@ -28,11 +34,6 @@ public class Tables {
      * The table <code>tapis_app.apps</code>.
      */
     public static final Apps APPS = Apps.APPS;
-
-    /**
-     * The table <code>tapis_app.command_args</code>.
-     */
-    public static final CommandArgs COMMAND_ARGS = CommandArgs.COMMAND_ARGS;
 
     /**
      * The table <code>tapis_app.container_args</code>.
@@ -48,6 +49,11 @@ public class Tables {
      * The table <code>tapis_app.flyway_schema_history</code>.
      */
     public static final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
+
+    /**
+     * The table <code>tapis_app.notification_subscriptions</code>.
+     */
+    public static final NotificationSubscriptions NOTIFICATION_SUBSCRIPTIONS = NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS;
 
     /**
      * The table <code>tapis_app.scheduler_options</code>.

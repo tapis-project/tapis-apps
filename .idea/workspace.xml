@@ -12,16 +12,37 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34efd738-2b9a-4e43-b14d-018fde0be61f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/responses/results/ResultApp.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/AppsDaoTest_testGet.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/AppsDaoTest_testGetAppsInSeqIDList.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/SearchDaoTest_testValidCases.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/enums/NotificationMechanismType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/AppArgs.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/NotificationSubscriptions.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/NotificationSubscriptionsRecord.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/requests/ReqCreateApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/requests/ReqCreateApp.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/responses/results/ResultApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/responses/results/ResultApp.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/resources/edu/utexas/tacc/tapis/apps/api/jsonschema/AppCreateRequest.json" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/resources/edu/utexas/tacc/tapis/apps/api/jsonschema/AppCreateRequest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/Keys.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/Keys.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/Sequences.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/Sequences.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/Tables.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/Tables.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/TapisApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/TapisApp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/enums/AppTypeType.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/enums/AppTypeType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/enums/ContainerRuntimeType.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/enums/RuntimeType.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/Apps.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/Apps.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/CommandArgs.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/ContainerArgs.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/ContainerArgs.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/FileInputs.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/FileInputs.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/SchedulerOptions.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/SchedulerOptions.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/AppsRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/AppsRecord.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/CommandArgsRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/AppArgsRecord.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/ContainerArgsRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/ContainerArgsRecord.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/FileInputsRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/FileInputsRecord.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/SchedulerOptionsRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/SchedulerOptionsRecord.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/App.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/service/AppsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/service/AppsService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/resources/db/migration/V001__init.sql" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/resources/db/migration/V001__init.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/IntegrationUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/IntegrationUtils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoTest.java" afterDir="false" />
@@ -51,6 +72,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../tapis-shared-java/pom.xml" />
     <property name="project.structure.last.edited" value="Modules" />
@@ -65,7 +87,7 @@
       <recent name="edu.utexas.tacc.tapis.apps.api.responses" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.AppsApplication">
+  <component name="RunManager" selected="TestNG.AppsDaoTest">
     <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
       <option name="arquillianRunConfiguration">
         <value>
@@ -77,34 +99,20 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="SearchDaoTest.testValidCases" type="TestNG" temporary="true" nameIsGenerated="true">
-      <module name="tapis-appslib" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="edu.utexas.tacc.tapis.apps.dao.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="edu.utexas.tacc.tapis.apps.dao" />
-      <option name="MAIN_CLASS_NAME" value="edu.utexas.tacc.tapis.apps.dao.SearchDaoTest" />
-      <option name="METHOD_NAME" value="testValidCases" />
-      <option name="TEST_OBJECT" value="METHOD" />
-      <properties />
-      <listeners />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <list>
       <item itemvalue="Application.AppsApplication" />
       <item itemvalue="TestNG.AppsDaoTest" />
       <item itemvalue="TestNG.AppsServiceTest" />
       <item itemvalue="TestNG.SearchASTDaoTest" />
       <item itemvalue="TestNG.SearchDaoTest" />
+      <item itemvalue="TestNG.AppsDaoTest.testGet" />
       <item itemvalue="TestNG.SearchDaoTest.testValidCases" />
+      <item itemvalue="TestNG.AppsDaoTest.testGetAppsInSeqIDList" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="TestNG.AppsDaoTest.testGetAppsInSeqIDList" />
+        <item itemvalue="TestNG.AppsDaoTest.testGet" />
         <item itemvalue="TestNG.SearchDaoTest.testValidCases" />
       </list>
     </recent_temporary>
@@ -118,5 +126,16 @@
       <path value="$PROJECT_DIR$/../../main/tapis-client-java" />
       <path value="$PROJECT_DIR$/../../main/tapis-shared-java" />
     </ignored-roots>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java</url>
+          <line>573</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

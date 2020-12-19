@@ -67,17 +67,90 @@ public class AppsDaoTest
 
   // Test retrieving a single item
   @Test
-  public void testGetByName() throws Exception {
+  public void testGet() throws Exception {
     App app0 = apps[1];
     int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
     App tmpApp = dao.getApp(app0.getTenant(), app0.getId());
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
     System.out.println("Found item: " + app0.getId());
+
+    // Verify data in main table
+    // ===========================
     Assert.assertEquals(tmpApp.getId(), app0.getId());
+    Assert.assertEquals(tmpApp.getVersion(), app0.getVersion());
     Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
     Assert.assertEquals(tmpApp.getAppType().name(), app0.getAppType().name());
     Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
+    Assert.assertEquals(tmpApp.getRuntime().name(), app0.getRuntime().name());
+    Assert.assertEquals(tmpApp.getRuntimeVersion(), app0.getRuntimeVersion());
+    Assert.assertEquals(tmpApp.getContainerImage(), app0.getContainerImage());
+    Assert.assertEquals(tmpApp.getMaxJobs(), app0.getMaxJobs());
+    Assert.assertEquals(tmpApp.getMaxJobsPerUser(), app0.getMaxJobsPerUser());
+    Assert.assertEquals(tmpApp.getJobDescription(), app0.getJobDescription());
+    Assert.assertEquals(tmpApp.isDynamicExecSystem(), app0.isDynamicExecSystem());
+    // Verify execSystemConstraints
+    String[] tmpExecSystemConstraints = tmpApp.getExecSystemConstraints();
+    Assert.assertNotNull(tmpExecSystemConstraints, "execSystemConstraints value was null");
+    var execSystemConstraintsList = Arrays.asList(tmpExecSystemConstraints);
+    Assert.assertEquals(tmpExecSystemConstraints.length, execSystemConstraints.length, "Wrong number of constraints");
+    for (String execSystemConstraintStr : execSystemConstraints)
+    {
+      Assert.assertTrue(execSystemConstraintsList.contains(execSystemConstraintStr));
+      System.out.println("Found execSystemConstraint: " + execSystemConstraintStr);
+    }
+    Assert.assertEquals(tmpApp.getExecSystemId(), app0.getExecSystemId());
+    Assert.assertEquals(tmpApp.getExecSystemExecDir(), app0.getExecSystemExecDir());
+    Assert.assertEquals(tmpApp.getExecSystemInputDir(), app0.getExecSystemInputDir());
+    Assert.assertEquals(tmpApp.getExecSystemOutputDir(), app0.getExecSystemOutputDir());
+    Assert.assertEquals(tmpApp.getExecSystemLogicalQueue(), app0.getExecSystemLogicalQueue());
+    Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
+    Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
+    Assert.assertEquals(tmpApp.isArchiveOnAppError(), app0.isArchiveOnAppError());
+    // Verify envVariables
+    String[] tmpEnvVariables = tmpApp.getEnvVariables();
+    Assert.assertNotNull(tmpEnvVariables, "envVariables value was null");
+    var envVariablesList = Arrays.asList(tmpEnvVariables);
+    Assert.assertEquals(tmpEnvVariables.length, envVariables.length, "Wrong number of envVariables");
+    for (String envVariableStr : envVariables)
+    {
+      Assert.assertTrue(envVariablesList.contains(envVariableStr));
+      System.out.println("Found envVariable: " + envVariableStr);
+    }
+    // Verify archiveIncludes
+    String[] tmpArchiveIncludes = tmpApp.getArchiveIncludes();
+    Assert.assertNotNull(tmpArchiveIncludes, "archiveIncludes value was null");
+    var archiveIncludesList = Arrays.asList(tmpArchiveIncludes);
+    Assert.assertEquals(tmpArchiveIncludes.length, archiveIncludes.length, "Wrong number of archiveIncludes");
+    for (String archiveIncludeStr : archiveIncludes)
+    {
+      Assert.assertTrue(archiveIncludesList.contains(archiveIncludeStr));
+      System.out.println("Found archiveInclude: " + archiveIncludeStr);
+    }
+    // Verify archiveExcludes
+    String[] tmpArchiveExcludes = tmpApp.getArchiveExcludes();
+    Assert.assertNotNull(tmpArchiveExcludes, "archiveExcludes value was null");
+    var archiveExcludesList = Arrays.asList(tmpArchiveExcludes);
+    Assert.assertEquals(tmpArchiveExcludes.length, archiveExcludes.length, "Wrong number of archiveExcludes");
+    for (String archiveExcludeStr : archiveExcludes)
+    {
+      Assert.assertTrue(archiveExcludesList.contains(archiveExcludeStr));
+      System.out.println("Found archiveExclude: " + archiveExcludeStr);
+    }
+    Assert.assertEquals(tmpApp.getNodeCount(), app0.getNodeCount());
+    Assert.assertEquals(tmpApp.getCoresPerNode(), app0.getCoresPerNode());
+    Assert.assertEquals(tmpApp.getMemoryMb(), app0.getMemoryMb());
+    Assert.assertEquals(tmpApp.getMaxMinutes(), app0.getMaxMinutes());
+    // Verify jobTags
+    String[] tmpJobTags = tmpApp.getJobTags();
+    Assert.assertNotNull(tmpJobTags, "JobTags value was null");
+    var jobTagsList = Arrays.asList(tmpJobTags);
+    Assert.assertEquals(tmpJobTags.length, jobTags.length, "Wrong number of jobTags");
+    for (String jobTagStr : jobTags)
+    {
+      Assert.assertTrue(jobTagsList.contains(jobTagStr));
+      System.out.println("Found jobTag: " + jobTagStr);
+    }
     // Verify tags
     String[] tmpTags = tmpApp.getTags();
     Assert.assertNotNull(tmpTags, "Tags value was null");
@@ -95,6 +168,10 @@ public class AppsDaoTest
     Assert.assertEquals(obj.get("project").getAsString(), notesObj.get("project").getAsString());
     Assert.assertTrue(obj.has("testdata"));
     Assert.assertEquals(obj.get("testdata").getAsString(), notesObj.get("testdata").getAsString());
+
+    // Verify data in aux tables: file_inputs, notification_subscriptions, app_args, container_args, scheduler_options
+    // ===========================
+
 //    // Verify capabilities
 //    List<Capability> origCaps = app0.getJobCapabilities();
 //    List<Capability> jobCaps = tmpApp.getJobCapabilities();
@@ -141,26 +218,26 @@ public class AppsDaoTest
     }
   }
 
-  // Test retrieving all apps in a list of IDs
+  // Test retrieving all apps in a list of sequenceIDs
   @Test
-  public void testGetAppsInIDList() throws Exception {
-    var idList = new ArrayList<Integer>();
+  public void testGetAppsInSeqIDList() throws Exception {
+    var seqIdList = new ArrayList<Integer>();
     // Create 2 apps
     App app0 = apps[5];
-    int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
-    Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
-    idList.add(itemId);
+    int itemSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
+    seqIdList.add(itemSeqId);
     app0 = apps[6];
-    itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
-    Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
-    idList.add(itemId);
+    itemSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
+    seqIdList.add(itemSeqId);
     // Get all apps in list of IDs
-    List<App> apps = dao.getApps(tenantName, null, idList);
+    List<App> apps = dao.getApps(tenantName, null, seqIdList);
     for (App app : apps) {
-      System.out.println("Found item with id: " + app.getSeqId() + " and name: " + app.getId());
-      Assert.assertTrue(idList.contains(app.getSeqId()));
+      System.out.println("Found item with seqId: " + app.getSeqId() + " and Id: " + app.getId());
+      Assert.assertTrue(seqIdList.contains(app.getSeqId()));
     }
-    Assert.assertEquals(idList.size(), apps.size());
+    Assert.assertEquals(apps.size(), seqIdList.size());
   }
 
   // Test change app owner
@@ -201,40 +278,39 @@ public class AppsDaoTest
     Assert.assertFalse(dao.checkForApp(app0.getTenant(), app0.getId(), true),"App not deleted. App name: " + app0.getId());
   }
 
-  // Test create and get for a single item with no transfer methods supported and unusual port settings
-  @Test
-  public void testNoTxfr() throws Exception
-  {
-    App app0 = apps[10];
-    int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
-    Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
-    App tmpApp = dao.getApp(app0.getTenant(), app0.getId());
-    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
-    System.out.println("Found item: " + app0.getId());
-    Assert.assertEquals(tmpApp.getId(), app0.getId());
-    Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
-    Assert.assertEquals(tmpApp.getAppType().name(), app0.getAppType().name());
-    Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
-  }
+//  // Test create and get for a single item with no transfer methods supported and unusual port settings
+//  @Test
+//  public void testNoTxfr() throws Exception
+//  {
+//    App app0 = apps[10];
+//    int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
+//    Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
+//    App tmpApp = dao.getApp(app0.getTenant(), app0.getId());
+//    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
+//    System.out.println("Found item: " + app0.getId());
+//    Assert.assertEquals(tmpApp.getId(), app0.getId());
+//    Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
+//    Assert.assertEquals(tmpApp.getAppType().name(), app0.getAppType().name());
+//    Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
+//  }
 
   // Test behavior when app is missing, especially for cases where service layer depends on the behavior.
   //  update - throws not found exception
-  //  getByName - returns null
+  //  getApp - returns null
   //  checkByName - returns false
   //  getOwner - returns null
   @Test
   public void testMissingApp() throws Exception {
     String fakeAppId = "AMissingAppId";
-    PatchApp patchApp = new PatchApp(appVersion, "description PATCHED", false,
-//            capList,
-            tags, notes);
+    PatchApp patchApp = new PatchApp(appVersion, "description PATCHED", enabledFalse, tags, notes);
     patchApp.setTenant(tenantName);
     patchApp.setId(fakeAppId);
-    App patchedApp = new App(1, tenantName, fakeAppId, appVersion, "description", AppType.BATCH, ownerUser, enabled,
+    App patchedApp = new App(1, tenantName, fakeAppId, appVersion, "description", AppType.BATCH, ownerUser, enabledTrue,
             runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, jobDescription, dynamicExecSystem,
             execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
             execSystemLogicalQueue, archiveSystemId, archiveSystemDir, archiveOnAppError, nodeCount, coresPerNode,
-            memoryMb, maxMinutes, archiveIncludes, archiveExcludes, jobTags, tags, notes, null, false, null, null);
+            memoryMb, maxMinutes, envVariables, archiveIncludes, archiveExcludes, jobTags,
+            tags, notes, null, false, null, null);
     // Make sure app does not exist
     Assert.assertFalse(dao.checkForApp(tenantName, fakeAppId, true));
     Assert.assertFalse(dao.checkForApp(tenantName, fakeAppId, false));

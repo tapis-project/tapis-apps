@@ -41,13 +41,14 @@ public final class App
   public static final boolean DEFAULT_ENABLED = true;
   public static final JsonObject DEFAULT_NOTES = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
   public static final String DEFAULT_TAGS_STR = "{}";
-  public static final String[] DEFAULT_TAGS = new String[0];
+  public static final String[] EMPTY_STR_ARRAY = new String[0];
 
   // ************************************************************************
   // *********************** Enums ******************************************
   // ************************************************************************
   public enum AppType {BATCH, INTERACTIVE}
   public enum Runtime {DOCKER, SINGULARITY}
+  public enum NotificationMechanism {WEBHOOK, EMAIL, QUEUE, ACTOR}
   public enum Permission {ALL, READ, MODIFY, EXECUTE}
   public enum AppOperation {create, read, modify, execute, softDelete, hardDelete, changeOwner, getPerms,
                             grantPerms, revokePerms}
@@ -88,7 +89,7 @@ public final class App
   private String[] archiveExcludes;
   private int nodeCount;
   private int coresPerNode;
-  private int memoryMB;
+  private int memoryMb;
   private int maxMinutes;
   private String[] jobTags;
   // === End jobAttributes ==========
@@ -142,8 +143,8 @@ public final class App
              String jobDescription1, boolean dynamicExecSystem1, String[] execSystemConstraints1,
              String execSystemId1, String execSystemExecDir1, String execSystemInputDir1, String execSystemOutputDir1,
              String execSystemLogicalQueue1, String archiveSystemId1, String archiveSystemDir1,
-             boolean archiveOnAppError1, int nodeCount1, int coresPerNode1, int memoryMB1, int maxMinutes1,
-             String[] archiveIncludes1, String[] archiveExcludes1, String[] jobTags1,
+             boolean archiveOnAppError1, int nodeCount1, int coresPerNode1, int memoryMb1, int maxMinutes1,
+             String[] envVariables1, String[] archiveIncludes1, String[] archiveExcludes1, String[] jobTags1,
              String[] tags1, Object notes1, String importRefId1, boolean deleted1,
              Instant created1, Instant updated1)
   {
@@ -173,8 +174,9 @@ public final class App
     archiveOnAppError = archiveOnAppError1;
     nodeCount = nodeCount1;
     coresPerNode = coresPerNode1;
-    memoryMB = memoryMB1;
+    memoryMb = memoryMb1;
     maxMinutes = maxMinutes1;
+    envVariables = (envVariables1 == null) ? null : envVariables1.clone();
     archiveIncludes = (archiveIncludes1 == null) ? null : archiveIncludes1.clone();
     archiveExcludes = (archiveExcludes1 == null) ? null : archiveExcludes1.clone();
     jobTags = (jobTags1 == null) ? null : jobTags1.clone();
@@ -220,8 +222,9 @@ public final class App
     archiveOnAppError = a.isArchiveOnAppError();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
-    memoryMB = a.getMemoryMB();
+    memoryMb = a.getMemoryMb();
     maxMinutes = a.getMaxMinutes();
+    envVariables = (a.getEnvVariables() == null) ? null : a.getEnvVariables().clone();
     archiveIncludes = (a.getArchiveIncludes() == null) ? null : a.getArchiveIncludes().clone();
     archiveExcludes = (a.getArchiveExcludes() == null) ? null : a.getArchiveExcludes().clone();
     jobTags = (a.getJobTags() == null) ? null : a.getJobTags().clone();
@@ -238,8 +241,8 @@ public final class App
   {
     if (app==null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT"));
     if (StringUtils.isBlank(app.getOwner())) app.setOwner(DEFAULT_OWNER);
-    if (app.getJobTags() == null) app.setJobTags(DEFAULT_TAGS);
-    if (app.getTags() == null) app.setTags(DEFAULT_TAGS);
+    if (app.getJobTags() == null) app.setJobTags(EMPTY_STR_ARRAY);
+    if (app.getTags() == null) app.setTags(EMPTY_STR_ARRAY);
     if (app.getNotes() == null) app.setNotes(DEFAULT_NOTES);
     return app;
   }
@@ -319,13 +322,6 @@ public final class App
   public boolean isArchiveOnAppError() { return archiveOnAppError; }
   public App setArchiveOnAppError(boolean b) { archiveOnAppError = b; return this; }
 
-  public String[] getEnvVariables() { return (envVariables == null) ? null : envVariables.clone(); }
-  public App setEnvVariables(String[] sa)
-  {
-    envVariables = (sa == null) ? null : sa.clone();
-    return this;
-  }
-
   public String getJobDescription() { return jobDescription; }
   public App setJobDescription(String s) { jobDescription = s; return this; }
 
@@ -353,11 +349,11 @@ public final class App
   }
   public App setCoresPerNode(int i) { coresPerNode = i; return this; }
 
-  public int getMemoryMB()
+  public int getMemoryMb()
   {
-    return memoryMB;
+    return memoryMb;
   }
-  public App setMemoryMB(int i) { memoryMB = i; return this; }
+  public App setMemoryMb(int i) { memoryMb = i; return this; }
 
   public int getMaxMinutes() { return maxMinutes; }
   public App setMaxMinutes(int i) { maxMinutes = i; return this; }
@@ -367,6 +363,13 @@ public final class App
   }
   public App setFileInputs(List<FileInput> fi) {
     fileInputs = (fi == null) ? null : new ArrayList<>(fi);
+    return this;
+  }
+
+  public String[] getEnvVariables() { return (envVariables == null) ? null : envVariables.clone(); }
+  public App setEnvVariables(String[] sa)
+  {
+    envVariables = (sa == null) ? null : sa.clone();
     return this;
   }
 

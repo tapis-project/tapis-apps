@@ -8,7 +8,7 @@ import edu.utexas.tacc.tapis.shared.utils.JsonObjectSerializer;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_TAGS;
+import static edu.utexas.tacc.tapis.apps.model.App.EMPTY_STR_ARRAY;
 
 /*
     Class representing a returned TSystem result
@@ -44,9 +44,9 @@ public final class ResultApp
   public String[] archiveExcludes; // from parameterSet
   public int nodeCount;
   public int coresPerNode;
-  public int memoryMB;
+  public int memoryMb;
   public int maxMinutes;
-  public String[] jobTags = DEFAULT_TAGS;       // List of arbitrary tags as strings
+  public String[] jobTags = EMPTY_STR_ARRAY;       // List of arbitrary tags as strings
   // === End jobAttributes ===
 
 
@@ -83,7 +83,7 @@ public final class ResultApp
     archiveOnAppError = a.isArchiveOnAppError();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
-    memoryMB = a.getMemoryMB();
+    memoryMb = a.getMemoryMb();
     maxMinutes = a.getMaxMinutes();
     archiveIncludes = a.getArchiveIncludes();
     archiveExcludes = a.getArchiveExcludes();

@@ -20,7 +20,8 @@ public final class IntegrationUtils
   public static final String apiUser = "testApiUser";
   public static final String appIdPrefix = "TestApp";
   public static final String appVersion = "0.0.1";
-  public static final boolean enabled = true;
+  public static final boolean enabledTrue = true;
+  public static final boolean enabledFalse = false;
   public static final Runtime runtime = Runtime.DOCKER;
   public static final String runtimeVersion = "0.0.1";
   public static final String containerImage = "containerImage1";
@@ -43,6 +44,7 @@ public final class IntegrationUtils
   public static final int maxMinutes = 1;
 
 
+  public static final String[] envVariables = {"key1=val1", "key2=val2"};
   public static final String[] archiveIncludes = {"/include1", "/include2"};
   public static final String[] archiveExcludes = {"/exclude1", "/exclude2"};
 
@@ -76,11 +78,11 @@ public final class IntegrationUtils
       String suffix = key + "_" + String.format("%03d", i+1);
       String appId = appIdPrefix + "_" + suffix;
       // Constructor initializes all attributes except for JobCapabilities
-      apps[i] = new App(-1, tenantName, appId, appVersion, "description "+suffix, AppType.BATCH, ownerUser, enabled,
+      apps[i] = new App(-1, tenantName, appId, appVersion, "description "+suffix, AppType.BATCH, ownerUser, enabledTrue,
                         runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, jobDescription, dynamicExecSystem,
                         execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
                         execSystemLogicalQueue, archiveSystemId, archiveSystemDir, archiveOnAppError,
-                        nodeCount, coresPerNode, memoryMb, maxMinutes, archiveIncludes, archiveExcludes, jobTags,
+                        nodeCount, coresPerNode, memoryMb, maxMinutes, envVariables, archiveIncludes, archiveExcludes, jobTags,
                         tags, notes, null, false, null, null);
       // Aux table data
       //      apps[i].setFileInputs(????);

@@ -90,7 +90,17 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Make sure owner, notes and tags are all set
       String owner = App.DEFAULT_OWNER;
       if (StringUtils.isNotBlank(app.getOwner())) owner = app.getOwner();
-      String[] tagsStrArray = App.DEFAULT_TAGS;
+      String[] execSystemConstraintsStrArray = App.EMPTY_STR_ARRAY;
+      String[] envVariablesStrArray = App.EMPTY_STR_ARRAY;
+      String[] archiveIncludesStrArray = App.EMPTY_STR_ARRAY;
+      String[] archiveExcludesStrArray = App.EMPTY_STR_ARRAY;
+      String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
+      String[] tagsStrArray = App.EMPTY_STR_ARRAY;
+      if (app.getExecSystemConstraints() != null) execSystemConstraintsStrArray = app.getExecSystemConstraints();
+      if (app.getEnvVariables() != null) envVariablesStrArray = app.getEnvVariables();
+      if (app.getArchiveIncludes() != null) archiveIncludesStrArray = app.getArchiveIncludes();
+      if (app.getArchiveExcludes() != null) archiveExcludesStrArray = app.getArchiveExcludes();
+      if (app.getJobTags() != null) jobTagsStrArray = app.getJobTags();
       if (app.getTags() != null) tagsStrArray = app.getTags();
       JsonObject notesObj = App.DEFAULT_NOTES;
       if (app.getNotes() != null) notesObj = (JsonObject) app.getNotes();
@@ -103,6 +113,30 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS.APP_TYPE, app.getAppType())
               .set(APPS.OWNER, owner)
               .set(APPS.ENABLED, app.isEnabled())
+              .set(APPS.RUNTIME, app.getRuntime())
+              .set(APPS.RUNTIME_VERSION, app.getRuntimeVersion())
+              .set(APPS.CONTAINER_IMAGE, app.getContainerImage())
+              .set(APPS.MAX_JOBS, app.getMaxJobs())
+              .set(APPS.MAX_JOBS_PER_USER, app.getMaxJobsPerUser())
+              .set(APPS.JOB_DESCRIPTION, app.getJobDescription())
+              .set(APPS.DYNAMIC_EXEC_SYSTEM, app.isDynamicExecSystem())
+              .set(APPS.EXEC_SYSTEM_CONSTRAINTS, execSystemConstraintsStrArray)
+              .set(APPS.EXEC_SYSTEM_ID, app.getExecSystemId())
+              .set(APPS.EXEC_SYSTEM_EXEC_DIR, app.getExecSystemExecDir())
+              .set(APPS.EXEC_SYSTEM_INPUT_DIR, app.getExecSystemInputDir())
+              .set(APPS.EXEC_SYSTEM_OUTPUT_DIR, app.getExecSystemOutputDir())
+              .set(APPS.EXEC_SYSTEM_LOGICAL_QUEUE, app.getExecSystemLogicalQueue())
+              .set(APPS.ARCHIVE_SYSTEM_ID, app.getArchiveSystemId())
+              .set(APPS.ARCHIVE_SYSTEM_DIR, app.getArchiveSystemDir())
+              .set(APPS.ARCHIVE_ON_APP_ERROR, app.isArchiveOnAppError())
+              .set(APPS.ENV_VARIABLES, envVariablesStrArray)
+              .set(APPS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
+              .set(APPS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
+              .set(APPS.NODE_COUNT, app.getNodeCount())
+              .set(APPS.CORES_PER_NODE, app.getCoresPerNode())
+              .set(APPS.MEMORY_MB, app.getMemoryMb())
+              .set(APPS.MAX_MINUTES, app.getMaxMinutes())
+              .set(APPS.JOB_TAGS, jobTagsStrArray)
               .set(APPS.TAGS, tagsStrArray)
               .set(APPS.NOTES, notesObj)
               .returningResult(APPS.SEQ_ID)
@@ -175,7 +209,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (!doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", authenticatedUser, name));
 
       // Make sure notes and tags are all set
-      String[] tagsStrArray = App.DEFAULT_TAGS;
+      String[] tagsStrArray = App.EMPTY_STR_ARRAY;
       if (patchedApp.getTags() != null) tagsStrArray = patchedApp.getTags();
       JsonObject notesObj =  App.DEFAULT_NOTES;
       if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
@@ -512,13 +546,17 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       Result<AppsRecord> results = db.selectFrom(APPS).where(whereCondition).fetch();
       if (results == null || results.isEmpty()) return retList;
 
-//      // Fill in job capabilities list from aux table
-//      for (AppsRecord r : results)
-//      {
-//        App s = r.into(App.class);
-//        s.setJobCapabilities(retrieveJobCaps(db, s.getSeqId()));
-//        retList.add(s);
-//      }
+      // Convert result records to Apps and fill in data from aux tables
+      for (AppsRecord r : results)
+      {
+        App a = r.into(App.class);
+//        a.setFileInputs(retrieveFileInputs(db, a.getSeqId()));
+//        a.setAppArgs(retrieveAppArgs(db, a.getSeqId()));
+//        a.setContainerArgs(retrieveAppArgs(db, a.getSeqId()));
+//        a.setSchedulerOptions(retrieveSchedulerOptions(db, a.getSeqId()));
+//        a.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, a.getSeqId()));
+        retList.add(a);
+      }
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);

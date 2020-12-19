@@ -17,7 +17,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row8;
+import org.jooq.Row9;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -33,7 +33,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
 
-    private static final long serialVersionUID = 575185658;
+    private static final long serialVersionUID = -1745541260;
 
     /**
      * The reference instance of <code>tapis_app.scheduler_options</code>
@@ -67,6 +67,11 @@ public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
      * The column <code>tapis_app.scheduler_options.meta_name</code>.
      */
     public final TableField<SchedulerOptionsRecord, String> META_NAME = createField(DSL.name("meta_name"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
+
+    /**
+     * The column <code>tapis_app.scheduler_options.meta_description</code>.
+     */
+    public final TableField<SchedulerOptionsRecord, String> META_DESCRIPTION = createField(DSL.name("meta_description"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
 
     /**
      * The column <code>tapis_app.scheduler_options.meta_required</code>.
@@ -177,11 +182,11 @@ public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row8 type methods
+    // Row9 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row8<Integer, Integer, String, String, Boolean, String[], LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row8) super.fieldsRow();
+    public Row9<Integer, Integer, String, String, String, Boolean, String[], LocalDateTime, LocalDateTime> fieldsRow() {
+        return (Row9) super.fieldsRow();
     }
 }

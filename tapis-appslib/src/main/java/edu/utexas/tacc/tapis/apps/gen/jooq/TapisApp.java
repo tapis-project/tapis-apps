@@ -4,12 +4,13 @@
 package edu.utexas.tacc.tapis.apps.gen.jooq;
 
 
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppArgs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppUpdates;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.CommandArgs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.ContainerArgs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FileInputs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationSubscriptions;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.SchedulerOptions;
 
 import java.util.Arrays;
@@ -27,12 +28,17 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class TapisApp extends SchemaImpl {
 
-    private static final long serialVersionUID = 2031915246;
+    private static final long serialVersionUID = -1389254586;
 
     /**
      * The reference instance of <code>tapis_app</code>
      */
     public static final TapisApp TAPIS_APP = new TapisApp();
+
+    /**
+     * The table <code>tapis_app.app_args</code>.
+     */
+    public final AppArgs APP_ARGS = AppArgs.APP_ARGS;
 
     /**
      * The table <code>tapis_app.app_updates</code>.
@@ -43,11 +49,6 @@ public class TapisApp extends SchemaImpl {
      * The table <code>tapis_app.apps</code>.
      */
     public final Apps APPS = Apps.APPS;
-
-    /**
-     * The table <code>tapis_app.command_args</code>.
-     */
-    public final CommandArgs COMMAND_ARGS = CommandArgs.COMMAND_ARGS;
 
     /**
      * The table <code>tapis_app.container_args</code>.
@@ -63,6 +64,11 @@ public class TapisApp extends SchemaImpl {
      * The table <code>tapis_app.flyway_schema_history</code>.
      */
     public final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
+
+    /**
+     * The table <code>tapis_app.notification_subscriptions</code>.
+     */
+    public final NotificationSubscriptions NOTIFICATION_SUBSCRIPTIONS = NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS;
 
     /**
      * The table <code>tapis_app.scheduler_options</code>.
@@ -85,15 +91,17 @@ public class TapisApp extends SchemaImpl {
     @Override
     public final List<Sequence<?>> getSequences() {
         return Arrays.<Sequence<?>>asList(
+            Sequences.APP_ARGS_APP_SEQ_ID_SEQ,
+            Sequences.APP_ARGS_SEQ_ID_SEQ,
             Sequences.APP_UPDATES_APP_SEQ_ID_SEQ,
             Sequences.APP_UPDATES_SEQ_ID_SEQ,
             Sequences.APPS_SEQ_ID_SEQ,
-            Sequences.COMMAND_ARGS_APP_SEQ_ID_SEQ,
-            Sequences.COMMAND_ARGS_SEQ_ID_SEQ,
             Sequences.CONTAINER_ARGS_APP_SEQ_ID_SEQ,
             Sequences.CONTAINER_ARGS_SEQ_ID_SEQ,
             Sequences.FILE_INPUTS_APP_SEQ_ID_SEQ,
             Sequences.FILE_INPUTS_SEQ_ID_SEQ,
+            Sequences.NOTIFICATION_SUBSCRIPTIONS_APP_SEQ_ID_SEQ,
+            Sequences.NOTIFICATION_SUBSCRIPTIONS_SEQ_ID_SEQ,
             Sequences.SCHEDULER_OPTIONS_APP_SEQ_ID_SEQ,
             Sequences.SCHEDULER_OPTIONS_SEQ_ID_SEQ);
     }
@@ -101,12 +109,13 @@ public class TapisApp extends SchemaImpl {
     @Override
     public final List<Table<?>> getTables() {
         return Arrays.<Table<?>>asList(
+            AppArgs.APP_ARGS,
             AppUpdates.APP_UPDATES,
             Apps.APPS,
-            CommandArgs.COMMAND_ARGS,
             ContainerArgs.CONTAINER_ARGS,
             FileInputs.FILE_INPUTS,
             FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY,
+            NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS,
             SchedulerOptions.SCHEDULER_OPTIONS);
     }
 }
