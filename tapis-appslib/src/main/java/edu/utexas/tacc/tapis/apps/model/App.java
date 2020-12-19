@@ -47,7 +47,7 @@ public final class App
   // *********************** Enums ******************************************
   // ************************************************************************
   public enum AppType {BATCH, INTERACTIVE}
-  public enum ContainerRuntime {DOCKER, SINGULARITY}
+  public enum Runtime {DOCKER, SINGULARITY}
   public enum Permission {ALL, READ, MODIFY, EXECUTE}
   public enum AppOperation {create, read, modify, execute, softDelete, hardDelete, changeOwner, getPerms,
                             grantPerms, revokePerms}
@@ -57,8 +57,8 @@ public final class App
   // ************************************************************************
 
   // NOTE: In order to use jersey's SelectableEntityFilteringFeature fields cannot be final.
+  // === Start fields in main table =============================================
   private int seqId;           // Unique database sequence number
-
   private String tenant;     // Name of the tenant for which the app is defined
   private String id;       // Name of the app
   private String version;    // Version of the app
@@ -66,16 +66,13 @@ public final class App
   private AppType appType; // Type of app, e.g. LINUX, OBJECT_STORE
   private String owner;      // User who owns the app and has full privileges
   private boolean enabled; // Indicates if app is currently enabled
-  private boolean isInteractive;
-  private boolean containerized;
-  private ContainerRuntime containerRuntime;
+  private Runtime runtime;
+  private String runtimeVersion;
   private String containerImage;
-  private List<AppArg> containerArgs;
-  private String command;
-  private List<AppArg> commandArgs;
-  private List<FileInput> execCodes;
-  private String[] envVariables;
-  private List<FileInput> fileInputs;
+  private int maxJobs;
+  private int maxJobsPerUser;
+  // === Start jobAttributes ==========
+  private String jobDescription;
   private boolean dynamicExecSystem; // Indicates if constraints are to be used
   private String[] execSystemConstraints; // List of constraints
   private String execSystemId;
@@ -86,15 +83,24 @@ public final class App
   private String archiveSystemId;
   private String archiveSystemDir;
   private boolean archiveOnAppError;
-  private String jobDescription;
-  private int maxJobs;
-  private int maxJobsPerUser;
+  private String[] envVariables;
+  private String[] archiveIncludes;
+  private String[] archiveExcludes;
   private int nodeCount;
   private int coresPerNode;
   private int memoryMB;
   private int maxMinutes;
-  private String[] archiveIncludes;
-  private String[] archiveExcludes;
+  private String[] jobTags;
+  // === End jobAttributes ==========
+  // === End fields in main table =============================================
+
+  // Aux tables
+  private List<FileInput> fileInputs; // jobAttributes
+  // notificationSubscriptions // jobAttributes
+  private List<AppArg> appArgs;  // parameterSet
+  private List<AppArg> containerArgs; // parameterSet
+  private List<AppArg> schedulerOptions; // parameterSet
+
   private String[] tags;       // List of arbitrary tags as strings
 
   @JsonSerialize(using = JsonObjectSerializer.class)
@@ -120,11 +126,10 @@ public final class App
   /**
    * Constructor using only required attributes.
    */
-  public App(String id1, String version1, AppType appType1)
+  public App(String id1, String version1)
   {
     id = id1;
     version = version1;
-    appType = appType1;
   }
 
   /**
@@ -132,13 +137,13 @@ public final class App
    * Also useful for testing
    */
   public App(int seqId1, String tenant1, String id1, String version1, String description1, AppType appType1,
-             String owner1, boolean enabled1, boolean isInteractive1, boolean containerized1, ContainerRuntime containerRuntime1,
-             String containerImage1, String command1, boolean dynamicExecSystem1, String[] execSystemConstraints1,
+             String owner1, boolean enabled1, Runtime runtime1, String runtimeVersion1,
+             String containerImage1, int maxJobs1, int maxJobsPerUser1,
+             String jobDescription1, boolean dynamicExecSystem1, String[] execSystemConstraints1,
              String execSystemId1, String execSystemExecDir1, String execSystemInputDir1, String execSystemOutputDir1,
              String execSystemLogicalQueue1, String archiveSystemId1, String archiveSystemDir1,
-             boolean archiveOnAppError1, String jobDescription1, int maxJobs1,
-             int maxJobsPerUser1, int nodeCount1, int coresPerNode1, int memoryMB1, int maxMinutes1,
-             String[] archiveIncludes1, String[] archiveExcludes1,
+             boolean archiveOnAppError1, int nodeCount1, int coresPerNode1, int memoryMB1, int maxMinutes1,
+             String[] archiveIncludes1, String[] archiveExcludes1, String[] jobTags1,
              String[] tags1, Object notes1, String importRefId1, boolean deleted1,
              Instant created1, Instant updated1)
   {
@@ -150,11 +155,12 @@ public final class App
     appType = appType1;
     owner = owner1;
     enabled = enabled1;
-    isInteractive = isInteractive1;
-    containerized = containerized1;
-    containerRuntime = containerRuntime1;
+    runtime = runtime1;
+    runtimeVersion = runtimeVersion1;
     containerImage = containerImage1;
-    command = command1;
+    maxJobs = maxJobs1;
+    maxJobsPerUser = maxJobsPerUser1;
+    jobDescription = jobDescription1;
     dynamicExecSystem = dynamicExecSystem1;
     execSystemConstraints = (execSystemConstraints1 == null) ? null : execSystemConstraints1.clone();
     execSystemId = execSystemId1;
@@ -165,15 +171,13 @@ public final class App
     archiveSystemId = archiveSystemId1;
     archiveSystemDir = archiveSystemDir1;
     archiveOnAppError = archiveOnAppError1;
-    jobDescription = jobDescription1;
-    maxJobs = maxJobs1;
-    maxJobsPerUser = maxJobsPerUser1;
     nodeCount = nodeCount1;
     coresPerNode = coresPerNode1;
     memoryMB = memoryMB1;
     maxMinutes = maxMinutes1;
     archiveIncludes = (archiveIncludes1 == null) ? null : archiveIncludes1.clone();
     archiveExcludes = (archiveExcludes1 == null) ? null : archiveExcludes1.clone();
+    jobTags = (jobTags1 == null) ? null : jobTags1.clone();
     tags = (tags1 == null) ? null : tags1.clone();
     notes = notes1;
     importRefId = importRefId1;
@@ -198,10 +202,12 @@ public final class App
     appType = a.getAppType();
     owner = a.getOwner();
     enabled = a.isEnabled();
-    containerized = a.isContainerized();
-    containerRuntime = a.getContainerRuntime();
+    runtime = a.getRuntime();
+    runtimeVersion = a.getRuntimeVersion();
     containerImage = a.getContainerImage();
-    command = a.getCommand();
+    maxJobs = a.getMaxJobs();
+    maxJobsPerUser = a.getMaxJobsPerUser();
+    jobDescription = a.getJobDescription();
     dynamicExecSystem = a.isDynamicExecSystem();
     execSystemConstraints = (a.getExecSystemConstraints() == null) ? null : a.getExecSystemConstraints().clone();
     execSystemId = a.getExecSystemId();
@@ -212,15 +218,13 @@ public final class App
     archiveSystemId = a.getArchiveSystemId();
     archiveSystemDir = a.getArchiveSystemDir();
     archiveOnAppError = a.isArchiveOnAppError();
-    jobDescription = a.getJobDescription();
-    maxJobs = a.getMaxJobs();
-    maxJobsPerUser = a.getMaxJobsPerUser();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
     memoryMB = a.getMemoryMB();
     maxMinutes = a.getMaxMinutes();
     archiveIncludes = (a.getArchiveIncludes() == null) ? null : a.getArchiveIncludes().clone();
     archiveExcludes = (a.getArchiveExcludes() == null) ? null : a.getArchiveExcludes().clone();
+    jobTags = (a.getJobTags() == null) ? null : a.getJobTags().clone();
     tags = (a.getTags() == null) ? null : a.getTags().clone();
     notes = a.getNotes();
     importRefId = a.getImportRefId();
@@ -234,6 +238,7 @@ public final class App
   {
     if (app==null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT"));
     if (StringUtils.isBlank(app.getOwner())) app.setOwner(DEFAULT_OWNER);
+    if (app.getJobTags() == null) app.setJobTags(DEFAULT_TAGS);
     if (app.getTags() == null) app.setTags(DEFAULT_TAGS);
     if (app.getNotes() == null) app.setNotes(DEFAULT_NOTES);
     return app;
@@ -271,26 +276,14 @@ public final class App
   public boolean isEnabled() { return enabled; }
   public App setEnabled(boolean b) { enabled = b;  return this; }
 
-  public boolean isInteractive() { return isInteractive; }
+  public Runtime getRuntime() { return runtime; }
+  void setRuntime(Runtime r) { runtime = r; }
 
-  public boolean isContainerized() { return containerized; }
-
-  public ContainerRuntime getContainerRuntime() { return containerRuntime; }
-  void setContainerRuntime(ContainerRuntime r) { containerRuntime = r; }
+  public String getRuntimeVersion() { return runtimeVersion; }
+  public App setRuntimeVersion(String s) { runtimeVersion = s; return this; }
 
   public String getContainerImage() { return containerImage; }
   public App setContainerImage(String s) { containerImage = s; return this; }
-
-  public String getCommand() { return command; }
-  public App setCommand(String s) { command = s; return this; }
-
-  public List<FileInput> getExecCodes() {
-    return (execCodes == null) ? null :  new ArrayList<>(execCodes);
-  }
-  public App setExecCodes(List<FileInput> fi) {
-    execCodes = (fi == null) ? null : new ArrayList<>(fi);
-    return this;
-  }
 
   public boolean isDynamicExecSystem() { return dynamicExecSystem; }
   public App setDynamicExecSystem(boolean b) {dynamicExecSystem = b; return this; }
@@ -393,6 +386,14 @@ public final class App
 
   public String getImportRefId() { return importRefId; }
   public App setImportRefID(String s) { importRefId = s;  return this;}
+
+  public String[] getJobTags() {
+    return (jobTags == null) ? null : jobTags.clone();
+  }
+  public App setJobTags(String[] t) {
+    tags = (t == null) ? null : t.clone();
+    return this;
+  }
 
   public String[] getTags() {
     return (tags == null) ? null : tags.clone();

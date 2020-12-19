@@ -765,14 +765,18 @@ public class AppResource
   private static App createAppFromRequest(ReqCreateApp req)
   {
     var app = new App(-1, null, req.id, req.version, req.description, req.appType, req.owner, req.enabled,
-                      req.isInteractive, req.containerized, req.containerRuntime, req.containerImage, req.command,
-                      req.dynamicExecSystem, req.execSystemConstraints, req.execSystemId, req.execSystemExecDir,
-                      req.execSystemInputDir, req.execSystemOutputDir, req.execSystemLogicalQueue,
-                      req.archiveSystemId, req.archiveSystemDir,
-                      req.archiveOnAppError, req.jobDescription, req.maxJobs, req.maxJobsPerUser, req.nodeCount,
+                      req.runtime, req.runtimeVersion, req.containerImage, req.maxJobs, req.maxJobsPerUser,
+                      req.jobDescription, req.dynamicExecSystem, req.execSystemConstraints, req.execSystemId,
+                      req.execSystemExecDir, req.execSystemInputDir, req.execSystemOutputDir, req.execSystemLogicalQueue,
+                      req.archiveSystemId, req.archiveSystemDir, req.archiveOnAppError, req.nodeCount,
                       req.coresPerNode, req.memoryMB, req.maxMinutes, req.archiveIncludes, req.archiveExcludes,
-                      req.tags, req.notes, req.refImportId, false, null, null);
-//    app.setJobCapabilities(req.jobCapabilities);
+                      req.jobTags, req.tags, req.notes, req.refImportId, false, null, null);
+    // Data from aux tables
+//    app.setFileInputs(req.fileInputs);
+    // notificationSubscriptions
+    // appArgs
+    // containerArgs
+    // schedulerOptions
     return app;
   }
 
@@ -781,9 +785,7 @@ public class AppResource
    */
   private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String appId)
   {
-    PatchApp patchApp = new PatchApp(req.version, req.description, req.enabled,
-//            req.jobCapabilities,
-            req.tags, req.notes);
+    PatchApp patchApp = new PatchApp(req.version, req.description, req.enabled, req.tags, req.notes);
     // Update tenant name and app name
     patchApp.setTenant(tenantName);
     patchApp.setId(appId);

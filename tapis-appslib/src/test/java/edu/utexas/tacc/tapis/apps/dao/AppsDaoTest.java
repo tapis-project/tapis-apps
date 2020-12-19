@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.App.AppType;
 
 import static edu.utexas.tacc.tapis.apps.IntegrationUtils.*;
 
@@ -223,22 +224,20 @@ public class AppsDaoTest
   //  getOwner - returns null
   @Test
   public void testMissingApp() throws Exception {
-    String fakeAppName = "AMissingAppName";
+    String fakeAppId = "AMissingAppId";
     PatchApp patchApp = new PatchApp(appVersion, "description PATCHED", false,
 //            capList,
             tags, notes);
     patchApp.setTenant(tenantName);
-    patchApp.setId(fakeAppName);
-    App patchedApp = new App(1, tenantName, fakeAppName, appVersion, "description", App.AppType.BATCH, ownerUser, enabled,
-            isInteractive, containerized, containerRuntime, containerImage, command, dynamicExecSystem,
+    patchApp.setId(fakeAppId);
+    App patchedApp = new App(1, tenantName, fakeAppId, appVersion, "description", AppType.BATCH, ownerUser, enabled,
+            runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, jobDescription, dynamicExecSystem,
             execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
-            execSystemLogicalQueue,
-            archiveSystemId, archiveSystemDir, archiveOnAppError, jobDescription, maxJobs, maxJobsPerUser,
-            nodeCount, coresPerNode, memoryMb, maxMinutes, archiveIncludes, archiveExcludes,
-            tags, notes, null, false, null, null);
+            execSystemLogicalQueue, archiveSystemId, archiveSystemDir, archiveOnAppError, nodeCount, coresPerNode,
+            memoryMb, maxMinutes, archiveIncludes, archiveExcludes, jobTags, tags, notes, null, false, null, null);
     // Make sure app does not exist
-    Assert.assertFalse(dao.checkForApp(tenantName, fakeAppName, true));
-    Assert.assertFalse(dao.checkForApp(tenantName, fakeAppName, false));
+    Assert.assertFalse(dao.checkForApp(tenantName, fakeAppId, true));
+    Assert.assertFalse(dao.checkForApp(tenantName, fakeAppId, false));
     // update should throw not found exception
     boolean pass = false;
     try { dao.updateApp(authenticatedUser, patchedApp, patchApp, scrubbedJson, null); }
@@ -248,7 +247,7 @@ public class AppsDaoTest
       pass = true;
     }
     Assert.assertTrue(pass);
-    Assert.assertNull(dao.getApp(tenantName, fakeAppName));
-    Assert.assertNull(dao.getAppOwner(tenantName, fakeAppName));
+    Assert.assertNull(dao.getApp(tenantName, fakeAppId));
+    Assert.assertNull(dao.getAppOwner(tenantName, fakeAppId));
   }
 }

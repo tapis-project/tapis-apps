@@ -12,7 +12,7 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.Keys;
 import edu.utexas.tacc.tapis.apps.gen.jooq.TapisApp;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsRecord;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
-import edu.utexas.tacc.tapis.apps.model.App.ContainerRuntime;
+import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -102,7 +102,7 @@ public class Apps extends TableImpl<AppsRecord> {
     /**
      * The column <code>tapis_app.apps.container_runtime</code>.
      */
-    public final TableField<AppsRecord, ContainerRuntime> CONTAINER_RUNTIME = createField(DSL.name("container_runtime"), org.jooq.impl.SQLDataType.VARCHAR.nullable(false).asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.ContainerRuntimeType.class), this, "", new org.jooq.impl.EnumConverter<edu.utexas.tacc.tapis.apps.gen.jooq.enums.ContainerRuntimeType, edu.utexas.tacc.tapis.apps.model.App.ContainerRuntime>(edu.utexas.tacc.tapis.apps.gen.jooq.enums.ContainerRuntimeType.class, edu.utexas.tacc.tapis.apps.model.App.ContainerRuntime.class));
+    public final TableField<AppsRecord, Runtime> CONTAINER_RUNTIME = createField(DSL.name("container_runtime"), org.jooq.impl.SQLDataType.VARCHAR.nullable(false).asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.ContainerRuntimeType.class), this, "", new org.jooq.impl.EnumConverter<edu.utexas.tacc.tapis.apps.gen.jooq.enums.ContainerRuntimeType, Runtime>(edu.utexas.tacc.tapis.apps.gen.jooq.enums.ContainerRuntimeType.class, Runtime.class));
 
     /**
      * The column <code>tapis_app.apps.container_image</code>.

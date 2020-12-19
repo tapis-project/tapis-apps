@@ -37,10 +37,11 @@ SET search_path TO tapis_app;
 -- GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA tapis_app TO tapis_app;
 
 -- Types
-CREATE TYPE app_type_type AS ENUM ('BATCH', 'DIRECT', 'BATCH_INTERACTIVE', 'DIRECT_INTERACTIVE');
+CREATE TYPE app_type_type AS ENUM ('BATCH', 'DIRECT');
 CREATE TYPE operation_type AS ENUM ('create', 'modify', 'softDelete', 'hardDelete', 'changeOwner',
                                     'grantPerms', 'revokePerms');
-CREATE TYPE container_runtime_type AS ENUM ('DOCKER', 'SINGULARITY');
+CREATE TYPE runtime_type AS ENUM ('DOCKER', 'SINGULARITY');
+CREATE TYPE notification_mechanism_type AS ENUM ('WEBHOOK', 'EMAIL', 'QUEUE', 'ACTOR');
 
 -- ----------------------------------------------------------------------------------------
 --                                     APPS
@@ -54,15 +55,12 @@ CREATE TABLE apps
   id        VARCHAR(80) NOT NULL,
   version     VARCHAR(64) NOT NULL,
   description VARCHAR(2048),
-  app_type app_type_type NOT NULL,
+  app_type app_type_type,
   owner       VARCHAR(60) NOT NULL,
   enabled     BOOLEAN NOT NULL DEFAULT true,
-  containerized BOOLEAN NOT NULL DEFAULT true,
-  container_runtime container_runtime_type NOT NULL,
-  container_runtime_version VARCHAR(128),
+  runtime runtime_type NOT NULL,
+  runtime_version VARCHAR(128),
   container_image VARCHAR(128),
---  command VARCHAR(128),
---  exec_codes TEXT[] NOT NULL, -- TODO these will be FileInputs? need type in FileInputs table?
   max_jobs INTEGER NOT NULL DEFAULT -1,
   max_jobs_per_user INTEGER NOT NULL DEFAULT -1,
 -- Start jobAttributes ==========================================
@@ -141,20 +139,19 @@ COMMENT ON COLUMN app_updates.created IS 'UTC time for when record was created';
 -- ----------------------------------------------------------------------------------------
 --                           FILE INPUTS
 -- ----------------------------------------------------------------------------------------
--- TODO 2 tables? one for file inputs and one for exec codes?
 -- File Inputs table
 -- Inputs associated with an app
 -- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
 CREATE TABLE file_inputs
 (
-    seq_id     SERIAL PRIMARY KEY,
+    seq_id SERIAL PRIMARY KEY,
     app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
     source_url VARCHAR(128) NOT NULL DEFAULT '',
     target_path VARCHAR(128) NOT NULL DEFAULT '',
     in_place BOOLEAN NOT NULL DEFAULT false,
-    meta_name VARCHAR(128) NOT NULL DEFAULT '',
-    meta_description VARCHAR(128) NOT NULL DEFAULT '',
-    meta_required boolean NOT NULL DEFAULT true,
+    meta_name VARCHAR(128),
+    meta_description VARCHAR(128),
+    meta_required boolean NOT NULL DEFAULT false,
     meta_kv TEXT[] NOT NULL,
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
@@ -172,21 +169,12 @@ CREATE TABLE notification_subscriptions
 (
     seq_id     SERIAL PRIMARY KEY,
     app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
-    filter VARCHAR(128) NOT NULL DEFAULT '', -- TODO length?
-    -- TODO
---     target_path VARCHAR(128) NOT NULL DEFAULT '',
---     in_place BOOLEAN NOT NULL DEFAULT false,
---     meta_name VARCHAR(128) NOT NULL DEFAULT '',
---     meta_description VARCHAR(128) NOT NULL DEFAULT '',
---     meta_required boolean NOT NULL DEFAULT true,
---     meta_kv TEXT[] NOT NULL,
---     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
---     updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-    UNIQUE (app_seq_id)
+    filter VARCHAR(128), -- TODO length?
+    notification_mechanism notification_mechanism_type,
+    webHookURL VARCHAR(128), -- TODO length?
+    emailAddress VARCHAR(128) -- TODO length?
 );
-ALTER TABLE file_inputs OWNER TO tapis_app;
-COMMENT ON COLUMN file_inputs.seq_id IS 'File input sequence id';
-COMMENT ON COLUMN file_inputs.app_seq_id IS 'Sequence id of application requiring the file input';
+ALTER TABLE notification_subscriptions OWNER TO tapis_app;
 
 -- ----------------------------------------------------------------------------------------
 --                           ARGS

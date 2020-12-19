@@ -26,16 +26,16 @@ public interface AppsService
   int updateApp(AuthenticatedUser authenticatedUser, PatchApp patchApp, String scrubbedText)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
-  int changeAppOwner(AuthenticatedUser authenticatedUser, String appName, String newOwnerName)
+  int changeAppOwner(AuthenticatedUser authenticatedUser, String appId, String newOwnerName)
           throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
 
-  int softDeleteApp(AuthenticatedUser authenticatedUser, String appName)
+  int softDeleteApp(AuthenticatedUser authenticatedUser, String appId)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  boolean checkForApp(AuthenticatedUser authenticatedUser, String appName)
+  boolean checkForApp(AuthenticatedUser authenticatedUser, String appId)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  App getApp(AuthenticatedUser authenticatedUser, String appName, boolean requireExecPerm)
+  App getApp(AuthenticatedUser authenticatedUser, String appId, boolean requireExecPerm)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
   List<App> getApps(AuthenticatedUser authenticatedUser, List<String> searchList)
@@ -47,15 +47,15 @@ public interface AppsService
   List<String> getAppNames(AuthenticatedUser authenticatedUser)
           throws TapisException;
 
-  String getAppOwner(AuthenticatedUser authenticatedUser, String appName)
+  String getAppOwner(AuthenticatedUser authenticatedUser, String appId)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  void grantUserPermissions(AuthenticatedUser authenticatedUser, String appName, String userName, Set<Permission> permissions, String updateText)
+  void grantUserPermissions(AuthenticatedUser authenticatedUser, String appId, String userName, Set<Permission> permissions, String updateText)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  int revokeUserPermissions(AuthenticatedUser authenticatedUser, String appName, String userName, Set<Permission> permissions, String updateText)
+  int revokeUserPermissions(AuthenticatedUser authenticatedUser, String appId, String userName, Set<Permission> permissions, String updateText)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  Set<Permission> getUserPermissions(AuthenticatedUser authenticatedUser, String appName, String userName)
+  Set<Permission> getUserPermissions(AuthenticatedUser authenticatedUser, String appId, String userName)
           throws TapisException, NotAuthorizedException, TapisClientException;
 }

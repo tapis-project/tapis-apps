@@ -8,7 +8,7 @@ import com.google.gson.JsonElement;
 
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
-import edu.utexas.tacc.tapis.apps.model.App.ContainerRuntime;
+import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 
 import java.time.LocalDateTime;
 
@@ -153,15 +153,15 @@ public class AppsRecord extends UpdatableRecordImpl<AppsRecord> {
     /**
      * Setter for <code>tapis_app.apps.container_runtime</code>.
      */
-    public void setContainerRuntime(ContainerRuntime value) {
+    public void setContainerRuntime(Runtime value) {
         set(9, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.container_runtime</code>.
      */
-    public ContainerRuntime getContainerRuntime() {
-        return (ContainerRuntime) get(9);
+    public Runtime getContainerRuntime() {
+        return (Runtime) get(9);
     }
 
     /**
@@ -593,7 +593,7 @@ public class AppsRecord extends UpdatableRecordImpl<AppsRecord> {
     /**
      * Create a detached, initialised AppsRecord
      */
-    public AppsRecord(Integer seqId, String tenant, String id, String version, String description, AppType appType, String owner, Boolean enabled, Boolean containerized, ContainerRuntime containerRuntime, String containerImage, String command, String[] execCodes, Boolean dynamicExecSystem, String[] execSystemConstraints, String execSystemId, String execSystemExecDir, String execSystemInputDir, String execSystemOutputDir, String execSystemLogicalQueue, String archiveSystemId, String archiveSystemDir, Boolean archiveOnAppError, Boolean useDtnIfDefined, String jobDescription, Integer maxJobs, Integer maxJobsPerUser, Integer nodeCount, Integer coresPerNode, Integer memoryMb, Integer maxMinutes, String[] archiveIncludes, String[] archiveExcludes, String[] tags, JsonElement notes, String importRefId, Boolean deleted, LocalDateTime created, LocalDateTime updated) {
+    public AppsRecord(Integer seqId, String tenant, String id, String version, String description, AppType appType, String owner, Boolean enabled, Boolean containerized, Runtime runtime, String containerImage, String command, String[] execCodes, Boolean dynamicExecSystem, String[] execSystemConstraints, String execSystemId, String execSystemExecDir, String execSystemInputDir, String execSystemOutputDir, String execSystemLogicalQueue, String archiveSystemId, String archiveSystemDir, Boolean archiveOnAppError, Boolean useDtnIfDefined, String jobDescription, Integer maxJobs, Integer maxJobsPerUser, Integer nodeCount, Integer coresPerNode, Integer memoryMb, Integer maxMinutes, String[] archiveIncludes, String[] archiveExcludes, String[] tags, JsonElement notes, String importRefId, Boolean deleted, LocalDateTime created, LocalDateTime updated) {
         super(Apps.APPS);
 
         set(0, seqId);
@@ -605,7 +605,7 @@ public class AppsRecord extends UpdatableRecordImpl<AppsRecord> {
         set(6, owner);
         set(7, enabled);
         set(8, containerized);
-        set(9, containerRuntime);
+        set(9, runtime);
         set(10, containerImage);
         set(11, command);
         set(12, execCodes);

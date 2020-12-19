@@ -109,8 +109,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .fetchOne();
       appSeqId = record.getValue(APPS.SEQ_ID);
 
-      // Persist job capabilities
-//      persistJobCapabilities(db, app, appSeqId);
+      // Persist data to aux tables
+//      persistFileInputs(db, app, appSeqId);
+//      persistAppArgs(db, app, appSeqId);
+//      persistContainerArgs(db, app, appSeqId);
+//      persistSchedulerOptions(db, app, appSeqId);
+//      persistNotificationSubscriptions(db, app, appSeqId);
 
       // Persist update record
       addUpdate(db, authenticatedUser, appSeqId, AppOperation.create, createJsonStr, scrubbedText);
