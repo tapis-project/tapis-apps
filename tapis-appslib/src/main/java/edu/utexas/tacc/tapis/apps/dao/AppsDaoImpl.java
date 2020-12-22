@@ -8,6 +8,9 @@ import java.util.List;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.apps.model.AppArg;
+import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.search.parser.ASTBinaryExpression;
 import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
@@ -50,6 +53,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   private static final Logger _log = LoggerFactory.getLogger(AppsDaoImpl.class);
 
   private static final String EMPTY_JSON = "{}";
+  private static final String[] EMPTY_STR_ARRAY = {};
 
   /* ********************************************************************** */
   /*                             Public Methods                             */
@@ -144,10 +148,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       appSeqId = record.getValue(APPS.SEQ_ID);
 
       // Persist data to aux tables
-//      persistFileInputs(db, app, appSeqId);
-//      persistAppArgs(db, app, appSeqId);
-//      persistContainerArgs(db, app, appSeqId);
-//      persistSchedulerOptions(db, app, appSeqId);
+      persistFileInputs(db, app, appSeqId);
+      persistAppArgs(db, app, appSeqId);
+      persistContainerArgs(db, app, appSeqId);
+      persistSchedulerOptions(db, app, appSeqId);
 //      persistNotificationSubscriptions(db, app, appSeqId);
 
       // Persist update record
@@ -473,10 +477,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false))
               .fetchOne();
       if (r == null) return null;
-      else result = r.into(App.class);
 
-//      // Retrieve and set job capabilities
-//      result.setJobCapabilities(retrieveJobCaps(db, result.getSeqId()));
+      // Convert result record to Apps and fill in data from aux tables
+      result = r.into(App.class);
+      result.setFileInputs(retrieveFileInputs(db, result.getSeqId()));
+      result.setAppArgs(retrieveAppArgs(db, result.getSeqId()));
+      result.setContainerArgs(retrieveContainerArgs(db, result.getSeqId()));
+      result.setSchedulerOptions(retrieveSchedulerOptions(db, result.getSeqId()));
+//      result.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, result.getSeqId()));
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -550,10 +558,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       for (AppsRecord r : results)
       {
         App a = r.into(App.class);
-//        a.setFileInputs(retrieveFileInputs(db, a.getSeqId()));
-//        a.setAppArgs(retrieveAppArgs(db, a.getSeqId()));
-//        a.setContainerArgs(retrieveAppArgs(db, a.getSeqId()));
-//        a.setSchedulerOptions(retrieveSchedulerOptions(db, a.getSeqId()));
+        a.setFileInputs(retrieveFileInputs(db, a.getSeqId()));
+        a.setAppArgs(retrieveAppArgs(db, a.getSeqId()));
+        a.setContainerArgs(retrieveContainerArgs(db, a.getSeqId()));
+        a.setSchedulerOptions(retrieveSchedulerOptions(db, a.getSeqId()));
 //        a.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, a.getSeqId()));
         retList.add(a);
       }
@@ -617,13 +625,16 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       Result<AppsRecord> results = db.selectFrom(APPS).where(whereCondition).fetch();
       if (results == null || results.isEmpty()) return retList;
 
-//      // Fill in job capabilities list from aux table
-//      for (AppsRecord r : results)
-//      {
-//        App s = r.into(App.class);
-//        s.setJobCapabilities(retrieveJobCaps(db, s.getSeqId()));
-//        retList.add(s);
-//      }
+      // Fill in data from aux tables
+      for (AppsRecord r : results)
+      {
+        App app = r.into(App.class);
+        app.setFileInputs(retrieveFileInputs(db, app.getSeqId()));
+        app.setAppArgs(retrieveAppArgs(db, app.getSeqId()));
+        app.setContainerArgs(retrieveContainerArgs(db, app.getSeqId()));
+        app.setSchedulerOptions(retrieveSchedulerOptions(db, app.getSeqId()));
+        retList.add(app);
+      }
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -820,36 +831,173 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     else return db.fetchExists(APPS, APPS.ID.eq(name),APPS.TENANT.eq(tenant),APPS.DELETED.eq(false));
   }
 
+  /**
+   * Persist file inputs given an sql connection and an app
+   */
+  private static void persistFileInputs(DSLContext db, App app, int appSeqId)
+  {
+    var fileInputs = app.getFileInputs();
+    if (fileInputs == null || fileInputs.isEmpty()) return;
+
+    for (FileInput fileInput : fileInputs) {
+      String nameStr = "";
+      if (fileInput.getMetaName() != null ) nameStr = fileInput.getMetaName();
+      String[] kvPairs = EMPTY_STR_ARRAY;
+      if (fileInput.getMetaKeyValuePairs() != null ) kvPairs = fileInput.getMetaKeyValuePairs();
+      db.insertInto(FILE_INPUTS).set(FILE_INPUTS.APP_SEQ_ID, appSeqId)
+              .set(FILE_INPUTS.SOURCE_URL, fileInput.getSourceUrl())
+              .set(FILE_INPUTS.TARGET_PATH, fileInput.getTargetPath())
+              .set(FILE_INPUTS.IN_PLACE, fileInput.isInPlace())
+              .set(FILE_INPUTS.META_NAME, nameStr)
+              .set(FILE_INPUTS.META_DESCRIPTION, fileInput.getMetaDescription())
+              .set(FILE_INPUTS.META_REQUIRED, fileInput.isMetaRequired())
+              .set(FILE_INPUTS.META_KEY_VALUE_PAIRS, kvPairs)
+              .execute();
+    }
+  }
+
+  /**
+   * Persist app args given an sql connection and an app
+   */
+  private static void persistAppArgs(DSLContext db, App app, int appSeqId)
+  {
+    var appArgs = app.getAppArgs();
+    if (appArgs == null || appArgs.isEmpty()) return;
+
+    for (AppArg appArg : appArgs) {
+      String valStr = "";
+      if (appArg.getValue() != null ) valStr = appArg.getValue();
+      String[] kvPairs = EMPTY_STR_ARRAY;
+      if (appArg.getMetaKeyValuePairs() != null ) kvPairs = appArg.getMetaKeyValuePairs();
+      db.insertInto(APP_ARGS).set(APP_ARGS.APP_SEQ_ID, appSeqId)
+              .set(APP_ARGS.ARG_VAL, valStr)
+              .set(APP_ARGS.META_NAME, appArg.getMetaName())
+              .set(APP_ARGS.META_DESCRIPTION, appArg.getMetaDescription())
+              .set(APP_ARGS.META_REQUIRED, appArg.isMetaRequired())
+              .set(APP_ARGS.META_KEY_VALUE_PAIRS, kvPairs)
+              .execute();
+    }
+  }
+
+  /**
+   * Persist container args given an sql connection and an app
+   */
+  private static void persistContainerArgs(DSLContext db, App app, int appSeqId)
+  {
+    var containerArgs = app.getContainerArgs();
+    if (containerArgs == null || containerArgs.isEmpty()) return;
+
+    for (AppArg containerArg : containerArgs) {
+      String valStr = "";
+      if (containerArg.getValue() != null ) valStr = containerArg.getValue();
+      String[] kvPairs = EMPTY_STR_ARRAY;
+      if (containerArg.getMetaKeyValuePairs() != null ) kvPairs = containerArg.getMetaKeyValuePairs();
+      db.insertInto(CONTAINER_ARGS).set(CONTAINER_ARGS.APP_SEQ_ID, appSeqId)
+              .set(CONTAINER_ARGS.ARG_VAL, valStr)
+              .set(CONTAINER_ARGS.META_NAME, containerArg.getMetaName())
+              .set(CONTAINER_ARGS.META_DESCRIPTION, containerArg.getMetaDescription())
+              .set(CONTAINER_ARGS.META_REQUIRED, containerArg.isMetaRequired())
+              .set(CONTAINER_ARGS.META_KEY_VALUE_PAIRS, kvPairs)
+              .execute();
+    }
+  }
+
+  /**
+   * Persist scheduler options given an sql connection and an app
+   */
+  private static void persistSchedulerOptions(DSLContext db, App app, int appSeqId)
+  {
+    var schedulerOptions = app.getSchedulerOptions();
+    if (schedulerOptions == null || schedulerOptions.isEmpty()) return;
+
+    for (AppArg schedulerOption : schedulerOptions) {
+      String valStr = "";
+      if (schedulerOption.getValue() != null ) valStr = schedulerOption.getValue();
+      String[] kvPairs = EMPTY_STR_ARRAY;
+      if (schedulerOption.getMetaKeyValuePairs() != null ) kvPairs = schedulerOption.getMetaKeyValuePairs();
+      db.insertInto(SCHEDULER_OPTIONS).set(SCHEDULER_OPTIONS.APP_SEQ_ID, appSeqId)
+              .set(SCHEDULER_OPTIONS.ARG_VAL, valStr)
+              .set(SCHEDULER_OPTIONS.META_NAME, schedulerOption.getMetaName())
+              .set(SCHEDULER_OPTIONS.META_DESCRIPTION, schedulerOption.getMetaDescription())
+              .set(SCHEDULER_OPTIONS.META_REQUIRED, schedulerOption.isMetaRequired())
+              .set(SCHEDULER_OPTIONS.META_KEY_VALUE_PAIRS, kvPairs)
+              .execute();
+    }
+  }
+
 //  /**
-//   * Persist job capabilities given an sql connection and an app
+//   * Persist notification subscriptions given an sql connection and an app
 //   */
-//  private static void persistJobCapabilities(DSLContext db, App app, int appId)
+//  private static void persistNotificationSubscriptions(DSLContext db, App app, int appSeqId)
 //  {
-//    var jobCapabilities = app.getJobCapabilities();
-//    if (jobCapabilities == null || jobCapabilities.isEmpty()) return;
+//    var notificationSubscriptions = app.getNotificationSubscriptions();
+//    if (notificationSubscriptions == null || notificationSubscriptions.isEmpty()) return;
 //
-//    for (Capability cap : jobCapabilities) {
-//      String valStr = "";
-//      if (cap.getValue() != null ) valStr = cap.getValue();
-//      db.insertInto(CAPABILITIES).set(CAPABILITIES.APP_ID, appId)
-//              .set(CAPABILITIES.CATEGORY, cap.getCategory())
-//              .set(CAPABILITIES.NAME, cap.getName())
-//              .set(CAPABILITIES.VALUE, valStr)
+//    for (NotificationSubscription notificationSubscription : notificationSubscriptions) {
+//      String nameStr = "";
+//      if (notificationSubscription.getMetaName() != null ) nameStr = fileInput.getMetaName();
+//      db.insertInto(FILE_INPUTS).set(FILE_INPUTS.APP_SEQ_ID, appSeqId)
+//              .set(FILE_INPUTS.SOURCE_URL, fileInput.getSourceUrl())
+//              .set(FILE_INPUTS.TARGET_PATH, fileInput.getTargetPath())
+//              .set(FILE_INPUTS.IN_PLACE, fileInput.isInPlace())
+//              .set(FILE_INPUTS.META_NAME, nameStr)
+//              .set(FILE_INPUTS.META_DESCRIPTION, fileInput.getMetaDescription())
+//              .set(FILE_INPUTS.META_REQUIRED, fileInput.isMetaRequired())
+//              .set(FILE_INPUTS.META_KEY_VALUE_PAIRS, fileInput.getMetaKeyValuePairs())
 //              .execute();
 //    }
 //  }
-//
-//  /**
-//   * Get capabilities for an app from an auxiliary table
-//   * @param db - DB connection
-//   * @param appId - app
-//   * @return list of capabilities
-//   */
-//  private static List<Capability> retrieveJobCaps(DSLContext db, int appId)
-//  {
-//    List<Capability> capRecords = db.selectFrom(CAPABILITIES).where(CAPABILITIES.APP_ID.eq(appId)).fetchInto(Capability.class);
-//    return capRecords;
-//  }
+
+  /**
+   * Get file inputs for an app from an auxiliary table
+   * @param db - DB connection
+   * @param appSeqId - app
+   * @return list of file inputs
+   */
+  private static List<FileInput> retrieveFileInputs(DSLContext db, int appSeqId)
+  {
+    List<FileInput> fileInputs = db.selectFrom(FILE_INPUTS).where(FILE_INPUTS.APP_SEQ_ID.eq(appSeqId)).fetchInto(FileInput.class);
+    return fileInputs;
+  }
+
+  /**
+   * Get app args for an app from an auxiliary table
+   * @param db - DB connection
+   * @param appSeqId - app
+   * @return list of app args
+   */
+  private static List<AppArg> retrieveAppArgs(DSLContext db, int appSeqId)
+  {
+    List<AppArg> appArgs =
+            db.selectFrom(APP_ARGS).where(APP_ARGS.APP_SEQ_ID.eq(appSeqId)).fetchInto(AppArg.class);
+    return appArgs;
+  }
+
+  /**
+   * Get container args for an app from an auxiliary table
+   * @param db - DB connection
+   * @param appSeqId - app
+   * @return list of container args
+   */
+  private static List<AppArg> retrieveContainerArgs(DSLContext db, int appSeqId)
+  {
+    List<AppArg> containerArgs =
+            db.selectFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_SEQ_ID.eq(appSeqId)).fetchInto(AppArg.class);
+    return containerArgs;
+  }
+
+  /**
+   * Get scheduler options for an app from an auxiliary table
+   * @param db - DB connection
+   * @param appSeqId - app
+   * @return list of scheduler options
+   */
+  private static List<AppArg> retrieveSchedulerOptions(DSLContext db, int appSeqId)
+  {
+    List<AppArg> schedulerOptions =
+            db.selectFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_SEQ_ID.eq(appSeqId)).fetchInto(AppArg.class);
+    return schedulerOptions;
+  }
 
   /**
    * Add searchList to where condition. All conditions are joined using AND

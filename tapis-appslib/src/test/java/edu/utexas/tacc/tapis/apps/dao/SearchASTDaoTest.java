@@ -86,15 +86,15 @@ public class SearchASTDaoTest
     // Cleanup anything leftover from previous failed run
     teardown();
 
-// //    Vary port # for checking numeric relational searches
-//    for (int i = 0; i < numApps; i++) { apps[i].setPort(i+1); }
+ //    Vary maxJobs for checking numeric relational searches
+    for (int i = 0; i < numApps; i++) { apps[i].setMaxJobs(i+1); }
     // For half the apps change the owner
     for (int i = 0; i < numApps/2; i++) { apps[i].setOwner(ownerUser2); }
 
     // For one app update description to have some special characters. 7 special chars in value: ,()~*!\
     //   and update archiveLocalDir for testing an escaped comma in a list value
     apps[numApps-1].setDescription(specialChar7Str);
-//    apps[numApps-1].setJobLocalArchiveDir(escapedCommanInListValue);
+    apps[numApps-1].setRuntimeVersion(escapedCommanInListValue);
 
     // Create all the apps in the dB using the in-memory objects, recording start and end times
     createBegin = TapisUtils.getUTCTimeNow();
@@ -131,85 +131,85 @@ public class SearchASTDaoTest
     String app0Name = app0.getId();
     String nameList = "noSuchName1,noSuchName2," + app0Name + ",noSuchName3";
     // Create all input and validation data for tests
-    // NOTE: Some cases require "name LIKE " + appNameLikeAll in the list of conditions since maven runs the tests in
+    // NOTE: Some cases require "id LIKE " + appNameLikeAll in the list of conditions since maven runs the tests in
     //       parallel and not all attribute names are unique across integration tests
     class CaseData {public final int count; public final String sqlSearchStr; CaseData(int c, String s) { count = c; sqlSearchStr = s; }}
     var validCaseInputs = new HashMap<Integer, CaseData>();
     // Test basic types and operators
-    validCaseInputs.put( 1,new CaseData(1, "name = " + app0Name)); // 1 has specific name
-//    validCaseInputs.put( 2,new CaseData(1, "description = " + app0.getDescription())); // TODO handle underscore character properly. how?
-//    validCaseInputs.put( 3,new CaseData(1, "host = " + app0.getHost()));
-//    validCaseInputs.put( 4,new CaseData(1, "bucket_name = " + app0.getBucketName()));
-////    validCaseInputs.put( 5,new CaseData(1, "root_dir = " + app0.getRootDir())); // TODO underscore
-//    validCaseInputs.put( 6,new CaseData(1, "job_local_working_dir = " + app0.getJobLocalWorkingDir()));
-//    validCaseInputs.put( 7,new CaseData(1, "job_local_archive_dir = " + app0.getJobLocalArchiveDir()));
-//    validCaseInputs.put( 8,new CaseData(1, "job_remote_archive_system = " + app0.getJobRemoteArchiveSystem()));
-//    validCaseInputs.put( 9,new CaseData(1, "job_remote_archive_dir = " + app0.getJobRemoteArchiveDir()));
-    validCaseInputs.put(10,new CaseData(numApps/2, "name LIKE " + appNameLikeAll + " AND owner = " + sq(ownerUser)));  // Half owned by one user
-    validCaseInputs.put(11,new CaseData(numApps/2, "name LIKE " + appNameLikeAll + " AND owner = " + sq(ownerUser2))); // and half owned by another
-    validCaseInputs.put(12,new CaseData(numApps, "name LIKE " + appNameLikeAll + " AND enabled = true"));  // All are enabled
-    validCaseInputs.put(13,new CaseData(numApps, "name LIKE " + appNameLikeAll + " AND deleted = false")); // none are deleted
-    validCaseInputs.put(14,new CaseData(numApps, "name LIKE " + appNameLikeAll + " AND deleted <> true")); // none are deleted
-    validCaseInputs.put(15,new CaseData(0, "name LIKE " + appNameLikeAll + " AND deleted = true"));           // none are deleted
-    validCaseInputs.put(16,new CaseData(1, "name LIKE " + sq(app0Name)));
-    validCaseInputs.put(17,new CaseData(0, "name LIKE 'NOSUCHAPPxFM2c29bc8RpKWeE2sht7aZrJzQf3s'"));
-    validCaseInputs.put(18,new CaseData(numApps, "name LIKE " + appNameLikeAll));
+    validCaseInputs.put( 1,new CaseData(1, "id = " + app0Name)); // 1 has specific name
+    validCaseInputs.put( 2,new CaseData(1, "version = " + sq(app0.getVersion())));
+    validCaseInputs.put( 3,new CaseData(1, "description = " + sq(app0.getDescription())));
+    validCaseInputs.put( 4,new CaseData(1, "runtime_version = " + sq(app0.getRuntimeVersion())));
+    validCaseInputs.put( 5,new CaseData(1, "container_image = " + sq(app0.getContainerImage())));
+    validCaseInputs.put( 6,new CaseData(1, "exec_system_id = " + sq(app0.getExecSystemId())));
+    validCaseInputs.put( 7,new CaseData(1, "exec_system_exec_dir = " + sq(app0.getExecSystemExecDir())));
+    validCaseInputs.put( 8,new CaseData(1, "exec_system_input_dir = " + app0.getExecSystemInputDir()));
+    validCaseInputs.put( 9,new CaseData(1, "exec_system_output_dir = " + app0.getExecSystemOutputDir()));
+    validCaseInputs.put(10,new CaseData(numApps/2, "id LIKE " + appNameLikeAll + " AND owner = " + sq(ownerUser)));  // Half owned by one user
+    validCaseInputs.put(11,new CaseData(numApps/2, "id LIKE " + appNameLikeAll + " AND owner = " + sq(ownerUser2))); // and half owned by another
+    validCaseInputs.put(12,new CaseData(numApps, "id LIKE " + appNameLikeAll + " AND enabled = true"));  // All are enabled
+    validCaseInputs.put(13,new CaseData(numApps, "id LIKE " + appNameLikeAll + " AND deleted = false")); // none are deleted
+    validCaseInputs.put(14,new CaseData(numApps, "id LIKE " + appNameLikeAll + " AND deleted <> true")); // none are deleted
+    validCaseInputs.put(15,new CaseData(0, "id LIKE " + appNameLikeAll + " AND deleted = true"));        // none are deleted
+    validCaseInputs.put(16,new CaseData(1, "id LIKE " + sq(app0Name)));
+    validCaseInputs.put(17,new CaseData(0, "id LIKE 'NOSUCHAPPxFM2c29bc8RpKWeE2sht7aZrJzQf3s'"));
+    validCaseInputs.put(18,new CaseData(numApps, "id LIKE " + appNameLikeAll));
 // TODO - continue
-//    validCaseInputs.put(19,new CaseData(numApps-1, "name LIKE " + appNameLikeAll + " AND name NLIKE " + app0Name)); // TODO support NLIKE
-//    validCaseInputs.put(20,new CaseData(1, "name LIKE " + appNameLikeAll + " AND name IN " + nameList)); // TODO
-//    validCaseInputs.put(21,new CaseData(numApps-1, "name LIKE " + appNameLikeAll, "name.nin." + nameList));
-//    validCaseInputs.put(22,new CaseData(numApps, "name LIKE " + appNameLikeAll, "app_type = LINUX"));
-//    validCaseInputs.put(23,new CaseData(numApps/2, "name LIKE " + appNameLikeAll, "app_type = LINUX","owner <> " + sq(ownerUser2)));
+//    validCaseInputs.put(19,new CaseData(numApps-1, "id LIKE " + appNameLikeAll + " AND id NLIKE " + app0Name)); // TODO support NLIKE
+//    validCaseInputs.put(20,new CaseData(1, "id LIKE " + appNameLikeAll + " AND id IN " + nameList)); // TODO
+//    validCaseInputs.put(21,new CaseData(numApps-1, "id LIKE " + appNameLikeAll, "name.nin." + nameList));
+//    validCaseInputs.put(22,new CaseData(numApps, "id LIKE " + appNameLikeAll, "app_type = LINUX"));
+//    validCaseInputs.put(23,new CaseData(numApps/2, "id LIKE " + appNameLikeAll, "app_type = LINUX","owner <> " + sq(ownerUser2)));
 //    // Test numeric relational
-//    validCaseInputs.put(50,new CaseData(numApps/2, "name LIKE " + appNameLikeAll, "port.between.1," + numApps/2));
-//    validCaseInputs.put(51,new CaseData(numApps/2-1, "name LIKE " + appNameLikeAll, "port.between.2," + numApps/2));
-//    validCaseInputs.put(52,new CaseData(numApps/2, "name LIKE " + appNameLikeAll, "port.nbetween.1," + numApps/2));
-//    validCaseInputs.put(53,new CaseData(13, "name LIKE " + appNameLikeAll, "enabled = true","port.lte.13"));
-//    validCaseInputs.put(54,new CaseData(5, "name LIKE " + appNameLikeAll,"enabled = true","port.gt.1","port.lt.7"));
+//    validCaseInputs.put(50,new CaseData(numApps/2, "id LIKE " + appNameLikeAll, "max_jobs.between.1," + numApps/2));
+//    validCaseInputs.put(51,new CaseData(numApps/2-1, "id LIKE " + appNameLikeAll, "max_jobs.between.2," + numApps/2));
+//    validCaseInputs.put(52,new CaseData(numApps/2, "id LIKE " + appNameLikeAll, "max_jobs.nbetween.1," + numApps/2));
+//    validCaseInputs.put(53,new CaseData(13, "id LIKE " + appNameLikeAll, "enabled = true","max_jobs.lte.13"));
+//    validCaseInputs.put(54,new CaseData(5, "id LIKE " + appNameLikeAll,"enabled = true","max_jobs.gt.1","max_jobs.lt.7"));
 //    // Test char relational
-//    validCaseInputs.put(70,new CaseData(1, "name LIKE " + appNameLikeAll,"host.lt."+hostName1));
-//    validCaseInputs.put(71,new CaseData(numApps-8, "name LIKE " + appNameLikeAll,"enabled = true","host.gt."+hostName7));
-//    validCaseInputs.put(72,new CaseData(5, "name LIKE " + appNameLikeAll,"host.gt."+hostName1,"host.lt."+hostName7));
-//    validCaseInputs.put(73,new CaseData(0, "name LIKE " + appNameLikeAll,"host.lt."+hostName1,"host.gt."+hostName7));
-//    validCaseInputs.put(74,new CaseData(7, "name LIKE " + appNameLikeAll,"host.between."+hostName1+","+hostName7));
-//    validCaseInputs.put(75,new CaseData(numApps-7, "name LIKE " + appNameLikeAll,"host.nbetween."+hostName1+","+hostName7));
+//    validCaseInputs.put(70,new CaseData(1, "id LIKE " + appNameLikeAll,"host.lt."+hostName1));
+//    validCaseInputs.put(71,new CaseData(numApps-8, "id LIKE " + appNameLikeAll,"enabled = true","host.gt."+hostName7));
+//    validCaseInputs.put(72,new CaseData(5, "id LIKE " + appNameLikeAll,"host.gt."+hostName1,"host.lt."+hostName7));
+//    validCaseInputs.put(73,new CaseData(0, "id LIKE " + appNameLikeAll,"host.lt."+hostName1,"host.gt."+hostName7));
+//    validCaseInputs.put(74,new CaseData(7, "id LIKE " + appNameLikeAll,"host.between."+hostName1+","+hostName7));
+//    validCaseInputs.put(75,new CaseData(numApps-7, "id LIKE " + appNameLikeAll,"host.nbetween."+hostName1+","+hostName7));
 //    // Test timestamp relational
-//    validCaseInputs.put(90,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.gt." + longPast1));
-//    validCaseInputs.put(91,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture1));
-//    validCaseInputs.put(92,new CaseData(0, "name LIKE " + appNameLikeAll, "created.lte." + longPast1));
-//    validCaseInputs.put(93,new CaseData(0, "name LIKE " + appNameLikeAll, "created.gte." + farFuture1));
-//    validCaseInputs.put(94,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.between." + longPast1 + "," + farFuture1));
-//    validCaseInputs.put(95,new CaseData(0, "name LIKE " + appNameLikeAll, "created.nbetween." + longPast1 + "," + farFuture1));
+//    validCaseInputs.put(90,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.gt." + longPast1));
+//    validCaseInputs.put(91,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture1));
+//    validCaseInputs.put(92,new CaseData(0, "id LIKE " + appNameLikeAll, "created.lte." + longPast1));
+//    validCaseInputs.put(93,new CaseData(0, "id LIKE " + appNameLikeAll, "created.gte." + farFuture1));
+//    validCaseInputs.put(94,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.between." + longPast1 + "," + farFuture1));
+//    validCaseInputs.put(95,new CaseData(0, "id LIKE " + appNameLikeAll, "created.nbetween." + longPast1 + "," + farFuture1));
 //    // Variations of timestamp format
-//    validCaseInputs.put(96,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture2));
-//    validCaseInputs.put(97,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture3));
-//    validCaseInputs.put(98,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture4));
-//    validCaseInputs.put(99,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture5));
-//    validCaseInputs.put(100,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture6));
-//    validCaseInputs.put(101,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture7));
-//    validCaseInputs.put(102,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture8));
-//    validCaseInputs.put(103,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture9));
-//    validCaseInputs.put(104,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture10));
-//    validCaseInputs.put(105,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture11));
-//    validCaseInputs.put(106,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture12));
-//    validCaseInputs.put(107,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture13));
-//    validCaseInputs.put(108,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture14));
-//    validCaseInputs.put(109,new CaseData(numApps, "name LIKE " + appNameLikeAll, "created.lt." + farFuture15));
+//    validCaseInputs.put(96,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture2));
+//    validCaseInputs.put(97,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture3));
+//    validCaseInputs.put(98,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture4));
+//    validCaseInputs.put(99,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture5));
+//    validCaseInputs.put(100,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture6));
+//    validCaseInputs.put(101,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture7));
+//    validCaseInputs.put(102,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture8));
+//    validCaseInputs.put(103,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture9));
+//    validCaseInputs.put(104,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture10));
+//    validCaseInputs.put(105,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture11));
+//    validCaseInputs.put(106,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture12));
+//    validCaseInputs.put(107,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture13));
+//    validCaseInputs.put(108,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture14));
+//    validCaseInputs.put(109,new CaseData(numApps, "id LIKE " + appNameLikeAll, "created.lt." + farFuture15));
 //    // Test wildcards
 //    validCaseInputs.put(130,new CaseData(numApps, "enabled = true","host LIKE host" + testKey + "*"));
-//    validCaseInputs.put(131,new CaseData(0, "name LIKE " + appNameLikeAll, "enabled = true","host NLIKE host" + testKey + "*"));
-//    validCaseInputs.put(132,new CaseData(10, "name LIKE " + appNameLikeAll, "enabled = true","host LIKE host" + testKey + "_00!"));
-//    validCaseInputs.put(133,new CaseData(10, "name LIKE " + appNameLikeAll, "enabled = true","host NLIKE host" + testKey + "_00!"));
+//    validCaseInputs.put(131,new CaseData(0, "id LIKE " + appNameLikeAll, "enabled = true","host NLIKE host" + testKey + "*"));
+//    validCaseInputs.put(132,new CaseData(10, "id LIKE " + appNameLikeAll, "enabled = true","host LIKE host" + testKey + "_00!"));
+//    validCaseInputs.put(133,new CaseData(10, "id LIKE " + appNameLikeAll, "enabled = true","host NLIKE host" + testKey + "_00!"));
 //    // Test that underscore and % get escaped as needed before being used as SQL
-//    validCaseInputs.put(150,new CaseData(0, "name LIKE " + appNameLikeAll, "host LIKE host" + testKey + "_00_"));
-//    validCaseInputs.put(151,new CaseData(0, "name LIKE " + appNameLikeAll, "host LIKE host" + testKey + "_00%"));
+//    validCaseInputs.put(150,new CaseData(0, "id LIKE " + appNameLikeAll, "host LIKE host" + testKey + "_00_"));
+//    validCaseInputs.put(151,new CaseData(0, "id LIKE " + appNameLikeAll, "host LIKE host" + testKey + "_00%"));
 //    // Check various special characters in description. 7 special chars in value: ,()~*!\
-//    validCaseInputs.put(171,new CaseData(1, "name LIKE " + appNameLikeAll, "description LIKE " + specialChar7LikeSearchStr));
-//    validCaseInputs.put(172,new CaseData(numApps-1, "name LIKE " + appNameLikeAll, "description NLIKE " + specialChar7LikeSearchStr));
-//    validCaseInputs.put(173,new CaseData(1, "name LIKE " + appNameLikeAll, "description = " + specialChar7EqSearchStr));
-//    validCaseInputs.put(174,new CaseData(numApps-1, "name LIKE " + appNameLikeAll, "description <> " + specialChar7EqSearchStr));
+//    validCaseInputs.put(171,new CaseData(1, "id LIKE " + appNameLikeAll, "description LIKE " + specialChar7LikeSearchStr));
+//    validCaseInputs.put(172,new CaseData(numApps-1, "id LIKE " + appNameLikeAll, "description NLIKE " + specialChar7LikeSearchStr));
+//    validCaseInputs.put(173,new CaseData(1, "id LIKE " + appNameLikeAll, "description = " + specialChar7EqSearchStr));
+//    validCaseInputs.put(174,new CaseData(numApps-1, "id LIKE " + appNameLikeAll, "description <> " + specialChar7EqSearchStr));
 //    // Escaped comma in a list of values
-//    validCaseInputs.put(200,new CaseData(1, "name LIKE " + appNameLikeAll, "job_local_archive_dir IN " + "noSuchDir," + escapedCommanInListValue));
+//    validCaseInputs.put(200,new CaseData(1, "id LIKE " + appNameLikeAll, "job_local_archive_dir IN " + "noSuchDir," + escapedCommanInListValue));
 
     // Iterate over valid cases
     for (Map.Entry<Integer,CaseData> item : validCaseInputs.entrySet())

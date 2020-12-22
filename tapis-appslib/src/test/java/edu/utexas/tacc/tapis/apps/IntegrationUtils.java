@@ -11,6 +11,7 @@ import edu.utexas.tacc.tapis.apps.model.App.AppType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.NotificationMechanism;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,18 +31,22 @@ public final class IntegrationUtils
   public static final boolean enabledTrue = true;
   public static final boolean enabledFalse = false;
   public static final boolean strictFileInputsFalse = false;
+  public static final boolean inPlaceTrue = true;
+  public static final boolean inPlaceFalse = false;
+  public static final boolean metaRequiredTrue = true;
+  public static final boolean metaRequiredFalse = false;
   public static final Runtime runtime = Runtime.DOCKER;
   public static final String runtimeVersion = "0.0.1";
-  public static final String containerImage = "containerImage1";
+  public static final String containerImage = "containerImage";
   public static final boolean dynamicExecSystem = true;
   public static final String[] execSystemConstraints = {"Constraint1 AND", "Constraint2"};
-  public static final String execSystemId = "execSystem1";
-  public static final String execSystemExecDir = "execSystemExecDir1";
-  public static final String execSystemInputDir = "execSystemInputDir1";
-  public static final String execSystemOutputDir = "execSystemOutputDir1";
-  public static final String execSystemLogicalQueue = "execSystemLogicalQueue1";
-  public static final String archiveSystemId = "archiveSystem1";
-  public static final String archiveSystemDir = "archiveSystemDir1";
+  public static final String execSystemId = "execSystem";
+  public static final String execSystemExecDir = "execSystemExecDir";
+  public static final String execSystemInputDir = "execSystemInputDir";
+  public static final String execSystemOutputDir = "execSystemOutputDir";
+  public static final String execSystemLogicalQueue = "execSystemLogicalQueue";
+  public static final String archiveSystemId = "archiveSystem";
+  public static final String archiveSystemDir = "archiveSystemDir";
   public static final boolean archiveOnAppError = true;
   public static final String jobDescription = "job description 1";
   public static final int maxJobs = 1;
@@ -50,35 +55,47 @@ public final class IntegrationUtils
   public static final int coresPerNode = 1;
   public static final int memoryMb = 1;
   public static final int maxMinutes = 1;
+  public static final String importRefIdNull = null;
+  public static final boolean deletedFalse = false;
+  public static final Instant createdNull = null;
+  public static final Instant updatedNull = null;
 
-
+  public static final String[] metaKVPairs = {"key1=val1", "key2=val2"};
   public static final String[] envVariables = {"key1=val1", "key2=val2"};
   public static final String[] archiveIncludes = {"/include1", "/include2"};
   public static final String[] archiveExcludes = {"/exclude1", "/exclude2"};
 
   public static final String[] jobTags = {"jobtag1", "jobtag2"};
   public static final String[] tags = {"value1", "value2", "a",
-    "a long tag with spaces and numbers (1 3 2) and special characters [_ $ - & * % @ + = ! ^ ? < > , . ( ) { } / \\ | ]. Backslashes must be escaped."};
-  public static final Object notes = TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj1\", \"testdata\": \"abc1\"}", JsonObject.class);
+            "a long tag with spaces and numbers (1 3 2) and special characters " +
+            " [_ $ - & * % @ + = ! ^ ? < > , . ( ) { } / \\ | ]. Backslashes must be escaped."};
+  public static final Object notes =
+          TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj1\", \"testdata\": \"abc1\"}", JsonObject.class);
   public static final JsonObject notesObj = (JsonObject) notes;
   public static final String scrubbedJson = "{}";
 
-  public static final FileInput finA1 = new FileInput("/srcA1", "/targetA1", true, "finA1", "File input A1", true, null);
-  public static final FileInput finB1 = new FileInput("/srcB1", "/targetB1", false, "finB1", "File input B1", false, null);
+  public static final FileInput finA1 = new FileInput("/srcA1", "/targetA1", inPlaceTrue, "finA1", "File input A1",
+                                                      metaRequiredTrue, metaKVPairs);
+  public static final FileInput finB1 = new FileInput("/srcB1", "/targetB1", inPlaceFalse, "finB1", "File input B1",
+                                                      metaRequiredFalse, metaKVPairs);
   public static final List<FileInput> finList1 = new ArrayList<>(List.of(finA1, finB1));
-  public static final NotificationSubscription notifA1 = new NotificationSubscription("filterA1", NotificationMechanism.WEBHOOK,
-                                                                                      "webhookUrlA1", "emailAddressA1");
-  public static final NotificationSubscription notifB1 = new NotificationSubscription("filterB1", NotificationMechanism.EMAIL,
-                                                                                      "webhookUrlB1", "emailAddressB1");
+  public static final NotificationSubscription notifA1 =
+          new NotificationSubscription("filterA1", NotificationMechanism.WEBHOOK, "webhookUrlA1", "emailAddressA1");
+  public static final NotificationSubscription notifB1 =
+          new NotificationSubscription("filterB1", NotificationMechanism.EMAIL, "webhookUrlB1", "emailAddressB1");
   public static final List<NotificationSubscription> notifList1 = new ArrayList<>(List.of(notifA1, notifB1));
-  public static final AppArg appArgA1 = new AppArg("valueA1", "appArgA1", "App arg A1", true, null);
-  public static final AppArg appArgB1 = new AppArg("valueB1", "appArgB1", "App arg B1", false, null);
+  public static final AppArg appArgA1 = new AppArg("valueA1", "appArgA1", "App arg A1", metaRequiredTrue, metaKVPairs);
+  public static final AppArg appArgB1 = new AppArg("valueB1", "appArgB1", "App arg B1", metaRequiredFalse, metaKVPairs);
   public static final List<AppArg> appArgList1 = new ArrayList<>(List.of(appArgA1, appArgB1));
-  public static final AppArg containerArgA1 = new AppArg("valueA1", "containerArgA1", "Container arg A1", true, null);
-  public static final AppArg containerArgB1 = new AppArg("valueB1", "containerArgB1", "Container arg B1", false, null);
+  public static final AppArg containerArgA1 = new AppArg("valueA1", "containerArgA1", "Container arg A1",
+                                                          metaRequiredTrue, metaKVPairs);
+  public static final AppArg containerArgB1 = new AppArg("valueB1", "containerArgB1", "Container arg B1",
+                                                         metaRequiredFalse, metaKVPairs);
   public static final List<AppArg> containerArgList1 = new ArrayList<>(List.of(containerArgA1, containerArgB1));
-  public static final AppArg schedulerOptionA1 = new AppArg("valueA1", "schedulerOptionA1", "Scheduler option A1", true, null);
-  public static final AppArg schedulerOptionB1 = new AppArg("valueB1", "schedulerOptionB1", "Scheduler option B1", false, null);
+  public static final AppArg schedulerOptionA1 = new AppArg("valueA1", "schedulerOptionA1", "Scheduler option A1",
+                                                            metaRequiredTrue, metaKVPairs);
+  public static final AppArg schedulerOptionB1 = new AppArg("valueB1", "schedulerOptionB1", "Scheduler option B1",
+                                                            metaRequiredFalse, metaKVPairs);
   public static final List<AppArg> schedulerOptionList1 = new ArrayList<>(List.of(schedulerOptionA1, schedulerOptionB1));
 
   /**
@@ -98,12 +115,14 @@ public final class IntegrationUtils
       String suffix = key + "_" + String.format("%03d", i+1);
       String appId = appIdPrefix + "_" + suffix;
       // Constructor initializes all attributes except for JobCapabilities
-      apps[i] = new App(-1, tenantName, appId, appVersion, "description "+suffix, AppType.BATCH, ownerUser, enabledTrue,
-                        runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, strictFileInputsFalse, jobDescription, dynamicExecSystem,
-                        execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
-                        execSystemLogicalQueue, archiveSystemId, archiveSystemDir, archiveOnAppError,
-                        nodeCount, coresPerNode, memoryMb, maxMinutes, envVariables, archiveIncludes, archiveExcludes, jobTags,
-                        tags, notes, null, false, null, null);
+      apps[i] = new App(-1, tenantName, appId, appVersion+suffix, "description "+suffix, AppType.BATCH, ownerUser, enabledTrue,
+                        runtime, runtimeVersion+suffix, containerImage+suffix, maxJobs, maxJobsPerUser, strictFileInputsFalse,
+                        jobDescription+suffix, dynamicExecSystem,
+                        execSystemConstraints, execSystemId+suffix, execSystemExecDir+suffix, execSystemInputDir+suffix,
+                        execSystemOutputDir+suffix, execSystemLogicalQueue+suffix, archiveSystemId+suffix,
+                        archiveSystemDir+suffix, archiveOnAppError, nodeCount, coresPerNode, memoryMb, maxMinutes,
+                        envVariables, archiveIncludes, archiveExcludes, jobTags,
+                        tags, notes, importRefIdNull, deletedFalse, createdNull, updatedNull);
       // Aux table data
       apps[i].setFileInputs(finList1);
       apps[i].setNotifcationSubscriptions(notifList1);

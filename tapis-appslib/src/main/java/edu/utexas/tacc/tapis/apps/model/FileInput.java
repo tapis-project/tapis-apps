@@ -76,6 +76,7 @@ public final class FileInput
   public String getMetaName() { return metaName; }
   public String getMetaDescription() { return metaDescription; }
   public boolean isMetaRequired() { return metaRequired; }
+  public String[] getMetaKeyValuePairs() { return metaKeyValuePairs; }
 
   @Override
   public String toString() {return TapisUtils.toString(this);}

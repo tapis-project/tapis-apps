@@ -1,6 +1,7 @@
 package edu.utexas.tacc.tapis.apps.dao;
 
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
@@ -11,7 +12,6 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -172,13 +172,13 @@ public class AppsDaoTest
     Assert.assertEquals(obj.get("testdata").getAsString(), notesObj.get("testdata").getAsString());
 
     // Verify data in aux tables: file_inputs, notification_subscriptions, app_args, container_args, scheduler_options
-    // ===========================
+    // ===============================================================================================
 
     // Verify file inputs
     List<FileInput> origFileInputs = app0.getFileInputs();
     List<FileInput> tmpInputs = tmpApp.getFileInputs();
-    Assert.assertNotNull(origFileInputs, "Orig FileInputs was null");
-    Assert.assertNotNull(tmpInputs, "Fetched FileInputs was null");
+    Assert.assertNotNull(origFileInputs, "Orig fileInputs was null");
+    Assert.assertNotNull(tmpInputs, "Fetched fileInputs was null");
     Assert.assertEquals(tmpInputs.size(), origFileInputs.size());
     var metaNamesFound = new ArrayList<String>();
     for (FileInput itemFound : tmpInputs) {metaNamesFound.add(itemFound.getMetaName());}
@@ -191,8 +191,45 @@ public class AppsDaoTest
     // Verify notification subscriptions
 
     // Verify app args
+    List<AppArg> origArgs = app0.getAppArgs();
+    List<AppArg> tmpArgs = tmpApp.getAppArgs();
+    Assert.assertNotNull(origArgs, "Orig appArgs was null");
+    Assert.assertNotNull(tmpArgs, "Fetched appArgs was null");
+    Assert.assertEquals(tmpArgs.size(), origArgs.size());
+    var argValuesFound = new ArrayList<String>();
+    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getValue());}
+    for (AppArg itemSeedItem : origArgs)
+    {
+      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getValue()),
+              "List of appArgs did not contain an item with value: " + itemSeedItem.getValue());
+    }
     // Verify container args
+    origArgs = app0.getContainerArgs();
+    tmpArgs = tmpApp.getAppArgs();
+    Assert.assertNotNull(origArgs, "Orig containerArgs was null");
+    Assert.assertNotNull(tmpArgs, "Fetched containerArgs was null");
+    Assert.assertEquals(tmpArgs.size(), origArgs.size());
+    argValuesFound = new ArrayList<String>();
+    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getValue());}
+    for (AppArg itemSeedItem : origArgs)
+    {
+      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getValue()),
+              "List of containerArgs did not contain an item with value: " + itemSeedItem.getValue());
+    }
+
     // Verify scheduler options
+    origArgs = app0.getSchedulerOptions();
+    tmpArgs = tmpApp.getSchedulerOptions();
+    Assert.assertNotNull(origArgs, "Orig schedulerOptions was null");
+    Assert.assertNotNull(tmpArgs, "Fetched schedulerOptions was null");
+    Assert.assertEquals(tmpArgs.size(), origArgs.size());
+    argValuesFound = new ArrayList<String>();
+    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getValue());}
+    for (AppArg itemSeedItem : origArgs)
+    {
+      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getValue()),
+              "List of schedulerOptions did not contain an item with value: " + itemSeedItem.getValue());
+    }
 
   }
 
@@ -286,22 +323,6 @@ public class AppsDaoTest
     dao.hardDeleteApp(app0.getTenant(), app0.getId());
     Assert.assertFalse(dao.checkForApp(app0.getTenant(), app0.getId(), true),"App not deleted. App name: " + app0.getId());
   }
-
-//  // Test create and get for a single item with no transfer methods supported and unusual port settings
-//  @Test
-//  public void testNoTxfr() throws Exception
-//  {
-//    App app0 = apps[10];
-//    int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
-//    Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
-//    App tmpApp = dao.getApp(app0.getTenant(), app0.getId());
-//    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
-//    System.out.println("Found item: " + app0.getId());
-//    Assert.assertEquals(tmpApp.getId(), app0.getId());
-//    Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
-//    Assert.assertEquals(tmpApp.getAppType().name(), app0.getAppType().name());
-//    Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
-//  }
 
   // Test behavior when app is missing, especially for cases where service layer depends on the behavior.
   //  update - throws not found exception

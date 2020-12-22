@@ -5,6 +5,8 @@ import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
+
+import static edu.utexas.tacc.tapis.shared.TapisConstants.SERVICE_NAME_APPS;
 import static edu.utexas.tacc.tapis.shared.TapisConstants.SERVICE_NAME_SYSTEMS;
 
 import org.glassfish.hk2.api.Factory;
@@ -25,7 +27,7 @@ public class AppsServiceContextFactory implements Factory<ServiceContext>
     String tokenSvcUrl = null;
     RuntimeParameters runParms = RuntimeParameters.getInstance();
     try {
-      svcContext.initServiceJWT(runParms.getSiteId(), SERVICE_NAME_SYSTEMS, runParms.getServicePassword());
+      svcContext.initServiceJWT(runParms.getSiteId(), SERVICE_NAME_APPS, runParms.getServicePassword());
       return svcContext;
     }
     catch (TapisException | TapisClientException te)

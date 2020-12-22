@@ -3,10 +3,10 @@ package edu.utexas.tacc.tapis.apps.service;
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.security.client.SKClient;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
-import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
-import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
+import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
+import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.apps.IntegrationUtils;
 import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
@@ -48,13 +48,13 @@ public class AppsServiceTest
 {
   private AppsService svc;
   private AppsServiceImpl svcImpl;
-  private AuthenticatedUser authenticatedOwnerUsr, authenticatedTestUsr0, authenticatedTestUsr1, authenticatedTestUsr2,
-          authenticatedTestUsr3, authenticatedAdminUsr, authenticatedFilesSvc;
+  private AuthenticatedUser authenticatedOwnerUsr, authenticatedTestUser0, authenticatedTestUser1, authenticatedTestUser2,
+          authenticatedTestUser3, authenticatedAdminUser9, authenticatedFilesSvc;
   // Test data
   private static final String svcName = "apps";
   private static final String siteId = "tacc";
   // TODO: Currently admin user for a tenant is hard coded to be 'testuser9'
-  private static final String adminUser = "testuser9";
+  private static final String adminUser9 = "testuser9";
   private static final String adminTenantName = "admin";
   private static final String filesSvcName = "files";
   private static final String testUser0 = "testuser0";
@@ -104,11 +104,11 @@ public class AppsServiceTest
 
     // Initialize authenticated user and service
     authenticatedOwnerUsr = new AuthenticatedUser(ownerUser, tenantName, TapisThreadContext.AccountType.user.name(), null, ownerUser, tenantName, null, null, null);
-    authenticatedAdminUsr = new AuthenticatedUser(adminUser, tenantName, TapisThreadContext.AccountType.user.name(), null, adminUser, tenantName, null, null, null);
-    authenticatedTestUsr0 = new AuthenticatedUser(testUser0, tenantName, TapisThreadContext.AccountType.user.name(), null, testUser0, tenantName, null, null, null);
-    authenticatedTestUsr1 = new AuthenticatedUser(testUser1, tenantName, TapisThreadContext.AccountType.user.name(), null, testUser1, tenantName, null, null, null);
-    authenticatedTestUsr2 = new AuthenticatedUser(testUser2, tenantName, TapisThreadContext.AccountType.user.name(), null, testUser2, tenantName, null, null, null);
-    authenticatedTestUsr3 = new AuthenticatedUser(testUser3, tenantName, TapisThreadContext.AccountType.user.name(), null, testUser3, tenantName, null, null, null);
+    authenticatedAdminUser9 = new AuthenticatedUser(adminUser9, tenantName, TapisThreadContext.AccountType.user.name(), null, adminUser9, tenantName, null, null, null);
+    authenticatedTestUser0 = new AuthenticatedUser(testUser0, tenantName, TapisThreadContext.AccountType.user.name(), null, testUser0, tenantName, null, null, null);
+    authenticatedTestUser1 = new AuthenticatedUser(testUser1, tenantName, TapisThreadContext.AccountType.user.name(), null, testUser1, tenantName, null, null, null);
+    authenticatedTestUser2 = new AuthenticatedUser(testUser2, tenantName, TapisThreadContext.AccountType.user.name(), null, testUser2, tenantName, null, null, null);
+    authenticatedTestUser3 = new AuthenticatedUser(testUser3, tenantName, TapisThreadContext.AccountType.user.name(), null, testUser3, tenantName, null, null, null);
     authenticatedFilesSvc = new AuthenticatedUser(filesSvcName, adminTenantName, TapisThreadContext.AccountType.service.name(), null, ownerUser, tenantName, null, null, null);
 
     // Cleanup anything leftover from previous failed run
@@ -131,10 +131,10 @@ public class AppsServiceTest
     //Remove all objects created by tests
     for (int i = 0; i < numApps; i++)
     {
-      svcImpl.hardDeleteApp(authenticatedAdminUsr, apps[i].getId());
+      svcImpl.hardDeleteApp(authenticatedAdminUser9, apps[i].getId());
     }
 
-    App tmpApp = svc.getApp(authenticatedAdminUsr, apps[0].getId(), false);
+    App tmpApp = svc.getApp(authenticatedAdminUser9, apps[0].getId(), false);
     Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getId());
   }
 
@@ -220,15 +220,15 @@ public class AppsServiceTest
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
     // Change owner using api
     svc.changeAppOwner(authenticatedOwnerUsr, app0.getId(), newOwnerName);
-    App tmpApp = svc.getApp(authenticatedTestUsr2, app0.getId(), false);
+    App tmpApp = svc.getApp(authenticatedTestUser2, app0.getId(), false);
     Assert.assertEquals(tmpApp.getOwner(), newOwnerName);
     // Check expected auxillary updates have happened
     // New owner should be able to retrieve permissions and have the ALL permission
-    Set<Permission> userPerms = svc.getUserPermissions(authenticatedTestUsr2, app0.getId(), newOwnerName);
+    Set<Permission> userPerms = svc.getUserPermissions(authenticatedTestUser2, app0.getId(), newOwnerName);
     Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
     Assert.assertTrue(userPerms.contains(Permission.ALL));
     // Original owner should no longer have the ALL permission
-    userPerms = svc.getUserPermissions(authenticatedTestUsr2, app0.getId(), ownerUser);
+    userPerms = svc.getUserPermissions(authenticatedTestUser2, app0.getId(), ownerUser);
     Assert.assertFalse(userPerms.contains(Permission.ALL));
   }
 
@@ -293,19 +293,19 @@ public class AppsServiceTest
     // Create 3 apps, 2 of which are owned by testUser3.
     App app0 = apps[16];//9
     String app1Name = app0.getId();
-    app0.setOwner(authenticatedTestUsr3.getName());
-    int itemId =  svc.createApp(authenticatedTestUsr3, app0, scrubbedJson);
+    app0.setOwner(authenticatedTestUser3.getName());
+    int itemId =  svc.createApp(authenticatedTestUser3, app0, scrubbedJson);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
     app0 = apps[17];//10
     String app2Name = app0.getId();
-    app0.setOwner(authenticatedTestUsr3.getName());
-    itemId =  svc.createApp(authenticatedTestUsr3, app0, scrubbedJson);
+    app0.setOwner(authenticatedTestUser3.getName());
+    itemId =  svc.createApp(authenticatedTestUser3, app0, scrubbedJson);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
     app0 = apps[18];//11
     itemId = svc.createApp(authenticatedOwnerUsr, app0, scrubbedJson);
     Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
     // When retrieving apps as testUser3 only 2 should be returned
-    List<App> apps = svc.getApps(authenticatedTestUsr3, null);
+    List<App> apps = svc.getApps(authenticatedTestUser3, null);
     System.out.println("Total number of apps retrieved: " + apps.size());
     for (App app : apps)
     {
@@ -438,7 +438,7 @@ public class AppsServiceTest
     patchApp.setTenant(tenantName);
     // CREATE - Deny user not owner/admin, deny service
     boolean pass = false;
-    try { svc.createApp(authenticatedTestUsr0, app0, scrubbedJson); }
+    try { svc.createApp(authenticatedTestUser0, app0, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -462,7 +462,7 @@ public class AppsServiceTest
 
     // READ - deny user not owner/admin and no READ or MODIFY access
     pass = false;
-    try { svc.getApp(authenticatedTestUsr0, app0.getId(), false); }
+    try { svc.getApp(authenticatedTestUser0, app0.getId(), false); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -472,7 +472,7 @@ public class AppsServiceTest
 
     // MODIFY Deny user with no READ or MODIFY, deny user with only READ, deny service
     pass = false;
-    try { svc.updateApp(authenticatedTestUsr0, patchApp, scrubbedJson); }
+    try { svc.updateApp(authenticatedTestUser0, patchApp, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -480,7 +480,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.updateApp(authenticatedTestUsr1, patchApp, scrubbedJson); }
+    try { svc.updateApp(authenticatedTestUser1, patchApp, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -498,7 +498,7 @@ public class AppsServiceTest
 
     // DELETE - deny user not owner/admin, deny service
     pass = false;
-    try { svc.softDeleteApp(authenticatedTestUsr1, app0.getId()); }
+    try { svc.softDeleteApp(authenticatedTestUser1, app0.getId()); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -516,7 +516,7 @@ public class AppsServiceTest
 
     // CHANGE_OWNER - deny user not owner/admin, deny service
     pass = false;
-    try { svc.changeAppOwner(authenticatedTestUsr1, app0.getId(), testUser2); }
+    try { svc.changeAppOwner(authenticatedTestUser1, app0.getId(), testUser2); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -534,7 +534,7 @@ public class AppsServiceTest
 
     // GET_PERMS - deny user not owner/admin and no READ or MODIFY access
     pass = false;
-    try { svc.getUserPermissions(authenticatedTestUsr0, app0.getId(), ownerUser); }
+    try { svc.getUserPermissions(authenticatedTestUser0, app0.getId(), ownerUser); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -544,7 +544,7 @@ public class AppsServiceTest
 
     // GRANT_PERMS - deny user not owner/admin, deny service
     pass = false;
-    try { svc.grantUserPermissions(authenticatedTestUsr1, app0.getId(), testUser1, testPermsREADMODIFY, scrubbedJson); }
+    try { svc.grantUserPermissions(authenticatedTestUser1, app0.getId(), testUser1, testPermsREADMODIFY, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -562,7 +562,7 @@ public class AppsServiceTest
 
     // REVOKE_PERMS - deny user not owner/admin, deny service
     pass = false;
-    try { svc.revokeUserPermissions(authenticatedTestUsr1, app0.getId(), ownerUser, testPermsREADMODIFY, scrubbedJson); }
+    try { svc.revokeUserPermissions(authenticatedTestUser1, app0.getId(), ownerUser, testPermsREADMODIFY, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -615,7 +615,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = true;
-    try { svc.getApp(authenticatedTestUsr1, app0.getId(), false); }
+    try { svc.getApp(authenticatedTestUser1, app0.getId(), false); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -623,7 +623,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = true;
-    try { svc.getApp(authenticatedTestUsr2, app0.getId(), false); }
+    try { svc.getApp(authenticatedTestUser2, app0.getId(), false); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
