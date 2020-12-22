@@ -2,10 +2,17 @@ package edu.utexas.tacc.tapis.apps;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.apps.model.AppArg;
+import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
+import edu.utexas.tacc.tapis.apps.model.App.NotificationMechanism;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * Utilities and data for integration testing
@@ -22,6 +29,7 @@ public final class IntegrationUtils
   public static final String appVersion = "0.0.1";
   public static final boolean enabledTrue = true;
   public static final boolean enabledFalse = false;
+  public static final boolean strictFileInputsFalse = false;
   public static final Runtime runtime = Runtime.DOCKER;
   public static final String runtimeVersion = "0.0.1";
   public static final String containerImage = "containerImage1";
@@ -55,11 +63,23 @@ public final class IntegrationUtils
   public static final JsonObject notesObj = (JsonObject) notes;
   public static final String scrubbedJson = "{}";
 
-//  public static final Capability capA = new Capability(Capability.Category.SCHEDULER, "Type", "Slurm");
-//  public static final Capability capB = new Capability(Capability.Category.HARDWARE, "CoresPerNode", "4");
-//  public static final Capability capC = new Capability(Capability.Category.SOFTWARE, "OpenMP", "4.5");
-//  public static final Capability capD = new Capability(Capability.Category.CONTAINER, "Singularity", null);
-//  public static final List<Capability> capList = new ArrayList<>(List.of(capA, capB, capC, capD));
+  public static final FileInput finA1 = new FileInput("/srcA1", "/targetA1", true, "finA1", "File input A1", true, null);
+  public static final FileInput finB1 = new FileInput("/srcB1", "/targetB1", false, "finB1", "File input B1", false, null);
+  public static final List<FileInput> finList1 = new ArrayList<>(List.of(finA1, finB1));
+  public static final NotificationSubscription notifA1 = new NotificationSubscription("filterA1", NotificationMechanism.WEBHOOK,
+                                                                                      "webhookUrlA1", "emailAddressA1");
+  public static final NotificationSubscription notifB1 = new NotificationSubscription("filterB1", NotificationMechanism.EMAIL,
+                                                                                      "webhookUrlB1", "emailAddressB1");
+  public static final List<NotificationSubscription> notifList1 = new ArrayList<>(List.of(notifA1, notifB1));
+  public static final AppArg appArgA1 = new AppArg("valueA1", "appArgA1", "App arg A1", true, null);
+  public static final AppArg appArgB1 = new AppArg("valueB1", "appArgB1", "App arg B1", false, null);
+  public static final List<AppArg> appArgList1 = new ArrayList<>(List.of(appArgA1, appArgB1));
+  public static final AppArg containerArgA1 = new AppArg("valueA1", "containerArgA1", "Container arg A1", true, null);
+  public static final AppArg containerArgB1 = new AppArg("valueB1", "containerArgB1", "Container arg B1", false, null);
+  public static final List<AppArg> containerArgList1 = new ArrayList<>(List.of(containerArgA1, containerArgB1));
+  public static final AppArg schedulerOptionA1 = new AppArg("valueA1", "schedulerOptionA1", "Scheduler option A1", true, null);
+  public static final AppArg schedulerOptionB1 = new AppArg("valueB1", "schedulerOptionB1", "Scheduler option B1", false, null);
+  public static final List<AppArg> schedulerOptionList1 = new ArrayList<>(List.of(schedulerOptionA1, schedulerOptionB1));
 
   /**
    * Create an array of App objects in memory
@@ -79,13 +99,17 @@ public final class IntegrationUtils
       String appId = appIdPrefix + "_" + suffix;
       // Constructor initializes all attributes except for JobCapabilities
       apps[i] = new App(-1, tenantName, appId, appVersion, "description "+suffix, AppType.BATCH, ownerUser, enabledTrue,
-                        runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, jobDescription, dynamicExecSystem,
+                        runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, strictFileInputsFalse, jobDescription, dynamicExecSystem,
                         execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
                         execSystemLogicalQueue, archiveSystemId, archiveSystemDir, archiveOnAppError,
                         nodeCount, coresPerNode, memoryMb, maxMinutes, envVariables, archiveIncludes, archiveExcludes, jobTags,
                         tags, notes, null, false, null, null);
       // Aux table data
-      //      apps[i].setFileInputs(????);
+      apps[i].setFileInputs(finList1);
+      apps[i].setNotifcationSubscriptions(notifList1);
+      apps[i].setAppArgs(appArgList1);
+      apps[i].setContainerArgs(containerArgList1);
+      apps[i].setSchedulerOptions(schedulerOptionList1);
     }
     return apps;
   }

@@ -72,6 +72,7 @@ public final class App
   private String containerImage;
   private int maxJobs;
   private int maxJobsPerUser;
+  private boolean strictFileInputs;
   // === Start jobAttributes ==========
   private String jobDescription;
   private boolean dynamicExecSystem; // Indicates if constraints are to be used
@@ -96,8 +97,8 @@ public final class App
   // === End fields in main table =============================================
 
   // Aux tables
-  private List<FileInput> fileInputs; // jobAttributes
-  // notificationSubscriptions // jobAttributes
+  private List<FileInput> fileInputs;
+  private List<NotificationSubscription> notificationSubscriptions;
   private List<AppArg> appArgs;  // parameterSet
   private List<AppArg> containerArgs; // parameterSet
   private List<AppArg> schedulerOptions; // parameterSet
@@ -139,7 +140,7 @@ public final class App
    */
   public App(int seqId1, String tenant1, String id1, String version1, String description1, AppType appType1,
              String owner1, boolean enabled1, Runtime runtime1, String runtimeVersion1,
-             String containerImage1, int maxJobs1, int maxJobsPerUser1,
+             String containerImage1, int maxJobs1, int maxJobsPerUser1, boolean strictFileInputs1,
              String jobDescription1, boolean dynamicExecSystem1, String[] execSystemConstraints1,
              String execSystemId1, String execSystemExecDir1, String execSystemInputDir1, String execSystemOutputDir1,
              String execSystemLogicalQueue1, String archiveSystemId1, String archiveSystemDir1,
@@ -161,6 +162,7 @@ public final class App
     containerImage = containerImage1;
     maxJobs = maxJobs1;
     maxJobsPerUser = maxJobsPerUser1;
+    strictFileInputs = strictFileInputs1;
     jobDescription = jobDescription1;
     dynamicExecSystem = dynamicExecSystem1;
     execSystemConstraints = (execSystemConstraints1 == null) ? null : execSystemConstraints1.clone();
@@ -209,6 +211,7 @@ public final class App
     containerImage = a.getContainerImage();
     maxJobs = a.getMaxJobs();
     maxJobsPerUser = a.getMaxJobsPerUser();
+    strictFileInputs = a.isStrictFileInputs();
     jobDescription = a.getJobDescription();
     dynamicExecSystem = a.isDynamicExecSystem();
     execSystemConstraints = (a.getExecSystemConstraints() == null) ? null : a.getExecSystemConstraints().clone();
@@ -358,11 +361,48 @@ public final class App
   public int getMaxMinutes() { return maxMinutes; }
   public App setMaxMinutes(int i) { maxMinutes = i; return this; }
 
+  public boolean isStrictFileInputs() { return strictFileInputs; }
+  public App setStrictFileInputs(boolean b) { strictFileInputs = b;  return this; }
+
   public List<FileInput> getFileInputs() {
     return (fileInputs == null) ? null : new ArrayList<>(fileInputs);
   }
   public App setFileInputs(List<FileInput> fi) {
     fileInputs = (fi == null) ? null : new ArrayList<>(fi);
+    return this;
+  }
+
+  public List<NotificationSubscription> getNotificationSubscriptions()
+  {
+    return (notificationSubscriptions == null) ? null : new ArrayList<>(notificationSubscriptions);
+  }
+  public App setNotifcationSubscriptions(List<NotificationSubscription> ns) {
+    notificationSubscriptions = (ns == null) ? null : new ArrayList<>(ns);
+    return this;
+  }
+
+  public List<AppArg> getAppArgs() {
+    return (appArgs == null) ? null : new ArrayList<>(appArgs);
+  }
+  public App setAppArgs(List<AppArg> al) {
+    appArgs = (al == null) ? null : new ArrayList<>(al);
+    return this;
+  }
+
+  public List<AppArg> getContainerArgs() {
+    return (containerArgs == null) ? null : new ArrayList<>(containerArgs);
+  }
+  public App setContainerArgs(List<AppArg> al) {
+    containerArgs = (al == null) ? null : new ArrayList<>(al);
+    return this;
+  }
+
+  public List<AppArg> getSchedulerOptions()
+  {
+    return (schedulerOptions == null) ? null : new ArrayList<>(schedulerOptions);
+  }
+  public App setSchedulerOptions(List<AppArg> al) {
+    schedulerOptions = (al == null) ? null : new ArrayList<>(al);
     return this;
   }
 

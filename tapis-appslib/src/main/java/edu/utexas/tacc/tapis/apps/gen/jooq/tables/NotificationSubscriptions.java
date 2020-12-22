@@ -33,7 +33,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NotificationSubscriptions extends TableImpl<NotificationSubscriptionsRecord> {
 
-    private static final long serialVersionUID = -187033988;
+    private static final long serialVersionUID = -432807568;
 
     /**
      * The reference instance of <code>tapis_app.notification_subscriptions</code>
@@ -69,14 +69,14 @@ public class NotificationSubscriptions extends TableImpl<NotificationSubscriptio
     public final TableField<NotificationSubscriptionsRecord, NotificationMechanismType> NOTIFICATION_MECHANISM = createField(DSL.name("notification_mechanism"), org.jooq.impl.SQLDataType.VARCHAR.asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType.class), this, "");
 
     /**
-     * The column <code>tapis_app.notification_subscriptions.webhookurl</code>.
+     * The column <code>tapis_app.notification_subscriptions.webhook_url</code>.
      */
-    public final TableField<NotificationSubscriptionsRecord, String> WEBHOOKURL = createField(DSL.name("webhookurl"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+    public final TableField<NotificationSubscriptionsRecord, String> WEBHOOK_URL = createField(DSL.name("webhook_url"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
 
     /**
-     * The column <code>tapis_app.notification_subscriptions.emailaddress</code>.
+     * The column <code>tapis_app.notification_subscriptions.email_address</code>.
      */
-    public final TableField<NotificationSubscriptionsRecord, String> EMAILADDRESS = createField(DSL.name("emailaddress"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+    public final TableField<NotificationSubscriptionsRecord, String> EMAIL_ADDRESS = createField(DSL.name("email_address"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
 
     /**
      * Create a <code>tapis_app.notification_subscriptions</code> table reference

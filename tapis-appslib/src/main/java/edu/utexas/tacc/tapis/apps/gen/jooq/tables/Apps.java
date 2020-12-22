@@ -39,7 +39,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Apps extends TableImpl<AppsRecord> {
 
-    private static final long serialVersionUID = -807934485;
+    private static final long serialVersionUID = -518089792;
 
     /**
      * The reference instance of <code>tapis_app.apps</code>
@@ -118,6 +118,11 @@ public class Apps extends TableImpl<AppsRecord> {
      * The column <code>tapis_app.apps.max_jobs_per_user</code>.
      */
     public final TableField<AppsRecord, Integer> MAX_JOBS_PER_USER = createField(DSL.name("max_jobs_per_user"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("'-1'::integer", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+
+    /**
+     * The column <code>tapis_app.apps.strict_file_inputs</code>.
+     */
+    public final TableField<AppsRecord, Boolean> STRICT_FILE_INPUTS = createField(DSL.name("strict_file_inputs"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("false", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
 
     /**
      * The column <code>tapis_app.apps.job_description</code>.

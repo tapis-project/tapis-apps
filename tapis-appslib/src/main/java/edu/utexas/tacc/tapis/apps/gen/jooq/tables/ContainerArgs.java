@@ -8,7 +8,6 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.Keys;
 import edu.utexas.tacc.tapis.apps.gen.jooq.TapisApp;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.ContainerArgsRecord;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,7 +16,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row9;
+import org.jooq.Row7;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -33,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ContainerArgs extends TableImpl<ContainerArgsRecord> {
 
-    private static final long serialVersionUID = 1915649800;
+    private static final long serialVersionUID = -1447994756;
 
     /**
      * The reference instance of <code>tapis_app.container_args</code>
@@ -79,19 +78,9 @@ public class ContainerArgs extends TableImpl<ContainerArgsRecord> {
     public final TableField<ContainerArgsRecord, Boolean> META_REQUIRED = createField(DSL.name("meta_required"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
 
     /**
-     * The column <code>tapis_app.container_args.meta_kv</code>.
+     * The column <code>tapis_app.container_args.meta_key_value_pairs</code>.
      */
-    public final TableField<ContainerArgsRecord, String[]> META_KV = createField(DSL.name("meta_kv"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
-
-    /**
-     * The column <code>tapis_app.container_args.created</code>.
-     */
-    public final TableField<ContainerArgsRecord, LocalDateTime> CREATED = createField(DSL.name("created"), org.jooq.impl.SQLDataType.LOCALDATETIME.nullable(false).defaultValue(org.jooq.impl.DSL.field("timezone('utc'::text, now())", org.jooq.impl.SQLDataType.LOCALDATETIME)), this, "");
-
-    /**
-     * The column <code>tapis_app.container_args.updated</code>.
-     */
-    public final TableField<ContainerArgsRecord, LocalDateTime> UPDATED = createField(DSL.name("updated"), org.jooq.impl.SQLDataType.LOCALDATETIME.nullable(false).defaultValue(org.jooq.impl.DSL.field("timezone('utc'::text, now())", org.jooq.impl.SQLDataType.LOCALDATETIME)), this, "");
+    public final TableField<ContainerArgsRecord, String[]> META_KEY_VALUE_PAIRS = createField(DSL.name("meta_key_value_pairs"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
 
     /**
      * Create a <code>tapis_app.container_args</code> table reference
@@ -182,11 +171,11 @@ public class ContainerArgs extends TableImpl<ContainerArgsRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row9 type methods
+    // Row7 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row9<Integer, Integer, String, String, String, Boolean, String[], LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row9) super.fieldsRow();
+    public Row7<Integer, Integer, String, String, String, Boolean, String[]> fieldsRow() {
+        return (Row7) super.fieldsRow();
     }
 }

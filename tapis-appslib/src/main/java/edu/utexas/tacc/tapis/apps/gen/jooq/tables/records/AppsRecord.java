@@ -22,7 +22,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppsRecord extends UpdatableRecordImpl<AppsRecord> {
 
-    private static final long serialVersionUID = 1934423116;
+    private static final long serialVersionUID = -1348876006;
 
     /**
      * Setter for <code>tapis_app.apps.seq_id</code>. Application sequence id
@@ -207,353 +207,367 @@ public class AppsRecord extends UpdatableRecordImpl<AppsRecord> {
     }
 
     /**
+     * Setter for <code>tapis_app.apps.strict_file_inputs</code>.
+     */
+    public void setStrictFileInputs(Boolean value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>tapis_app.apps.strict_file_inputs</code>.
+     */
+    public Boolean getStrictFileInputs() {
+        return (Boolean) get(13);
+    }
+
+    /**
      * Setter for <code>tapis_app.apps.job_description</code>.
      */
     public void setJobDescription(String value) {
-        set(13, value);
+        set(14, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.job_description</code>.
      */
     public String getJobDescription() {
-        return (String) get(13);
+        return (String) get(14);
     }
 
     /**
      * Setter for <code>tapis_app.apps.dynamic_exec_system</code>.
      */
     public void setDynamicExecSystem(Boolean value) {
-        set(14, value);
+        set(15, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.dynamic_exec_system</code>.
      */
     public Boolean getDynamicExecSystem() {
-        return (Boolean) get(14);
+        return (Boolean) get(15);
     }
 
     /**
      * Setter for <code>tapis_app.apps.exec_system_constraints</code>.
      */
     public void setExecSystemConstraints(String[] value) {
-        set(15, value);
+        set(16, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.exec_system_constraints</code>.
      */
     public String[] getExecSystemConstraints() {
-        return (String[]) get(15);
+        return (String[]) get(16);
     }
 
     /**
      * Setter for <code>tapis_app.apps.exec_system_id</code>.
      */
     public void setExecSystemId(String value) {
-        set(16, value);
+        set(17, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.exec_system_id</code>.
      */
     public String getExecSystemId() {
-        return (String) get(16);
+        return (String) get(17);
     }
 
     /**
      * Setter for <code>tapis_app.apps.exec_system_exec_dir</code>.
      */
     public void setExecSystemExecDir(String value) {
-        set(17, value);
+        set(18, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.exec_system_exec_dir</code>.
      */
     public String getExecSystemExecDir() {
-        return (String) get(17);
+        return (String) get(18);
     }
 
     /**
      * Setter for <code>tapis_app.apps.exec_system_input_dir</code>.
      */
     public void setExecSystemInputDir(String value) {
-        set(18, value);
+        set(19, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.exec_system_input_dir</code>.
      */
     public String getExecSystemInputDir() {
-        return (String) get(18);
+        return (String) get(19);
     }
 
     /**
      * Setter for <code>tapis_app.apps.exec_system_output_dir</code>.
      */
     public void setExecSystemOutputDir(String value) {
-        set(19, value);
+        set(20, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.exec_system_output_dir</code>.
      */
     public String getExecSystemOutputDir() {
-        return (String) get(19);
+        return (String) get(20);
     }
 
     /**
      * Setter for <code>tapis_app.apps.exec_system_logical_queue</code>.
      */
     public void setExecSystemLogicalQueue(String value) {
-        set(20, value);
+        set(21, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.exec_system_logical_queue</code>.
      */
     public String getExecSystemLogicalQueue() {
-        return (String) get(20);
+        return (String) get(21);
     }
 
     /**
      * Setter for <code>tapis_app.apps.archive_system_id</code>.
      */
     public void setArchiveSystemId(String value) {
-        set(21, value);
+        set(22, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.archive_system_id</code>.
      */
     public String getArchiveSystemId() {
-        return (String) get(21);
+        return (String) get(22);
     }
 
     /**
      * Setter for <code>tapis_app.apps.archive_system_dir</code>.
      */
     public void setArchiveSystemDir(String value) {
-        set(22, value);
+        set(23, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.archive_system_dir</code>.
      */
     public String getArchiveSystemDir() {
-        return (String) get(22);
+        return (String) get(23);
     }
 
     /**
      * Setter for <code>tapis_app.apps.archive_on_app_error</code>.
      */
     public void setArchiveOnAppError(Boolean value) {
-        set(23, value);
+        set(24, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.archive_on_app_error</code>.
      */
     public Boolean getArchiveOnAppError() {
-        return (Boolean) get(23);
+        return (Boolean) get(24);
     }
 
     /**
      * Setter for <code>tapis_app.apps.env_variables</code>.
      */
     public void setEnvVariables(String[] value) {
-        set(24, value);
+        set(25, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.env_variables</code>.
      */
     public String[] getEnvVariables() {
-        return (String[]) get(24);
+        return (String[]) get(25);
     }
 
     /**
      * Setter for <code>tapis_app.apps.archive_includes</code>.
      */
     public void setArchiveIncludes(String[] value) {
-        set(25, value);
+        set(26, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.archive_includes</code>.
      */
     public String[] getArchiveIncludes() {
-        return (String[]) get(25);
+        return (String[]) get(26);
     }
 
     /**
      * Setter for <code>tapis_app.apps.archive_excludes</code>.
      */
     public void setArchiveExcludes(String[] value) {
-        set(26, value);
+        set(27, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.archive_excludes</code>.
      */
     public String[] getArchiveExcludes() {
-        return (String[]) get(26);
+        return (String[]) get(27);
     }
 
     /**
      * Setter for <code>tapis_app.apps.node_count</code>.
      */
     public void setNodeCount(Integer value) {
-        set(27, value);
+        set(28, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.node_count</code>.
      */
     public Integer getNodeCount() {
-        return (Integer) get(27);
+        return (Integer) get(28);
     }
 
     /**
      * Setter for <code>tapis_app.apps.cores_per_node</code>.
      */
     public void setCoresPerNode(Integer value) {
-        set(28, value);
+        set(29, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.cores_per_node</code>.
      */
     public Integer getCoresPerNode() {
-        return (Integer) get(28);
+        return (Integer) get(29);
     }
 
     /**
      * Setter for <code>tapis_app.apps.memory_mb</code>.
      */
     public void setMemoryMb(Integer value) {
-        set(29, value);
+        set(30, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.memory_mb</code>.
      */
     public Integer getMemoryMb() {
-        return (Integer) get(29);
+        return (Integer) get(30);
     }
 
     /**
      * Setter for <code>tapis_app.apps.max_minutes</code>.
      */
     public void setMaxMinutes(Integer value) {
-        set(30, value);
+        set(31, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.max_minutes</code>.
      */
     public Integer getMaxMinutes() {
-        return (Integer) get(30);
+        return (Integer) get(31);
     }
 
     /**
      * Setter for <code>tapis_app.apps.job_tags</code>.
      */
     public void setJobTags(String[] value) {
-        set(31, value);
+        set(32, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.job_tags</code>.
      */
     public String[] getJobTags() {
-        return (String[]) get(31);
+        return (String[]) get(32);
     }
 
     /**
      * Setter for <code>tapis_app.apps.tags</code>. Tags for user supplied key:value pairs
      */
     public void setTags(String[] value) {
-        set(32, value);
+        set(33, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.tags</code>. Tags for user supplied key:value pairs
      */
     public String[] getTags() {
-        return (String[]) get(32);
+        return (String[]) get(33);
     }
 
     /**
      * Setter for <code>tapis_app.apps.notes</code>. Notes for general information stored as JSON
      */
     public void setNotes(JsonElement value) {
-        set(33, value);
+        set(34, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.notes</code>. Notes for general information stored as JSON
      */
     public JsonElement getNotes() {
-        return (JsonElement) get(33);
+        return (JsonElement) get(34);
     }
 
     /**
      * Setter for <code>tapis_app.apps.import_ref_id</code>. Optional reference ID for applications created via import
      */
     public void setImportRefId(String value) {
-        set(34, value);
+        set(35, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.import_ref_id</code>. Optional reference ID for applications created via import
      */
     public String getImportRefId() {
-        return (String) get(34);
+        return (String) get(35);
     }
 
     /**
      * Setter for <code>tapis_app.apps.deleted</code>. Indicates if application has been soft deleted
      */
     public void setDeleted(Boolean value) {
-        set(35, value);
+        set(36, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.deleted</code>. Indicates if application has been soft deleted
      */
     public Boolean getDeleted() {
-        return (Boolean) get(35);
+        return (Boolean) get(36);
     }
 
     /**
      * Setter for <code>tapis_app.apps.created</code>. UTC time for when record was created
      */
     public void setCreated(LocalDateTime value) {
-        set(36, value);
+        set(37, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.created</code>. UTC time for when record was created
      */
     public LocalDateTime getCreated() {
-        return (LocalDateTime) get(36);
+        return (LocalDateTime) get(37);
     }
 
     /**
      * Setter for <code>tapis_app.apps.updated</code>. UTC time for when record was last updated
      */
     public void setUpdated(LocalDateTime value) {
-        set(37, value);
+        set(38, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps.updated</code>. UTC time for when record was last updated
      */
     public LocalDateTime getUpdated() {
-        return (LocalDateTime) get(37);
+        return (LocalDateTime) get(38);
     }
 
     // -------------------------------------------------------------------------
@@ -579,7 +593,7 @@ public class AppsRecord extends UpdatableRecordImpl<AppsRecord> {
     /**
      * Create a detached, initialised AppsRecord
      */
-    public AppsRecord(Integer seqId, String tenant, String id, String version, String description, AppType appType, String owner, Boolean enabled, Runtime runtime, String runtimeVersion, String containerImage, Integer maxJobs, Integer maxJobsPerUser, String jobDescription, Boolean dynamicExecSystem, String[] execSystemConstraints, String execSystemId, String execSystemExecDir, String execSystemInputDir, String execSystemOutputDir, String execSystemLogicalQueue, String archiveSystemId, String archiveSystemDir, Boolean archiveOnAppError, String[] envVariables, String[] archiveIncludes, String[] archiveExcludes, Integer nodeCount, Integer coresPerNode, Integer memoryMb, Integer maxMinutes, String[] jobTags, String[] tags, JsonElement notes, String importRefId, Boolean deleted, LocalDateTime created, LocalDateTime updated) {
+    public AppsRecord(Integer seqId, String tenant, String id, String version, String description, AppType appType, String owner, Boolean enabled, Runtime runtime, String runtimeVersion, String containerImage, Integer maxJobs, Integer maxJobsPerUser, Boolean strictFileInputs, String jobDescription, Boolean dynamicExecSystem, String[] execSystemConstraints, String execSystemId, String execSystemExecDir, String execSystemInputDir, String execSystemOutputDir, String execSystemLogicalQueue, String archiveSystemId, String archiveSystemDir, Boolean archiveOnAppError, String[] envVariables, String[] archiveIncludes, String[] archiveExcludes, Integer nodeCount, Integer coresPerNode, Integer memoryMb, Integer maxMinutes, String[] jobTags, String[] tags, JsonElement notes, String importRefId, Boolean deleted, LocalDateTime created, LocalDateTime updated) {
         super(Apps.APPS);
 
         set(0, seqId);
@@ -595,30 +609,31 @@ public class AppsRecord extends UpdatableRecordImpl<AppsRecord> {
         set(10, containerImage);
         set(11, maxJobs);
         set(12, maxJobsPerUser);
-        set(13, jobDescription);
-        set(14, dynamicExecSystem);
-        set(15, execSystemConstraints);
-        set(16, execSystemId);
-        set(17, execSystemExecDir);
-        set(18, execSystemInputDir);
-        set(19, execSystemOutputDir);
-        set(20, execSystemLogicalQueue);
-        set(21, archiveSystemId);
-        set(22, archiveSystemDir);
-        set(23, archiveOnAppError);
-        set(24, envVariables);
-        set(25, archiveIncludes);
-        set(26, archiveExcludes);
-        set(27, nodeCount);
-        set(28, coresPerNode);
-        set(29, memoryMb);
-        set(30, maxMinutes);
-        set(31, jobTags);
-        set(32, tags);
-        set(33, notes);
-        set(34, importRefId);
-        set(35, deleted);
-        set(36, created);
-        set(37, updated);
+        set(13, strictFileInputs);
+        set(14, jobDescription);
+        set(15, dynamicExecSystem);
+        set(16, execSystemConstraints);
+        set(17, execSystemId);
+        set(18, execSystemExecDir);
+        set(19, execSystemInputDir);
+        set(20, execSystemOutputDir);
+        set(21, execSystemLogicalQueue);
+        set(22, archiveSystemId);
+        set(23, archiveSystemDir);
+        set(24, archiveOnAppError);
+        set(25, envVariables);
+        set(26, archiveIncludes);
+        set(27, archiveExcludes);
+        set(28, nodeCount);
+        set(29, coresPerNode);
+        set(30, memoryMb);
+        set(31, maxMinutes);
+        set(32, jobTags);
+        set(33, tags);
+        set(34, notes);
+        set(35, importRefId);
+        set(36, deleted);
+        set(37, created);
+        set(38, updated);
     }
 }

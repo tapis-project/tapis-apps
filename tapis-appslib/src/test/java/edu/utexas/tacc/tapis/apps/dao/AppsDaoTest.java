@@ -1,6 +1,7 @@
 package edu.utexas.tacc.tapis.apps.dao;
 
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.apps.IntegrationUtils;
@@ -10,6 +11,7 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -172,19 +174,26 @@ public class AppsDaoTest
     // Verify data in aux tables: file_inputs, notification_subscriptions, app_args, container_args, scheduler_options
     // ===========================
 
-//    // Verify capabilities
-//    List<Capability> origCaps = app0.getJobCapabilities();
-//    List<Capability> jobCaps = tmpApp.getJobCapabilities();
-//    Assert.assertNotNull(origCaps, "Orig Caps was null");
-//    Assert.assertNotNull(jobCaps, "Fetched Caps was null");
-//    Assert.assertEquals(jobCaps.size(), origCaps.size());
-//    var capNamesFound = new ArrayList<String>();
-//    for (Capability capFound : jobCaps) {capNamesFound.add(capFound.getName());}
-//    for (Capability capSeedItem : origCaps)
-//    {
-//      Assert.assertTrue(capNamesFound.contains(capSeedItem.getName()),
-//              "List of capabilities did not contain a capability named: " + capSeedItem.getName());
-//    }
+    // Verify file inputs
+    List<FileInput> origFileInputs = app0.getFileInputs();
+    List<FileInput> tmpInputs = tmpApp.getFileInputs();
+    Assert.assertNotNull(origFileInputs, "Orig FileInputs was null");
+    Assert.assertNotNull(tmpInputs, "Fetched FileInputs was null");
+    Assert.assertEquals(tmpInputs.size(), origFileInputs.size());
+    var metaNamesFound = new ArrayList<String>();
+    for (FileInput itemFound : tmpInputs) {metaNamesFound.add(itemFound.getMetaName());}
+    for (FileInput itemSeedItem : origFileInputs)
+    {
+      Assert.assertTrue(metaNamesFound.contains(itemSeedItem.getMetaName()),
+              "List of fileInputs did not contain an item with metaName: " + itemSeedItem.getMetaName());
+    }
+
+    // Verify notification subscriptions
+
+    // Verify app args
+    // Verify container args
+    // Verify scheduler options
+
   }
 
   // Test retrieving all app names
@@ -306,7 +315,7 @@ public class AppsDaoTest
     patchApp.setTenant(tenantName);
     patchApp.setId(fakeAppId);
     App patchedApp = new App(1, tenantName, fakeAppId, appVersion, "description", AppType.BATCH, ownerUser, enabledTrue,
-            runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, jobDescription, dynamicExecSystem,
+            runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, strictFileInputsFalse, jobDescription, dynamicExecSystem,
             execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
             execSystemLogicalQueue, archiveSystemId, archiveSystemDir, archiveOnAppError, nodeCount, coresPerNode,
             memoryMb, maxMinutes, envVariables, archiveIncludes, archiveExcludes, jobTags,

@@ -50,19 +50,20 @@ CREATE TYPE notification_mechanism_type AS ENUM ('WEBHOOK', 'EMAIL', 'QUEUE', 'A
 -- Basic app attributes
 CREATE TABLE apps
 (
-  seq_id          SERIAL PRIMARY KEY,
-  tenant      VARCHAR(24) NOT NULL,
-  id        VARCHAR(80) NOT NULL,
-  version     VARCHAR(64) NOT NULL,
+  seq_id  SERIAL PRIMARY KEY,
+  tenant  VARCHAR(24) NOT NULL,
+  id      VARCHAR(80) NOT NULL,
+  version VARCHAR(64) NOT NULL,
   description VARCHAR(2048),
   app_type app_type_type,
-  owner       VARCHAR(60) NOT NULL,
-  enabled     BOOLEAN NOT NULL DEFAULT true,
+  owner    VARCHAR(60) NOT NULL,
+  enabled  BOOLEAN NOT NULL DEFAULT true,
   runtime runtime_type NOT NULL,
   runtime_version VARCHAR(128),
   container_image VARCHAR(128),
   max_jobs INTEGER NOT NULL DEFAULT -1,
   max_jobs_per_user INTEGER NOT NULL DEFAULT -1,
+  strict_file_inputs BOOLEAN NOT NULL DEFAULT false,
 -- Start jobAttributes ==========================================
   job_description VARCHAR(2048),
   dynamic_exec_system BOOLEAN NOT NULL DEFAULT false,
@@ -151,10 +152,8 @@ CREATE TABLE file_inputs
     in_place BOOLEAN NOT NULL DEFAULT false,
     meta_name VARCHAR(128),
     meta_description VARCHAR(128),
-    meta_required boolean NOT NULL DEFAULT false,
-    meta_kv TEXT[] NOT NULL,
-    created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-    updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
+    meta_required BOOLEAN NOT NULL DEFAULT false,
+    meta_key_value_pairs TEXT[] NOT NULL,
     UNIQUE (app_seq_id, source_url, target_path)
 );
 ALTER TABLE file_inputs OWNER TO tapis_app;
@@ -171,8 +170,8 @@ CREATE TABLE notification_subscriptions
     app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
     filter VARCHAR(128), -- TODO length?
     notification_mechanism notification_mechanism_type,
-    webHookURL VARCHAR(128), -- TODO length?
-    emailAddress VARCHAR(128) -- TODO length?
+    webhook_url VARCHAR(128), -- TODO length?
+    email_address VARCHAR(128) -- TODO length?
 );
 ALTER TABLE notification_subscriptions OWNER TO tapis_app;
 
@@ -191,10 +190,8 @@ CREATE TABLE app_args
     arg_val VARCHAR(128) NOT NULL DEFAULT '',
     meta_name VARCHAR(128) NOT NULL DEFAULT '',
     meta_description VARCHAR(128) NOT NULL DEFAULT '',
-    meta_required boolean NOT NULL DEFAULT true,
-    meta_kv TEXT[] NOT NULL,
-    created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-    updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
+    meta_required BOOLEAN NOT NULL DEFAULT true,
+    meta_key_value_pairs TEXT[] NOT NULL
 );
 ALTER TABLE app_args OWNER TO tapis_app;
 COMMENT ON COLUMN app_args.seq_id IS 'Arg sequence id';
@@ -210,10 +207,8 @@ CREATE TABLE container_args
     arg_val VARCHAR(128) NOT NULL DEFAULT '',
     meta_name VARCHAR(128) NOT NULL DEFAULT '',
     meta_description VARCHAR(128) NOT NULL DEFAULT '',
-    meta_required boolean NOT NULL DEFAULT true,
-    meta_kv TEXT[] NOT NULL,
-    created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-    updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
+    meta_required BOOLEAN NOT NULL DEFAULT true,
+    meta_key_value_pairs TEXT[] NOT NULL
 );
 ALTER TABLE container_args OWNER TO tapis_app;
 COMMENT ON COLUMN container_args.seq_id IS 'Arg sequence id';
@@ -229,10 +224,8 @@ CREATE TABLE scheduler_options
     arg_val VARCHAR(128) NOT NULL DEFAULT '',
     meta_name VARCHAR(128) NOT NULL DEFAULT '',
     meta_description VARCHAR(128) NOT NULL DEFAULT '',
-    meta_required boolean NOT NULL DEFAULT true,
-    meta_kv TEXT[] NOT NULL,
-    created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-    updated TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
+    meta_required BOOLEAN NOT NULL DEFAULT true,
+    meta_key_value_pairs TEXT[] NOT NULL
 );
 ALTER TABLE scheduler_options OWNER TO tapis_app;
 COMMENT ON COLUMN scheduler_options.seq_id IS 'Arg sequence id';
@@ -253,15 +246,3 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER app_updated
   BEFORE UPDATE ON apps
   EXECUTE PROCEDURE trigger_set_updated();
-CREATE TRIGGER file_inputs_updated
-    BEFORE UPDATE ON file_inputs
-EXECUTE PROCEDURE trigger_set_updated();
-CREATE TRIGGER container_args_updated
-    BEFORE UPDATE ON container_args
-EXECUTE PROCEDURE trigger_set_updated();
-CREATE TRIGGER app_args_updated
-    BEFORE UPDATE ON app_args
-EXECUTE PROCEDURE trigger_set_updated();
-CREATE TRIGGER scheduler_options_updated
-    BEFORE UPDATE ON scheduler_options
-EXECUTE PROCEDURE trigger_set_updated();

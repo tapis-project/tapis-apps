@@ -20,7 +20,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<NotificationSubscriptionsRecord> implements Record6<Integer, Integer, String, NotificationMechanismType, String, String> {
 
-    private static final long serialVersionUID = 943898549;
+    private static final long serialVersionUID = -1493952167;
 
     /**
      * Setter for <code>tapis_app.notification_subscriptions.seq_id</code>.
@@ -79,30 +79,30 @@ public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<Notific
     }
 
     /**
-     * Setter for <code>tapis_app.notification_subscriptions.webhookurl</code>.
+     * Setter for <code>tapis_app.notification_subscriptions.webhook_url</code>.
      */
-    public void setWebhookurl(String value) {
+    public void setWebhookUrl(String value) {
         set(4, value);
     }
 
     /**
-     * Getter for <code>tapis_app.notification_subscriptions.webhookurl</code>.
+     * Getter for <code>tapis_app.notification_subscriptions.webhook_url</code>.
      */
-    public String getWebhookurl() {
+    public String getWebhookUrl() {
         return (String) get(4);
     }
 
     /**
-     * Setter for <code>tapis_app.notification_subscriptions.emailaddress</code>.
+     * Setter for <code>tapis_app.notification_subscriptions.email_address</code>.
      */
-    public void setEmailaddress(String value) {
+    public void setEmailAddress(String value) {
         set(5, value);
     }
 
     /**
-     * Getter for <code>tapis_app.notification_subscriptions.emailaddress</code>.
+     * Getter for <code>tapis_app.notification_subscriptions.email_address</code>.
      */
-    public String getEmailaddress() {
+    public String getEmailAddress() {
         return (String) get(5);
     }
 
@@ -151,12 +151,12 @@ public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<Notific
 
     @Override
     public Field<String> field5() {
-        return NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.WEBHOOKURL;
+        return NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.WEBHOOK_URL;
     }
 
     @Override
     public Field<String> field6() {
-        return NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.EMAILADDRESS;
+        return NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.EMAIL_ADDRESS;
     }
 
     @Override
@@ -181,12 +181,12 @@ public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<Notific
 
     @Override
     public String component5() {
-        return getWebhookurl();
+        return getWebhookUrl();
     }
 
     @Override
     public String component6() {
-        return getEmailaddress();
+        return getEmailAddress();
     }
 
     @Override
@@ -211,12 +211,12 @@ public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<Notific
 
     @Override
     public String value5() {
-        return getWebhookurl();
+        return getWebhookUrl();
     }
 
     @Override
     public String value6() {
-        return getEmailaddress();
+        return getEmailAddress();
     }
 
     @Override
@@ -245,13 +245,13 @@ public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<Notific
 
     @Override
     public NotificationSubscriptionsRecord value5(String value) {
-        setWebhookurl(value);
+        setWebhookUrl(value);
         return this;
     }
 
     @Override
     public NotificationSubscriptionsRecord value6(String value) {
-        setEmailaddress(value);
+        setEmailAddress(value);
         return this;
     }
 
@@ -280,14 +280,14 @@ public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<Notific
     /**
      * Create a detached, initialised NotificationSubscriptionsRecord
      */
-    public NotificationSubscriptionsRecord(Integer seqId, Integer appSeqId, String filter, NotificationMechanismType notificationMechanism, String webhookurl, String emailaddress) {
+    public NotificationSubscriptionsRecord(Integer seqId, Integer appSeqId, String filter, NotificationMechanismType notificationMechanism, String webhookUrl, String emailAddress) {
         super(NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS);
 
         set(0, seqId);
         set(1, appSeqId);
         set(2, filter);
         set(3, notificationMechanism);
-        set(4, webhookurl);
-        set(5, emailaddress);
+        set(4, webhookUrl);
+        set(5, emailAddress);
     }
 }

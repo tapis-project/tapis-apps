@@ -27,6 +27,7 @@ public final class ReqCreateApp
   public String containerImage;
   public int maxJobs;
   public int maxJobsPerUser;
+  public boolean strictFileInputs;
   // === Start jobAttributes ===
   public String jobDescription;
   public boolean dynamicExecSystem;

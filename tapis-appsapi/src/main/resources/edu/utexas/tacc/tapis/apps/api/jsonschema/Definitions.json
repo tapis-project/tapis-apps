@@ -25,17 +25,18 @@
         "type": "array", "items":  { "$ref": "#/Arg" }
       },
       "envVariables": {
-        "type": "array", "items":  { "$ref": "#/KeyValue" }
+        "type": "array", "items":  { "$ref": "#/KeyValuePair" }
       },
       "archiveFilter": { "$ref": "#/ArchiveFilter" }
     }
   },
   "FileInput": {
     "type": "object",
-    "required": [ "sourceUrl" ],
+    "required": [ "meta" ],
     "properties": {
       "sourceUrl": { "type": "string", "minLength": 1, "format": "uri" },
       "targetPath": { "type": "string" },
+      "inPlace": { "type": "boolean", "default": false },
       "meta": { "$ref": "#/Meta" }
     }
   },
@@ -66,16 +67,17 @@
   },
   "Meta" : {
     "type": "object",
+    "required": [ "name" ],
     "properties": {
       "name": { "type": "string", "minLength": 1 },
       "description": { "type": "string", "minLength": 1 },
       "required": { "type": "boolean", "default": false },
-      "keyValues": {
-        "type": "array", "items": { "$ref": "#/KeyValue" }
+      "keyValuePairs": {
+        "type": "array", "items": { "$ref": "#/KeyValuePair" }
       }
     }
   },
-  "KeyValue" : {
+  "KeyValuePair": {
     "type": "object",
     "required": [ "key" ],
     "properties": {

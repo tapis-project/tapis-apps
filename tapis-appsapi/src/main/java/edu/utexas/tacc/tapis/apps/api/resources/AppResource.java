@@ -765,7 +765,7 @@ public class AppResource
   private static App createAppFromRequest(ReqCreateApp req)
   {
     var app = new App(-1, null, req.id, req.version, req.description, req.appType, req.owner, req.enabled,
-                      req.runtime, req.runtimeVersion, req.containerImage, req.maxJobs, req.maxJobsPerUser,
+                      req.runtime, req.runtimeVersion, req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
                       req.jobDescription, req.dynamicExecSystem, req.execSystemConstraints, req.execSystemId,
                       req.execSystemExecDir, req.execSystemInputDir, req.execSystemOutputDir, req.execSystemLogicalQueue,
                       req.archiveSystemId, req.archiveSystemDir, req.archiveOnAppError, req.nodeCount,

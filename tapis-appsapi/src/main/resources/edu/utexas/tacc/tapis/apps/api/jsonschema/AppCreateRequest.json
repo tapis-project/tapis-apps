@@ -18,6 +18,7 @@
     "containerImage": { "type": "string", "maxLength": 128 },
     "maxJobs": { "type": "integer", "default": -1 },
     "maxJobsPerUser": { "type": "integer", "default": -1 },
+    "strictFileInputs": { "type": "boolean", "default": false },
     "jobAttributes": { "$ref": "#/definitions/JobAttributes" },
     "tags": {
       "type": "array",
