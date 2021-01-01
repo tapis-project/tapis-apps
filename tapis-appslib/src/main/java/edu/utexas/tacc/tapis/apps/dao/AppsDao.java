@@ -18,21 +18,23 @@ public interface AppsDao
                     String updateJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException;
 
-  void updateAppOwner(AuthenticatedUser authenticatedUser, int appSeqId, String newOwnerName) throws TapisException;
+  void updateAppOwner(AuthenticatedUser authenticatedUser, int seqId, String newOwnerName) throws TapisException;
 
-  int softDeleteApp(AuthenticatedUser authenticatedUser, int appSeqId) throws TapisException;
+  int softDeleteApp(AuthenticatedUser authenticatedUser, int seqId) throws TapisException;
 
-  void addUpdateRecord(AuthenticatedUser authenticatedUser, int appSeqId, AppOperation op, String upd_json, String upd_text) throws TapisException;
+  void addUpdateRecord(AuthenticatedUser authenticatedUser, int seqId, AppOperation op, String upd_json, String upd_text) throws TapisException;
 
-  int hardDeleteApp(String tenant, String appId) throws TapisException;
+  int hardDeleteApp(String tenant, String id) throws TapisException;
 
   Exception checkDB();
 
   void migrateDB() throws TapisException;
 
-  boolean checkForApp(String tenant, String appId, boolean includeDeleted) throws TapisException;
+  boolean checkForApp(String tenant, String id, boolean includeDeleted) throws TapisException;
 
-  App getApp(String tenant, String appId) throws TapisException;
+  App getApp(String tenant, String id) throws TapisException;
+
+  App getApp(String tenant, String id, boolean includeDeleted) throws TapisException;
 
   List<App> getApps(String tenant, List<String> searchList, List<Integer> seqIDs) throws TapisException;
 
@@ -40,7 +42,7 @@ public interface AppsDao
 
   List<String> getAppNames(String tenant) throws TapisException;
 
-  String getAppOwner(String tenant, String appId) throws TapisException;
+  String getAppOwner(String tenant, String id) throws TapisException;
 
-  int getAppSeqId(String tenant, String appId) throws TapisException;
+  int getAppSeqId(String tenant, String id) throws TapisException;
 }

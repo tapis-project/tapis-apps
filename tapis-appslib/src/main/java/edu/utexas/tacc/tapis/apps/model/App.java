@@ -47,11 +47,11 @@ public final class App
   // *********************** Enums ******************************************
   // ************************************************************************
   public enum AppType {BATCH, INTERACTIVE}
-  public enum Runtime {DOCKER, SINGULARITY}
-  public enum NotificationMechanism {WEBHOOK, EMAIL, QUEUE, ACTOR}
-  public enum Permission {ALL, READ, MODIFY, EXECUTE}
   public enum AppOperation {create, read, modify, execute, softDelete, hardDelete, changeOwner, getPerms,
                             grantPerms, revokePerms}
+  public enum Permission {READ, MODIFY, EXECUTE}
+  public enum Runtime {DOCKER, SINGULARITY}
+  public enum NotificationMechanism {WEBHOOK, EMAIL, QUEUE, ACTOR}
 
   // ************************************************************************
   // *********************** Fields *****************************************

@@ -52,6 +52,11 @@
       <option name="url" value="http://c002.rodeo.tacc.utexas.edu:32140/repository/maven-releases" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="tacc-snapshot" />
+      <option name="name" value="TACC ACI Maven repository" />
+      <option name="url" value="http://c002.rodeo.tacc.utexas.edu:30044/repository/maven-central/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="tapis-local-releases" />
       <option name="name" value="Local repo for releases" />
       <option name="url" value="http://c002.rodeo.tacc.utexas.edu:30044/repository/maven-central/" />

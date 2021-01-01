@@ -54,7 +54,7 @@ public class AppsDaoTest
       dao.hardDeleteApp(tenantName, apps[i].getId());
     }
 
-    App tmpApp = dao.getApp(tenantName, apps[0].getId());
+    App tmpApp = dao.getApp(tenantName, apps[0].getId(), true);
     Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getId());
   }
 
@@ -63,16 +63,16 @@ public class AppsDaoTest
   public void testCreate() throws Exception
   {
     App app0 = apps[0];
-    int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
-    Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
+    int itemSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
   }
 
   // Test retrieving a single item
   @Test
   public void testGet() throws Exception {
     App app0 = apps[1];
-    int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
-    Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
+    int itemSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
     App tmpApp = dao.getApp(app0.getTenant(), app0.getId());
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
     System.out.println("Found item: " + app0.getId());
@@ -238,11 +238,11 @@ public class AppsDaoTest
   public void testGetAppNames() throws Exception {
     // Create 2 apps
     App app0 = apps[2];
-    int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
-    Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
+    int itemSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
     app0 = apps[3];
-    itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
-    Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
+    itemSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
     // Get all apps
     List<String> appNames = dao.getAppNames(tenantName);
     for (String name : appNames) {
@@ -256,11 +256,11 @@ public class AppsDaoTest
   @Test
   public void testGetApps() throws Exception {
     App app0 = apps[4];
-    int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
-    Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
+    int itemSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
     List<App> apps = dao.getApps(tenantName, null, null);
     for (App app : apps) {
-      System.out.println("Found item with id: " + app.getSeqId() + " and name: " + app.getId());
+      System.out.println("Found item with seqId: " + app.getSeqId() + " and name: " + app.getId());
     }
   }
 
@@ -290,10 +290,10 @@ public class AppsDaoTest
   @Test
   public void testChangeAppOwner() throws Exception {
     App app0 = apps[7];
-    int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
-    System.out.println("Created item with id: " + itemId);
-    Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
-    dao.updateAppOwner(authenticatedUser, itemId, "newOwner");
+    int itemSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
+    System.out.println("Created item with seqId: " + itemSeqId);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
+    dao.updateAppOwner(authenticatedUser, itemSeqId, "newOwner");
     App tmpApp = dao.getApp(app0.getTenant(), app0.getId());
     Assert.assertEquals(tmpApp.getOwner(), "newOwner");
   }
@@ -302,12 +302,12 @@ public class AppsDaoTest
   @Test
   public void testSoftDelete() throws Exception {
     App app0 = apps[8];
-    int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
-    System.out.println("Created item with id: " + itemId);
-    Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
-    int numDeleted = dao.softDeleteApp(authenticatedUser, itemId);
+    int itemSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
+    System.out.println("Created item with seqId: " + itemSeqId);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
+    int numDeleted = dao.softDeleteApp(authenticatedUser, itemSeqId);
     Assert.assertEquals(numDeleted, 1);
-    numDeleted = dao.softDeleteApp(authenticatedUser, itemId);
+    numDeleted = dao.softDeleteApp(authenticatedUser, itemSeqId);
     Assert.assertEquals(numDeleted, 0);
     Assert.assertFalse(dao.checkForApp(app0.getTenant(), app0.getId(), false ),
             "App not deleted. App name: " + app0.getId());
@@ -317,9 +317,9 @@ public class AppsDaoTest
   @Test
   public void testHardDelete() throws Exception {
     App app0 = apps[9];
-    int itemId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
-    System.out.println("Created item with id: " + itemId);
-    Assert.assertTrue(itemId > 0, "Invalid app id: " + itemId);
+    int itemSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
+    System.out.println("Created item with seqId: " + itemSeqId);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
     dao.hardDeleteApp(app0.getTenant(), app0.getId());
     Assert.assertFalse(dao.checkForApp(app0.getTenant(), app0.getId(), true),"App not deleted. App name: " + app0.getId());
   }

@@ -58,6 +58,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /* ********************************************************************** */
   /*                             Public Methods                             */
   /* ********************************************************************** */
+
   /**
    * Create a new app.
    *
@@ -70,7 +71,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
           throws TapisException, IllegalStateException {
     String opName = "createApp";
     // Generated sequence id
-    int appSeqId = -1;
+    int seqId = -1;
     // ------------------------- Check Input -------------------------
     if (app == null) LibUtils.logAndThrowNullParmException(opName, "app");
     if (authenticatedUser == null) LibUtils.logAndThrowNullParmException(opName, "authenticatedUser");
@@ -145,17 +146,17 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS.NOTES, notesObj)
               .returningResult(APPS.SEQ_ID)
               .fetchOne();
-      appSeqId = record.getValue(APPS.SEQ_ID);
+      seqId = record.getValue(APPS.SEQ_ID);
 
       // Persist data to aux tables
-      persistFileInputs(db, app, appSeqId);
-      persistAppArgs(db, app, appSeqId);
-      persistContainerArgs(db, app, appSeqId);
-      persistSchedulerOptions(db, app, appSeqId);
-//      persistNotificationSubscriptions(db, app, appSeqId);
+      persistFileInputs(db, app, seqId);
+      persistAppArgs(db, app, seqId);
+      persistContainerArgs(db, app, seqId);
+      persistSchedulerOptions(db, app, seqId);
+//      persistNotificationSubscriptions(db, app, seqId);
 
       // Persist update record
-      addUpdate(db, authenticatedUser, appSeqId, AppOperation.create, createJsonStr, scrubbedText);
+      addUpdate(db, authenticatedUser, seqId, AppOperation.create, createJsonStr, scrubbedText);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -170,7 +171,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Always return the connection back to the connection pool.
       LibUtils.finalCloseDB(conn);
     }
-    return appSeqId;
+    return seqId;
   }
 
   /**
@@ -194,11 +195,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (StringUtils.isBlank(patchedApp.getTenant())) LibUtils.logAndThrowNullParmException(opName, "tenant");
     if (StringUtils.isBlank(patchedApp.getId())) LibUtils.logAndThrowNullParmException(opName, "appName");
     if (patchedApp.getAppType() == null) LibUtils.logAndThrowNullParmException(opName, "appType");
-    if (patchedApp.getSeqId() < 1) LibUtils.logAndThrowNullParmException(opName, "appSeqId");
+    if (patchedApp.getSeqId() < 1) LibUtils.logAndThrowNullParmException(opName, "seqId");
     // Pull out some values for convenience
     String tenant = patchedApp.getTenant();
     String name = patchedApp.getId();
-    int appSeqId = patchedApp.getSeqId();
+    int seqId = patchedApp.getSeqId();
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -224,17 +225,17 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS.ENABLED, patchedApp.isEnabled())
               .set(APPS.TAGS, tagsStrArray)
               .set(APPS.NOTES, notesObj)
-              .where(APPS.SEQ_ID.eq(appSeqId))
+              .where(APPS.SEQ_ID.eq(seqId))
               .execute();
 
 //      // If jobCapabilities updated then replace them
 //      if (patchApp.getJobCapabilities() != null) {
-//        db.deleteFrom(CAPABILITIES).where(CAPABILITIES.APP_ID.eq(appSeqId)).execute();
-//        persistJobCapabilities(db, patchedApp, appSeqId);
+//        db.deleteFrom(CAPABILITIES).where(CAPABILITIES.APP_ID.eq(seqId)).execute();
+//        persistJobCapabilities(db, patchedApp, seqId);
 //      }
 
       // Persist update record
-      addUpdate(db, authenticatedUser, appSeqId, AppOperation.modify, updateJsonStr, scrubbedText);
+      addUpdate(db, authenticatedUser, seqId, AppOperation.modify, updateJsonStr, scrubbedText);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -249,7 +250,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Always return the connection back to the connection pool.
       LibUtils.finalCloseDB(conn);
     }
-    return appSeqId;
+    return seqId;
   }
 
   /**
@@ -257,11 +258,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *
    */
   @Override
-  public void updateAppOwner(AuthenticatedUser authenticatedUser, int appSeqId, String newOwnerName) throws TapisException
+  public void updateAppOwner(AuthenticatedUser authenticatedUser, int seqId, String newOwnerName) throws TapisException
   {
     String opName = "changeOwner";
     // ------------------------- Check Input -------------------------
-    if (appSeqId < 1) LibUtils.logAndThrowNullParmException(opName, "appSeqId");
+    if (seqId < 1) LibUtils.logAndThrowNullParmException(opName, "seqId");
     if (StringUtils.isBlank(newOwnerName)) LibUtils.logAndThrowNullParmException(opName, "newOwnerName");
 
     // ------------------------- Call SQL ----------------------------
@@ -271,10 +272,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      db.update(APPS).set(APPS.OWNER, newOwnerName).where(APPS.SEQ_ID.eq(appSeqId)).execute();
+      db.update(APPS).set(APPS.OWNER, newOwnerName).where(APPS.SEQ_ID.eq(seqId)).execute();
       // Persist update record
       String updateJsonStr = TapisGsonUtils.getGson().toJson(newOwnerName);
-      addUpdate(db, authenticatedUser, appSeqId, AppOperation.changeOwner, updateJsonStr , null);
+      addUpdate(db, authenticatedUser, seqId, AppOperation.changeOwner, updateJsonStr , null);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
@@ -295,12 +296,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *
    */
   @Override
-  public int softDeleteApp(AuthenticatedUser authenticatedUser, int appSeqId) throws TapisException
+  public int softDeleteApp(AuthenticatedUser authenticatedUser, int seqId) throws TapisException
   {
     String opName = "softDeleteApp";
     int rows = -1;
     // ------------------------- Check Input -------------------------
-    if (appSeqId < 1) LibUtils.logAndThrowNullParmException(opName, "appSeqId");
+    if (seqId < 1) LibUtils.logAndThrowNullParmException(opName, "appSeqId");
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -310,13 +311,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
       // If app does not exist or has been soft deleted return 0
-      if (!db.fetchExists(APPS, APPS.SEQ_ID.eq(appSeqId), APPS.DELETED.eq(false)))
+      if (!db.fetchExists(APPS, APPS.SEQ_ID.eq(seqId), APPS.DELETED.eq(false)))
       {
         return 0;
       }
-      rows = db.update(APPS).set(APPS.DELETED, true).where(APPS.SEQ_ID.eq(appSeqId)).execute();
+      rows = db.update(APPS).set(APPS.DELETED, true).where(APPS.SEQ_ID.eq(seqId)).execute();
       // Persist update record
-      addUpdate(db, authenticatedUser, appSeqId, AppOperation.softDelete, EMPTY_JSON, null);
+      addUpdate(db, authenticatedUser, seqId, AppOperation.softDelete, EMPTY_JSON, null);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -420,7 +421,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * checkForAppByName
+   * checkForApp
    * @param appId - app name
    * @return true if found else false
    * @throws TapisException - on error
@@ -456,13 +457,26 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * getAppByName
+   * getApp
    * @param appId - app name
    * @return App object if found, null if not found
    * @throws TapisException - on error
    */
   @Override
-  public App getApp(String tenant, String appId) throws TapisException {
+  public App getApp(String tenant, String appId) throws TapisException
+  {
+    return getApp(tenant, appId, false);
+  }
+
+  /**
+   * getApp
+   * @param appId - app name
+   * @return App object if found, null if not found
+   * @throws TapisException - on error
+   */
+  @Override
+  public App getApp(String tenant, String appId, boolean includeDeleted) throws TapisException
+  {
     // Initialize result.
     App result = null;
 
@@ -473,12 +487,16 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      AppsRecord r = db.selectFrom(APPS)
-              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false))
-              .fetchOne();
+      AppsRecord r;
+      if (includeDeleted)
+        r = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).fetchOne();
+      else
+        r = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false)).fetchOne();
       if (r == null) return null;
 
       // Convert result record to Apps and fill in data from aux tables
+      // TODO: Looks like jOOQ has fetchGroups() which should allow us to retrieve LogicalQueues and Capabilities
+      //       in one call which should improve performance.
       result = r.into(App.class);
       result.setFileInputs(retrieveFileInputs(db, result.getSeqId()));
       result.setAppArgs(retrieveAppArgs(db, result.getSeqId()));
@@ -735,7 +753,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   @Override
   public int getAppSeqId(String tenant, String appId) throws TapisException
   {
-    int appSeqId = -1;
+    int seqId = -1;
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -744,7 +762,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(appId)).fetchOne(APPS.SEQ_ID);
+      seqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(appId)).fetchOne(APPS.SEQ_ID);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -759,7 +777,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Always return the connection back to the connection pool.
       LibUtils.finalCloseDB(conn);
     }
-    return appSeqId;
+    return seqId;
   }
 
   /**
@@ -767,7 +785,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *
    */
   @Override
-  public void addUpdateRecord(AuthenticatedUser authenticatedUser, int appSeqId, AppOperation op, String upd_json,
+  public void addUpdateRecord(AuthenticatedUser authenticatedUser, int seqId, AppOperation op, String upd_json,
                               String upd_text) throws TapisException
   {
     // ------------------------- Call SQL ----------------------------
@@ -777,7 +795,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      addUpdate(db, authenticatedUser, appSeqId, op, upd_json, upd_text);
+      addUpdate(db, authenticatedUser, seqId, op, upd_json, upd_text);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -802,13 +820,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Given an sql connection and basic info add an update record
    *
    */
-  private void addUpdate(DSLContext db, AuthenticatedUser authenticatedUser, int appSeqId,
+  private void addUpdate(DSLContext db, AuthenticatedUser authenticatedUser, int seqId,
                          AppOperation op, String upd_json, String upd_text)
   {
     String updJsonStr = (StringUtils.isBlank(upd_json)) ? EMPTY_JSON : upd_json;
     // Persist update record
     db.insertInto(APP_UPDATES)
-            .set(APP_UPDATES.APP_SEQ_ID, appSeqId)
+            .set(APP_UPDATES.APP_SEQ_ID, seqId)
             .set(APP_UPDATES.USER_NAME, authenticatedUser.getOboUser())
             .set(APP_UPDATES.USER_TENANT, authenticatedUser.getOboTenantId())
             .set(APP_UPDATES.OPERATION, op)
@@ -834,7 +852,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Persist file inputs given an sql connection and an app
    */
-  private static void persistFileInputs(DSLContext db, App app, int appSeqId)
+  private static void persistFileInputs(DSLContext db, App app, int seqId)
   {
     var fileInputs = app.getFileInputs();
     if (fileInputs == null || fileInputs.isEmpty()) return;
@@ -844,7 +862,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (fileInput.getMetaName() != null ) nameStr = fileInput.getMetaName();
       String[] kvPairs = EMPTY_STR_ARRAY;
       if (fileInput.getMetaKeyValuePairs() != null ) kvPairs = fileInput.getMetaKeyValuePairs();
-      db.insertInto(FILE_INPUTS).set(FILE_INPUTS.APP_SEQ_ID, appSeqId)
+      db.insertInto(FILE_INPUTS).set(FILE_INPUTS.APP_SEQ_ID, seqId)
               .set(FILE_INPUTS.SOURCE_URL, fileInput.getSourceUrl())
               .set(FILE_INPUTS.TARGET_PATH, fileInput.getTargetPath())
               .set(FILE_INPUTS.IN_PLACE, fileInput.isInPlace())
@@ -859,7 +877,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Persist app args given an sql connection and an app
    */
-  private static void persistAppArgs(DSLContext db, App app, int appSeqId)
+  private static void persistAppArgs(DSLContext db, App app, int seqId)
   {
     var appArgs = app.getAppArgs();
     if (appArgs == null || appArgs.isEmpty()) return;
@@ -869,7 +887,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (appArg.getValue() != null ) valStr = appArg.getValue();
       String[] kvPairs = EMPTY_STR_ARRAY;
       if (appArg.getMetaKeyValuePairs() != null ) kvPairs = appArg.getMetaKeyValuePairs();
-      db.insertInto(APP_ARGS).set(APP_ARGS.APP_SEQ_ID, appSeqId)
+      db.insertInto(APP_ARGS).set(APP_ARGS.APP_SEQ_ID, seqId)
               .set(APP_ARGS.ARG_VAL, valStr)
               .set(APP_ARGS.META_NAME, appArg.getMetaName())
               .set(APP_ARGS.META_DESCRIPTION, appArg.getMetaDescription())
@@ -882,7 +900,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Persist container args given an sql connection and an app
    */
-  private static void persistContainerArgs(DSLContext db, App app, int appSeqId)
+  private static void persistContainerArgs(DSLContext db, App app, int seqId)
   {
     var containerArgs = app.getContainerArgs();
     if (containerArgs == null || containerArgs.isEmpty()) return;
@@ -892,7 +910,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (containerArg.getValue() != null ) valStr = containerArg.getValue();
       String[] kvPairs = EMPTY_STR_ARRAY;
       if (containerArg.getMetaKeyValuePairs() != null ) kvPairs = containerArg.getMetaKeyValuePairs();
-      db.insertInto(CONTAINER_ARGS).set(CONTAINER_ARGS.APP_SEQ_ID, appSeqId)
+      db.insertInto(CONTAINER_ARGS).set(CONTAINER_ARGS.APP_SEQ_ID, seqId)
               .set(CONTAINER_ARGS.ARG_VAL, valStr)
               .set(CONTAINER_ARGS.META_NAME, containerArg.getMetaName())
               .set(CONTAINER_ARGS.META_DESCRIPTION, containerArg.getMetaDescription())
@@ -905,7 +923,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Persist scheduler options given an sql connection and an app
    */
-  private static void persistSchedulerOptions(DSLContext db, App app, int appSeqId)
+  private static void persistSchedulerOptions(DSLContext db, App app, int seqId)
   {
     var schedulerOptions = app.getSchedulerOptions();
     if (schedulerOptions == null || schedulerOptions.isEmpty()) return;
@@ -915,7 +933,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (schedulerOption.getValue() != null ) valStr = schedulerOption.getValue();
       String[] kvPairs = EMPTY_STR_ARRAY;
       if (schedulerOption.getMetaKeyValuePairs() != null ) kvPairs = schedulerOption.getMetaKeyValuePairs();
-      db.insertInto(SCHEDULER_OPTIONS).set(SCHEDULER_OPTIONS.APP_SEQ_ID, appSeqId)
+      db.insertInto(SCHEDULER_OPTIONS).set(SCHEDULER_OPTIONS.APP_SEQ_ID, seqId)
               .set(SCHEDULER_OPTIONS.ARG_VAL, valStr)
               .set(SCHEDULER_OPTIONS.META_NAME, schedulerOption.getMetaName())
               .set(SCHEDULER_OPTIONS.META_DESCRIPTION, schedulerOption.getMetaDescription())
@@ -928,7 +946,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 //  /**
 //   * Persist notification subscriptions given an sql connection and an app
 //   */
-//  private static void persistNotificationSubscriptions(DSLContext db, App app, int appSeqId)
+//  private static void persistNotificationSubscriptions(DSLContext db, App app, int seqId)
 //  {
 //    var notificationSubscriptions = app.getNotificationSubscriptions();
 //    if (notificationSubscriptions == null || notificationSubscriptions.isEmpty()) return;
@@ -936,7 +954,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 //    for (NotificationSubscription notificationSubscription : notificationSubscriptions) {
 //      String nameStr = "";
 //      if (notificationSubscription.getMetaName() != null ) nameStr = fileInput.getMetaName();
-//      db.insertInto(FILE_INPUTS).set(FILE_INPUTS.APP_SEQ_ID, appSeqId)
+//      db.insertInto(FILE_INPUTS).set(FILE_INPUTS.APP_SEQ_ID, seqId)
 //              .set(FILE_INPUTS.SOURCE_URL, fileInput.getSourceUrl())
 //              .set(FILE_INPUTS.TARGET_PATH, fileInput.getTargetPath())
 //              .set(FILE_INPUTS.IN_PLACE, fileInput.isInPlace())
@@ -951,51 +969,51 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Get file inputs for an app from an auxiliary table
    * @param db - DB connection
-   * @param appSeqId - app
+   * @param seqId - app
    * @return list of file inputs
    */
-  private static List<FileInput> retrieveFileInputs(DSLContext db, int appSeqId)
+  private static List<FileInput> retrieveFileInputs(DSLContext db, int seqId)
   {
-    List<FileInput> fileInputs = db.selectFrom(FILE_INPUTS).where(FILE_INPUTS.APP_SEQ_ID.eq(appSeqId)).fetchInto(FileInput.class);
+    List<FileInput> fileInputs = db.selectFrom(FILE_INPUTS).where(FILE_INPUTS.APP_SEQ_ID.eq(seqId)).fetchInto(FileInput.class);
     return fileInputs;
   }
 
   /**
    * Get app args for an app from an auxiliary table
    * @param db - DB connection
-   * @param appSeqId - app
+   * @param seqId - app
    * @return list of app args
    */
-  private static List<AppArg> retrieveAppArgs(DSLContext db, int appSeqId)
+  private static List<AppArg> retrieveAppArgs(DSLContext db, int seqId)
   {
     List<AppArg> appArgs =
-            db.selectFrom(APP_ARGS).where(APP_ARGS.APP_SEQ_ID.eq(appSeqId)).fetchInto(AppArg.class);
+            db.selectFrom(APP_ARGS).where(APP_ARGS.APP_SEQ_ID.eq(seqId)).fetchInto(AppArg.class);
     return appArgs;
   }
 
   /**
    * Get container args for an app from an auxiliary table
    * @param db - DB connection
-   * @param appSeqId - app
+   * @param seqId - app
    * @return list of container args
    */
-  private static List<AppArg> retrieveContainerArgs(DSLContext db, int appSeqId)
+  private static List<AppArg> retrieveContainerArgs(DSLContext db, int seqId)
   {
     List<AppArg> containerArgs =
-            db.selectFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_SEQ_ID.eq(appSeqId)).fetchInto(AppArg.class);
+            db.selectFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_SEQ_ID.eq(seqId)).fetchInto(AppArg.class);
     return containerArgs;
   }
 
   /**
    * Get scheduler options for an app from an auxiliary table
    * @param db - DB connection
-   * @param appSeqId - app
+   * @param seqId - app
    * @return list of scheduler options
    */
-  private static List<AppArg> retrieveSchedulerOptions(DSLContext db, int appSeqId)
+  private static List<AppArg> retrieveSchedulerOptions(DSLContext db, int seqId)
   {
     List<AppArg> schedulerOptions =
-            db.selectFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_SEQ_ID.eq(appSeqId)).fetchInto(AppArg.class);
+            db.selectFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_SEQ_ID.eq(seqId)).fetchInto(AppArg.class);
     return schedulerOptions;
   }
 
