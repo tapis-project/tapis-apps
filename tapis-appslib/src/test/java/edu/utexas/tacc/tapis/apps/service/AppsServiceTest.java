@@ -137,7 +137,7 @@ public class AppsServiceTest
       svcImpl.hardDeleteApp(authenticatedAdminUser9, apps[i].getId());
     }
 
-    App tmpApp = svc.getApp(authenticatedAdminUser9, apps[0].getId(), false);
+    App tmpApp = svc.getApp(authenticatedAdminUser9, apps[0].getId(), apps[0].getVersion(), false);
     Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getId());
   }
 
@@ -168,7 +168,7 @@ public class AppsServiceTest
     int itemSeqId = svc.createApp(authenticatedOwnerUsr, app0, scrubbedJson);
     Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
     // Retrieve the app
-    App tmpApp = svc.getApp(authenticatedFilesSvc, app0.getId(), false);
+    App tmpApp = svc.getApp(authenticatedFilesSvc, app0.getId(), apps[0].getVersion(), false);
     checkCommonAppAttrs(app0, tmpApp);
   }
 
@@ -189,7 +189,7 @@ public class AppsServiceTest
     Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
     // Update using updateApp
     svc.updateApp(authenticatedOwnerUsr, patchApp, patch1Text);
-    App tmpApp = svc.getApp(authenticatedOwnerUsr, app0.getId(), false);
+    App tmpApp = svc.getApp(authenticatedOwnerUsr, app0.getId(), apps[0].getVersion(), false);
 //  App appE = new App(-1, tenantName, "SappE", "description E", AppType.LINUX, ownerUser, "hostE", true,
 //          "effUserE", prot1.getAccessMethod(), "bucketE", "/rootE", prot1.getTransferMethods(),
 //          prot1.getPort(), prot1.isUseProxy(), prot1.getProxyHost(), prot1.getProxyPort(),false,
@@ -222,7 +222,7 @@ public class AppsServiceTest
     Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
     // Change owner using api
     svc.changeAppOwner(authenticatedOwnerUsr, app0.getId(), newOwnerName);
-    App tmpApp = svc.getApp(authenticatedTestUser2, app0.getId(), false);
+    App tmpApp = svc.getApp(authenticatedTestUser2, app0.getId(), apps[0].getVersion(), false);
     Assert.assertEquals(tmpApp.getOwner(), newOwnerName);
     // Check expected auxilary updates have happened
     // New owner should be able to retrieve permissions and have all permissions
@@ -246,7 +246,7 @@ public class AppsServiceTest
     }
     // Original owner should not be able to read system
     try {
-      svc.getApp(authenticatedOwnerUsr, app0.getId(), false);
+      svc.getApp(authenticatedOwnerUsr, app0.getId(), apps[0].getVersion(), false);
       Assert.fail("Original owner should not have permission to read app after change of ownership. App name: " + app0.getId() +
               " Old owner: " + authenticatedOwnerUsr.getName() + " New Owner: " + newOwnerName);
     } catch (Exception e) {
@@ -264,7 +264,7 @@ public class AppsServiceTest
     app0.setOwner("${apiUserId}");
     int itemSeqId = svc.createApp(authenticatedOwnerUsr, app0, scrubbedJson);
     Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
-    App tmpApp = svc.getApp(authenticatedOwnerUsr, app0.getId(), false);
+    App tmpApp = svc.getApp(authenticatedOwnerUsr, app0.getId(), apps[0].getVersion(), false);
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
     System.out.println("Found item: " + app0.getId());
 
@@ -348,7 +348,7 @@ public class AppsServiceTest
     // Soft delete the app
     int changeCount = svc.softDeleteApp(authenticatedOwnerUsr, app0.getId());
     Assert.assertEquals(changeCount, 1, "Change count incorrect when deleting an app.");
-    App tmpApp2 = svc.getApp(authenticatedOwnerUsr, app0.getId(), false);
+    App tmpApp2 = svc.getApp(authenticatedOwnerUsr, app0.getId(), apps[0].getVersion(), false);
     Assert.assertNull(tmpApp2, "App not deleted. App name: " + app0.getId());
   }
 
@@ -409,12 +409,13 @@ public class AppsServiceTest
   public void testMissingApp() throws Exception
   {
     String fakeAppName = "AMissingAppName";
+    String fakeAppVersion = "AMissingAppVersion";
     String fakeUserName = "AMissingUserName";
     // Make sure app does not exist
     Assert.assertFalse(svc.checkForApp(authenticatedOwnerUsr, fakeAppName));
 
     // Get App with no app should return null
-    App tmpApp = svc.getApp(authenticatedOwnerUsr, fakeAppName, false);
+    App tmpApp = svc.getApp(authenticatedOwnerUsr, fakeAppName, fakeAppVersion, false);
     Assert.assertNull(tmpApp, "App not null for non-existent app");
 
     // Delete app with no app should return 0 changes
@@ -484,7 +485,7 @@ public class AppsServiceTest
 
     // READ - deny user not owner/admin and no READ or MODIFY access
     pass = false;
-    try { svc.getApp(authenticatedTestUser0, app0.getId(), false); }
+    try { svc.getApp(authenticatedTestUser0, app0.getId(), apps[0].getVersion(), false); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -621,7 +622,7 @@ public class AppsServiceTest
 
     // READ - allow owner, service, with READ only, with MODIFY only
     boolean pass = true;
-    try { svc.getApp(authenticatedOwnerUsr, app0.getId(), false); }
+    try { svc.getApp(authenticatedOwnerUsr, app0.getId(), apps[0].getVersion(), false); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -629,7 +630,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = true;
-    try { svc.getApp(authenticatedFilesSvc, app0.getId(), false); }
+    try { svc.getApp(authenticatedFilesSvc, app0.getId(), apps[0].getVersion(), false); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -637,7 +638,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = true;
-    try { svc.getApp(authenticatedTestUser1, app0.getId(), false); }
+    try { svc.getApp(authenticatedTestUser1, app0.getId(), apps[0].getVersion(), false); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
@@ -645,7 +646,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = true;
-    try { svc.getApp(authenticatedTestUser2, app0.getId(), false); }
+    try { svc.getApp(authenticatedTestUser2, app0.getId(), apps[0].getVersion(), false); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));

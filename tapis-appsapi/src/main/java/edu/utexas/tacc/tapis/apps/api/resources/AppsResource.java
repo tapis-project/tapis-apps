@@ -118,7 +118,7 @@ public class AppsResource
    * @return a success response if all is ok
    */
   @GET
-  @Path("/healthcheck")
+  @Path("/check/health")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @PermitAll
@@ -166,7 +166,7 @@ public class AppsResource
    * @return a success response if all is ok
    */
   @GET
-  @Path("/readycheck")
+  @Path("/check/ready")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @PermitAll

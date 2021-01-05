@@ -89,8 +89,6 @@ public class AppResource
   private static final String ID_FIELD = "id";
   private static final String VERSION_FIELD = "version";
   private static final String NOTES_FIELD = "notes";
-  private static final String APP_TYPE_FIELD = "appType";
-  private static final String SEARCH_FIELD = "search";
 
   // ************************************************************************
   // *********************** Fields *****************************************
@@ -243,7 +241,7 @@ public class AppResource
   }
 
   /**
-   * Update an app
+   * Update existing version of an app
    * @param appId - name of the app
    * @param payloadStream - request body
    * @param securityContext - user identity
@@ -448,7 +446,8 @@ public class AppResource
   }
 
   /**
-   * getApp
+   * getAppLatestVersion
+   * Retrieve most recently created version of an application.
    * @param appId - name of the app
    * @param requireExecPerm - check for EXECUTE permission as well as READ permission
    * @param securityContext - user identity
@@ -458,9 +457,66 @@ public class AppResource
   @Path("{appId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getSystem(@PathParam("appId") String appId,
-                            @QueryParam("requireExecPerm") @DefaultValue("false") boolean requireExecPerm,
-                            @Context SecurityContext securityContext)
+  public Response getAppLatestVersion(@PathParam("appId") String appId,
+                         @QueryParam("requireExecPerm") @DefaultValue("false") boolean requireExecPerm,
+                         @Context SecurityContext securityContext)
+  {
+    String opName = "getAppLatestVersion";
+    if (_log.isTraceEnabled()) logRequest(opName);
+
+    // Check that we have all we need from the context, the tenant name and apiUserId
+    // Utility method returns null if all OK and appropriate error response if there was a problem.
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
+    boolean prettyPrint = threadContext.getPrettyPrint();
+    Response resp = ApiUtils.checkContext(threadContext, prettyPrint);
+    if (resp != null) return resp;
+
+    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
+    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+
+    App app;
+    try
+    {
+      app = appsService.getApp(authenticatedUser, appId, null, requireExecPerm);
+    }
+    catch (Exception e)
+    {
+      String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", authenticatedUser, appId, e.getMessage());
+      _log.error(msg, e);
+      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+    }
+
+    // Resource was not found.
+    if (app == null)
+    {
+      String msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appId);
+      _log.warn(msg);
+      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+    }
+
+    // ---------------------------- Success -------------------------------
+    // Success means we retrieved the app information.
+    RespApp resp1 = new RespApp(app);
+    return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
+  }
+
+  /**
+   * getApp
+   * Retrieve specified version of an application.
+   * @param appId - name of the app
+   * @param appVersion - version of the app
+   * @param requireExecPerm - check for EXECUTE permission as well as READ permission
+   * @param securityContext - user identity
+   * @return Response with app object as the result
+   */
+  @GET
+  @Path("{appId}/{appVersion}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getApp(@PathParam("appId") String appId,
+                         @PathParam("appVersion") String appVersion,
+                         @QueryParam("requireExecPerm") @DefaultValue("false") boolean requireExecPerm,
+                         @Context SecurityContext securityContext)
   {
     String opName = "getApp";
     if (_log.isTraceEnabled()) logRequest(opName);
@@ -478,7 +534,7 @@ public class AppResource
     App app;
     try
     {
-      app = appsService.getApp(authenticatedUser, appId, requireExecPerm);
+      app = appsService.getApp(authenticatedUser, appId, appVersion, requireExecPerm);
     }
     catch (Exception e)
     {
@@ -818,11 +874,11 @@ public class AppResource
       msg = ApiUtils.getMsg("APPAPI_CREATE_MISSING_ATTR", VERSION_FIELD);
       errMessages.add(msg);
     }
-    if (app1.getAppType() == null)
-    {
-      msg = ApiUtils.getMsg("APPAPI_CREATE_MISSING_ATTR", APP_TYPE_FIELD);
-      errMessages.add(msg);
-    }
+//    if (app1.getAppType() == null)
+//    {
+//      msg = ApiUtils.getMsg("APPAPI_CREATE_MISSING_ATTR", APP_TYPE_FIELD);
+//      errMessages.add(msg);
+//    }
 
     // If validation failed log error message and return response
     if (!errMessages.isEmpty())

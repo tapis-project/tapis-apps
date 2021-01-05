@@ -117,7 +117,7 @@ public class SearchASTDaoTest
       dao.hardDeleteApp(tenantName, app.getId());
     }
 
-    App tmpapp = dao.getApp(tenantName, apps[0].getId(), true);
+    App tmpapp = dao.getApp(tenantName, apps[0].getId(), apps[0].getVersion(), true);
     Assert.assertNull(tmpapp, "app not deleted. app name: " + apps[0].getId());
   }
 

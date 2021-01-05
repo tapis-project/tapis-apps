@@ -64,7 +64,7 @@ CREATE TABLE apps
   max_jobs INTEGER NOT NULL DEFAULT -1,
   max_jobs_per_user INTEGER NOT NULL DEFAULT -1,
   strict_file_inputs BOOLEAN NOT NULL DEFAULT false,
--- Start jobAttributes ==========================================
+-- ==== Start jobAttributes ======================================
   job_description VARCHAR(2048),
   dynamic_exec_system BOOLEAN NOT NULL DEFAULT false,
   exec_system_constraints TEXT[] NOT NULL,
@@ -88,7 +88,7 @@ CREATE TABLE apps
   max_minutes INTEGER NOT NULL DEFAULT -1,
 --   subscriptions location in jobAttributes ==================
   job_tags TEXT[] NOT NULL,
--- End jobAttributes ==========================================
+-- ==== End jobAttributes ======================================
   tags       TEXT[] NOT NULL,
   notes      JSONB NOT NULL,
   import_ref_id VARCHAR(80),

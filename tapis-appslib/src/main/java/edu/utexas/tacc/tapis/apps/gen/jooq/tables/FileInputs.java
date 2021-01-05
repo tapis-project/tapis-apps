@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class FileInputs extends TableImpl<FileInputsRecord> {
 
-    private static final long serialVersionUID = -703918302;
+    private static final long serialVersionUID = -1559307252;
 
     /**
      * The reference instance of <code>tapis_app.file_inputs</code>
@@ -60,12 +60,12 @@ public class FileInputs extends TableImpl<FileInputsRecord> {
     /**
      * The column <code>tapis_app.file_inputs.source_url</code>.
      */
-    public final TableField<FileInputsRecord, String> SOURCE_URL = createField(DSL.name("source_url"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
+    public final TableField<FileInputsRecord, String> SOURCE_URL = createField(DSL.name("source_url"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
 
     /**
      * The column <code>tapis_app.file_inputs.target_path</code>.
      */
-    public final TableField<FileInputsRecord, String> TARGET_PATH = createField(DSL.name("target_path"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
+    public final TableField<FileInputsRecord, String> TARGET_PATH = createField(DSL.name("target_path"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
 
     /**
      * The column <code>tapis_app.file_inputs.in_place</code>.
@@ -75,7 +75,7 @@ public class FileInputs extends TableImpl<FileInputsRecord> {
     /**
      * The column <code>tapis_app.file_inputs.meta_name</code>.
      */
-    public final TableField<FileInputsRecord, String> META_NAME = createField(DSL.name("meta_name"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+    public final TableField<FileInputsRecord, String> META_NAME = createField(DSL.name("meta_name"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
 
     /**
      * The column <code>tapis_app.file_inputs.meta_description</code>.

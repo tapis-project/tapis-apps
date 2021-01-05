@@ -34,13 +34,12 @@ public final class App
   public static final String APIUSERID_VAR = "${apiUserId}";
   public static final String OWNER_VAR = "${owner}";
   public static final String TENANT_VAR = "${tenant}";
-  public static final String PERMS_WILDCARD = "*";
 
   // Default values
   public static final String DEFAULT_OWNER = APIUSERID_VAR;
   public static final boolean DEFAULT_ENABLED = true;
+  public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
   public static final JsonObject DEFAULT_NOTES = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
-  public static final String DEFAULT_TAGS_STR = "{}";
   public static final String[] EMPTY_STR_ARRAY = new String[0];
 
   // ************************************************************************
@@ -192,16 +191,15 @@ public final class App
 
   /**
    * Copy constructor. Returns a deep copy of an App object.
-   * Make defensive copies as needed. Note Credential is immutable so no need for copy.
+   * The getters make defensive copies as needed.
    */
   public App(App a)
   {
     if (a==null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT"));
     seqId = a.getSeqId();
-    created = a.getCreated();
-    updated = a.getUpdated();
     tenant = a.getTenant();
     id = a.getId();
+    version = a.getVersion();
     description = a.getDescription();
     appType = a.getAppType();
     owner = a.getOwner();
@@ -214,7 +212,7 @@ public final class App
     strictFileInputs = a.isStrictFileInputs();
     jobDescription = a.getJobDescription();
     dynamicExecSystem = a.isDynamicExecSystem();
-    execSystemConstraints = (a.getExecSystemConstraints() == null) ? null : a.getExecSystemConstraints().clone();
+    execSystemConstraints = a.getExecSystemConstraints();
     execSystemId = a.getExecSystemId();
     execSystemExecDir = a.getExecSystemExecDir();
     execSystemInputDir = a.getExecSystemInputDir();
@@ -227,14 +225,21 @@ public final class App
     coresPerNode = a.getCoresPerNode();
     memoryMb = a.getMemoryMb();
     maxMinutes = a.getMaxMinutes();
-    envVariables = (a.getEnvVariables() == null) ? null : a.getEnvVariables().clone();
-    archiveIncludes = (a.getArchiveIncludes() == null) ? null : a.getArchiveIncludes().clone();
-    archiveExcludes = (a.getArchiveExcludes() == null) ? null : a.getArchiveExcludes().clone();
-    jobTags = (a.getJobTags() == null) ? null : a.getJobTags().clone();
-    tags = (a.getTags() == null) ? null : a.getTags().clone();
+    envVariables = a.getEnvVariables();
+    archiveIncludes = a.getArchiveIncludes();
+    archiveExcludes = a.getArchiveExcludes();
+    jobTags = a.getJobTags();
+    fileInputs = a.getFileInputs();
+    notificationSubscriptions = a.getNotificationSubscriptions();
+    appArgs = a.getAppArgs();
+    containerArgs = a.getContainerArgs();
+    schedulerOptions = a.getSchedulerOptions();
+    tags = a.getTags();
     notes = a.getNotes();
     importRefId = a.getImportRefId();
     deleted = a.isDeleted();
+    created = a.getCreated();
+    updated = a.getUpdated();
   }
 
   // ************************************************************************

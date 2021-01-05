@@ -34,7 +34,6 @@ import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.tenants.client.gen.model.Tenant;
-import static edu.utexas.tacc.tapis.shared.TapisConstants.SERVICE_NAME_APPS;
 import static edu.utexas.tacc.tapis.apps.model.App.APIUSERID_VAR;
 import static edu.utexas.tacc.tapis.apps.model.App.OWNER_VAR;
 import static edu.utexas.tacc.tapis.apps.model.App.TENANT_VAR;
@@ -126,8 +125,7 @@ public class AppsServiceImpl implements AppsService
 
     // ---------------------------- Check inputs ------------------------------------
     // Required app attributes: name, type
-    if (StringUtils.isBlank(tenantName) || StringUtils.isBlank(apiUserId) || StringUtils.isBlank(appId) ||
-        app.getAppType() == null)
+    if (StringUtils.isBlank(tenantName) || StringUtils.isBlank(apiUserId) || StringUtils.isBlank(appId))
     {
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", authenticatedUser, appId));
     }
@@ -216,12 +214,12 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Update an app object given a PatchApp and the text used to create the PatchApp.
+   * Update existing version of an app given a PatchApp and the text used to create the PatchApp.
    * Secrets in the text should be masked.
    * Attributes that can be updated:
-   *   description, version enabled, tags, notes.
+   *   TODO/TBD: description, enabled, tags, notes.
    * Attributes that cannot be updated:
-   *   tenant, id, appType, owner
+   *   tenant, id, version, appType, owner
    * @param authenticatedUser - principal user containing tenant and user info
    * @param patchApp - Pre-populated PatchApp object
    * @param scrubbedText - Text used to create the PatchApp object - secrets should be scrubbed. Saved in update record.
@@ -244,6 +242,7 @@ public class AppsServiceImpl implements AppsService
     String apiUserId = authenticatedUser.getName();
     String appTenantName = patchApp.getTenant();
     String appId = patchApp.getId();
+    String appVersion = patchApp.getVersion();
     // For service request use oboTenant for tenant associated with the app
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
 
@@ -260,7 +259,7 @@ public class AppsServiceImpl implements AppsService
     }
 
     // Retrieve the app being patched and create fully populated App with changes merged in
-    App origApp = dao.getApp(appTenantName, appId);
+    App origApp = dao.getApp(appTenantName, appId, appVersion);
     App patchedApp = createPatchedApp(origApp, patchApp);
 
     // ------------------------- Check service level authorization -------------------------
@@ -314,8 +313,8 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(appTenantName, appId, false))
          throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", authenticatedUser, appId));
 
-    // Retrieve the app being updated
-    App tmpApp = dao.getApp(appTenantName, appId);
+    // Retrieve the most recently created version of the app being updated
+    App tmpApp = dao.getApp(appTenantName, appId, null);
     int seqId = tmpApp.getSeqId();
     String oldOwnerName = tmpApp.getOwner();
 
@@ -334,6 +333,7 @@ public class AppsServiceImpl implements AppsService
     String roleNameR = App.ROLE_READ_PREFIX + seqId;
     try {
       // ------------------- Make Dao call to update the app owner -----------------------------------
+      // TODO: This will actually need to be for all versions (i.e. all seqId's) of the app
       dao.updateAppOwner(authenticatedUser, seqId, newOwnerName);
       // Add role and permissions for new owner
       skClient.grantUserRole(appTenantName, newOwnerName, roleNameR);
@@ -478,15 +478,17 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * getApp
+   * Retrieve specified or most recently created version of an application.
    * @param authenticatedUser - principal user containing tenant and user info
    * @param appId - Name of the app
+   * @param appVersion - Version of the app, null or blank for latest version
    * @param requireExecPerm - check for EXECUTE permission as well as READ permission
    * @return populated instance of an App or null if not found or user not authorized.
    * @throws TapisException - for Tapis related exceptions
    * @throws NotAuthorizedException - unauthorized
    */
   @Override
-  public App getApp(AuthenticatedUser authenticatedUser, String appId, boolean requireExecPerm)
+  public App getApp(AuthenticatedUser authenticatedUser, String appId, String appVersion, boolean requireExecPerm)
           throws TapisException, NotAuthorizedException, TapisClientException
   {
     AppOperation op = AppOperation.read;
@@ -515,7 +517,7 @@ public class AppsServiceImpl implements AppsService
                     appId, null, null, null);
     }
 
-    App result = dao.getApp(appTenantName, appId);
+    App result = dao.getApp(appTenantName, appId, appVersion);
     return result;
   }
 
@@ -1243,8 +1245,8 @@ public class AppsServiceImpl implements AppsService
     String appTenantName = authenticatedUser.getTenantId();
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
 
-    // Fetch the app. If not found then return
-    App app = dao.getApp(appTenantName, appId, true);
+    // Fetch the most recently created version of the app. If not found then return
+    App app = dao.getApp(appTenantName, appId, null, true);
 
     var skClient = getSKClient(authenticatedUser);
 

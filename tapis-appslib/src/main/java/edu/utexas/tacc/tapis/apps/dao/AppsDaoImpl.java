@@ -10,7 +10,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
-import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.search.parser.ASTBinaryExpression;
 import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
@@ -78,7 +77,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (StringUtils.isBlank(createJsonStr)) LibUtils.logAndThrowNullParmException(opName, "createJson");
     if (StringUtils.isBlank(app.getTenant())) LibUtils.logAndThrowNullParmException(opName, "tenant");
     if (StringUtils.isBlank(app.getId())) LibUtils.logAndThrowNullParmException(opName, "appName");
-    if (app.getAppType() == null) LibUtils.logAndThrowNullParmException(opName, "appType");
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -88,26 +86,28 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
 
-      // Check to see if app exists or has been soft deleted. If yes then throw IllegalStateException
-      boolean doesExist = checkForApp(db, app.getTenant(), app.getId(), true);
-      if (doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_SYS_EXISTS", authenticatedUser, app.getId()));
-
-      // Make sure owner, notes and tags are all set
+      // Check to see if app (any version) exists or has been soft deleted. If yes then throw IllegalStateException
+      boolean doesExist = checkIfAppExists(db, app.getTenant(), app.getId(), null, true);
+      if (doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_SYS_EXISTS", authenticatedUser,
+                                                                         app.getId()));
+      // Make sure owner, runtime, notes and tags are all set
       String owner = App.DEFAULT_OWNER;
-      if (StringUtils.isNotBlank(app.getOwner())) owner = app.getOwner();
+      App.Runtime runtime = App.DEFAULT_RUNTIME;
       String[] execSystemConstraintsStrArray = App.EMPTY_STR_ARRAY;
       String[] envVariablesStrArray = App.EMPTY_STR_ARRAY;
       String[] archiveIncludesStrArray = App.EMPTY_STR_ARRAY;
       String[] archiveExcludesStrArray = App.EMPTY_STR_ARRAY;
       String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
       String[] tagsStrArray = App.EMPTY_STR_ARRAY;
+      JsonObject notesObj = App.DEFAULT_NOTES;
+      if (StringUtils.isNotBlank(app.getOwner())) owner = app.getOwner();
+      if (app.getRuntime() != null) runtime = app.getRuntime();
       if (app.getExecSystemConstraints() != null) execSystemConstraintsStrArray = app.getExecSystemConstraints();
       if (app.getEnvVariables() != null) envVariablesStrArray = app.getEnvVariables();
       if (app.getArchiveIncludes() != null) archiveIncludesStrArray = app.getArchiveIncludes();
       if (app.getArchiveExcludes() != null) archiveExcludesStrArray = app.getArchiveExcludes();
       if (app.getJobTags() != null) jobTagsStrArray = app.getJobTags();
       if (app.getTags() != null) tagsStrArray = app.getTags();
-      JsonObject notesObj = App.DEFAULT_NOTES;
       if (app.getNotes() != null) notesObj = (JsonObject) app.getNotes();
 
       Record record = db.insertInto(APPS)
@@ -118,7 +118,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS.APP_TYPE, app.getAppType())
               .set(APPS.OWNER, owner)
               .set(APPS.ENABLED, app.isEnabled())
-              .set(APPS.RUNTIME, app.getRuntime())
+              .set(APPS.RUNTIME, runtime)
               .set(APPS.RUNTIME_VERSION, app.getRuntimeVersion())
               .set(APPS.CONTAINER_IMAGE, app.getContainerImage())
               .set(APPS.MAX_JOBS, app.getMaxJobs())
@@ -175,31 +175,34 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * Update an existing app.
+   * Update an existing app Id+Version.
    * Following columns will be updated:
-   *  version, description, enabled, jobCapabilities, tags, notes
-   * @return Sequence id of object created
+   *  description, enabled, tags, notes
+   * @return Sequence id of object updated
    * @throws TapisException - on error
    * @throws IllegalStateException - if app already exists
    */
   @Override
   public int updateApp(AuthenticatedUser authenticatedUser, App patchedApp, PatchApp patchApp,
-                           String updateJsonStr, String scrubbedText)
+                       String updateJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException {
     String opName = "updateApp";
     // ------------------------- Check Input -------------------------
     if (patchedApp == null) LibUtils.logAndThrowNullParmException(opName, "patchedApp");
     if (patchApp == null) LibUtils.logAndThrowNullParmException(opName, "patchApp");
     if (authenticatedUser == null) LibUtils.logAndThrowNullParmException(opName, "authenticatedUser");
-    if (StringUtils.isBlank(updateJsonStr)) LibUtils.logAndThrowNullParmException(opName, "updateJson");
-    if (StringUtils.isBlank(patchedApp.getTenant())) LibUtils.logAndThrowNullParmException(opName, "tenant");
-    if (StringUtils.isBlank(patchedApp.getId())) LibUtils.logAndThrowNullParmException(opName, "appName");
-    if (patchedApp.getAppType() == null) LibUtils.logAndThrowNullParmException(opName, "appType");
-    if (patchedApp.getSeqId() < 1) LibUtils.logAndThrowNullParmException(opName, "seqId");
+
     // Pull out some values for convenience
     String tenant = patchedApp.getTenant();
-    String name = patchedApp.getId();
+    String appId = patchedApp.getId();
+    String appVersion = patchedApp.getId();
     int seqId = patchedApp.getSeqId();
+    // Check required attributes have been provided
+    if (StringUtils.isBlank(updateJsonStr)) LibUtils.logAndThrowNullParmException(opName, "updateJson");
+    if (StringUtils.isBlank(tenant)) LibUtils.logAndThrowNullParmException(opName, "tenant");
+    if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
+    if (StringUtils.isBlank(appVersion)) LibUtils.logAndThrowNullParmException(opName, "appVersion");
+    if (patchedApp.getSeqId() < 1) LibUtils.logAndThrowNullParmException(opName, "seqId");
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -210,8 +213,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       DSLContext db = DSL.using(conn);
 
       // Check to see if app exists and has not been soft deleted. If no then throw IllegalStateException
-      boolean doesExist = checkForApp(db, tenant, name, false);
-      if (!doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", authenticatedUser, name));
+      boolean doesExist = checkIfAppExists(db, tenant, appId, appVersion, false);
+      if (!doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", authenticatedUser, appId));
 
       // Make sure notes and tags are all set
       String[] tagsStrArray = App.EMPTY_STR_ARRAY;
@@ -220,7 +223,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
 
       db.update(APPS)
-              .set(APPS.VERSION, patchedApp.getVersion())
               .set(APPS.DESCRIPTION, patchedApp.getDescription())
               .set(APPS.ENABLED, patchedApp.isEnabled())
               .set(APPS.TAGS, tagsStrArray)
@@ -421,8 +423,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * checkForApp
+   * checkForApp - check that app with specified Id (any version) exists
    * @param appId - app name
+   * @param includeDeleted - whether or not to include soft deleted items
    * @return true if found else false
    * @throws TapisException - on error
    */
@@ -439,7 +442,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
       // Run the sql
-      result = checkForApp(db, tenant, appId, includeDeleted);
+      result = checkIfAppExists(db, tenant, appId, null, includeDeleted);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
@@ -457,7 +460,45 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * getApp
+   * checkForApp - check that the App with specified Id and version exists
+   * @param appId - app name
+   * @param appVersion - app version
+   * @param includeDeleted - whether or not to include soft deleted items
+   * @return true if found else false
+   * @throws TapisException - on error
+   */
+  @Override
+  public boolean checkForApp(String tenant, String appId, String appVersion, boolean includeDeleted) throws TapisException {
+    // Initialize result.
+    boolean result = false;
+
+    // ------------------------- Call SQL ----------------------------
+    Connection conn = null;
+    try
+    {
+      // Get a database connection.
+      conn = getConnection();
+      DSLContext db = DSL.using(conn);
+      // Run the sql
+      result = checkIfAppExists(db, tenant, appId, appVersion, includeDeleted);
+      // Close out and commit
+      LibUtils.closeAndCommitDB(conn, null, null);
+    }
+    catch (Exception e)
+    {
+      // Rollback transaction and throw an exception
+      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", tenant, appId, e.getMessage());
+    }
+    finally
+    {
+      // Always return the connection back to the connection pool.
+      LibUtils.finalCloseDB(conn);
+    }
+    return result;
+  }
+
+  /**
+   * getApp - retrieve the most recently created version of the app
    * @param appId - app name
    * @return App object if found, null if not found
    * @throws TapisException - on error
@@ -465,20 +506,41 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   @Override
   public App getApp(String tenant, String appId) throws TapisException
   {
-    return getApp(tenant, appId, false);
+    return getApp(tenant, appId, null, false);
   }
 
   /**
    * getApp
+   * Retrieve specified or most recently created version of an application.
    * @param appId - app name
+   * @param appVersion - app version, null for most recently created version
    * @return App object if found, null if not found
    * @throws TapisException - on error
    */
   @Override
-  public App getApp(String tenant, String appId, boolean includeDeleted) throws TapisException
+  public App getApp(String tenant, String appId, String appVersion) throws TapisException
+  {
+    return getApp(tenant, appId, appVersion, false);
+  }
+
+  /**
+   * getApp
+   * Retrieve specified or most recently created version of an application.
+   * @param appId - app name
+   * @param appVersion - app version, null for most recently created version
+   * @param includeDeleted - whether or not to include soft deleted items
+   * @return App object if found, null if not found
+   * @throws TapisException - on error
+   */
+  @Override
+  public App getApp(String tenant, String appId, String appVersion, boolean includeDeleted) throws TapisException
   {
     // Initialize result.
     App result = null;
+
+    // Search for either a specific version or most recently created version
+    boolean findLatest = false;
+    if (StringUtils.isBlank(appVersion)) findLatest = true;
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -488,10 +550,30 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
       AppsRecord r;
-      if (includeDeleted)
-        r = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).fetchOne();
+      if (!findLatest)
+      {
+        // Search for a specific version
+        if (includeDeleted)
+          r = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.VERSION.eq(appVersion))
+                  .fetchOne();
+        else
+          r = db.selectFrom(APPS)
+                  .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.VERSION.eq(appVersion),APPS.DELETED.eq(false))
+                  .fetchOne();
+      }
       else
-        r = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false)).fetchOne();
+      {
+        // Search for most recently created version
+        if (includeDeleted)
+          r = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.VERSION.eq(appVersion))
+                  .orderBy(APPS.CREATED.desc())
+                  .fetchAny();
+        else
+          r = db.selectFrom(APPS)
+                  .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.VERSION.eq(appVersion),APPS.DELETED.eq(false))
+                  .orderBy(APPS.CREATED.desc())
+                  .fetchAny();
+      }
       if (r == null) return null;
 
       // Convert result record to Apps and fill in data from aux tables
@@ -539,6 +621,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // If no seqIDs in list then we are done.
     if (seqIDs != null && seqIDs.isEmpty()) return retList;
 
+    // TODO/TBD: Search for either a specific version or most recently created version
+    // TODO: Determine if search contains version or if we just get the latest version
+    boolean findLatest = true;
+//    if (StringUtils.isBlank(appVersion)) findLatest = true;
+
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
     try
@@ -569,7 +656,16 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (seqIDs != null && !seqIDs.isEmpty()) whereCondition = whereCondition.and(APPS.SEQ_ID.in(seqIDs));
 
       // Execute the select
-      Result<AppsRecord> results = db.selectFrom(APPS).where(whereCondition).fetch();
+      Result<AppsRecord> results;
+      if (findLatest)
+      {
+        // TODO currently same as findLatest=false
+        results = db.selectFrom(APPS).where(whereCondition).fetch();
+      }
+      else
+      {
+        results = db.selectFrom(APPS).where(whereCondition).fetch();
+      }
       if (results == null || results.isEmpty()) return retList;
 
       // Convert result records to Apps and fill in data from aux tables
@@ -836,17 +932,28 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * Given an sql connection check to see if specified app exists and has/has not been soft deleted
+   * Given an sql connection check to see if specified app exists. Inclusion of soft deletes determined by flag.
    * @param db - jooq context
    * @param tenant - name of tenant
-   * @param name - name of app
-   * @param includeDeleted -if soft deleted apps should be included
+   * @param appId - Id of app
+   * @param appVersion - version of app, null if check is for any version
+   * @param includeDeleted - whether or not to include soft deleted items
    * @return - true if app exists, else false
    */
-  private static boolean checkForApp(DSLContext db, String tenant, String name, boolean includeDeleted)
+  private static boolean checkIfAppExists(DSLContext db, String tenant, String appId, String appVersion,
+                                          boolean includeDeleted)
   {
-    if (includeDeleted) return db.fetchExists(APPS, APPS.ID.eq(name),APPS.TENANT.eq(tenant));
-    else return db.fetchExists(APPS, APPS.ID.eq(name),APPS.TENANT.eq(tenant),APPS.DELETED.eq(false));
+    String versionMatchStr = appVersion;
+    if (StringUtils.isBlank(appVersion)) versionMatchStr = "%";
+    if (includeDeleted)
+    {
+      return db.fetchExists(APPS, APPS.ID.eq(appId),APPS.TENANT.eq(tenant),APPS.VERSION.like(versionMatchStr));
+    }
+    else
+    {
+      return db.fetchExists(APPS, APPS.ID.eq(appId),APPS.TENANT.eq(tenant),APPS.VERSION.like(versionMatchStr),
+                            APPS.DELETED.eq(false));
+    }
   }
 
   /**

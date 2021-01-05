@@ -3,6 +3,7 @@ package edu.utexas.tacc.tapis.apps.dao;
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.apps.IntegrationUtils;
@@ -54,7 +55,7 @@ public class AppsDaoTest
       dao.hardDeleteApp(tenantName, apps[i].getId());
     }
 
-    App tmpApp = dao.getApp(tenantName, apps[0].getId(), true);
+    App tmpApp = dao.getApp(tenantName, apps[0].getId(), apps[0].getVersion(), true);
     Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getId());
   }
 
@@ -73,7 +74,7 @@ public class AppsDaoTest
     App app0 = apps[1];
     int itemSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
-    App tmpApp = dao.getApp(app0.getTenant(), app0.getId());
+    App tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion());
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
     System.out.println("Found item: " + app0.getId());
 
@@ -84,11 +85,13 @@ public class AppsDaoTest
     Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
     Assert.assertEquals(tmpApp.getAppType().name(), app0.getAppType().name());
     Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
+    Assert.assertEquals(tmpApp.isEnabled(), app0.isEnabled());
     Assert.assertEquals(tmpApp.getRuntime().name(), app0.getRuntime().name());
     Assert.assertEquals(tmpApp.getRuntimeVersion(), app0.getRuntimeVersion());
     Assert.assertEquals(tmpApp.getContainerImage(), app0.getContainerImage());
     Assert.assertEquals(tmpApp.getMaxJobs(), app0.getMaxJobs());
     Assert.assertEquals(tmpApp.getMaxJobsPerUser(), app0.getMaxJobsPerUser());
+    Assert.assertEquals(tmpApp.isStrictFileInputs(), app0.isStrictFileInputs());
     Assert.assertEquals(tmpApp.getJobDescription(), app0.getJobDescription());
     Assert.assertEquals(tmpApp.isDynamicExecSystem(), app0.isDynamicExecSystem());
     // Verify execSystemConstraints
@@ -188,8 +191,6 @@ public class AppsDaoTest
               "List of fileInputs did not contain an item with metaName: " + itemSeedItem.getMetaName());
     }
 
-    // Verify notification subscriptions
-
     // Verify app args
     List<AppArg> origArgs = app0.getAppArgs();
     List<AppArg> tmpArgs = tmpApp.getAppArgs();
@@ -209,7 +210,7 @@ public class AppsDaoTest
     Assert.assertNotNull(origArgs, "Orig containerArgs was null");
     Assert.assertNotNull(tmpArgs, "Fetched containerArgs was null");
     Assert.assertEquals(tmpArgs.size(), origArgs.size());
-    argValuesFound = new ArrayList<String>();
+    argValuesFound = new ArrayList<>();
     for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getValue());}
     for (AppArg itemSeedItem : origArgs)
     {
@@ -223,7 +224,7 @@ public class AppsDaoTest
     Assert.assertNotNull(origArgs, "Orig schedulerOptions was null");
     Assert.assertNotNull(tmpArgs, "Fetched schedulerOptions was null");
     Assert.assertEquals(tmpArgs.size(), origArgs.size());
-    argValuesFound = new ArrayList<String>();
+    argValuesFound = new ArrayList<>();
     for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getValue());}
     for (AppArg itemSeedItem : origArgs)
     {
@@ -231,6 +232,19 @@ public class AppsDaoTest
               "List of schedulerOptions did not contain an item with value: " + itemSeedItem.getValue());
     }
 
+    // Verify notification subscriptions
+    List<NotificationSubscription> origNotificationSubs = app0.getNotificationSubscriptions();
+    List<NotificationSubscription> tmpSubs = tmpApp.getNotificationSubscriptions();
+    Assert.assertNotNull(origNotificationSubs, "Orig notificationSubscriptions was null");
+    Assert.assertNotNull(tmpSubs, "Fetched notificationSubscriptions was null");
+    Assert.assertEquals(tmpSubs.size(), origNotificationSubs.size());
+    var filtersFound = new ArrayList<String>();
+    for (NotificationSubscription itemFound : tmpSubs) {filtersFound.add(itemFound.getFilter());}
+    for (NotificationSubscription itemSeedItem : origNotificationSubs)
+    {
+      Assert.assertTrue(filtersFound.contains(itemSeedItem.getFilter()),
+              "List of notificationSubscriptions did not contain an item with filter: " + itemSeedItem.getFilter());
+    }
   }
 
   // Test retrieving all app names
@@ -277,7 +291,7 @@ public class AppsDaoTest
     itemSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
     seqIdList.add(itemSeqId);
-    // Get all apps in list of IDs
+    // Get all apps in list of seqIDs
     List<App> apps = dao.getApps(tenantName, null, seqIdList);
     for (App app : apps) {
       System.out.println("Found item with seqId: " + app.getSeqId() + " and Id: " + app.getId());
@@ -294,7 +308,7 @@ public class AppsDaoTest
     System.out.println("Created item with seqId: " + itemSeqId);
     Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
     dao.updateAppOwner(authenticatedUser, itemSeqId, "newOwner");
-    App tmpApp = dao.getApp(app0.getTenant(), app0.getId());
+    App tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion());
     Assert.assertEquals(tmpApp.getOwner(), "newOwner");
   }
 
@@ -327,11 +341,12 @@ public class AppsDaoTest
   // Test behavior when app is missing, especially for cases where service layer depends on the behavior.
   //  update - throws not found exception
   //  getApp - returns null
-  //  checkByName - returns false
+  //  check - returns false
   //  getOwner - returns null
   @Test
   public void testMissingApp() throws Exception {
     String fakeAppId = "AMissingAppId";
+    String fakeAppVersion = "AMissingAppVersion";
     PatchApp patchApp = new PatchApp(appVersion, "description PATCHED", enabledFalse, tags, notes);
     patchApp.setTenant(tenantName);
     patchApp.setId(fakeAppId);
@@ -353,7 +368,7 @@ public class AppsDaoTest
       pass = true;
     }
     Assert.assertTrue(pass);
-    Assert.assertNull(dao.getApp(tenantName, fakeAppId));
+    Assert.assertNull(dao.getApp(tenantName, fakeAppId, fakeAppVersion));
     Assert.assertNull(dao.getAppOwner(tenantName, fakeAppId));
   }
 }
