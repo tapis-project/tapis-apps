@@ -119,19 +119,21 @@ public class AppsServiceImpl implements AppsService
     String tenantName = authenticatedUser.getTenantId();
     String apiUserId = authenticatedUser.getName();
     String appId = app.getId();
+    String appVersion = app.getVersion();
     String appTenantName = authenticatedUser.getTenantId();
     // For service request use oboTenant for tenant associated with the app
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
 
     // ---------------------------- Check inputs ------------------------------------
-    // Required app attributes: name, type
-    if (StringUtils.isBlank(tenantName) || StringUtils.isBlank(apiUserId) || StringUtils.isBlank(appId))
+    // Required app attributes: id, version
+    if (StringUtils.isBlank(tenantName) || StringUtils.isBlank(apiUserId) || StringUtils.isBlank(appId) ||
+        StringUtils.isBlank(appVersion))
     {
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", authenticatedUser, appId));
     }
 
-    // Check if app already exists
-    if (dao.checkForApp(appTenantName, appId, true))
+    // Check if app with id+version already exists
+    if (dao.checkForApp(appTenantName, appId, appVersion, true))
     {
       throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_EXISTS", authenticatedUser, appId));
     }
@@ -1308,10 +1310,8 @@ public class AppsServiceImpl implements AppsService
   private App createPatchedApp(App o, PatchApp p)
   {
     App p1 = new App(o);
-    if (p.getVersion() != null) p1.setVersion(p.getVersion());
     if (p.getDescription() != null) p1.setDescription(p.getDescription());
     if (p.isEnabled() != null) p1.setEnabled(p.isEnabled());
-//    if (p.getJobCapabilities() != null) p1.setJobCapabilities(p.getJobCapabilities());
     if (p.getTags() != null) p1.setTags(p.getTags());
     if (p.getNotes() != null) p1.setNotes(p.getNotes());
     return p1;

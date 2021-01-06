@@ -12,48 +12,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34efd738-2b9a-4e43-b14d-018fde0be61f" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/AppsApplication.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/AppsDaoTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/AppsDaoTest_testGet.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/AppsDaoTest_testGetAppsInSeqIDList.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/AppsServiceTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/SearchASTDaoTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/SearchDaoTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/SearchDaoTest_testValidCases.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppsResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppsResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/resources/edu/utexas/tacc/tapis/apps/api/AppApiMessages.properties" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/resources/edu/utexas/tacc/tapis/apps/api/AppApiMessages.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDao.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/AppArgs.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/AppArgs.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/FileInputs.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/FileInputs.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/App.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/service/AppsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/service/AppsService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/PatchApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/PatchApp.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/service/AppsServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/service/AppsServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/resources/db/migration/V001__init.sql" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/resources/db/migration/V001__init.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/IntegrationUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/IntegrationUtils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/dao/SearchASTDaoTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/dao/SearchASTDaoTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/dao/SearchDaoTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/dao/SearchDaoTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/service/AppsServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/service/AppsServiceTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-client-java/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/AppsUserTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/AppsUserTest_testCreateApp.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/SystemsFilesSvcTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/SystemsFilesSvcTest_testGetSystem.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/SystemsMatchConstraintsTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/SystemsSearchASTTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/SystemsSearchGetTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/SystemsSearchGetTest_testSortingSkip.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/SystemsUserTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/SystemsUserTest_testCreateSystem.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/SystemsUserTest_testGetSystem.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/.idea/runConfigurations/SystemsUserTest_testHealthAndReady.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/apps-client/AppsAPI.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-client-java/apps-client/AppsAPI.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/apps-client/src/main/java/edu/utexas/tacc/tapis/apps/client/AppsClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-client-java/apps-client/src/main/java/edu/utexas/tacc/tapis/apps/client/AppsClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-client-java/systems-client/SystemsAPI.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-client-java/systems-client/SystemsAPI.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -101,7 +67,7 @@
       <recent name="edu.utexas.tacc.tapis.apps.api.responses" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.AppsApplication">
+  <component name="RunManager" selected="TestNG.AppsServiceTest">
     <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
       <option name="arquillianRunConfiguration">
         <value>
@@ -123,9 +89,15 @@
       <item itemvalue="TestNG.SearchDaoTest" />
       <item itemvalue="TestNG.SearchDaoTest.testValidCases" />
       <item itemvalue="TestNG.AppsDaoTest.testCreate" />
+      <item itemvalue="TestNG.AppsDaoTest.testMultipleVersions" />
+      <item itemvalue="TestNG.AppsServiceTest.testGetApp" />
+      <item itemvalue="TestNG.AppsServiceTest.testUpdateApp" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="TestNG.AppsServiceTest.testUpdateApp" />
+        <item itemvalue="TestNG.AppsServiceTest.testGetApp" />
+        <item itemvalue="TestNG.AppsDaoTest.testMultipleVersions" />
         <item itemvalue="TestNG.AppsDaoTest.testCreate" />
       </list>
     </recent_temporary>
@@ -139,5 +111,16 @@
       <path value="$PROJECT_DIR$/../../main/tapis-client-java" />
       <path value="$PROJECT_DIR$/../../main/tapis-shared-java" />
     </ignored-roots>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java</url>
+          <line>196</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

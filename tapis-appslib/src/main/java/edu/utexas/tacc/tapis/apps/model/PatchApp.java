@@ -16,7 +16,6 @@ public final class PatchApp
   private String version;    // Version of the app
   private final String description; // Full description of the app
   private final Boolean enabled; // Indicates if app is currently enabled
-//  private final List<Capability> jobCapabilities; // List of job related capabilities required by the app
   private final String[] tags;       // List of arbitrary tags as strings
   private Object notes;      // Simple metadata as json
 
@@ -27,14 +26,11 @@ public final class PatchApp
   /**
    * Constructor setting all final attributes.
    */
-  public PatchApp(String version1, String description1, Boolean enabled1,
-//                  List<Capability> jobCapabilities1,
+  public PatchApp(String description1, Boolean enabled1,
                   String[] tags1, Object notes1)
   {
-    version = version1;
     description = description1;
     enabled = enabled1;
-//    jobCapabilities = (jobCapabilities1 == null) ? null : new ArrayList<>(jobCapabilities1);
     tags = (tags1 == null) ? null : tags1.clone();
     notes = notes1;
   }

@@ -841,10 +841,11 @@ public class AppResource
    */
   private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String appId)
   {
-    PatchApp patchApp = new PatchApp(req.version, req.description, req.enabled, req.tags, req.notes);
+    PatchApp patchApp = new PatchApp(req.description, req.enabled, req.tags, req.notes);
     // Update tenant name and app name
     patchApp.setTenant(tenantName);
     patchApp.setId(appId);
+    patchApp.setVersion(req.version);
     return patchApp;
   }
 

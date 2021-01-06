@@ -59,7 +59,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /* ********************************************************************** */
 
   /**
-   * Create a new app.
+   * Create a new app with id+version
    *
    * @return Sequence id of object created
    * @throws TapisException - on error
@@ -76,7 +76,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (authenticatedUser == null) LibUtils.logAndThrowNullParmException(opName, "authenticatedUser");
     if (StringUtils.isBlank(createJsonStr)) LibUtils.logAndThrowNullParmException(opName, "createJson");
     if (StringUtils.isBlank(app.getTenant())) LibUtils.logAndThrowNullParmException(opName, "tenant");
-    if (StringUtils.isBlank(app.getId())) LibUtils.logAndThrowNullParmException(opName, "appName");
+    if (StringUtils.isBlank(app.getId())) LibUtils.logAndThrowNullParmException(opName, "appId");
+    if (StringUtils.isBlank(app.getVersion())) LibUtils.logAndThrowNullParmException(opName, "appVersion");
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -86,9 +87,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
 
-      // Check to see if app (any version) exists or has been soft deleted. If yes then throw IllegalStateException
-      boolean doesExist = checkIfAppExists(db, app.getTenant(), app.getId(), null, true);
-      if (doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_SYS_EXISTS", authenticatedUser,
+      // Check to see if app (id+version) exists or has been soft deleted. If yes then throw IllegalStateException
+      boolean doesExist = checkIfAppExists(db, app.getTenant(), app.getId(), app.getVersion(), true);
+      if (doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_EXISTS", authenticatedUser,
                                                                          app.getId()));
       // Make sure owner, runtime, notes and tags are all set
       String owner = App.DEFAULT_OWNER;
@@ -195,7 +196,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // Pull out some values for convenience
     String tenant = patchedApp.getTenant();
     String appId = patchedApp.getId();
-    String appVersion = patchedApp.getId();
+    String appVersion = patchedApp.getVersion();
     int seqId = patchedApp.getSeqId();
     // Check required attributes have been provided
     if (StringUtils.isBlank(updateJsonStr)) LibUtils.logAndThrowNullParmException(opName, "updateJson");
@@ -565,12 +566,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       {
         // Search for most recently created version
         if (includeDeleted)
-          r = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.VERSION.eq(appVersion))
+          r = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId))
                   .orderBy(APPS.CREATED.desc())
                   .fetchAny();
         else
           r = db.selectFrom(APPS)
-                  .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.VERSION.eq(appVersion),APPS.DELETED.eq(false))
+                  .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false))
                   .orderBy(APPS.CREATED.desc())
                   .fetchAny();
       }

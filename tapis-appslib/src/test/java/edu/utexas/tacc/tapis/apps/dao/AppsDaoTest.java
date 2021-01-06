@@ -32,7 +32,7 @@ public class AppsDaoTest
   private AuthenticatedUser authenticatedUser;
 
   // Test data
-  int numApps = 11;
+  int numApps = 12;
   App[] apps = IntegrationUtils.makeApps(numApps, "Dao");
 
   @BeforeSuite
@@ -173,10 +173,9 @@ public class AppsDaoTest
     Assert.assertEquals(obj.get("project").getAsString(), notesObj.get("project").getAsString());
     Assert.assertTrue(obj.has("testdata"));
     Assert.assertEquals(obj.get("testdata").getAsString(), notesObj.get("testdata").getAsString());
-
+    // ===============================================================================================
     // Verify data in aux tables: file_inputs, notification_subscriptions, app_args, container_args, scheduler_options
     // ===============================================================================================
-
     // Verify file inputs
     List<FileInput> origFileInputs = app0.getFileInputs();
     List<FileInput> tmpInputs = tmpApp.getFileInputs();
@@ -190,7 +189,6 @@ public class AppsDaoTest
       Assert.assertTrue(metaNamesFound.contains(itemSeedItem.getMetaName()),
               "List of fileInputs did not contain an item with metaName: " + itemSeedItem.getMetaName());
     }
-
     // Verify app args
     List<AppArg> origArgs = app0.getAppArgs();
     List<AppArg> tmpArgs = tmpApp.getAppArgs();
@@ -217,7 +215,6 @@ public class AppsDaoTest
       Assert.assertTrue(argValuesFound.contains(itemSeedItem.getValue()),
               "List of containerArgs did not contain an item with value: " + itemSeedItem.getValue());
     }
-
     // Verify scheduler options
     origArgs = app0.getSchedulerOptions();
     tmpArgs = tmpApp.getSchedulerOptions();
@@ -231,7 +228,6 @@ public class AppsDaoTest
       Assert.assertTrue(argValuesFound.contains(itemSeedItem.getValue()),
               "List of schedulerOptions did not contain an item with value: " + itemSeedItem.getValue());
     }
-
     // Verify notification subscriptions
     List<NotificationSubscription> origNotificationSubs = app0.getNotificationSubscriptions();
     List<NotificationSubscription> tmpSubs = tmpApp.getNotificationSubscriptions();
@@ -338,6 +334,49 @@ public class AppsDaoTest
     Assert.assertFalse(dao.checkForApp(app0.getTenant(), app0.getId(), true),"App not deleted. App name: " + app0.getId());
   }
 
+  // Test retrieving apps with multiple versions
+  @Test
+  public void testMultipleVersions() throws Exception {
+    var seqIdList = new ArrayList<Integer>();
+    // Create 2 versions of 2 apps
+    App app1 = apps[10];
+    int itemSeqId = dao.createApp(authenticatedUser, app1, gson.toJson(app1), scrubbedJson);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
+    seqIdList.add(itemSeqId);
+    app1.setVersion(appVersion2);
+    itemSeqId = dao.createApp(authenticatedUser, app1, gson.toJson(app1), scrubbedJson);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
+    seqIdList.add(itemSeqId);
+    App app2 = apps[11];
+    itemSeqId = dao.createApp(authenticatedUser, app2, gson.toJson(app2), scrubbedJson);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
+    seqIdList.add(itemSeqId);
+    app2.setVersion(appVersion2);
+    itemSeqId = dao.createApp(authenticatedUser, app2, gson.toJson(app2), scrubbedJson);
+    Assert.assertTrue(itemSeqId > 0, "Invalid app seqId: " + itemSeqId);
+    seqIdList.add(itemSeqId);
+
+    // When retrieving singly make sure we get back latest versions
+    App tmpApp = dao.getApp(app1.getTenant(), app1.getId());
+    Assert.assertNotNull(tmpApp, "Failed to create item: " + app1.getId());
+    System.out.println("Found item: " + app1.getId());
+    Assert.assertEquals(tmpApp.getVersion(), app1.getVersion());
+    tmpApp = dao.getApp(app2.getTenant(), app2.getId());
+    Assert.assertNotNull(tmpApp, "Failed to create item: " + app2.getId());
+    System.out.println("Found item: " + app2.getId());
+    Assert.assertEquals(tmpApp.getVersion(), app2.getVersion());
+
+    // Use search to pick out an app and make sure we get back all versions
+    var searchList = Arrays.asList("id.eq." + app1.getId());
+    List<App> apps = dao.getApps(tenantName, searchList, null);
+    for (App app : apps) {
+      System.out.println("Found item with seqId: " + app.getSeqId() + " Id: " + app.getId() +
+                         " Version: " + app.getVersion());
+      Assert.assertTrue(seqIdList.contains(app.getSeqId()));
+    }
+    Assert.assertEquals(apps.size(), 2);
+  }
+
   // Test behavior when app is missing, especially for cases where service layer depends on the behavior.
   //  update - throws not found exception
   //  getApp - returns null
@@ -347,10 +386,11 @@ public class AppsDaoTest
   public void testMissingApp() throws Exception {
     String fakeAppId = "AMissingAppId";
     String fakeAppVersion = "AMissingAppVersion";
-    PatchApp patchApp = new PatchApp(appVersion, "description PATCHED", enabledFalse, tags, notes);
+    PatchApp patchApp = new PatchApp("description PATCHED", enabledFalse, tags, notes);
     patchApp.setTenant(tenantName);
     patchApp.setId(fakeAppId);
-    App patchedApp = new App(1, tenantName, fakeAppId, appVersion, "description", AppType.BATCH, ownerUser, enabledTrue,
+    patchApp.setVersion(fakeAppVersion);
+    App patchedApp = new App(1, tenantName, fakeAppId, fakeAppVersion, "description", AppType.BATCH, ownerUser, enabledTrue,
             runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, strictFileInputsFalse, jobDescription, dynamicExecSystem,
             execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
             execSystemLogicalQueue, archiveSystemId, archiveSystemDir, archiveOnAppError, nodeCount, coresPerNode,

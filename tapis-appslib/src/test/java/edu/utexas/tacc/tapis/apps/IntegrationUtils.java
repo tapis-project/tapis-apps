@@ -28,6 +28,7 @@ public final class IntegrationUtils
   public static final String apiUser = "testApiUser";
   public static final String appIdPrefix = "TestApp";
   public static final String appVersion = "0.0.1";
+  public static final String appVersion2 = "0.0.2";
   public static final boolean enabledTrue = true;
   public static final boolean enabledFalse = false;
   public static final boolean strictFileInputsFalse = false;
@@ -131,5 +132,22 @@ public final class IntegrationUtils
       apps[i].setSchedulerOptions(schedulerOptionList1);
     }
     return apps;
+  }
+
+  /**
+   * Create App in memory with minimal attributes set based on App given
+   *   id, version
+   * NOTE: many args to contructer are primitives so cannot be set to null.
+   */
+  public static App makeMinimalApp(App app)
+  {
+    return new App(-1, tenantName, app.getId(), app.getVersion(), null, null, null, enabledTrue,
+            null, null, null, maxJobs, maxJobsPerUser, strictFileInputsFalse,
+            null, dynamicExecSystem,
+            null, null, null, null,
+            null, null, null,
+            null, archiveOnAppError, nodeCount, coresPerNode, memoryMb, maxMinutes,
+            null, null, null, null,
+            null, null, null, deletedFalse, createdNull, updatedNull);
   }
 }
