@@ -6,8 +6,8 @@ package edu.utexas.tacc.tapis.apps.gen.jooq.tables;
 
 import edu.utexas.tacc.tapis.apps.gen.jooq.Keys;
 import edu.utexas.tacc.tapis.apps.gen.jooq.TapisApp;
-import edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.NotificationSubscriptionsRecord;
+import edu.utexas.tacc.tapis.apps.model.App.NotificationMechanism;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +33,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NotificationSubscriptions extends TableImpl<NotificationSubscriptionsRecord> {
 
-    private static final long serialVersionUID = -432807568;
+    private static final long serialVersionUID = -275190928;
 
     /**
      * The reference instance of <code>tapis_app.notification_subscriptions</code>
@@ -66,7 +66,7 @@ public class NotificationSubscriptions extends TableImpl<NotificationSubscriptio
     /**
      * The column <code>tapis_app.notification_subscriptions.notification_mechanism</code>.
      */
-    public final TableField<NotificationSubscriptionsRecord, NotificationMechanismType> NOTIFICATION_MECHANISM = createField(DSL.name("notification_mechanism"), org.jooq.impl.SQLDataType.VARCHAR.asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType.class), this, "");
+    public final TableField<NotificationSubscriptionsRecord, NotificationMechanism> NOTIFICATION_MECHANISM = createField(DSL.name("notification_mechanism"), org.jooq.impl.SQLDataType.VARCHAR.asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType.class), this, "", new org.jooq.impl.EnumConverter<edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType, edu.utexas.tacc.tapis.apps.model.App.NotificationMechanism>(edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType.class, edu.utexas.tacc.tapis.apps.model.App.NotificationMechanism.class));
 
     /**
      * The column <code>tapis_app.notification_subscriptions.webhook_url</code>.
@@ -171,7 +171,7 @@ public class NotificationSubscriptions extends TableImpl<NotificationSubscriptio
     // -------------------------------------------------------------------------
 
     @Override
-    public Row6<Integer, Integer, String, NotificationMechanismType, String, String> fieldsRow() {
+    public Row6<Integer, Integer, String, NotificationMechanism, String, String> fieldsRow() {
         return (Row6) super.fieldsRow();
     }
 }

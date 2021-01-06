@@ -126,7 +126,7 @@ public final class IntegrationUtils
                         tags, notes, importRefIdNull, deletedFalse, createdNull, updatedNull);
       // Aux table data
       apps[i].setFileInputs(finList1);
-      apps[i].setNotifcationSubscriptions(notifList1);
+      apps[i].setNotificationSubscriptions(notifList1);
       apps[i].setAppArgs(appArgList1);
       apps[i].setContainerArgs(containerArgList1);
       apps[i].setSchedulerOptions(schedulerOptionList1);

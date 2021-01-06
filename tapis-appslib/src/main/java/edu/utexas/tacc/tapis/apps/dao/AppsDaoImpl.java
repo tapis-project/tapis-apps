@@ -10,6 +10,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.search.parser.ASTBinaryExpression;
 import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
@@ -154,7 +155,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       persistAppArgs(db, app, seqId);
       persistContainerArgs(db, app, seqId);
       persistSchedulerOptions(db, app, seqId);
-//      persistNotificationSubscriptions(db, app, seqId);
+      persistNotificationSubscriptions(db, app, seqId);
 
       // Persist update record
       addUpdate(db, authenticatedUser, seqId, AppOperation.create, createJsonStr, scrubbedText);
@@ -578,14 +579,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (r == null) return null;
 
       // Convert result record to Apps and fill in data from aux tables
-      // TODO: Looks like jOOQ has fetchGroups() which should allow us to retrieve LogicalQueues and Capabilities
+      // TODO: Looks like jOOQ has fetchGroups() which should allow us to retrieve fileInputs, appArgs, etc.
       //       in one call which should improve performance.
       result = r.into(App.class);
       result.setFileInputs(retrieveFileInputs(db, result.getSeqId()));
       result.setAppArgs(retrieveAppArgs(db, result.getSeqId()));
       result.setContainerArgs(retrieveContainerArgs(db, result.getSeqId()));
       result.setSchedulerOptions(retrieveSchedulerOptions(db, result.getSeqId()));
-//      result.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, result.getSeqId()));
+      result.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, result.getSeqId()));
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -677,7 +678,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
         a.setAppArgs(retrieveAppArgs(db, a.getSeqId()));
         a.setContainerArgs(retrieveContainerArgs(db, a.getSeqId()));
         a.setSchedulerOptions(retrieveSchedulerOptions(db, a.getSeqId()));
-//        a.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, a.getSeqId()));
+        a.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, a.getSeqId()));
         retList.add(a);
       }
 
@@ -748,6 +749,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
         app.setAppArgs(retrieveAppArgs(db, app.getSeqId()));
         app.setContainerArgs(retrieveContainerArgs(db, app.getSeqId()));
         app.setSchedulerOptions(retrieveSchedulerOptions(db, app.getSeqId()));
+        app.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, app.getSeqId()));
         retList.add(app);
       }
 
@@ -1051,28 +1053,23 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     }
   }
 
-//  /**
-//   * Persist notification subscriptions given an sql connection and an app
-//   */
-//  private static void persistNotificationSubscriptions(DSLContext db, App app, int seqId)
-//  {
-//    var notificationSubscriptions = app.getNotificationSubscriptions();
-//    if (notificationSubscriptions == null || notificationSubscriptions.isEmpty()) return;
-//
-//    for (NotificationSubscription notificationSubscription : notificationSubscriptions) {
-//      String nameStr = "";
-//      if (notificationSubscription.getMetaName() != null ) nameStr = fileInput.getMetaName();
-//      db.insertInto(FILE_INPUTS).set(FILE_INPUTS.APP_SEQ_ID, seqId)
-//              .set(FILE_INPUTS.SOURCE_URL, fileInput.getSourceUrl())
-//              .set(FILE_INPUTS.TARGET_PATH, fileInput.getTargetPath())
-//              .set(FILE_INPUTS.IN_PLACE, fileInput.isInPlace())
-//              .set(FILE_INPUTS.META_NAME, nameStr)
-//              .set(FILE_INPUTS.META_DESCRIPTION, fileInput.getMetaDescription())
-//              .set(FILE_INPUTS.META_REQUIRED, fileInput.isMetaRequired())
-//              .set(FILE_INPUTS.META_KEY_VALUE_PAIRS, fileInput.getMetaKeyValuePairs())
-//              .execute();
-//    }
-//  }
+  /**
+   * Persist notification subscriptions given an sql connection and an app
+   */
+  private static void persistNotificationSubscriptions(DSLContext db, App app, int seqId)
+  {
+    var subscriptions = app.getNotificationSubscriptions();
+    if (subscriptions == null || subscriptions.isEmpty()) return;
+
+    for (NotificationSubscription subscription : subscriptions) {
+      db.insertInto(NOTIFICATION_SUBSCRIPTIONS).set(NOTIFICATION_SUBSCRIPTIONS.APP_SEQ_ID, seqId)
+              .set(NOTIFICATION_SUBSCRIPTIONS.FILTER, subscription.getFilter())
+              .set(NOTIFICATION_SUBSCRIPTIONS.NOTIFICATION_MECHANISM, subscription.getNotificationMechanism())
+              .set(NOTIFICATION_SUBSCRIPTIONS.WEBHOOK_URL, subscription.getWebhookUrl())
+              .set(NOTIFICATION_SUBSCRIPTIONS.EMAIL_ADDRESS, subscription.getEmailAddress())
+              .execute();
+    }
+  }
 
   /**
    * Get file inputs for an app from an auxiliary table
@@ -1084,6 +1081,20 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   {
     List<FileInput> fileInputs = db.selectFrom(FILE_INPUTS).where(FILE_INPUTS.APP_SEQ_ID.eq(seqId)).fetchInto(FileInput.class);
     return fileInputs;
+  }
+
+  /**
+   * Get notification subscriptions for an app from an auxiliary table
+   * @param db - DB connection
+   * @param seqId - app
+   * @return list of subscriptions
+   */
+  private static List<NotificationSubscription> retrieveNotificationSubscriptions(DSLContext db, int seqId)
+  {
+    List<NotificationSubscription> subscriptions =
+            db.selectFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_SEQ_ID.eq(seqId))
+                    .fetchInto(NotificationSubscription.class);
+    return subscriptions;
   }
 
   /**

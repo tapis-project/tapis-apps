@@ -15,6 +15,7 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import edu.utexas.tacc.tapis.apps.model.App;
@@ -367,7 +368,7 @@ public class AppsDaoTest
     Assert.assertEquals(tmpApp.getVersion(), app2.getVersion());
 
     // Use search to pick out an app and make sure we get back all versions
-    var searchList = Arrays.asList("id.eq." + app1.getId());
+    var searchList = Collections.singletonList("id.eq." + app1.getId());
     List<App> apps = dao.getApps(tenantName, searchList, null);
     for (App app : apps) {
       System.out.println("Found item with seqId: " + app.getSeqId() + " Id: " + app.getId() +

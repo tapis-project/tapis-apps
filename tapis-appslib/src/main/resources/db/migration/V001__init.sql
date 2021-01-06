@@ -147,11 +147,11 @@ CREATE TABLE file_inputs
 (
     seq_id SERIAL PRIMARY KEY,
     app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
-    source_url VARCHAR(128),
-    target_path VARCHAR(128),
+    source_url TEXT,
+    target_path TEXT,
     in_place BOOLEAN NOT NULL DEFAULT false,
-    meta_name VARCHAR(128) NOT NULL DEFAULT '',
-    meta_description VARCHAR(128),
+    meta_name TEXT NOT NULL DEFAULT '',
+    meta_description TEXT,
     meta_required BOOLEAN NOT NULL DEFAULT false,
     meta_key_value_pairs TEXT[] NOT NULL,
     UNIQUE (app_seq_id, source_url, target_path)

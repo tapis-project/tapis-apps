@@ -45,7 +45,7 @@ public final class App
   // ************************************************************************
   // *********************** Enums ******************************************
   // ************************************************************************
-  public enum AppType {BATCH, INTERACTIVE}
+  public enum AppType {BATCH, DIRECT}
   public enum AppOperation {create, read, modify, execute, softDelete, hardDelete, changeOwner, getPerms,
                             grantPerms, revokePerms}
   public enum Permission {READ, MODIFY, EXECUTE}
@@ -63,7 +63,7 @@ public final class App
   private String id;       // Name of the app
   private String version;    // Version of the app
   private String description; // Full description of the app
-  private AppType appType; // Type of app, e.g. LINUX, OBJECT_STORE
+  private AppType appType; // Type of app, e.g. BATCH, DIRECT
   private String owner;      // User who owns the app and has full privileges
   private boolean enabled; // Indicates if app is currently enabled
   private Runtime runtime;
@@ -381,7 +381,7 @@ public final class App
   {
     return (notificationSubscriptions == null) ? null : new ArrayList<>(notificationSubscriptions);
   }
-  public App setNotifcationSubscriptions(List<NotificationSubscription> ns) {
+  public App setNotificationSubscriptions(List<NotificationSubscription> ns) {
     notificationSubscriptions = (ns == null) ? null : new ArrayList<>(ns);
     return this;
   }
