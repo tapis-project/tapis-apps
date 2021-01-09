@@ -37,7 +37,7 @@ SET search_path TO tapis_app;
 -- GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA tapis_app TO tapis_app;
 
 -- Types
-CREATE TYPE app_type_type AS ENUM ('BATCH', 'DIRECT');
+CREATE TYPE app_type_type AS ENUM ('BATCH', 'FORK');
 CREATE TYPE operation_type AS ENUM ('create', 'modify', 'softDelete', 'hardDelete', 'changeOwner',
                                     'grantPerms', 'revokePerms');
 CREATE TYPE runtime_type AS ENUM ('DOCKER', 'SINGULARITY');
@@ -81,7 +81,7 @@ CREATE TABLE apps
   env_variables TEXT[] NOT NULL,
   archive_includes TEXT[] NOT NULL,
   archive_excludes TEXT[] NOT NULL,
---   fileInputs location in jobAttributes =====================
+--   fileInputs location in jobAttributes ====SUBSC=================
   node_count INTEGER NOT NULL DEFAULT -1,
   cores_per_node INTEGER NOT NULL DEFAULT -1,
   memory_mb INTEGER NOT NULL DEFAULT -1,
@@ -161,24 +161,31 @@ COMMENT ON COLUMN file_inputs.seq_id IS 'File input sequence id';
 COMMENT ON COLUMN file_inputs.app_seq_id IS 'Sequence id of application requiring the file input';
 
 -- ----------------------------------------------------------------------------------------
---                           SUBSCRIPTIONS
+--                           NOTIFICATIONS
 -- ----------------------------------------------------------------------------------------
 -- Notification subscriptions table
 CREATE TABLE notification_subscriptions
 (
     seq_id     SERIAL PRIMARY KEY,
     app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
-    filter VARCHAR(128), -- TODO length?
-    notification_mechanism notification_mechanism_type,
+    filter VARCHAR(128) -- TODO length?
+);
+ALTER TABLE notification_subscriptions OWNER TO tapis_app;
+
+-- Notification mechanisms table
+CREATE TABLE notification_mechanisms
+(
+    seq_id     SERIAL PRIMARY KEY,
+    subscription_seq_id SERIAL REFERENCES notification_subscriptions(seq_id) ON DELETE CASCADE,
+    mechanism notification_mechanism_type,
     webhook_url VARCHAR(128), -- TODO length?
     email_address VARCHAR(128) -- TODO length?
 );
-ALTER TABLE notification_subscriptions OWNER TO tapis_app;
+ALTER TABLE notification_mechanisms OWNER TO tapis_app;
 
 -- ----------------------------------------------------------------------------------------
 --                           ARGS
 -- ----------------------------------------------------------------------------------------
--- TODO could have one table with an arg_type column?
 
 -- App args table
 -- App arguments associated with an app

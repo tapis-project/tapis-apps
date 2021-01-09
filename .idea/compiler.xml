@@ -19,8 +19,8 @@
       <module name="shared" target="1.5" />
       <module name="systems-client" target="1.13" />
       <module name="tapis-apps" target="1.5" />
-      <module name="tapis-appsapi" target="1.13" />
-      <module name="tapis-appslib" target="1.13" />
+      <module name="tapis-appsapi" target="1.15" />
+      <module name="tapis-appslib" target="1.15" />
       <module name="tapis-client-java" target="1.5" />
       <module name="tapis-client-java (1)" target="1.5" />
       <module name="tapis-client-java (2)" target="1.5" />

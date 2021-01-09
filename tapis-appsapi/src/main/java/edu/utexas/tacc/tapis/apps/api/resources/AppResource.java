@@ -828,11 +828,11 @@ public class AppResource
                       req.coresPerNode, req.memoryMb, req.maxMinutes, req.envVariables, req.archiveIncludes, req.archiveExcludes,
                       req.jobTags, req.tags, req.notes, req.refImportId, false, null, null);
     // Data from aux tables
-//    app.setFileInputs(req.fileInputs);
-    // notificationSubscriptions
-    // appArgs
-    // containerArgs
-    // schedulerOptions
+    app.setFileInputs(req.fileInputs);
+    app.setNotificationSubscriptions(req.subscriptions);
+    app.setAppArgs(req.appArgs);
+    app.setContainerArgs(req.containerArgs);
+    app.setSchedulerOptions(req.schedulerOptions);
     return app;
   }
 

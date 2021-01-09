@@ -4,12 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.NotificationMechanism;
+import edu.utexas.tacc.tapis.apps.model.NotificationMechanism.NotificationMechanismType;
 import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
-import edu.utexas.tacc.tapis.apps.model.App.NotificationMechanism;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -80,10 +81,24 @@ public final class IntegrationUtils
   public static final FileInput finB1 = new FileInput("/srcB1", "/targetB1", inPlaceFalse, "finB1", "File input B1",
                                                       metaRequiredFalse, metaKVPairs);
   public static final List<FileInput> finList1 = new ArrayList<>(List.of(finA1, finB1));
-  public static final NotificationSubscription notifA1 =
-          new NotificationSubscription("filterA1", NotificationMechanism.WEBHOOK, "webhookUrlA1", "emailAddressA1");
-  public static final NotificationSubscription notifB1 =
-          new NotificationSubscription("filterB1", NotificationMechanism.EMAIL, "webhookUrlB1", "emailAddressB1");
+
+  public static final NotificationMechanism notifMechA1 =
+          new NotificationMechanism(NotificationMechanismType.WEBHOOK, "webhookUrlA1", "emailAddressA1");
+  public static final NotificationMechanism notifMechA2 =
+          new NotificationMechanism(NotificationMechanismType.ACTOR, "webhookUrlA2", "emailAddressA2");
+  public static final List<NotificationMechanism> notifMechListA1 = new ArrayList<>(List.of(notifMechA1, notifMechA2));
+  public static final NotificationMechanism notifMechB1 =
+          new NotificationMechanism(NotificationMechanismType.EMAIL, "webhookUrlB1", "emailAddressB1");
+  public static final NotificationMechanism notifMechB2 =
+          new NotificationMechanism(NotificationMechanismType.QUEUE, "webhookUrlB2", "emailAddressB2");
+  public static final List<NotificationMechanism> notifMechListB1 = new ArrayList<>(List.of(notifMechB1, notifMechB2));
+  public static final NotificationSubscription notifA1 = new NotificationSubscription("filterA1");
+  public static final NotificationSubscription notifB1 = new NotificationSubscription("filterB1");
+  static {
+    notifA1.setNotificationMechanisms(notifMechListA1);
+    notifB1.setNotificationMechanisms(notifMechListB1);
+  }
+
   public static final List<NotificationSubscription> notifList1 = new ArrayList<>(List.of(notifA1, notifB1));
   public static final AppArg appArgA1 = new AppArg("valueA1", "appArgA1", "App arg A1", metaRequiredTrue, metaKVPairs);
   public static final AppArg appArgB1 = new AppArg("valueB1", "appArgB1", "App arg B1", metaRequiredFalse, metaKVPairs);

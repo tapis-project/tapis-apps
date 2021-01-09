@@ -10,6 +10,7 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.ContainerArgs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FileInputs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationMechanisms;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationSubscriptions;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.SchedulerOptions;
 
@@ -28,7 +29,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class TapisApp extends SchemaImpl {
 
-    private static final long serialVersionUID = -1389254586;
+    private static final long serialVersionUID = 1984999450;
 
     /**
      * The reference instance of <code>tapis_app</code>
@@ -66,6 +67,11 @@ public class TapisApp extends SchemaImpl {
     public final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
 
     /**
+     * The table <code>tapis_app.notification_mechanisms</code>.
+     */
+    public final NotificationMechanisms NOTIFICATION_MECHANISMS = NotificationMechanisms.NOTIFICATION_MECHANISMS;
+
+    /**
      * The table <code>tapis_app.notification_subscriptions</code>.
      */
     public final NotificationSubscriptions NOTIFICATION_SUBSCRIPTIONS = NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS;
@@ -100,6 +106,8 @@ public class TapisApp extends SchemaImpl {
             Sequences.CONTAINER_ARGS_SEQ_ID_SEQ,
             Sequences.FILE_INPUTS_APP_SEQ_ID_SEQ,
             Sequences.FILE_INPUTS_SEQ_ID_SEQ,
+            Sequences.NOTIFICATION_MECHANISMS_SEQ_ID_SEQ,
+            Sequences.NOTIFICATION_MECHANISMS_SUBSCRIPTION_SEQ_ID_SEQ,
             Sequences.NOTIFICATION_SUBSCRIPTIONS_APP_SEQ_ID_SEQ,
             Sequences.NOTIFICATION_SUBSCRIPTIONS_SEQ_ID_SEQ,
             Sequences.SCHEDULER_OPTIONS_APP_SEQ_ID_SEQ,
@@ -115,6 +123,7 @@ public class TapisApp extends SchemaImpl {
             ContainerArgs.CONTAINER_ARGS,
             FileInputs.FILE_INPUTS,
             FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY,
+            NotificationMechanisms.NOTIFICATION_MECHANISMS,
             NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS,
             SchedulerOptions.SCHEDULER_OPTIONS);
     }

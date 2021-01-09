@@ -10,6 +10,7 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.ContainerArgs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FileInputs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationMechanisms;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationSubscriptions;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.SchedulerOptions;
 
@@ -49,6 +50,11 @@ public class Tables {
      * The table <code>tapis_app.flyway_schema_history</code>.
      */
     public static final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
+
+    /**
+     * The table <code>tapis_app.notification_mechanisms</code>.
+     */
+    public static final NotificationMechanisms NOTIFICATION_MECHANISMS = NotificationMechanisms.NOTIFICATION_MECHANISMS;
 
     /**
      * The table <code>tapis_app.notification_subscriptions</code>.

@@ -44,8 +44,6 @@ import static edu.utexas.tacc.tapis.apps.IntegrationUtils.*;
  *    Tokens service - typically dev and obtained from tenants service
  *    Security Kernel service - typically dev and obtained from tenants service
  *
- *    TODO: Remove filesSvc related code? or is it useful for svc to svc testing?
- *          For Systems was used to test retrieving credentials.
  */
 @Test(groups={"integration"})
 public class AppsServiceTest
@@ -70,11 +68,6 @@ public class AppsServiceTest
   private static final Set<Permission> testPermsMODIFY = new HashSet<>(Set.of(Permission.MODIFY));
   private static final String[] tags2 = {"value3", "value4"};
   private static final Object notes2 = TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj2\", \"testdata\": \"abc2\"}", JsonObject.class);
-
-//  private static final Capability capA2 = new Capability(Category.SCHEDULER, "Type", "Condor");
-//  private static final Capability capB2 = new Capability(Category.HARDWARE, "CoresPerNode", "128");
-//  private static final Capability capC2 = new Capability(Category.SOFTWARE, "OpenMP", "3.1");
-//  private static final List<Capability> cap2List = new ArrayList<>(List.of(capA2, capB2, capC2));
 
   int numApps = 19;
   App[] apps = IntegrationUtils.makeApps(numApps, "Svc");
@@ -176,8 +169,12 @@ public class AppsServiceTest
     App app0 = apps[1];
     int itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
     Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
-    // Retrieve the app
+    // Retrieve the app as filesSvc and as owner
     App tmpApp = svc.getApp(authenticatedFilesSvc, app0.getId(), app0.getVersion(), false);
+    checkCommonAppAttrs(app0, tmpApp);
+    tmpApp = svc.getApp(authenticatedOwner1, app0.getId(), app0.getVersion(), false);
+    checkCommonAppAttrs(app0, tmpApp);
+    tmpApp = svc.getApp(authenticatedOwner1, app0.getId(), app0.getVersion(), true);
     checkCommonAppAttrs(app0, tmpApp);
   }
 

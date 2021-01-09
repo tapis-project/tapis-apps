@@ -19,7 +19,7 @@ public enum AppTypeType implements EnumType {
 
     BATCH("BATCH"),
 
-    DIRECT("DIRECT");
+    FORK("FORK");
 
     private final String literal;
 

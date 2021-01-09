@@ -6,7 +6,7 @@
 #   $TAG            the tag for image identification
 #
 ##########################################################################
-FROM openjdk:13-jdk-oracle
+FROM openjdk:15-jdk-oracle
 
 MAINTAINER CIC Support <cicsupport@tacc.utexas.edu>
 

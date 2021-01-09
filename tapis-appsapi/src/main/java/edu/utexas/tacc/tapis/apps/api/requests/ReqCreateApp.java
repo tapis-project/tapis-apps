@@ -2,7 +2,9 @@ package edu.utexas.tacc.tapis.apps.api.requests;
 
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
+import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 
 import java.util.List;
 
@@ -50,8 +52,11 @@ public final class ReqCreateApp
   public String[] jobTags = EMPTY_STR_ARRAY;       // List of arbitrary tags as strings
   // === End jobAttributes ===
 
-
+  public List<AppArg> appArgs;
+  public List<AppArg> containerArgs;
+  public List<AppArg> schedulerOptions;
   public List<FileInput> fileInputs;
+  public List<NotificationSubscription> subscriptions;
 
   public String[] tags = EMPTY_STR_ARRAY;       // List of arbitrary tags as strings
   public Object notes = DEFAULT_NOTES;      // Simple metadata as json
