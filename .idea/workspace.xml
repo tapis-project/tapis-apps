@@ -12,31 +12,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34efd738-2b9a-4e43-b14d-018fde0be61f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/NotificationMechanisms.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/NotificationMechanismsRecord.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/NotificationMechanism.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/release/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/release/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/requests/ReqCreateApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/requests/ReqCreateApp.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appsapi/tapis-appsapi.iml" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/tapis-appsapi.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/resources/edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/resources/edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/Keys.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/Keys.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/Sequences.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/Sequences.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/Tables.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/Tables.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/TapisApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/TapisApp.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/enums/AppTypeType.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/enums/AppTypeType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/NotificationSubscriptions.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/NotificationSubscriptions.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/NotificationSubscriptionsRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/NotificationSubscriptionsRecord.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/App.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/NotificationSubscription.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/NotificationSubscription.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/resources/db/migration/V001__init.sql" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/resources/db/migration/V001__init.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/IntegrationUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/IntegrationUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/AppArg.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/AppArg.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/service/AppsServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/service/AppsServiceTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/tapis-appslib.iml" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/tapis-appslib.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tapis-client-java/apps-client/src/main/java/edu/utexas/tacc/tapis/apps/client/AppsClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-client-java/apps-client/src/main/java/edu/utexas/tacc/tapis/apps/client/AppsClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tapis-client-java/apps-client/src/test/java/edu/utexas/tacc/tapis/apps/client/UserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-client-java/apps-client/src/test/java/edu/utexas/tacc/tapis/apps/client/UserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tapis-client-java/apps-client/src/test/java/edu/utexas/tacc/tapis/apps/client/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-client-java/apps-client/src/test/java/edu/utexas/tacc/tapis/apps/client/Utils.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -115,8 +100,13 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java</url>
-          <line>199</line>
+          <line>198</line>
           <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java</url>
+          <line>154</line>
+          <option name="timeStamp" value="7" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

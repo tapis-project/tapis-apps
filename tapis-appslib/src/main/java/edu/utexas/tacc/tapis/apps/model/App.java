@@ -4,9 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.shared.utils.JsonObjectSerializer;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -102,13 +100,9 @@ public final class App
   private List<AppArg> schedulerOptions; // parameterSet
 
   private String[] tags;       // List of arbitrary tags as strings
-
-  @JsonSerialize(using = JsonObjectSerializer.class)
   private Object notes;      // Simple metadata as json
-
   private String importRefId; // Optional reference ID for object created via import
   private boolean deleted;
-
   private Instant created; // UTC time for when record was created
   private Instant updated; // UTC time for when record was last updated
 

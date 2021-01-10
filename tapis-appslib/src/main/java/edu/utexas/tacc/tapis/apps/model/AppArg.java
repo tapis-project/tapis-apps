@@ -26,7 +26,7 @@ public final class AppArg
 
   private final int seqId; // Unique database sequence number
   private final int appSeqId;
-  private final String value;
+  private final String argValue;
   private final String metaName;
   private final String metaDescription;
   private final boolean metaRequired;
@@ -40,7 +40,7 @@ public final class AppArg
   {
     seqId = seqId1;
     appSeqId = appId1;
-    value = value1;
+    argValue = value1;
     metaName = metaName1;
     metaDescription = metaDescription1;
     metaRequired = metaRequired1;
@@ -51,7 +51,7 @@ public final class AppArg
   {
     seqId = -1;
     appSeqId = -1;
-    value = value1;
+    argValue = value1;
     metaName = metaName1;
     metaDescription = metaDescription1;
     metaRequired = metaRequired1;
@@ -63,7 +63,7 @@ public final class AppArg
   /* ********************************************************************** */
   public int getSeqId() { return seqId; }
   public int getAppSeqId() { return appSeqId; }
-  public String getValue() { return value; }
+  public String getArgValue() { return argValue; }
   public String getMetaName() { return metaName; }
   public String getMetaDescription() { return metaDescription; }
   public boolean isMetaRequired() { return metaRequired; }

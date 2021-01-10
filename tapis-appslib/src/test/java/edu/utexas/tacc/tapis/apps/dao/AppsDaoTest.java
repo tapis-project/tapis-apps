@@ -197,11 +197,11 @@ public class AppsDaoTest
     Assert.assertNotNull(tmpArgs, "Fetched appArgs was null");
     Assert.assertEquals(tmpArgs.size(), origArgs.size());
     var argValuesFound = new ArrayList<String>();
-    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getValue());}
+    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getArgValue());}
     for (AppArg itemSeedItem : origArgs)
     {
-      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getValue()),
-              "List of appArgs did not contain an item with value: " + itemSeedItem.getValue());
+      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getArgValue()),
+              "List of appArgs did not contain an item with value: " + itemSeedItem.getArgValue());
     }
     // Verify container args
     origArgs = app0.getContainerArgs();
@@ -210,11 +210,11 @@ public class AppsDaoTest
     Assert.assertNotNull(tmpArgs, "Fetched containerArgs was null");
     Assert.assertEquals(tmpArgs.size(), origArgs.size());
     argValuesFound = new ArrayList<>();
-    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getValue());}
+    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getArgValue());}
     for (AppArg itemSeedItem : origArgs)
     {
-      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getValue()),
-              "List of containerArgs did not contain an item with value: " + itemSeedItem.getValue());
+      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getArgValue()),
+              "List of containerArgs did not contain an item with value: " + itemSeedItem.getArgValue());
     }
     // Verify scheduler options
     origArgs = app0.getSchedulerOptions();
@@ -223,11 +223,11 @@ public class AppsDaoTest
     Assert.assertNotNull(tmpArgs, "Fetched schedulerOptions was null");
     Assert.assertEquals(tmpArgs.size(), origArgs.size());
     argValuesFound = new ArrayList<>();
-    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getValue());}
+    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getArgValue());}
     for (AppArg itemSeedItem : origArgs)
     {
-      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getValue()),
-              "List of schedulerOptions did not contain an item with value: " + itemSeedItem.getValue());
+      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getArgValue()),
+              "List of schedulerOptions did not contain an item with value: " + itemSeedItem.getArgValue());
     }
     // Verify notification subscriptions
     List<NotificationSubscription> origNotificationSubs = app0.getNotificationSubscriptions();

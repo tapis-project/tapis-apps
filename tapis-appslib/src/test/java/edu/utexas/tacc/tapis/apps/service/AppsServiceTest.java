@@ -135,14 +135,14 @@ public class AppsServiceTest
     try { svc.revokeUserPermissions(authenticatedOwner1, apps[14].getId(), testUser2, testPermsREADMODIFY, scrubbedJson); }
     catch (Exception e) { }
 
-    //Remove all objects created by tests
-    for (int i = 0; i < numApps; i++)
-    {
-      svcImpl.hardDeleteApp(authenticatedAdminUser, apps[i].getId());
-    }
-
-    App tmpApp = svc.getApp(authenticatedAdminUser, apps[0].getId(), apps[0].getVersion(), false);
-    Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getId());
+//    //Remove all objects created by tests
+//    for (int i = 0; i < numApps; i++)
+//    {
+//      svcImpl.hardDeleteApp(authenticatedAdminUser, apps[i].getId());
+//    }
+//
+//    App tmpApp = svc.getApp(authenticatedAdminUser, apps[0].getId(), apps[0].getVersion(), false);
+//    Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getId());
   }
 
   @Test
@@ -808,11 +808,11 @@ public class AppsServiceTest
     Assert.assertNotNull(tmpArgs, "Fetched appArgs was null");
     Assert.assertEquals(tmpArgs.size(), origArgs.size());
     var argValuesFound = new ArrayList<String>();
-    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getValue());}
+    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getArgValue());}
     for (AppArg itemSeedItem : origArgs)
     {
-      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getValue()),
-              "List of appArgs did not contain an item with value: " + itemSeedItem.getValue());
+      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getArgValue()),
+              "List of appArgs did not contain an item with value: " + itemSeedItem.getArgValue());
     }
     // Verify container args
     origArgs = app0.getContainerArgs();
@@ -821,11 +821,11 @@ public class AppsServiceTest
     Assert.assertNotNull(tmpArgs, "Fetched containerArgs was null");
     Assert.assertEquals(tmpArgs.size(), origArgs.size());
     argValuesFound = new ArrayList<>();
-    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getValue());}
+    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getArgValue());}
     for (AppArg itemSeedItem : origArgs)
     {
-      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getValue()),
-              "List of containerArgs did not contain an item with value: " + itemSeedItem.getValue());
+      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getArgValue()),
+              "List of containerArgs did not contain an item with value: " + itemSeedItem.getArgValue());
     }
     // Verify scheduler options
     origArgs = app0.getSchedulerOptions();
@@ -834,11 +834,11 @@ public class AppsServiceTest
     Assert.assertNotNull(tmpArgs, "Fetched schedulerOptions was null");
     Assert.assertEquals(tmpArgs.size(), origArgs.size());
     argValuesFound = new ArrayList<>();
-    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getValue());}
+    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getArgValue());}
     for (AppArg itemSeedItem : origArgs)
     {
-      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getValue()),
-              "List of schedulerOptions did not contain an item with value: " + itemSeedItem.getValue());
+      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getArgValue()),
+              "List of schedulerOptions did not contain an item with value: " + itemSeedItem.getArgValue());
     }
     // Verify notification subscriptions
     List<NotificationSubscription> origNotificationSubs = app0.getNotificationSubscriptions();

@@ -66,9 +66,9 @@
   },
   "Arg" : {
     "type": "object",
-    "required": [ "value" ],
+    "required": [ "arg" ],
     "properties": {
-      "value": { "type":  "string" },
+      "arg": { "type":  "string" },
       "meta": { "$ref": "#/Meta" }
     }
   },

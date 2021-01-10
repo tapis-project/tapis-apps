@@ -8,7 +8,6 @@ import java.util.List;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationMechanisms;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.NotificationMechanism;
@@ -996,7 +995,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     for (AppArg appArg : appArgs) {
       String valStr = "";
-      if (appArg.getValue() != null ) valStr = appArg.getValue();
+      if (appArg.getArgValue() != null ) valStr = appArg.getArgValue();
       String[] kvPairs = EMPTY_STR_ARRAY;
       if (appArg.getMetaKeyValuePairs() != null ) kvPairs = appArg.getMetaKeyValuePairs();
       db.insertInto(APP_ARGS).set(APP_ARGS.APP_SEQ_ID, appSeqId)
@@ -1019,7 +1018,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     for (AppArg containerArg : containerArgs) {
       String valStr = "";
-      if (containerArg.getValue() != null ) valStr = containerArg.getValue();
+      if (containerArg.getArgValue() != null ) valStr = containerArg.getArgValue();
       String[] kvPairs = EMPTY_STR_ARRAY;
       if (containerArg.getMetaKeyValuePairs() != null ) kvPairs = containerArg.getMetaKeyValuePairs();
       db.insertInto(CONTAINER_ARGS).set(CONTAINER_ARGS.APP_SEQ_ID, appSeqId)
@@ -1042,7 +1041,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     for (AppArg schedulerOption : schedulerOptions) {
       String valStr = "";
-      if (schedulerOption.getValue() != null ) valStr = schedulerOption.getValue();
+      if (schedulerOption.getArgValue() != null ) valStr = schedulerOption.getArgValue();
       String[] kvPairs = EMPTY_STR_ARRAY;
       if (schedulerOption.getMetaKeyValuePairs() != null ) kvPairs = schedulerOption.getMetaKeyValuePairs();
       db.insertInto(SCHEDULER_OPTIONS).set(SCHEDULER_OPTIONS.APP_SEQ_ID, appSeqId)
@@ -1064,9 +1063,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (subscriptions == null || subscriptions.isEmpty()) return;
 
     for (NotificationSubscription subscription : subscriptions) {
-      int subSeqId = db.insertInto(NOTIFICATION_SUBSCRIPTIONS).set(NOTIFICATION_SUBSCRIPTIONS.APP_SEQ_ID, appSeqId)
+      Record record = db.insertInto(NOTIFICATION_SUBSCRIPTIONS).set(NOTIFICATION_SUBSCRIPTIONS.APP_SEQ_ID, appSeqId)
               .set(NOTIFICATION_SUBSCRIPTIONS.FILTER, subscription.getFilter())
-              .execute();
+              .returningResult(NOTIFICATION_SUBSCRIPTIONS.SEQ_ID)
+              .fetchOne();
+      int subSeqId = record.getValue(APPS.SEQ_ID);
       persistNotificationMechanisms(db, subscription, subSeqId);
     }
   }
