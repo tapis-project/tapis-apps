@@ -7,7 +7,7 @@ package edu.utexas.tacc.tapis.apps.gen.jooq.tables;
 import edu.utexas.tacc.tapis.apps.gen.jooq.Keys;
 import edu.utexas.tacc.tapis.apps.gen.jooq.TapisApp;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.NotificationMechanismsRecord;
-import edu.utexas.tacc.tapis.apps.model.NotificationMechanism.NotificationMechanismType;
+import edu.utexas.tacc.tapis.apps.model.NotifMechanism.NotifMechanismType;
 
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +61,7 @@ public class NotificationMechanisms extends TableImpl<NotificationMechanismsReco
     /**
      * The column <code>tapis_app.notification_mechanisms.mechanism</code>.
      */
-    public final TableField<NotificationMechanismsRecord, NotificationMechanismType> MECHANISM = createField(DSL.name("mechanism"), org.jooq.impl.SQLDataType.VARCHAR.asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType.class), this, "", new org.jooq.impl.EnumConverter<edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType, edu.utexas.tacc.tapis.apps.model.NotificationMechanism.NotificationMechanismType>(edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType.class, edu.utexas.tacc.tapis.apps.model.NotificationMechanism.NotificationMechanismType.class));
+    public final TableField<NotificationMechanismsRecord, NotifMechanismType> MECHANISM = createField(DSL.name("mechanism"), org.jooq.impl.SQLDataType.VARCHAR.asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType.class), this, "", new org.jooq.impl.EnumConverter<edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType, NotifMechanismType>(edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType.class, NotifMechanismType.class));
 
     /**
      * The column <code>tapis_app.notification_mechanisms.webhook_url</code>.
@@ -166,7 +166,7 @@ public class NotificationMechanisms extends TableImpl<NotificationMechanismsReco
     // -------------------------------------------------------------------------
 
     @Override
-    public Row5<Integer, Integer, NotificationMechanismType, String, String> fieldsRow() {
+    public Row5<Integer, Integer, NotifMechanismType, String, String> fieldsRow() {
         return (Row5) super.fieldsRow();
     }
 }

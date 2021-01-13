@@ -3,7 +3,7 @@ package edu.utexas.tacc.tapis.apps.service;
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
-import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
+import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
 import edu.utexas.tacc.tapis.security.client.SKClient;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
@@ -841,14 +841,14 @@ public class AppsServiceTest
               "List of schedulerOptions did not contain an item with value: " + itemSeedItem.getArgValue());
     }
     // Verify notification subscriptions
-    List<NotificationSubscription> origNotificationSubs = app0.getNotificationSubscriptions();
-    List<NotificationSubscription> tmpSubs = tmpApp.getNotificationSubscriptions();
+    List<NotifSubscription> origNotificationSubs = app0.getNotificationSubscriptions();
+    List<NotifSubscription> tmpSubs = tmpApp.getNotificationSubscriptions();
     Assert.assertNotNull(origNotificationSubs, "Orig notificationSubscriptions was null");
     Assert.assertNotNull(tmpSubs, "Fetched notificationSubscriptions was null");
     Assert.assertEquals(tmpSubs.size(), origNotificationSubs.size());
     var filtersFound = new ArrayList<String>();
-    for (NotificationSubscription itemFound : tmpSubs) {filtersFound.add(itemFound.getFilter());}
-    for (NotificationSubscription itemSeedItem : origNotificationSubs)
+    for (NotifSubscription itemFound : tmpSubs) {filtersFound.add(itemFound.getFilter());}
+    for (NotifSubscription itemSeedItem : origNotificationSubs)
     {
       Assert.assertTrue(filtersFound.contains(itemSeedItem.getFilter()),
               "List of notificationSubscriptions did not contain an item with filter: " + itemSeedItem.getFilter());

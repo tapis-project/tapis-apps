@@ -5,10 +5,13 @@ import edu.utexas.tacc.tapis.apps.api.model.ArgMetaSpec;
 import edu.utexas.tacc.tapis.apps.api.model.ArgSpec;
 import edu.utexas.tacc.tapis.apps.api.model.FileInputDefinition;
 import edu.utexas.tacc.tapis.apps.api.model.KeyValuePair;
+import edu.utexas.tacc.tapis.apps.api.model.NotificationMechanism;
+import edu.utexas.tacc.tapis.apps.api.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
-import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
+import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
+import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
@@ -175,9 +178,9 @@ public class ApiUtils
   }
 
   /**
-   * Construct a list of lib model AppArg objects given the request objects
+   * Build a list of lib model AppArg objects given the request objects
    */
-  public static List<AppArg> constructAppArgs(List<ArgSpec> argSpecs)
+  public static List<AppArg> buildLibAppArgs(List<ArgSpec> argSpecs)
   {
     var retList = new ArrayList<AppArg>();
     if (argSpecs == null || argSpecs.isEmpty()) return retList;
@@ -193,9 +196,9 @@ public class ApiUtils
   }
 
   /**
-   * Construct a list of lib model FileInput objects given the request objects
+   * Build a list of lib model FileInput objects given the request objects
    */
-  public static List<FileInput> constructFileInputs(List<FileInputDefinition> fileInputDefinitions)
+  public static List<FileInput> buildLibFileInputs(List<FileInputDefinition> fileInputDefinitions)
   {
     var retList = new ArrayList<FileInput>();
     if (fileInputDefinitions == null || fileInputDefinitions.isEmpty()) return retList;
@@ -212,17 +215,78 @@ public class ApiUtils
   }
 
   /**
-   * Construct a list of model NotificationSubscription objects given the request objects
+   * Build a list of lib model subscription objects given the request api model objects
    */
-  public static List<NotificationSubscription> constructNotificationSubscriptions(List<edu.utexas.tacc.tapis.apps.api.model.NotificationSubscription> apiSubscriptions)
+  public static List<NotifSubscription> buildLibNotifSubscriptions(List<NotificationSubscription> apiSubscriptions)
+  {
+    var retList = new ArrayList<NotifSubscription>();
+    if (apiSubscriptions == null || apiSubscriptions.isEmpty()) return retList;
+    for (NotificationSubscription apiSubscription : apiSubscriptions)
+    {
+      NotifSubscription libSubscription = new NotifSubscription(apiSubscription.filter);
+      var apiMechanisms = apiSubscription.notificationMechanisms;
+      if (apiMechanisms == null || apiMechanisms.isEmpty()) apiMechanisms = new ArrayList<>();
+      var libMechanisms = new ArrayList<NotifMechanism>();
+      for (NotificationMechanism apiMech : apiMechanisms)
+      {
+        var libMech = new NotifMechanism(apiMech.mechanism, apiMech.webhookURL, apiMech.emailAddress);
+        libMechanisms.add(libMech);
+      }
+      libSubscription.setNotificationMechanisms(libMechanisms);
+      retList.add(libSubscription);
+    }
+    return retList;
+  }
+
+  // Build a list of api model file inputs based on the lib model objects
+  public static List<FileInputDefinition> buildApiFileInputDefinitions(List<FileInput> libFileInputs)
+  {
+    var retList = new ArrayList<FileInputDefinition>();
+    if (libFileInputs == null || libFileInputs.isEmpty()) return retList;
+    for (FileInput libFileInput : libFileInputs)
+    {
+      ArgMetaSpec meta = new ArgMetaSpec();
+      meta.name = libFileInput.getMetaName();
+      meta.description = libFileInput.getMetaDescription();
+      meta.required = libFileInput.isMetaRequired();
+      meta.keyValuePairs = ApiUtils.getKeyValuesAsList(libFileInput.getMetaKeyValuePairs());
+      FileInputDefinition fid = new FileInputDefinition();
+      fid.sourceUrl = libFileInput.getSourceUrl();
+      fid.targetPath = libFileInput.getTargetPath();
+      fid.inPlace = libFileInput.isInPlace();
+      fid.meta = meta;
+      retList.add(fid);
+    }
+    return retList;
+  }
+
+  // Build a list of api model subscriptions based on the lib model objects
+  public static List<NotificationMechanism> buildApiNotifMechanisms(List<NotifMechanism> libMechanisms)
+  {
+    var retList = new ArrayList<NotificationMechanism>();
+    if (libMechanisms == null || libMechanisms.isEmpty()) return retList;
+    for (NotifMechanism libMechanism : libMechanisms)
+    {
+      NotificationMechanism apiMechanism = new NotificationMechanism();
+      apiMechanism.mechanism = libMechanism.getMechanism();
+      apiMechanism.webhookURL = libMechanism.getWebhookUrl();
+      apiMechanism.emailAddress = libMechanism.getEmailAddress();
+      retList.add(apiMechanism);
+    }
+    return retList;
+  }
+
+  // Build a list of api model notif mechanisms based on the lib model objects
+  public static List<NotificationSubscription> buildApiNotifSubscriptions(List<NotifSubscription> libSubscriptions)
   {
     var retList = new ArrayList<NotificationSubscription>();
-    if (apiSubscriptions == null || apiSubscriptions.isEmpty()) return retList;
-    for (edu.utexas.tacc.tapis.apps.api.model.NotificationSubscription subs : apiSubscriptions)
+    if (libSubscriptions == null || libSubscriptions.isEmpty()) return retList;
+    for (NotifSubscription libSubscription : libSubscriptions)
     {
-//    TODO: Add notif mechanisms
-      NotificationSubscription modelSubscription = new NotificationSubscription(subs.filter);
-      retList.add(modelSubscription);
+      NotificationSubscription apiSubscription = new NotificationSubscription();
+      apiSubscription.filter = libSubscription.getFilter();
+      apiSubscription.notificationMechanisms = buildApiNotifMechanisms(libSubscription.getNotificationMechanisms());
+      retList.add(apiSubscription);
     }
     return retList;
   }

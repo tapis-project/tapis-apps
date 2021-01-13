@@ -835,11 +835,11 @@ public class AppResource
           envVariables, parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes, jobAttrs.tags,
           req.tags, req.notes, req.importRefId, false, null, null);
     // Data for aux tables
-    app.setFileInputs(ApiUtils.constructFileInputs(jobAttrs.fileInputDefinitions));
-    app.setNotificationSubscriptions(ApiUtils.constructNotificationSubscriptions(jobAttrs.subscriptions));
-    app.setAppArgs(ApiUtils.constructAppArgs(parmSet.appArgs));
-    app.setContainerArgs(ApiUtils.constructAppArgs(parmSet.containerArgs));
-    app.setSchedulerOptions(ApiUtils.constructAppArgs(parmSet.schedulerOptions));
+    app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputDefinitions));
+    app.setNotificationSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
+    app.setAppArgs(ApiUtils.buildLibAppArgs(parmSet.appArgs));
+    app.setContainerArgs(ApiUtils.buildLibAppArgs(parmSet.containerArgs));
+    app.setSchedulerOptions(ApiUtils.buildLibAppArgs(parmSet.schedulerOptions));
     // Extract Notes from the raw json.
     Object notes = extractNotes(rawJson);
     app.setNotes(notes);

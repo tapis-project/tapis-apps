@@ -10,8 +10,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
-import edu.utexas.tacc.tapis.apps.model.NotificationMechanism;
-import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
+import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
+import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
 import edu.utexas.tacc.tapis.search.parser.ASTBinaryExpression;
 import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
@@ -1062,7 +1062,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     var subscriptions = app.getNotificationSubscriptions();
     if (subscriptions == null || subscriptions.isEmpty()) return;
 
-    for (NotificationSubscription subscription : subscriptions) {
+    for (NotifSubscription subscription : subscriptions) {
       Record record = db.insertInto(NOTIFICATION_SUBSCRIPTIONS).set(NOTIFICATION_SUBSCRIPTIONS.APP_SEQ_ID, appSeqId)
               .set(NOTIFICATION_SUBSCRIPTIONS.FILTER, subscription.getFilter())
               .returningResult(NOTIFICATION_SUBSCRIPTIONS.SEQ_ID)
@@ -1075,14 +1075,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Persist notification mechanisms given an sql connection and a NotificationSubscription
    */
-  private static void persistNotificationMechanisms(DSLContext db, NotificationSubscription subscription, int subSeqId)
+  private static void persistNotificationMechanisms(DSLContext db, NotifSubscription subscription, int subSeqId)
   {
     var mechanisms = subscription.getNotificationMechanisms();
     if (mechanisms == null || mechanisms.isEmpty()) return;
 
-    for (NotificationMechanism mechanism : mechanisms) {
+    for (NotifMechanism mechanism : mechanisms) {
       db.insertInto(NOTIFICATION_MECHANISMS).set(NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID, subSeqId)
-              .set(NOTIFICATION_MECHANISMS.MECHANISM, mechanism.getNotificationMechanism())
+              .set(NOTIFICATION_MECHANISMS.MECHANISM, mechanism.getMechanism())
               .set(NOTIFICATION_MECHANISMS.WEBHOOK_URL, mechanism.getWebhookUrl())
               .set(NOTIFICATION_MECHANISMS.EMAIL_ADDRESS, mechanism.getEmailAddress())
               .execute();
@@ -1107,13 +1107,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @param appSeqId - app
    * @return list of subscriptions
    */
-  private static List<NotificationSubscription> retrieveNotificationSubscriptions(DSLContext db, int appSeqId)
+  private static List<NotifSubscription> retrieveNotificationSubscriptions(DSLContext db, int appSeqId)
   {
-    List<NotificationSubscription> subscriptions =
+    List<NotifSubscription> subscriptions =
             db.selectFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_SEQ_ID.eq(appSeqId))
-                    .fetchInto(NotificationSubscription.class);
+                    .fetchInto(NotifSubscription.class);
     if (subscriptions == null) return subscriptions;
-    for (NotificationSubscription subscription : subscriptions)
+    for (NotifSubscription subscription : subscriptions)
     {
       subscription.setNotificationMechanisms(retrieveNotificationMechanisms(db, subscription.getSeqId()));
     }
@@ -1126,11 +1126,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @param subSeqId - subscription seq id
    * @return list of mechanisms
    */
-  private static List<NotificationMechanism> retrieveNotificationMechanisms(DSLContext db, int subSeqId)
+  private static List<NotifMechanism> retrieveNotificationMechanisms(DSLContext db, int subSeqId)
   {
-    List<NotificationMechanism> mechanisms =
+    List<NotifMechanism> mechanisms =
             db.selectFrom(NOTIFICATION_MECHANISMS).where(NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID.eq(subSeqId))
-                    .fetchInto(NotificationMechanism.class);
+                    .fetchInto(NotifMechanism.class);
     return mechanisms;
   }
 

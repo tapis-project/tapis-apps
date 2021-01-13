@@ -12,8 +12,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="34efd738-2b9a-4e43-b14d-018fde0be61f" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/model/NotificationMechanism.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/responses/results/ResultApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/responses/results/ResultApp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/model/JobAttributes.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/model/JobAttributes.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/model/NotificationSubscription.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/model/NotificationSubscription.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/responses/RespAppsArray.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/responses/RespAppsArray.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/utils/ApiUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/utils/ApiUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/NotificationMechanisms.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/NotificationMechanisms.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/NotificationMechanismsRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/gen/jooq/tables/records/NotificationMechanismsRecord.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/App.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/NotificationMechanism.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/NotifMechanism.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/NotificationSubscription.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/NotifSubscription.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/IntegrationUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/IntegrationUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/dao/AppsDaoTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/service/AppsServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/test/java/edu/utexas/tacc/tapis/apps/service/AppsServiceTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../tapis-client-java/apps-client/src/test/java/edu/utexas/tacc/tapis/apps/client/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-client-java/apps-client/src/test/java/edu/utexas/tacc/tapis/apps/client/Utils.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -60,13 +75,14 @@
       <recent name="edu.utexas.tacc.tapis.apps.api.model" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="edu.utexas.tacc.tapis.apps.api.model" />
       <recent name="edu.utexas.tacc.tapis.apps.api.requests" />
       <recent name="edu.utexas.tacc.tapis.apps.model" />
       <recent name="edu.utexas.tacc.tapis.apps.api.responses.results" />
       <recent name="edu.utexas.tacc.tapis.apps.api.responses" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.AppsApplication">
+  <component name="RunManager" selected="TestNG.AppsServiceTest">
     <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
       <option name="arquillianRunConfiguration">
         <value>

@@ -94,7 +94,7 @@ public final class App
 
   // Aux tables
   private List<FileInput> fileInputs;
-  private List<NotificationSubscription> notificationSubscriptions;
+  private List<NotifSubscription> notificationSubscriptions;
   private List<AppArg> appArgs;  // parameterSet
   private List<AppArg> containerArgs; // parameterSet
   private List<AppArg> schedulerOptions; // parameterSet
@@ -370,11 +370,11 @@ public final class App
     return this;
   }
 
-  public List<NotificationSubscription> getNotificationSubscriptions()
+  public List<NotifSubscription> getNotificationSubscriptions()
   {
     return (notificationSubscriptions == null) ? null : new ArrayList<>(notificationSubscriptions);
   }
-  public App setNotificationSubscriptions(List<NotificationSubscription> ns) {
+  public App setNotificationSubscriptions(List<NotifSubscription> ns) {
     notificationSubscriptions = (ns == null) ? null : new ArrayList<>(ns);
     return this;
   }

@@ -3,6 +3,7 @@ package edu.utexas.tacc.tapis.apps.api.model;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,50 +59,12 @@ public final class JobAttributes
     archiveSystemDir = a.getArchiveSystemDir();
     archiveOnAppError = a.isArchiveOnAppError();
     parameterSet = new ParameterSet(a);
-    fileInputDefinitions = buildFileInputDefinitions(a.getFileInputs());
+    fileInputDefinitions = ApiUtils.buildApiFileInputDefinitions(a.getFileInputs());
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
     memoryMB = a.getMemoryMb();
     maxMinutes = a.getMaxMinutes();
-    subscriptions = buildSubscriptions(a.getNotificationSubscriptions());
+    subscriptions = ApiUtils.buildApiNotifSubscriptions(a.getNotificationSubscriptions());
     tags = a.getJobTags();
-  }
-
-  // Build a list of api model file inputs based on the lib model file inputs
-  List<FileInputDefinition> buildFileInputDefinitions(List<FileInput> fileInputs)
-  {
-    var retList = new ArrayList<FileInputDefinition>();
-    if (fileInputs == null || fileInputs.isEmpty()) return retList;
-    for (FileInput fi : fileInputs)
-    {
-      ArgMetaSpec meta = new ArgMetaSpec();
-      meta.name = fi.getMetaName();
-      meta.description = fi.getMetaDescription();
-      meta.required = fi.isMetaRequired();
-      meta.keyValuePairs = ApiUtils.getKeyValuesAsList(fi.getMetaKeyValuePairs());
-      FileInputDefinition fid = new FileInputDefinition();
-      fid.sourceUrl = fi.getSourceUrl();
-      fid.targetPath = fi.getTargetPath();
-      fid.inPlace = fi.isInPlace();
-      fid.meta = meta;
-      retList.add(fid);
-    }
-    return retList;
-  }
-
-  // Build a list of api model subscriptions based on the lib model subscriptions
-  List<NotificationSubscription> buildSubscriptions(List<edu.utexas.tacc.tapis.apps.model.NotificationSubscription> subscriptions)
-  {
-    var retList = new ArrayList<NotificationSubscription>();
-    if (subscriptions == null || subscriptions.isEmpty()) return retList;
-    for (edu.utexas.tacc.tapis.apps.model.NotificationSubscription subscription : subscriptions)
-    {
-      NotificationSubscription subscription1 = new NotificationSubscription();
-      subscription1.filter = subscription.getFilter();
-// TODO
-//      subscription1.notificationMechanisms = ApiUtils.getNotificationMechanisms(subscription.getNotificationMechanisms());
-      retList.add(subscription1);
-    }
-    return retList;
   }
 }

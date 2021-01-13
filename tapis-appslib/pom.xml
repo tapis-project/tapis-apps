@@ -249,7 +249,7 @@
                     <includeTypes>.*</includeTypes>
                   </forcedType>
                   <forcedType>
-                    <userType>edu.utexas.tacc.tapis.apps.model.NotificationMechanism.NotificationMechanismType</userType>
+                    <userType>edu.utexas.tacc.tapis.apps.model.NotifMechanism.NotificationMechanismType</userType>
                     <enumConverter>true</enumConverter>
                     <includeExpression>notification_mechanisms\.mechanism</includeExpression>
                     <includeTypes>.*</includeTypes>

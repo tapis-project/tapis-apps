@@ -4,8 +4,6 @@ import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 /*
  * Delivery mechanism for a notification
  *
@@ -13,25 +11,25 @@ import java.util.List;
  * Please keep it immutable.
  *
  */
-public final class NotificationMechanism
+public final class NotifMechanism
 {
   // ============== Enums ==========================================
-  public enum NotificationMechanismType {WEBHOOK, EMAIL, QUEUE, ACTOR}
+  public enum NotifMechanismType {WEBHOOK, EMAIL, QUEUE, ACTOR}
 
   // ============== Fields =========================================
-  private static final Logger _log = LoggerFactory.getLogger(NotificationMechanism.class);
+  private static final Logger _log = LoggerFactory.getLogger(NotifMechanism.class);
 
   private final int seqId; // Unique database sequence number
   private final int subscriptionSeqId;
-  private final NotificationMechanismType mechanism;
+  private final NotifMechanismType mechanism;
   private final String webhookUrl;
   private final String emailAddress;
 
   /* ********************************************************************** */
   /*                           Constructors                                 */
   /* ********************************************************************** */
-  public NotificationMechanism(int seqId1, int subscriptionSeqId1, NotificationMechanismType mechanism1,
-                               String webhookUrl1, String emailAddress1)
+  public NotifMechanism(int seqId1, int subscriptionSeqId1, NotifMechanismType mechanism1,
+                        String webhookUrl1, String emailAddress1)
   {
     seqId = seqId1;
     subscriptionSeqId = subscriptionSeqId1;
@@ -40,7 +38,7 @@ public final class NotificationMechanism
     emailAddress = emailAddress1;
   }
 
-  public NotificationMechanism(NotificationMechanismType mechanism1, String webhookUrl1, String emailAddress1)
+  public NotifMechanism(NotifMechanismType mechanism1, String webhookUrl1, String emailAddress1)
   {
     seqId = -1;
     subscriptionSeqId = -1;
@@ -54,7 +52,7 @@ public final class NotificationMechanism
   /* ********************************************************************** */
   public int getSeqId() { return seqId; }
   public int getSubscriptionSeqId() { return subscriptionSeqId; }
-  public NotificationMechanismType getNotificationMechanism() { return mechanism; }
+  public NotifMechanismType getMechanism() { return mechanism; }
   public String getWebhookUrl() { return webhookUrl; }
   public String getEmailAddress() { return emailAddress; }
 
