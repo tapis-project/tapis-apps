@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
@@ -27,22 +26,29 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import edu.utexas.tacc.tapis.search.SearchUtils;
-import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
-import edu.utexas.tacc.tapis.sharedapi.dto.ResponseWrapper;
-import edu.utexas.tacc.tapis.sharedapi.responses.RespAbstract;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.http.server.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
+import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
+import edu.utexas.tacc.tapis.apps.api.model.ParameterSet;
+import edu.utexas.tacc.tapis.apps.api.requests.ReqCreateApp;
+import edu.utexas.tacc.tapis.apps.api.requests.ReqUpdateApp;
+import edu.utexas.tacc.tapis.apps.api.responses.RespApp;
 import edu.utexas.tacc.tapis.apps.api.responses.RespAppsArray;
+import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
+import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
+import edu.utexas.tacc.tapis.apps.service.AppsService;
+import edu.utexas.tacc.tapis.search.SearchUtils;
+import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
+import edu.utexas.tacc.tapis.sharedapi.dto.ResponseWrapper;
+import edu.utexas.tacc.tapis.sharedapi.responses.RespAbstract;
+import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisJSONException;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.schema.JsonValidator;
@@ -56,12 +62,6 @@ import edu.utexas.tacc.tapis.sharedapi.responses.RespChangeCount;
 import edu.utexas.tacc.tapis.sharedapi.responses.RespResourceUrl;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultChangeCount;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultResourceUrl;
-import edu.utexas.tacc.tapis.apps.api.requests.ReqCreateApp;
-import edu.utexas.tacc.tapis.apps.api.requests.ReqUpdateApp;
-import edu.utexas.tacc.tapis.apps.api.responses.RespApp;
-import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
-import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.service.AppsService;
 
 /*
  * JAX-RS REST resource for a Tapis App (edu.utexas.tacc.tapis.apps.model.App)
@@ -173,17 +173,21 @@ public class AppResource
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
 
+    // If req is null that is an unrecoverable error
+    if (req == null)
+    {
+      msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, "ReqCreateApp == null");
+      _log.error(msg);
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+    }
     // Create an app from the request
-    App app = createAppFromRequest(req);
+    App app = createAppFromRequest(req, rawJson);
+
     // Fill in defaults and check constraints on App attributes
     resp = validateApp(app, authenticatedUser, prettyPrint);
     if (resp != null) return resp;
 
-    // Extract Notes from the raw json.
-    Object notes = extractNotes(rawJson);
-    app.setNotes(notes);
-
-    // TODO: If needed scrub out any secretes
+    // So far no need to scrub out secrets, so scrubbed and raw are the same.
     String scrubbedJson = rawJson;
     // ---------------------------- Make service call to create the app -------------------------------
     // Update tenant name and pull out app name for convenience
@@ -301,11 +305,7 @@ public class AppResource
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
-    PatchApp patchApp = createPatchAppFromRequest(req, authenticatedUser.getTenantId(), appId);
-
-    // Extract Notes from the raw json.
-    Object notes = extractNotes(rawJson);
-    patchApp.setNotes(notes);
+    PatchApp patchApp = createPatchAppFromRequest(req, authenticatedUser.getTenantId(), appId, rawJson);
 
     // No attributes are required. Constraints validated and defaults filled in on server side.
     // No secrets in PatchApp so no need to scrub
@@ -585,7 +585,7 @@ public class AppResource
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
     AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
 
-    List<String> searchList = null;
+    List<String> searchList;
     try
     {
       // Extract the search conditions and validate their form. Back end will handle translating LIKE wildcard
@@ -817,41 +817,54 @@ public class AppResource
 
   /**
    * Create an app from a ReqCreateApp
+   * Check for req == null should have already been done
    */
-  private static App createAppFromRequest(ReqCreateApp req)
+  private static App createAppFromRequest(ReqCreateApp req, String rawJson)
   {
-    var app = new App(-1, null, req.id, req.version, req.description, req.appType, req.owner, req.enabled,
-                      req.runtime, req.runtimeVersion, req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
-                      req.jobDescription, req.dynamicExecSystem, req.execSystemConstraints, req.execSystemId,
-                      req.execSystemExecDir, req.execSystemInputDir, req.execSystemOutputDir, req.execSystemLogicalQueue,
-                      req.archiveSystemId, req.archiveSystemDir, req.archiveOnAppError, req.nodeCount,
-                      req.coresPerNode, req.memoryMb, req.maxMinutes, req.envVariables, req.archiveIncludes, req.archiveExcludes,
-                      req.jobTags, req.tags, req.notes, req.refImportId, false, null, null);
-    // Data from aux tables
-    app.setFileInputs(req.fileInputs);
-    app.setNotificationSubscriptions(req.subscriptions);
-    app.setAppArgs(req.appArgs);
-    app.setContainerArgs(req.containerArgs);
-    app.setSchedulerOptions(req.schedulerOptions);
+    var jobAttrs = req.jobAttributes;
+    if (jobAttrs == null) jobAttrs = new JobAttributes();
+    var parmSet = jobAttrs.parameterSet;
+    if (parmSet == null) parmSet = new ParameterSet();
+    String[] envVariables = ApiUtils.getKeyValuesAsArray(parmSet.envVariables);
+    var app = new App(-1, null, req.id, req.version, req.description, req.appType, req.owner, req.enabled, req.runtime,
+          req.runtimeVersion, req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
+          jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
+          jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
+          jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir,
+          jobAttrs.archiveOnAppError, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes,
+          envVariables, parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes, jobAttrs.tags,
+          req.tags, req.notes, req.importRefId, false, null, null);
+    // Data for aux tables
+    app.setFileInputs(ApiUtils.constructFileInputs(jobAttrs.fileInputDefinitions));
+    app.setNotificationSubscriptions(ApiUtils.constructNotificationSubscriptions(jobAttrs.subscriptions));
+    app.setAppArgs(ApiUtils.constructAppArgs(parmSet.appArgs));
+    app.setContainerArgs(ApiUtils.constructAppArgs(parmSet.containerArgs));
+    app.setSchedulerOptions(ApiUtils.constructAppArgs(parmSet.schedulerOptions));
+    // Extract Notes from the raw json.
+    Object notes = extractNotes(rawJson);
+    app.setNotes(notes);
     return app;
   }
 
   /**
    * Create a PatchApp from a ReqUpdateApp
    */
-  private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String appId)
+  private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String appId, String rawJson)
   {
     PatchApp patchApp = new PatchApp(req.description, req.enabled, req.tags, req.notes);
     // Update tenant name and app name
     patchApp.setTenant(tenantName);
     patchApp.setId(appId);
     patchApp.setVersion(req.version);
+    // Extract Notes from the raw json.
+    Object notes = extractNotes(rawJson);
+    patchApp.setNotes(notes);
     return patchApp;
   }
 
   /**
    * Fill in defaults and check constraints on App attributes
-   * Check values. name must be set.
+   * Check values. Id and version must be set.
    * Collect and report as many errors as possible so they can all be fixed before next attempt
    * NOTE: JsonSchema validation should handle some of these checks but we check here again just in case
    *

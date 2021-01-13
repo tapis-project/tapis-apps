@@ -1,6 +1,14 @@
 package edu.utexas.tacc.tapis.apps.api.utils;
 
 import com.google.gson.JsonElement;
+import edu.utexas.tacc.tapis.apps.api.model.ArgMetaSpec;
+import edu.utexas.tacc.tapis.apps.api.model.ArgSpec;
+import edu.utexas.tacc.tapis.apps.api.model.FileInputDefinition;
+import edu.utexas.tacc.tapis.apps.api.model.KeyValuePair;
+import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.AppArg;
+import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
@@ -11,8 +19,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /*
    Utility class containing general use static methods.
@@ -159,5 +172,77 @@ public class ApiUtils
       return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
     return null;
+  }
+
+  /**
+   * Construct a list of lib model AppArg objects given the request objects
+   */
+  public static List<AppArg> constructAppArgs(List<ArgSpec> argSpecs)
+  {
+    var retList = new ArrayList<AppArg>();
+    if (argSpecs == null || argSpecs.isEmpty()) return retList;
+    for (ArgSpec argSpec : argSpecs)
+    {
+      ArgMetaSpec meta = argSpec.meta;
+      if (meta == null) meta = new ArgMetaSpec();
+      String[] kvPairs = ApiUtils.getKeyValuesAsArray(meta.keyValuePairs);
+      AppArg appArg = new AppArg(argSpec.arg, meta.name, meta.description, meta.required, kvPairs);
+      retList.add(appArg);
+    }
+    return retList;
+  }
+
+  /**
+   * Construct a list of lib model FileInput objects given the request objects
+   */
+  public static List<FileInput> constructFileInputs(List<FileInputDefinition> fileInputDefinitions)
+  {
+    var retList = new ArrayList<FileInput>();
+    if (fileInputDefinitions == null || fileInputDefinitions.isEmpty()) return retList;
+    for (FileInputDefinition fid : fileInputDefinitions)
+    {
+      ArgMetaSpec meta = fid.meta;
+      if (meta == null) meta = new ArgMetaSpec();
+      String[] kvPairs = ApiUtils.getKeyValuesAsArray(meta.keyValuePairs);
+      FileInput fileInput = new FileInput(fid.sourceUrl, fid.targetPath, fid.inPlace,
+                                          meta.name, meta.description, meta.required, kvPairs);
+      retList.add(fileInput);
+    }
+    return retList;
+  }
+
+  /**
+   * Construct a list of model NotificationSubscription objects given the request objects
+   */
+  public static List<NotificationSubscription> constructNotificationSubscriptions(List<edu.utexas.tacc.tapis.apps.api.model.NotificationSubscription> apiSubscriptions)
+  {
+    var retList = new ArrayList<NotificationSubscription>();
+    if (apiSubscriptions == null || apiSubscriptions.isEmpty()) return retList;
+    for (edu.utexas.tacc.tapis.apps.api.model.NotificationSubscription subs : apiSubscriptions)
+    {
+//    TODO: Add notif mechanisms
+      NotificationSubscription modelSubscription = new NotificationSubscription(subs.filter);
+      retList.add(modelSubscription);
+    }
+    return retList;
+  }
+
+  /**
+   * Return String[] array of key=value given list of KeyValuePair
+   */
+  public static String[] getKeyValuesAsArray(List<KeyValuePair> kvList)
+  {
+    if (kvList == null || kvList.size() == 0) return App.EMPTY_STR_ARRAY;
+    return kvList.stream().map(KeyValuePair::toString).toArray(String[]::new);
+  }
+
+  /**
+   * Return list of KeyValuePair given String[] array of key=value
+   */
+  public static List<KeyValuePair> getKeyValuesAsList(String[] kvArray)
+  {
+    if (kvArray == null || kvArray.length == 0) return Collections.emptyList();
+    List<KeyValuePair> kvList = Arrays.stream(kvArray).map(KeyValuePair::fromString).collect(Collectors.toList());
+    return kvList;
   }
 }

@@ -47,13 +47,13 @@
         "archiveDir": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/DirPath" },
         "archiveOnAppError": { "type": "boolean", "default": true },
         "parameterSet": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/ParameterSet" },
-        "fileInputs": {
+        "fileInputDefinitions": {
           "type": "array",
-          "items":  { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/FileInput" }
+          "items":  { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/FileInputDefinition" }
         },
         "nodeCount": { "type": "integer", "default": -1 },
         "coresPerNode": { "type": "integer", "default": -1 },
-        "memoryMb": { "type": "integer", "default": -1 },
+        "memoryMB": { "type": "integer", "default": -1 },
         "maxMinutes": { "type": "integer", "default": -1 },
         "subscriptions": {
           "type": "array",

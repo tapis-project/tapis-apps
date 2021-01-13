@@ -16,13 +16,13 @@
     "type": "object",
     "properties": {
       "appArgs": {
-        "type": "array", "items":  { "$ref": "#/Arg" }
+        "type": "array", "items":  { "$ref": "#/ArgSpec" }
       },
       "containerArgs": {
-        "type": "array", "items":  { "$ref": "#/Arg" }
+        "type": "array", "items":  { "$ref": "#/ArgSpec" }
       },
       "schedulerOptions": {
-        "type": "array", "items":  { "$ref": "#/Arg" }
+        "type": "array", "items":  { "$ref": "#/ArgSpec" }
       },
       "envVariables": {
         "type": "array", "items":  { "$ref": "#/KeyValuePair" }
@@ -30,14 +30,14 @@
       "archiveFilter": { "$ref": "#/ArchiveFilter" }
     }
   },
-  "FileInput": {
+  "FileInputDefinition": {
     "type": "object",
     "required": [ "meta" ],
     "properties": {
       "sourceUrl": { "type": "string", "format": "uri" },
       "targetPath": { "type": "string" },
       "inPlace": { "type": "boolean", "default": false },
-      "meta": { "$ref": "#/Meta" }
+      "meta": { "$ref": "#/ArgMetaSpec" }
     }
   },
   "NotificationSubscription": {
@@ -64,15 +64,15 @@
       "excludes": { "type": "array", "items": { "type": "string", "minLength": 1 } }
     }
   },
-  "Arg" : {
+  "ArgSpec": {
     "type": "object",
     "required": [ "arg" ],
     "properties": {
       "arg": { "type":  "string" },
-      "meta": { "$ref": "#/Meta" }
+      "meta": { "$ref": "#/ArgMetaSpec" }
     }
   },
-  "Meta" : {
+  "ArgMetaSpec": {
     "type": "object",
     "required": [ "name" ],
     "properties": {

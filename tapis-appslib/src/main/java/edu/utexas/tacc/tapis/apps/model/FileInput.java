@@ -5,7 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /*
- * FileInput representing
+ * Class representing FileInputs contained in an App definition.
+
  *
  * This class is intended to represent an immutable object.
  * Please keep it immutable.

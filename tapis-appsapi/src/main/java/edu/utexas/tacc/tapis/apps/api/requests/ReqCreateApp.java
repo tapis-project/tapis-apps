@@ -1,12 +1,8 @@
 package edu.utexas.tacc.tapis.apps.api.requests;
 
+import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
-import edu.utexas.tacc.tapis.apps.model.AppArg;
-import edu.utexas.tacc.tapis.apps.model.FileInput;
-import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
-
-import java.util.List;
 
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_ENABLED;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NOTES;
@@ -30,35 +26,8 @@ public final class ReqCreateApp
   public int maxJobs;
   public int maxJobsPerUser;
   public boolean strictFileInputs;
-  // === Start jobAttributes ===
-  public String jobDescription;
-  public boolean dynamicExecSystem;
-  public String[] execSystemConstraints;
-  public String execSystemId;
-  public String execSystemExecDir;
-  public String execSystemInputDir;
-  public String execSystemOutputDir;
-  public String execSystemLogicalQueue;
-  public String archiveSystemId;
-  public String archiveSystemDir;
-  public boolean archiveOnAppError;
-  public String[] envVariables; // from parameterSet
-  public String[] archiveIncludes; // from parameterSet
-  public String[] archiveExcludes; // from parameterSet
-  public int nodeCount;
-  public int coresPerNode;
-  public int memoryMb;
-  public int maxMinutes;
-  public String[] jobTags = EMPTY_STR_ARRAY;       // List of arbitrary tags as strings
-  // === End jobAttributes ===
-
-  public List<AppArg> appArgs;
-  public List<AppArg> containerArgs;
-  public List<AppArg> schedulerOptions;
-  public List<FileInput> fileInputs;
-  public List<NotificationSubscription> subscriptions;
-
+  public JobAttributes jobAttributes;
   public String[] tags = EMPTY_STR_ARRAY;       // List of arbitrary tags as strings
   public Object notes = DEFAULT_NOTES;      // Simple metadata as json
-  public String refImportId; // Optional reference ID for an app created via import
+  public String importRefId; // Optional reference ID for an app created via import
 }

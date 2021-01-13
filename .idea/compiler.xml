@@ -6,6 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="jobs-client" />
+      </profile>
+      <profile name="Annotation profile for TACC Tapis Applications Parent POM" enabled="true">
+        <sourceOutputDir name="../../../../../target/generated-sources/annotations" />
+        <sourceTestOutputDir name="../../../../../target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
         <module name="tapis-appslib" />
         <module name="tapis-appsapi" />
       </profile>
@@ -14,6 +20,7 @@
       <module name="apps-client" target="1.13" />
       <module name="auth-client" target="1.13" />
       <module name="files-client" target="1.13" />
+      <module name="jobs-client" target="1.15" />
       <module name="meta-client" target="1.13" />
       <module name="security-client" target="1.13" />
       <module name="shared" target="1.5" />
