@@ -15,7 +15,7 @@ USAGE1="Usage: $PRG_NAME { dev_local, dev, staging, prod }"
 SVC_NAME="apps"
 
 # Run docker image for the service
-BUILD_DIR=../api/target
+BUILD_DIR=../tapis-appsapi/target
 ENV=$1
 TAG="tapis/${SVC_NAME}:${ENV}"
 
