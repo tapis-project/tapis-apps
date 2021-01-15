@@ -6,41 +6,14 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="jobs-client" />
-      </profile>
-      <profile name="Annotation profile for TACC Tapis Applications Parent POM" enabled="true">
-        <sourceOutputDir name="../../../../../target/generated-sources/annotations" />
-        <sourceTestOutputDir name="../../../../../target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
         <module name="tapis-appslib" />
         <module name="tapis-appsapi" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="apps-client" target="1.13" />
-      <module name="auth-client" target="1.13" />
-      <module name="files-client" target="1.13" />
-      <module name="jobs-client" target="1.15" />
-      <module name="meta-client" target="1.13" />
-      <module name="security-client" target="1.13" />
-      <module name="shared" target="1.5" />
-      <module name="systems-client" target="1.13" />
       <module name="tapis-apps" target="1.5" />
       <module name="tapis-appsapi" target="1.15" />
       <module name="tapis-appslib" target="1.15" />
-      <module name="tapis-client-java" target="1.5" />
-      <module name="tapis-client-java (1)" target="1.5" />
-      <module name="tapis-client-java (2)" target="1.5" />
-      <module name="tapis-shared-api" target="1.13" />
-      <module name="tapis-shared-db" target="1.13" />
-      <module name="tapis-shared-java" target="1.5" />
-      <module name="tapis-shared-java (2)" target="1.5" />
-      <module name="tapis-shared-lib" target="1.13" />
-      <module name="tapis-shared-notifications" target="1.13" />
-      <module name="tapis-shared-queue" target="1.13" />
-      <module name="tapis-shared-searchlib" target="1.13" />
-      <module name="tenants-client" target="1.13" />
-      <module name="tokens-client" target="1.13" />
     </bytecodeTargetLevel>
   </component>
 </project>
