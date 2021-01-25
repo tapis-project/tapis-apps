@@ -135,14 +135,14 @@ public class AppsServiceTest
     try { svc.revokeUserPermissions(authenticatedOwner1, apps[14].getId(), testUser2, testPermsREADMODIFY, scrubbedJson); }
     catch (Exception e) { }
 
-//    //Remove all objects created by tests
-//    for (int i = 0; i < numApps; i++)
-//    {
-//      svcImpl.hardDeleteApp(authenticatedAdminUser, apps[i].getId());
-//    }
-//
-//    App tmpApp = svc.getApp(authenticatedAdminUser, apps[0].getId(), apps[0].getVersion(), false);
-//    Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getId());
+    //Remove all objects created by tests
+    for (int i = 0; i < numApps; i++)
+    {
+      svcImpl.hardDeleteApp(authenticatedAdminUser, apps[i].getId());
+    }
+
+    App tmpApp = svc.getApp(authenticatedAdminUser, apps[0].getId(), apps[0].getVersion(), false);
+    Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getId());
   }
 
   @Test
