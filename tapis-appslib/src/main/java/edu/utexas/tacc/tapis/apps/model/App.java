@@ -36,6 +36,7 @@ public final class App
   // Default values
   public static final String DEFAULT_OWNER = APIUSERID_VAR;
   public static final boolean DEFAULT_ENABLED = true;
+  public static final boolean DEFAULT_CONTAINERIZED = true;
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
   public static final JsonObject DEFAULT_NOTES = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
   public static final String[] EMPTY_STR_ARRAY = new String[0];
@@ -63,6 +64,7 @@ public final class App
   private AppType appType; // Type of app, e.g. BATCH, DIRECT
   private String owner;      // User who owns the app and has full privileges
   private boolean enabled; // Indicates if app is currently enabled
+  private boolean containerized;
   private Runtime runtime;
   private String runtimeVersion;
   private String containerImage;
@@ -131,7 +133,7 @@ public final class App
    * Also useful for testing
    */
   public App(int seqId1, String tenant1, String id1, String version1, String description1, AppType appType1,
-             String owner1, boolean enabled1, Runtime runtime1, String runtimeVersion1,
+             String owner1, boolean enabled1, boolean containerized1, Runtime runtime1, String runtimeVersion1,
              String containerImage1, int maxJobs1, int maxJobsPerUser1, boolean strictFileInputs1,
              String jobDescription1, boolean dynamicExecSystem1, String[] execSystemConstraints1,
              String execSystemId1, String execSystemExecDir1, String execSystemInputDir1, String execSystemOutputDir1,
@@ -149,6 +151,7 @@ public final class App
     appType = appType1;
     owner = owner1;
     enabled = enabled1;
+    containerized = containerized1;
     runtime = runtime1;
     runtimeVersion = runtimeVersion1;
     containerImage = containerImage1;
@@ -197,6 +200,7 @@ public final class App
     appType = a.getAppType();
     owner = a.getOwner();
     enabled = a.isEnabled();
+    containerized = a.isContainerized();
     runtime = a.getRuntime();
     runtimeVersion = a.getRuntimeVersion();
     containerImage = a.getContainerImage();
@@ -279,6 +283,9 @@ public final class App
 
   public boolean isEnabled() { return enabled; }
   public App setEnabled(boolean b) { enabled = b;  return this; }
+
+  public boolean isContainerized() { return containerized; }
+  public App setContainerized(boolean b) { containerized = b;  return this; }
 
   public Runtime getRuntime() { return runtime; }
   void setRuntime(Runtime r) { runtime = r; }

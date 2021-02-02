@@ -20,7 +20,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NotificationMechanismsRecord extends UpdatableRecordImpl<NotificationMechanismsRecord> implements Record5<Integer, Integer, NotifMechanismType, String, String> {
 
-    private static final long serialVersionUID = -1271080551;
+    private static final long serialVersionUID = 298802085;
 
     /**
      * Setter for <code>tapis_app.notification_mechanisms.seq_id</code>.

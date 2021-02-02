@@ -22,6 +22,7 @@ public final class ResultApp
   public AppType appType;
   public String owner;
   public boolean enabled;
+  public boolean containerized;
   public Runtime runtime;
   public String runtimeVersion;
   public String containerImage;
@@ -48,6 +49,7 @@ public final class ResultApp
     appType = a.getAppType();
     owner = a.getOwner();
     enabled = a.isEnabled();
+    containerized = a.isContainerized();
     runtime = a.getRuntime();
     runtimeVersion = a.getRuntimeVersion();
     containerImage = a.getContainerImage();

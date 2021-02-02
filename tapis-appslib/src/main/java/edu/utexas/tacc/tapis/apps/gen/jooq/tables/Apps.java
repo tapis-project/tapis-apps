@@ -39,7 +39,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Apps extends TableImpl<AppsRecord> {
 
-    private static final long serialVersionUID = -518089792;
+    private static final long serialVersionUID = 1600954421;
 
     /**
      * The reference instance of <code>tapis_app.apps</code>
@@ -93,6 +93,11 @@ public class Apps extends TableImpl<AppsRecord> {
      * The column <code>tapis_app.apps.enabled</code>. Indicates if application is currently active and available for use
      */
     public final TableField<AppsRecord, Boolean> ENABLED = createField(DSL.name("enabled"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "Indicates if application is currently active and available for use");
+
+    /**
+     * The column <code>tapis_app.apps.containerized</code>.
+     */
+    public final TableField<AppsRecord, Boolean> CONTAINERIZED = createField(DSL.name("containerized"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
 
     /**
      * The column <code>tapis_app.apps.runtime</code>.

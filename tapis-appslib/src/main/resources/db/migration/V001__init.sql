@@ -58,6 +58,7 @@ CREATE TABLE apps
   app_type app_type_type,
   owner    VARCHAR(60) NOT NULL,
   enabled  BOOLEAN NOT NULL DEFAULT true,
+  containerized BOOLEAN NOT NULL DEFAULT true,
   runtime runtime_type NOT NULL,
   runtime_version VARCHAR(128),
   container_image VARCHAR(128),

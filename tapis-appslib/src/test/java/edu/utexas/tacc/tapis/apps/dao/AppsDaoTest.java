@@ -392,6 +392,7 @@ public class AppsDaoTest
     patchApp.setId(fakeAppId);
     patchApp.setVersion(fakeAppVersion);
     App patchedApp = new App(1, tenantName, fakeAppId, fakeAppVersion, "description", AppType.BATCH, ownerUser, enabledTrue,
+            containerizedTrue,
             runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, strictFileInputsFalse, jobDescription, dynamicExecSystem,
             execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
             execSystemLogicalQueue, archiveSystemId, archiveSystemDir, archiveOnAppError, nodeCount, coresPerNode,

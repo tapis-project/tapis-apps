@@ -33,7 +33,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NotificationMechanisms extends TableImpl<NotificationMechanismsRecord> {
 
-    private static final long serialVersionUID = 2085902932;
+    private static final long serialVersionUID = -1652618104;
 
     /**
      * The reference instance of <code>tapis_app.notification_mechanisms</code>
@@ -61,7 +61,7 @@ public class NotificationMechanisms extends TableImpl<NotificationMechanismsReco
     /**
      * The column <code>tapis_app.notification_mechanisms.mechanism</code>.
      */
-    public final TableField<NotificationMechanismsRecord, NotifMechanismType> MECHANISM = createField(DSL.name("mechanism"), org.jooq.impl.SQLDataType.VARCHAR.asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType.class), this, "", new org.jooq.impl.EnumConverter<edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType, NotifMechanismType>(edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType.class, NotifMechanismType.class));
+    public final TableField<NotificationMechanismsRecord, NotifMechanismType> MECHANISM = createField(DSL.name("mechanism"), org.jooq.impl.SQLDataType.VARCHAR.asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType.class), this, "", new org.jooq.impl.EnumConverter<edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType, edu.utexas.tacc.tapis.apps.model.NotifMechanism.NotifMechanismType>(edu.utexas.tacc.tapis.apps.gen.jooq.enums.NotificationMechanismType.class, edu.utexas.tacc.tapis.apps.model.NotifMechanism.NotifMechanismType.class));
 
     /**
      * The column <code>tapis_app.notification_mechanisms.webhook_url</code>.

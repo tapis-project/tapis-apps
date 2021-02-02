@@ -2,8 +2,6 @@ package edu.utexas.tacc.tapis.apps.api.model;
 
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.FileInput;
-import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
 
 import java.util.ArrayList;
 import java.util.List;

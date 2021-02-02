@@ -31,6 +31,7 @@ public final class IntegrationUtils
   public static final String appVersion = "0.0.1";
   public static final String appVersion2 = "0.0.2";
   public static final boolean enabledTrue = true;
+  public static final boolean containerizedTrue = true;
   public static final boolean enabledFalse = false;
   public static final boolean strictFileInputsFalse = false;
   public static final boolean inPlaceTrue = true;
@@ -132,6 +133,7 @@ public final class IntegrationUtils
       String appId = appIdPrefix + "_" + suffix;
       // Constructor initializes all attributes except for JobCapabilities
       apps[i] = new App(-1, tenantName, appId, appVersion+suffix, "description "+suffix, AppType.BATCH, ownerUser, enabledTrue,
+                        containerizedTrue,
                         runtime, runtimeVersion+suffix, containerImage+suffix, maxJobs, maxJobsPerUser, strictFileInputsFalse,
                         jobDescription+suffix, dynamicExecSystem,
                         execSystemConstraints, execSystemId+suffix, execSystemExecDir+suffix, execSystemInputDir+suffix,
@@ -157,6 +159,7 @@ public final class IntegrationUtils
   public static App makeMinimalApp(App app)
   {
     return new App(-1, tenantName, app.getId(), app.getVersion(), null, null, null, enabledTrue,
+            containerizedTrue,
             null, null, null, maxJobs, maxJobsPerUser, strictFileInputsFalse,
             null, dynamicExecSystem,
             null, null, null, null,

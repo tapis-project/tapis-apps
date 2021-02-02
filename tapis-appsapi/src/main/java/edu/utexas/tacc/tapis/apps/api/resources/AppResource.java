@@ -826,7 +826,8 @@ public class AppResource
     var parmSet = jobAttrs.parameterSet;
     if (parmSet == null) parmSet = new ParameterSet();
     String[] envVariables = ApiUtils.getKeyValuesAsArray(parmSet.envVariables);
-    var app = new App(-1, null, req.id, req.version, req.description, req.appType, req.owner, req.enabled, req.runtime,
+    var app = new App(-1, null, req.id, req.version, req.description, req.appType, req.owner, req.enabled,
+          req.containerized,  req.runtime,
           req.runtimeVersion, req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
@@ -888,10 +889,50 @@ public class AppResource
       msg = ApiUtils.getMsg("APPAPI_CREATE_MISSING_ATTR", VERSION_FIELD);
       errMessages.add(msg);
     }
-//    if (app1.getAppType() == null)
+
+    // If containerized is true then containerImage must be set
+    if (app1.isContainerized() && StringUtils.isBlank(app1.getContainerImage()))
+    {
+      msg = ApiUtils.getMsg("APPAPI_CONTAINERIZED_NOIMAGE");
+      errMessages.add(msg);
+    }
+
+    // If dynamicExecSystem then execSystemConstraints must be given
+    if (app1.isDynamicExecSystem() &&
+        app1.getExecSystemConstraints() == null || app1.getExecSystemConstraints().length == 0)
+    {
+      msg = ApiUtils.getMsg("APPAPI_DYNAMIC_NOCONSTRAINTS");
+      errMessages.add(msg);
+    }
+
+    // If not dynamicExecSystem then execSystemId must be given
+    if (!app1.isDynamicExecSystem() && StringUtils.isBlank(app1.getExecSystemId()))
+    {
+      msg = ApiUtils.getMsg("APPAPI_NOTDYNAMIC_NOSYSTEMID");
+      errMessages.add(msg);
+    }
+
+    // If archiveSystem given then archive dir must be given
+    if (!StringUtils.isBlank(app1.getArchiveSystemId()) && StringUtils.isBlank(app1.getArchiveSystemDir()))
+    {
+      msg = ApiUtils.getMsg("APPAPI_ARCHIVE_NODIR");
+      errMessages.add(msg);
+    }
+
+// TODO
+//    // If not containerized command and execCodes must be given
+//    if (!app1.isContainerized())
 //    {
-//      msg = ApiUtils.getMsg("APPAPI_CREATE_MISSING_ATTR", APP_TYPE_FIELD);
-//      errMessages.add(msg);
+//      if (StringUtils.isBlank(app1.getCommand()))
+//      {
+//        msg = ApiUtils.getMsg("APPAPI_NOTCONTAINERIZED_NOCMD");
+//        errMessages.add(msg);
+//      }
+//      if (app1.getExecCodes() == null || app1.getExecCodes().isEmpty())
+//      {
+//        msg = ApiUtils.getMsg("APPAPI_NOTCONTAINERIZED_NOCODES");
+//        errMessages.add(msg);
+//      }
 //    }
 
     // If validation failed log error message and return response

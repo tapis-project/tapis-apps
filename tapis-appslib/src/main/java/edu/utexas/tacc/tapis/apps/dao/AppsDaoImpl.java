@@ -121,6 +121,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS.APP_TYPE, app.getAppType())
               .set(APPS.OWNER, owner)
               .set(APPS.ENABLED, app.isEnabled())
+              .set(APPS.CONTAINERIZED, app.isContainerized())
               .set(APPS.RUNTIME, runtime)
               .set(APPS.RUNTIME_VERSION, app.getRuntimeVersion())
               .set(APPS.CONTAINER_IMAGE, app.getContainerImage())
