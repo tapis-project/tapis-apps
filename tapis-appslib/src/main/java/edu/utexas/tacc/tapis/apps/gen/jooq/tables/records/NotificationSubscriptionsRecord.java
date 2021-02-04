@@ -19,7 +19,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<NotificationSubscriptionsRecord> implements Record3<Integer, Integer, String> {
 
-    private static final long serialVersionUID = 1431295126;
+    private static final long serialVersionUID = 2077423077;
 
     /**
      * Setter for <code>tapis_app.notification_subscriptions.seq_id</code>.
@@ -36,16 +36,16 @@ public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<Notific
     }
 
     /**
-     * Setter for <code>tapis_app.notification_subscriptions.app_seq_id</code>.
+     * Setter for <code>tapis_app.notification_subscriptions.app_ver_seq_id</code>.
      */
-    public void setAppSeqId(Integer value) {
+    public void setAppVerSeqId(Integer value) {
         set(1, value);
     }
 
     /**
-     * Getter for <code>tapis_app.notification_subscriptions.app_seq_id</code>.
+     * Getter for <code>tapis_app.notification_subscriptions.app_ver_seq_id</code>.
      */
-    public Integer getAppSeqId() {
+    public Integer getAppVerSeqId() {
         return (Integer) get(1);
     }
 
@@ -93,7 +93,7 @@ public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<Notific
 
     @Override
     public Field<Integer> field2() {
-        return NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.APP_SEQ_ID;
+        return NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID;
     }
 
     @Override
@@ -108,7 +108,7 @@ public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<Notific
 
     @Override
     public Integer component2() {
-        return getAppSeqId();
+        return getAppVerSeqId();
     }
 
     @Override
@@ -123,7 +123,7 @@ public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<Notific
 
     @Override
     public Integer value2() {
-        return getAppSeqId();
+        return getAppVerSeqId();
     }
 
     @Override
@@ -139,7 +139,7 @@ public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<Notific
 
     @Override
     public NotificationSubscriptionsRecord value2(Integer value) {
-        setAppSeqId(value);
+        setAppVerSeqId(value);
         return this;
     }
 
@@ -171,11 +171,11 @@ public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<Notific
     /**
      * Create a detached, initialised NotificationSubscriptionsRecord
      */
-    public NotificationSubscriptionsRecord(Integer seqId, Integer appSeqId, String filter) {
+    public NotificationSubscriptionsRecord(Integer seqId, Integer appVerSeqId, String filter) {
         super(NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS);
 
         set(0, seqId);
-        set(1, appSeqId);
+        set(1, appVerSeqId);
         set(2, filter);
     }
 }

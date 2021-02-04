@@ -2,12 +2,15 @@ package edu.utexas.tacc.tapis.apps.dao;
 
 import java.sql.Connection;
 import java.sql.Types;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsVersionsRecord;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
@@ -53,6 +56,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   // Tracing.
   private static final Logger _log = LoggerFactory.getLogger(AppsDaoImpl.class);
 
+  private static final String VERS_ANY = "%";
   private static final String EMPTY_JSON = "{}";
   private static final String[] EMPTY_STR_ARRAY = {};
 
@@ -63,16 +67,17 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Create a new app with id+version
    *
-   * @return Sequence id of object created
+   * @return Sequence id of specific version of App created
    * @throws TapisException - on error
-   * @throws IllegalStateException - if app already exists
+   * @throws IllegalStateException - if app id+version already exists or app has been deleted
    */
   @Override
   public int createApp(AuthenticatedUser authenticatedUser, App app, String createJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException {
     String opName = "createApp";
-    // Generated sequence id
+    // Generated sequence IDs
     int appSeqId = -1;
+    int appVerSeqId = -1;
     // ------------------------- Check Input -------------------------
     if (app == null) LibUtils.logAndThrowNullParmException(opName, "app");
     if (authenticatedUser == null) LibUtils.logAndThrowNullParmException(opName, "authenticatedUser");
@@ -89,11 +94,15 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
 
-      // Check to see if app (id+version) exists or has been soft deleted. If yes then throw IllegalStateException
-      boolean doesExist = checkIfAppExists(db, app.getTenant(), app.getId(), app.getVersion(), true);
-      if (doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_EXISTS", authenticatedUser,
-                                                                         app.getId()));
-      // Make sure owner, runtime, notes and tags are all set
+      // If app has been soft deleted then throw IllegalStateException
+      if (isDeleted(db, app.getTenant(), app.getId()))
+        throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_DELETED", authenticatedUser, app.getId()));
+
+      // If app (id+version) exists then throw IllegalStateException
+      if (checkIfAppExists(db, app.getTenant(), app.getId(), app.getVersion(), false))
+        throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_EXISTS", authenticatedUser, app.getId(),
+                                                            app.getVersion()));
+      // Make sure owner, runtime, notes, tags etc are set
       String owner = App.DEFAULT_OWNER;
       App.Runtime runtime = App.DEFAULT_RUNTIME;
       String[] execSystemConstraintsStrArray = App.EMPTY_STR_ARRAY;
@@ -113,54 +122,74 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (app.getTags() != null) tagsStrArray = app.getTags();
       if (app.getNotes() != null) notesObj = (JsonObject) app.getNotes();
 
-      Record record = db.insertInto(APPS)
-              .set(APPS.TENANT, app.getTenant())
-              .set(APPS.ID, app.getId())
-              .set(APPS.VERSION, app.getVersion())
-              .set(APPS.DESCRIPTION, app.getDescription())
-              .set(APPS.APP_TYPE, app.getAppType())
-              .set(APPS.OWNER, owner)
-              .set(APPS.ENABLED, app.isEnabled())
-              .set(APPS.CONTAINERIZED, app.isContainerized())
-              .set(APPS.RUNTIME, runtime)
-              .set(APPS.RUNTIME_VERSION, app.getRuntimeVersion())
-              .set(APPS.CONTAINER_IMAGE, app.getContainerImage())
-              .set(APPS.MAX_JOBS, app.getMaxJobs())
-              .set(APPS.MAX_JOBS_PER_USER, app.getMaxJobsPerUser())
-              .set(APPS.JOB_DESCRIPTION, app.getJobDescription())
-              .set(APPS.DYNAMIC_EXEC_SYSTEM, app.isDynamicExecSystem())
-              .set(APPS.EXEC_SYSTEM_CONSTRAINTS, execSystemConstraintsStrArray)
-              .set(APPS.EXEC_SYSTEM_ID, app.getExecSystemId())
-              .set(APPS.EXEC_SYSTEM_EXEC_DIR, app.getExecSystemExecDir())
-              .set(APPS.EXEC_SYSTEM_INPUT_DIR, app.getExecSystemInputDir())
-              .set(APPS.EXEC_SYSTEM_OUTPUT_DIR, app.getExecSystemOutputDir())
-              .set(APPS.EXEC_SYSTEM_LOGICAL_QUEUE, app.getExecSystemLogicalQueue())
-              .set(APPS.ARCHIVE_SYSTEM_ID, app.getArchiveSystemId())
-              .set(APPS.ARCHIVE_SYSTEM_DIR, app.getArchiveSystemDir())
-              .set(APPS.ARCHIVE_ON_APP_ERROR, app.isArchiveOnAppError())
-              .set(APPS.ENV_VARIABLES, envVariablesStrArray)
-              .set(APPS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
-              .set(APPS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
-              .set(APPS.NODE_COUNT, app.getNodeCount())
-              .set(APPS.CORES_PER_NODE, app.getCoresPerNode())
-              .set(APPS.MEMORY_MB, app.getMemoryMb())
-              .set(APPS.MAX_MINUTES, app.getMaxMinutes())
-              .set(APPS.JOB_TAGS, jobTagsStrArray)
-              .set(APPS.TAGS, tagsStrArray)
-              .set(APPS.NOTES, notesObj)
-              .returningResult(APPS.SEQ_ID)
+      // If no top level app entry this is the first version. Create the initial top level record
+      if (!checkIfAppExists(db, app.getTenant(), app.getId(), null, false))
+      {
+        Record record = db.insertInto(APPS)
+                .set(APPS.TENANT, app.getTenant())
+                .set(APPS.ID, app.getId())
+                .set(APPS.LATEST_VERSION, app.getVersion())
+                .set(APPS.APP_TYPE, app.getAppType())
+                .set(APPS.OWNER, owner)
+                .set(APPS.ENABLED, app.isEnabled())
+                .set(APPS.CONTAINERIZED, app.isContainerized())
+                .returningResult(APPS.SEQ_ID)
+                .fetchOne();
+        appSeqId = record.getValue(APPS.SEQ_ID);
+      }
+      else
+      {
+        // Top level record exists. Get the sequence Id.
+        appSeqId = getAppSeqIdUsingDb(db, app.getTenant(), app.getId());
+      }
+
+      // Insert new record into APPS_VERSIONS
+      Record record = db.insertInto(APPS_VERSIONS)
+              .set(APPS_VERSIONS.APP_SEQ_ID, appSeqId)
+              .set(APPS_VERSIONS.VERSION, app.getVersion())
+              .set(APPS_VERSIONS.DESCRIPTION, app.getDescription())
+              .set(APPS_VERSIONS.RUNTIME, runtime)
+              .set(APPS_VERSIONS.RUNTIME_VERSION, app.getRuntimeVersion())
+              .set(APPS_VERSIONS.CONTAINER_IMAGE, app.getContainerImage())
+              .set(APPS_VERSIONS.MAX_JOBS, app.getMaxJobs())
+              .set(APPS_VERSIONS.MAX_JOBS_PER_USER, app.getMaxJobsPerUser())
+              .set(APPS_VERSIONS.JOB_DESCRIPTION, app.getJobDescription())
+              .set(APPS_VERSIONS.DYNAMIC_EXEC_SYSTEM, app.isDynamicExecSystem())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_CONSTRAINTS, execSystemConstraintsStrArray)
+              .set(APPS_VERSIONS.EXEC_SYSTEM_ID, app.getExecSystemId())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_EXEC_DIR, app.getExecSystemExecDir())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR, app.getExecSystemInputDir())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR, app.getExecSystemOutputDir())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE, app.getExecSystemLogicalQueue())
+              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, app.getArchiveSystemId())
+              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, app.getArchiveSystemDir())
+              .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, app.isArchiveOnAppError())
+              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
+              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
+              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
+              .set(APPS_VERSIONS.NODE_COUNT, app.getNodeCount())
+              .set(APPS_VERSIONS.CORES_PER_NODE, app.getCoresPerNode())
+              .set(APPS_VERSIONS.MEMORY_MB, app.getMemoryMb())
+              .set(APPS_VERSIONS.MAX_MINUTES, app.getMaxMinutes())
+              .set(APPS_VERSIONS.JOB_TAGS, jobTagsStrArray)
+              .set(APPS_VERSIONS.TAGS, tagsStrArray)
+              .set(APPS_VERSIONS.NOTES, notesObj)
+              .returningResult(APPS_VERSIONS.SEQ_ID)
               .fetchOne();
-      appSeqId = record.getValue(APPS.SEQ_ID);
+      appVerSeqId = record.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Persist data to aux tables
-      persistFileInputs(db, app, appSeqId);
-      persistAppArgs(db, app, appSeqId);
-      persistContainerArgs(db, app, appSeqId);
-      persistSchedulerOptions(db, app, appSeqId);
-      persistNotificationSubscriptions(db, app, appSeqId);
+      persistFileInputs(db, app, appVerSeqId);
+      persistAppArgs(db, app, appVerSeqId);
+      persistContainerArgs(db, app, appVerSeqId);
+      persistSchedulerOptions(db, app, appVerSeqId);
+      persistNotificationSubscriptions(db, app, appVerSeqId);
+
+      // Update top level table APPS
+      db.update(APPS).set(APPS.LATEST_VERSION, app.getVersion()).execute();
 
       // Persist update record
-      addUpdate(db, authenticatedUser, appSeqId, AppOperation.create, createJsonStr, scrubbedText);
+      addUpdate(db, authenticatedUser, appSeqId, appVerSeqId, AppOperation.create, createJsonStr, scrubbedText);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -175,13 +204,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Always return the connection back to the connection pool.
       LibUtils.finalCloseDB(conn);
     }
-    return appSeqId;
+    return appVerSeqId;
   }
 
   /**
-   * Update an existing app Id+Version.
+   * Update an existing specific version of an application.
    * Following columns will be updated:
-   *  description, enabled, tags, notes
+   *  description, tags, notes
    * @return Sequence id of object updated
    * @throws TapisException - on error
    * @throws IllegalStateException - if app already exists
@@ -201,12 +230,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     String appId = patchedApp.getId();
     String appVersion = patchedApp.getVersion();
     int appSeqId = patchedApp.getSeqId();
+    int appVerSeqId = patchedApp.getVerSeqId();
     // Check required attributes have been provided
     if (StringUtils.isBlank(updateJsonStr)) LibUtils.logAndThrowNullParmException(opName, "updateJson");
     if (StringUtils.isBlank(tenant)) LibUtils.logAndThrowNullParmException(opName, "tenant");
     if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
     if (StringUtils.isBlank(appVersion)) LibUtils.logAndThrowNullParmException(opName, "appVersion");
-    if (patchedApp.getSeqId() < 1) LibUtils.logAndThrowNullParmException(opName, "seqId");
+    if (appSeqId < 1) LibUtils.logAndThrowNullParmException(opName, "appSeqId");
+    if (appVerSeqId < 1) LibUtils.logAndThrowNullParmException(opName, "appVerSeqId");
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -226,12 +257,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       JsonObject notesObj =  App.DEFAULT_NOTES;
       if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
 
-      db.update(APPS)
-              .set(APPS.DESCRIPTION, patchedApp.getDescription())
-              .set(APPS.ENABLED, patchedApp.isEnabled())
-              .set(APPS.TAGS, tagsStrArray)
-              .set(APPS.NOTES, notesObj)
-              .where(APPS.SEQ_ID.eq(appSeqId))
+      db.update(APPS_VERSIONS)
+              .set(APPS_VERSIONS.DESCRIPTION, patchedApp.getDescription())
+              .set(APPS_VERSIONS.TAGS, tagsStrArray)
+              .set(APPS_VERSIONS.NOTES, notesObj)
+              .where(APPS_VERSIONS.SEQ_ID.eq(appVerSeqId))
               .execute();
 
 //      // If jobCapabilities updated then replace them
@@ -241,7 +271,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 //      }
 
       // Persist update record
-      addUpdate(db, authenticatedUser, appSeqId, AppOperation.modify, updateJsonStr, scrubbedText);
+      addUpdate(db, authenticatedUser, appSeqId, appVerSeqId, AppOperation.modify, updateJsonStr, scrubbedText);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -249,7 +279,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     catch (Exception e)
     {
       // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_INSERT_FAILURE", "apps");
+      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps_versions", appVersion);
     }
     finally
     {
@@ -281,14 +311,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       db.update(APPS).set(APPS.OWNER, newOwnerName).where(APPS.SEQ_ID.eq(appSeqId)).execute();
       // Persist update record
       String updateJsonStr = TapisGsonUtils.getGson().toJson(newOwnerName);
-      addUpdate(db, authenticatedUser, appSeqId, AppOperation.changeOwner, updateJsonStr , null);
+      addUpdate(db, authenticatedUser, appSeqId, -1, AppOperation.changeOwner, updateJsonStr , null);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
     catch (Exception e)
     {
       // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_DELETE_FAILURE", "apps");
+      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps", appSeqId);
     }
     finally
     {
@@ -298,8 +328,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * Soft delete an app record given the app name.
-   *
+   * Soft delete an app record given the app id.
    */
   @Override
   public int softDeleteApp(AuthenticatedUser authenticatedUser, int appSeqId) throws TapisException
@@ -323,7 +352,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       }
       rows = db.update(APPS).set(APPS.DELETED, true).where(APPS.SEQ_ID.eq(appSeqId)).execute();
       // Persist update record
-      addUpdate(db, authenticatedUser, appSeqId, AppOperation.softDelete, EMPTY_JSON, null);
+      addUpdate(db, authenticatedUser, appSeqId, -1, AppOperation.softDelete, EMPTY_JSON, null);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -331,7 +360,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     catch (Exception e)
     {
       // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_DELETE_FAILURE", "apps");
+      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps", appSeqId);
     }
     finally
     {
@@ -348,6 +377,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   public int hardDeleteApp(String tenant, String appId) throws TapisException
   {
     String opName = "hardDeleteApp";
+    _log.warn(LibUtils.getMsg("APPLIB_DB_HARD_DELETE", tenant, appId));
     int rows = -1;
     // ------------------------- Check Input -------------------------
     if (StringUtils.isBlank(tenant)) LibUtils.logAndThrowNullParmException(opName, "tenant");
@@ -502,6 +532,43 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
+   * isEnabled - check if app with specified Id is enabled
+   * @param appId - app name
+   * @return true if enabled else false
+   * @throws TapisException - on error
+   */
+  @Override
+  public boolean isEnabled(String tenant, String appId) throws TapisException {
+    // Initialize result.
+    boolean result = false;
+    // ------------------------- Call SQL ----------------------------
+    Connection conn = null;
+    try
+    {
+      // Get a database connection.
+      conn = getConnection();
+      DSLContext db = DSL.using(conn);
+      // Run the sql
+      result = db.selectFrom(APPS)
+              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false))
+              .fetchOne(APPS.ENABLED);
+      // Close out and commit
+      LibUtils.closeAndCommitDB(conn, null, null);
+    }
+    catch (Exception e)
+    {
+      // Rollback transaction and throw an exception
+      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", tenant, appId, e.getMessage());
+    }
+    finally
+    {
+      // Always return the connection back to the connection pool.
+      LibUtils.finalCloseDB(conn);
+    }
+    return result;
+  }
+
+  /**
    * getApp - retrieve the most recently created version of the app
    * @param appId - app name
    * @return App object if found, null if not found
@@ -540,11 +607,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   public App getApp(String tenant, String appId, String appVersion, boolean includeDeleted) throws TapisException
   {
     // Initialize result.
-    App result = null;
-
-    // Search for either a specific version or most recently created version
-    boolean findLatest = false;
-    if (StringUtils.isBlank(appVersion)) findLatest = true;
+    App app = null;
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -553,42 +616,18 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      AppsRecord r;
-      if (!findLatest)
-      {
-        // Search for a specific version
-        if (includeDeleted)
-          r = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.VERSION.eq(appVersion))
-                  .fetchOne();
-        else
-          r = db.selectFrom(APPS)
-                  .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.VERSION.eq(appVersion),APPS.DELETED.eq(false))
-                  .fetchOne();
-      }
-      else
-      {
-        // Search for most recently created version
-        if (includeDeleted)
-          r = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId))
-                  .orderBy(APPS.CREATED.desc())
-                  .fetchAny();
-        else
-          r = db.selectFrom(APPS)
-                  .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false))
-                  .orderBy(APPS.CREATED.desc())
-                  .fetchAny();
-      }
-      if (r == null) return null;
 
-      // Convert result record to Apps and fill in data from aux tables
-      // TODO: Looks like jOOQ has fetchGroups() which should allow us to retrieve fileInputs, appArgs, etc.
-      //       in one call which should improve performance.
-      result = r.into(App.class);
-      result.setFileInputs(retrieveFileInputs(db, result.getSeqId()));
-      result.setAppArgs(retrieveAppArgs(db, result.getSeqId()));
-      result.setContainerArgs(retrieveContainerArgs(db, result.getSeqId()));
-      result.setSchedulerOptions(retrieveSchedulerOptions(db, result.getSeqId()));
-      result.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, result.getSeqId()));
+      // Fetch top level App record.
+      AppsRecord appRecord;
+      if (includeDeleted)
+        appRecord = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).fetchOne();
+      else
+        appRecord = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false)).fetchOne();
+
+      if (appRecord == null) return null;
+
+      // Create an App object using the appRecord
+      app = getAppFromAppRecord(db, appRecord, appVersion);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -603,11 +642,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Always return the connection back to the connection pool.
       LibUtils.finalCloseDB(conn);
     }
-    return result;
+    return app;
   }
 
   /**
    * getApps
+   * TODO Support search
    * Conditions in searchList must be processed by SearchUtils.validateAndExtractSearchCondition(cond)
    *   prior to this call for proper validation and treatment of special characters.
    * @param tenant - tenant name
@@ -625,10 +665,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // If no seqIDs in list then we are done.
     if (appSeqIDs != null && appSeqIDs.isEmpty()) return retList;
 
+    // TODO: Support search
+    //       If attempt made to search return empty list
+    if (searchList != null && !searchList.isEmpty()) return retList;
+
     // TODO/TBD: Search for either a specific version or most recently created version
     // TODO: Determine if search contains version or if we just get the latest version
     boolean findLatest = true;
-//    if (StringUtils.isBlank(appVersion)) findLatest = true;
+//    boolean findLatest = (StringUtils.isBlank(appVersion) ? true : false);
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -654,33 +698,22 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 //      // DEBUG
 
       // Add searchList to where condition
+      // TODO: Support search. Currently searchList will be null or empty
       whereCondition = addSearchListToWhere(whereCondition, searchList);
 
       // Add IN condition for list of seqIDs
       if (appSeqIDs != null && !appSeqIDs.isEmpty()) whereCondition = whereCondition.and(APPS.SEQ_ID.in(appSeqIDs));
 
       // Execute the select
-      Result<AppsRecord> results;
-      if (findLatest)
-      {
-        // TODO currently same as findLatest=false
-        results = db.selectFrom(APPS).where(whereCondition).fetch();
-      }
-      else
-      {
-        results = db.selectFrom(APPS).where(whereCondition).fetch();
-      }
-      if (results == null || results.isEmpty()) return retList;
+      Result<AppsRecord> appsRecords;
+      appsRecords = db.selectFrom(APPS).where(whereCondition).fetch();
+      if (appsRecords == null || appsRecords.isEmpty()) return retList;
 
-      // Convert result records to Apps and fill in data from aux tables
-      for (AppsRecord r : results)
+      // For each top level app record found create an App object.
+      for (AppsRecord appRecord : appsRecords)
       {
-        App a = r.into(App.class);
-        a.setFileInputs(retrieveFileInputs(db, a.getSeqId()));
-        a.setAppArgs(retrieveAppArgs(db, a.getSeqId()));
-        a.setContainerArgs(retrieveContainerArgs(db, a.getSeqId()));
-        a.setSchedulerOptions(retrieveSchedulerOptions(db, a.getSeqId()));
-        a.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, a.getSeqId()));
+        // Create App from appRecord using appVersion=null to use the latest app version
+        App a = getAppFromAppRecord(db, appRecord, null);
         retList.add(a);
       }
 
@@ -826,8 +859,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      owner = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(appId)).fetchOne(APPS.OWNER);
-
+      owner = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).fetchOne(APPS.OWNER);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
@@ -845,17 +877,17 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * getAppId
+   * getAppSeqId
+   * Retrieve sequence Id for latest version of the app.
    * @param tenant - name of tenant
    * @param appId - name of app
-   * @return appId or -1 if no app found
+   * @return appSeqId or -1 if no app found
    * @throws TapisException - on error
    */
   @Override
   public int getAppSeqId(String tenant, String appId) throws TapisException
   {
     int appSeqId = -1;
-
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
     try
@@ -863,8 +895,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(appId)).fetchOne(APPS.SEQ_ID);
-
+      appSeqId = getAppSeqIdUsingDb(db, tenant, appId);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
@@ -886,8 +917,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *
    */
   @Override
-  public void addUpdateRecord(AuthenticatedUser authenticatedUser, int appSeqId, AppOperation op, String upd_json,
-                              String upd_text) throws TapisException
+  public void addUpdateRecord(AuthenticatedUser authenticatedUser, int appSeqId, int appVerSeqId, AppOperation op,
+                              String upd_json, String upd_text) throws TapisException
   {
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -896,7 +927,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      addUpdate(db, authenticatedUser, appSeqId, op, upd_json, upd_text);
+      addUpdate(db, authenticatedUser, appSeqId, appVerSeqId, op, upd_json, upd_text);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -921,13 +952,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Given an sql connection and basic info add an update record
    *
    */
-  private void addUpdate(DSLContext db, AuthenticatedUser authenticatedUser, int appSeqId,
+  private static void addUpdate(DSLContext db, AuthenticatedUser authenticatedUser, int appSeqId, int appVerSeqId,
                          AppOperation op, String upd_json, String upd_text)
   {
     String updJsonStr = (StringUtils.isBlank(upd_json)) ? EMPTY_JSON : upd_json;
     // Persist update record
     db.insertInto(APP_UPDATES)
             .set(APP_UPDATES.APP_SEQ_ID, appSeqId)
+            .set(APP_UPDATES.APP_VER_SEQ_ID, appVerSeqId)
             .set(APP_UPDATES.USER_NAME, authenticatedUser.getOboUser())
             .set(APP_UPDATES.USER_TENANT, authenticatedUser.getOboTenantId())
             .set(APP_UPDATES.OPERATION, op)
@@ -943,28 +975,126 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @param appId - Id of app
    * @param appVersion - version of app, null if check is for any version
    * @param includeDeleted - whether or not to include soft deleted items
-   * @return - true if app exists, else false
+   * @return - true if app exists according to given conditions, else false
    */
   private static boolean checkIfAppExists(DSLContext db, String tenant, String appId, String appVersion,
                                           boolean includeDeleted)
   {
-    String versionMatchStr = appVersion;
-    if (StringUtils.isBlank(appVersion)) versionMatchStr = "%";
+    Integer appSeqId;
+    // First check if app with given ID is present.
     if (includeDeleted)
     {
-      return db.fetchExists(APPS, APPS.ID.eq(appId),APPS.TENANT.eq(tenant),APPS.VERSION.like(versionMatchStr));
+      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(appId))
+                   .fetchOne(APPS.SEQ_ID);
     }
     else
     {
-      return db.fetchExists(APPS, APPS.ID.eq(appId),APPS.TENANT.eq(tenant),APPS.VERSION.like(versionMatchStr),
-                            APPS.DELETED.eq(false));
+      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(appId), APPS.DELETED.eq(false))
+                   .fetchOne(APPS.SEQ_ID);
     }
+
+    if (appSeqId == null) return false;
+
+    // So app does exist and appSeqId has been set.
+    // If we do not care about version then we are done
+    if (StringUtils.isBlank(appVersion)) return true;
+
+    // We do care about version so check for specific version.
+    return db.fetchExists(APPS_VERSIONS, APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId), APPS_VERSIONS.VERSION.eq(appVersion));
+  }
+
+  /**
+   * Given an sql connection check to see if specified app has been soft deleted.
+   * @param db - jooq context
+   * @param tenant - name of tenant
+   * @param appId - Id of app
+   * @return - true if app has been deleted else false
+   */
+  private static boolean isDeleted(DSLContext db, String tenant, String appId)
+  {
+    return db.fetchExists(APPS, APPS.TENANT.eq(tenant), APPS.ID.eq(appId), APPS.DELETED.eq(true));
+  }
+
+  /**
+   * Given an sql connection retrieve the app sequence id.
+   * @param db - jooq context
+   * @param tenant - name of tenant
+   * @param appId - Id of app
+   * @return - app sequence id
+   */
+  private static int getAppSeqIdUsingDb(DSLContext db, String tenant, String appId)
+  {
+    return db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false))
+             .fetchOne(APPS.SEQ_ID);
+  }
+
+  /**
+   * Given an sql connection and an appRecord create an App object
+   *
+   */
+  private static App getAppFromAppRecord(DSLContext db, AppsRecord appRecord, String appVersion)
+  {
+    App app = null;
+    int appSeqId = appRecord.getSeqId();
+    // Use either specified version or most recently created version
+    boolean findLatest = (StringUtils.isBlank(appVersion) ? true : false);
+
+    // Fetch specific or latest app version.
+    AppsVersionsRecord appVerRecord;
+    if (!findLatest)
+    {
+      // Search for a specific version
+      appVerRecord =
+              db.selectFrom(APPS_VERSIONS)
+                      .where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId),APPS_VERSIONS.VERSION.eq(appVersion))
+                      .fetchOne();
+    }
+    else
+    {
+      // Search for most recently created version
+      appVerRecord =
+              db.selectFrom(APPS_VERSIONS)
+                      .where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId))
+                      .orderBy(APPS_VERSIONS.CREATED.desc())
+                      .fetchAny();
+    }
+
+    if (appVerRecord == null) return null;
+
+    int appVerSeqId = appVerRecord.getSeqId();
+
+    // Put together full App model object
+    // Convert LocalDateTime to Instant. Note that although "Local" is in the type timestamps from the DB are in UTC.
+    Instant created = appVerRecord.getCreated().toInstant(ZoneOffset.UTC);
+    Instant updated = appVerRecord.getUpdated().toInstant(ZoneOffset.UTC);
+    app = new App(appSeqId, appVerSeqId, appRecord.getTenant(), appRecord.getId(), appVerRecord.getVersion(),
+            appVerRecord.getDescription(), appRecord.getAppType(), appRecord.getOwner(), appRecord.getEnabled(),
+            appRecord.getContainerized(), appVerRecord.getRuntime(), appVerRecord.getRuntimeVersion(),
+            appVerRecord.getContainerImage(), appVerRecord.getMaxJobs(), appVerRecord.getMaxJobsPerUser(),
+            appVerRecord.getStrictFileInputs(), appVerRecord.getJobDescription(),
+            appVerRecord.getDynamicExecSystem(), appVerRecord.getExecSystemConstraints(),
+            appVerRecord.getExecSystemId(), appVerRecord.getExecSystemExecDir(),
+            appVerRecord.getExecSystemInputDir(), appVerRecord.getExecSystemOutputDir(),
+            appVerRecord.getExecSystemLogicalQueue(), appVerRecord.getArchiveSystemId(),
+            appVerRecord.getArchiveSystemDir(), appVerRecord.getArchiveOnAppError(), appVerRecord.getNodeCount(),
+            appVerRecord.getCoresPerNode(), appVerRecord.getMemoryMb(), appVerRecord.getMaxMinutes(),
+            appVerRecord.getEnvVariables(), appVerRecord.getArchiveIncludes(), appVerRecord.getArchiveExcludes(),
+            appVerRecord.getJobTags(), appVerRecord.getTags(), appVerRecord.getNotes(),
+            appRecord.getImportRefId(), appRecord.getDeleted(), created, updated);
+    // Fill in data from aux tables
+    app.setFileInputs(retrieveFileInputs(db, appVerSeqId));
+    app.setAppArgs(retrieveAppArgs(db, appVerSeqId));
+    app.setContainerArgs(retrieveContainerArgs(db, appVerSeqId));
+    app.setSchedulerOptions(retrieveSchedulerOptions(db, appVerSeqId));
+    app.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, appVerSeqId));
+
+    return app;
   }
 
   /**
    * Persist file inputs given an sql connection and an app
    */
-  private static void persistFileInputs(DSLContext db, App app, int appSeqId)
+  private static void persistFileInputs(DSLContext db, App app, int appVerSeqId)
   {
     var fileInputs = app.getFileInputs();
     if (fileInputs == null || fileInputs.isEmpty()) return;
@@ -974,7 +1104,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (fileInput.getMetaName() != null ) nameStr = fileInput.getMetaName();
       String[] kvPairs = EMPTY_STR_ARRAY;
       if (fileInput.getMetaKeyValuePairs() != null ) kvPairs = fileInput.getMetaKeyValuePairs();
-      db.insertInto(FILE_INPUTS).set(FILE_INPUTS.APP_SEQ_ID, appSeqId)
+      db.insertInto(FILE_INPUTS)
+              .set(FILE_INPUTS.APP_VER_SEQ_ID, appVerSeqId)
               .set(FILE_INPUTS.SOURCE_URL, fileInput.getSourceUrl())
               .set(FILE_INPUTS.TARGET_PATH, fileInput.getTargetPath())
               .set(FILE_INPUTS.IN_PLACE, fileInput.isInPlace())
@@ -989,7 +1120,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Persist app args given an sql connection and an app
    */
-  private static void persistAppArgs(DSLContext db, App app, int appSeqId)
+  private static void persistAppArgs(DSLContext db, App app, int appVerSeqId)
   {
     var appArgs = app.getAppArgs();
     if (appArgs == null || appArgs.isEmpty()) return;
@@ -999,7 +1130,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (appArg.getArgValue() != null ) valStr = appArg.getArgValue();
       String[] kvPairs = EMPTY_STR_ARRAY;
       if (appArg.getMetaKeyValuePairs() != null ) kvPairs = appArg.getMetaKeyValuePairs();
-      db.insertInto(APP_ARGS).set(APP_ARGS.APP_SEQ_ID, appSeqId)
+      db.insertInto(APP_ARGS)
+              .set(APP_ARGS.APP_VER_SEQ_ID, appVerSeqId)
               .set(APP_ARGS.ARG_VAL, valStr)
               .set(APP_ARGS.META_NAME, appArg.getMetaName())
               .set(APP_ARGS.META_DESCRIPTION, appArg.getMetaDescription())
@@ -1012,7 +1144,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Persist container args given an sql connection and an app
    */
-  private static void persistContainerArgs(DSLContext db, App app, int appSeqId)
+  private static void persistContainerArgs(DSLContext db, App app, int appVerSeqId)
   {
     var containerArgs = app.getContainerArgs();
     if (containerArgs == null || containerArgs.isEmpty()) return;
@@ -1022,7 +1154,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (containerArg.getArgValue() != null ) valStr = containerArg.getArgValue();
       String[] kvPairs = EMPTY_STR_ARRAY;
       if (containerArg.getMetaKeyValuePairs() != null ) kvPairs = containerArg.getMetaKeyValuePairs();
-      db.insertInto(CONTAINER_ARGS).set(CONTAINER_ARGS.APP_SEQ_ID, appSeqId)
+      db.insertInto(CONTAINER_ARGS)
+              .set(CONTAINER_ARGS.APP_VER_SEQ_ID, appVerSeqId)
               .set(CONTAINER_ARGS.ARG_VAL, valStr)
               .set(CONTAINER_ARGS.META_NAME, containerArg.getMetaName())
               .set(CONTAINER_ARGS.META_DESCRIPTION, containerArg.getMetaDescription())
@@ -1035,7 +1168,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Persist scheduler options given an sql connection and an app
    */
-  private static void persistSchedulerOptions(DSLContext db, App app, int appSeqId)
+  private static void persistSchedulerOptions(DSLContext db, App app, int appVerSeqId)
   {
     var schedulerOptions = app.getSchedulerOptions();
     if (schedulerOptions == null || schedulerOptions.isEmpty()) return;
@@ -1045,7 +1178,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (schedulerOption.getArgValue() != null ) valStr = schedulerOption.getArgValue();
       String[] kvPairs = EMPTY_STR_ARRAY;
       if (schedulerOption.getMetaKeyValuePairs() != null ) kvPairs = schedulerOption.getMetaKeyValuePairs();
-      db.insertInto(SCHEDULER_OPTIONS).set(SCHEDULER_OPTIONS.APP_SEQ_ID, appSeqId)
+      db.insertInto(SCHEDULER_OPTIONS)
+              .set(SCHEDULER_OPTIONS.APP_VER_SEQ_ID, appVerSeqId)
               .set(SCHEDULER_OPTIONS.ARG_VAL, valStr)
               .set(SCHEDULER_OPTIONS.META_NAME, schedulerOption.getMetaName())
               .set(SCHEDULER_OPTIONS.META_DESCRIPTION, schedulerOption.getMetaDescription())
@@ -1058,13 +1192,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Persist notification subscriptions given an sql connection and an app
    */
-  private static void persistNotificationSubscriptions(DSLContext db, App app, int appSeqId)
+  private static void persistNotificationSubscriptions(DSLContext db, App app, int appVerSeqId)
   {
     var subscriptions = app.getNotificationSubscriptions();
     if (subscriptions == null || subscriptions.isEmpty()) return;
 
     for (NotifSubscription subscription : subscriptions) {
-      Record record = db.insertInto(NOTIFICATION_SUBSCRIPTIONS).set(NOTIFICATION_SUBSCRIPTIONS.APP_SEQ_ID, appSeqId)
+      Record record = db.insertInto(NOTIFICATION_SUBSCRIPTIONS)
+              .set(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID, appVerSeqId)
               .set(NOTIFICATION_SUBSCRIPTIONS.FILTER, subscription.getFilter())
               .returningResult(NOTIFICATION_SUBSCRIPTIONS.SEQ_ID)
               .fetchOne();
@@ -1082,7 +1217,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (mechanisms == null || mechanisms.isEmpty()) return;
 
     for (NotifMechanism mechanism : mechanisms) {
-      db.insertInto(NOTIFICATION_MECHANISMS).set(NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID, subSeqId)
+      db.insertInto(NOTIFICATION_MECHANISMS)
+              .set(NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID, subSeqId)
               .set(NOTIFICATION_MECHANISMS.MECHANISM, mechanism.getMechanism())
               .set(NOTIFICATION_MECHANISMS.WEBHOOK_URL, mechanism.getWebhookUrl())
               .set(NOTIFICATION_MECHANISMS.EMAIL_ADDRESS, mechanism.getEmailAddress())
@@ -1093,25 +1229,25 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Get file inputs for an app from an auxiliary table
    * @param db - DB connection
-   * @param appSeqId - app
+   * @param appVerSeqId - app
    * @return list of file inputs
    */
-  private static List<FileInput> retrieveFileInputs(DSLContext db, int appSeqId)
+  private static List<FileInput> retrieveFileInputs(DSLContext db, int appVerSeqId)
   {
-    List<FileInput> fileInputs = db.selectFrom(FILE_INPUTS).where(FILE_INPUTS.APP_SEQ_ID.eq(appSeqId)).fetchInto(FileInput.class);
+    List<FileInput> fileInputs = db.selectFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(FileInput.class);
     return fileInputs;
   }
 
   /**
    * Get notification subscriptions for an app from an auxiliary table
    * @param db - DB connection
-   * @param appSeqId - app
+   * @param appVerSeqId - app
    * @return list of subscriptions
    */
-  private static List<NotifSubscription> retrieveNotificationSubscriptions(DSLContext db, int appSeqId)
+  private static List<NotifSubscription> retrieveNotificationSubscriptions(DSLContext db, int appVerSeqId)
   {
     List<NotifSubscription> subscriptions =
-            db.selectFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_SEQ_ID.eq(appSeqId))
+            db.selectFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId))
                     .fetchInto(NotifSubscription.class);
     if (subscriptions == null) return subscriptions;
     for (NotifSubscription subscription : subscriptions)
@@ -1138,39 +1274,40 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Get app args for an app from an auxiliary table
    * @param db - DB connection
-   * @param appSeqId - app
+   * @param appVerSeqId - app
    * @return list of app args
    */
-  private static List<AppArg> retrieveAppArgs(DSLContext db, int appSeqId)
+  private static List<AppArg> retrieveAppArgs(DSLContext db, int appVerSeqId)
   {
     List<AppArg> appArgs =
-            db.selectFrom(APP_ARGS).where(APP_ARGS.APP_SEQ_ID.eq(appSeqId)).fetchInto(AppArg.class);
+            db.selectFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
     return appArgs;
   }
 
   /**
    * Get container args for an app from an auxiliary table
    * @param db - DB connection
-   * @param appSeqId - app
+   * @param appVerSeqId - app
    * @return list of container args
    */
-  private static List<AppArg> retrieveContainerArgs(DSLContext db, int appSeqId)
+  private static List<AppArg> retrieveContainerArgs(DSLContext db, int appVerSeqId)
   {
     List<AppArg> containerArgs =
-            db.selectFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_SEQ_ID.eq(appSeqId)).fetchInto(AppArg.class);
+            db.selectFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
     return containerArgs;
   }
 
   /**
    * Get scheduler options for an app from an auxiliary table
    * @param db - DB connection
-   * @param appSeqId - app
+   * @param appVerSeqId - app
    * @return list of scheduler options
    */
-  private static List<AppArg> retrieveSchedulerOptions(DSLContext db, int appSeqId)
+  private static List<AppArg> retrieveSchedulerOptions(DSLContext db, int appVerSeqId)
   {
     List<AppArg> schedulerOptions =
-            db.selectFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_SEQ_ID.eq(appSeqId)).fetchInto(AppArg.class);
+            db.selectFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId))
+                    .fetchInto(AppArg.class);
     return schedulerOptions;
   }
 
@@ -1372,7 +1509,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // Create the condition
     Condition newCondition = createCondition(col, op, val);
     // If specified add the condition to the WHERE clause
-    if (StringUtils.isBlank(joinOp)) return newCondition;
+    if (StringUtils.isBlank(joinOp) || whereCondition == null) return newCondition;
     else if (joinOp.equalsIgnoreCase("AND")) return whereCondition.and(newCondition);
     else if (joinOp.equalsIgnoreCase("OR")) return whereCondition.or(newCondition);
     return newCondition;

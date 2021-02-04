@@ -7,6 +7,7 @@ package edu.utexas.tacc.tapis.apps.gen.jooq;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppArgs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppUpdates;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppsVersions;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.ContainerArgs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FileInputs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
@@ -35,6 +36,11 @@ public class Tables {
      * The table <code>tapis_app.apps</code>.
      */
     public static final Apps APPS = Apps.APPS;
+
+    /**
+     * The table <code>tapis_app.apps_versions</code>.
+     */
+    public static final AppsVersions APPS_VERSIONS = AppsVersions.APPS_VERSIONS;
 
     /**
      * The table <code>tapis_app.container_args</code>.

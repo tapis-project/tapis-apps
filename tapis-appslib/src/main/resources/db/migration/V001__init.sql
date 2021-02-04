@@ -47,73 +47,91 @@ CREATE TYPE notification_mechanism_type AS ENUM ('WEBHOOK', 'EMAIL', 'QUEUE', 'A
 --                                     APPS
 -- ----------------------------------------------------------------------------------------
 -- Apps table
--- Basic app attributes
+-- Top level table containing version independent attributes
 CREATE TABLE apps
 (
   seq_id  SERIAL PRIMARY KEY,
   tenant  VARCHAR(24) NOT NULL,
   id      VARCHAR(80) NOT NULL,
-  version VARCHAR(64) NOT NULL,
-  description VARCHAR(2048),
+  latest_version VARCHAR(64) NOT NULL,
   app_type app_type_type,
   owner    VARCHAR(60) NOT NULL,
   enabled  BOOLEAN NOT NULL DEFAULT true,
   containerized BOOLEAN NOT NULL DEFAULT true,
-  runtime runtime_type NOT NULL,
-  runtime_version VARCHAR(128),
-  container_image VARCHAR(128),
-  max_jobs INTEGER NOT NULL DEFAULT -1,
-  max_jobs_per_user INTEGER NOT NULL DEFAULT -1,
-  strict_file_inputs BOOLEAN NOT NULL DEFAULT false,
--- ==== Start jobAttributes ======================================
-  job_description VARCHAR(2048),
-  dynamic_exec_system BOOLEAN NOT NULL DEFAULT false,
-  exec_system_constraints TEXT[] NOT NULL,
-  exec_system_id VARCHAR(80),
-  exec_system_exec_dir VARCHAR(4096),
-  exec_system_input_dir VARCHAR(4096),
-  exec_system_output_dir VARCHAR(4096),
-  exec_system_logical_queue VARCHAR(128),
-  archive_system_id VARCHAR(80),
-  archive_system_dir VARCHAR(4096),
-  archive_on_app_error BOOLEAN NOT NULL DEFAULT true,
---   parameterSet location in jobAttributes ===================
---   parameterSet attributes flattened into this table ========
-  env_variables TEXT[] NOT NULL,
-  archive_includes TEXT[] NOT NULL,
-  archive_excludes TEXT[] NOT NULL,
---   fileInputs location in jobAttributes ====SUBSC=================
-  node_count INTEGER NOT NULL DEFAULT -1,
-  cores_per_node INTEGER NOT NULL DEFAULT -1,
-  memory_mb INTEGER NOT NULL DEFAULT -1,
-  max_minutes INTEGER NOT NULL DEFAULT -1,
---   subscriptions location in jobAttributes ==================
-  job_tags TEXT[] NOT NULL,
--- ==== End jobAttributes ======================================
-  tags       TEXT[] NOT NULL,
-  notes      JSONB NOT NULL,
   import_ref_id VARCHAR(80),
   deleted    BOOLEAN NOT NULL DEFAULT false,
   created    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
   updated    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-  UNIQUE (tenant,id,version)
+  UNIQUE (tenant,id)
 );
 ALTER TABLE apps OWNER TO tapis_app;
-CREATE INDEX app_tenant_name_idx ON apps (tenant, id);
+CREATE INDEX app_tenant_id_idx ON apps (tenant, id);
 COMMENT ON COLUMN apps.seq_id IS 'Application sequence id';
 COMMENT ON COLUMN apps.tenant IS 'Tenant name associated with the application';
 COMMENT ON COLUMN apps.id IS 'Unique name for the application';
-COMMENT ON COLUMN apps.version IS 'Application version';
-COMMENT ON COLUMN apps.description IS 'Application description';
 COMMENT ON COLUMN apps.app_type IS 'Type of application';
 COMMENT ON COLUMN apps.owner IS 'User name of application owner';
 COMMENT ON COLUMN apps.enabled IS 'Indicates if application is currently active and available for use';
-COMMENT ON COLUMN apps.tags IS 'Tags for user supplied key:value pairs';
-COMMENT ON COLUMN apps.notes IS 'Notes for general information stored as JSON';
-COMMENT ON COLUMN apps.import_ref_id IS 'Optional reference ID for applications created via import';
+COMMENT ON COLUMN apps.import_ref_id IS 'Optional reference ID for resource created via import';
 COMMENT ON COLUMN apps.deleted IS 'Indicates if application has been soft deleted';
 COMMENT ON COLUMN apps.created IS 'UTC time for when record was created';
 COMMENT ON COLUMN apps.updated IS 'UTC time for when record was last updated';
+
+-- App versions table
+-- Basic app attributes that can vary by version
+CREATE TABLE apps_versions
+(
+    seq_id  SERIAL PRIMARY KEY,
+    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    version VARCHAR(64) NOT NULL,
+    description VARCHAR(2048),
+    runtime runtime_type NOT NULL,
+    runtime_version VARCHAR(128),
+    container_image VARCHAR(128),
+    max_jobs INTEGER NOT NULL DEFAULT -1,
+    max_jobs_per_user INTEGER NOT NULL DEFAULT -1,
+    strict_file_inputs BOOLEAN NOT NULL DEFAULT false,
+-- ==== Start jobAttributes ======================================
+    job_description VARCHAR(2048),
+    dynamic_exec_system BOOLEAN NOT NULL DEFAULT false,
+    exec_system_constraints TEXT[] NOT NULL,
+    exec_system_id VARCHAR(80),
+    exec_system_exec_dir VARCHAR(4096),
+    exec_system_input_dir VARCHAR(4096),
+    exec_system_output_dir VARCHAR(4096),
+    exec_system_logical_queue VARCHAR(128),
+    archive_system_id VARCHAR(80),
+    archive_system_dir VARCHAR(4096),
+    archive_on_app_error BOOLEAN NOT NULL DEFAULT true,
+--   parameterSet location in jobAttributes ===================
+--   parameterSet attributes flattened into this table ========
+    env_variables TEXT[] NOT NULL,
+    archive_includes TEXT[] NOT NULL,
+    archive_excludes TEXT[] NOT NULL,
+--   fileInputs location in jobAttributes ====SUBSC=================
+    node_count INTEGER NOT NULL DEFAULT -1,
+    cores_per_node INTEGER NOT NULL DEFAULT -1,
+    memory_mb INTEGER NOT NULL DEFAULT -1,
+    max_minutes INTEGER NOT NULL DEFAULT -1,
+--   subscriptions location in jobAttributes ==================
+    job_tags TEXT[] NOT NULL,
+-- ==== End jobAttributes ======================================
+    tags       TEXT[] NOT NULL,
+    notes      JSONB NOT NULL,
+    created    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
+    updated    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
+    UNIQUE (app_seq_id,version)
+);
+ALTER TABLE apps_versions OWNER TO tapis_app;
+CREATE INDEX app_version_seqid_idx ON apps_versions (version, app_seq_id);
+COMMENT ON COLUMN apps_versions.seq_id IS 'Sequence id for specific version of application';
+COMMENT ON COLUMN apps_versions.app_seq_id IS 'Sequence id of application';
+COMMENT ON COLUMN apps_versions.version IS 'Application version';
+COMMENT ON COLUMN apps_versions.description IS 'Application description';
+COMMENT ON COLUMN apps_versions.tags IS 'Tags for user supplied key:value pairs';
+COMMENT ON COLUMN apps_versions.notes IS 'Notes for general information stored as JSON';
+COMMENT ON COLUMN apps_versions.created IS 'UTC time for when record was created';
+COMMENT ON COLUMN apps_versions.updated IS 'UTC time for when record was last updated';
 
 -- App updates table
 -- Track update requests for apps
@@ -121,6 +139,7 @@ CREATE TABLE app_updates
 (
     seq_id SERIAL PRIMARY KEY,
     app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    app_ver_seq_id INTEGER,
     user_name VARCHAR(60) NOT NULL,
     user_tenant VARCHAR(24) NOT NULL,
     operation operation_type NOT NULL,
@@ -143,11 +162,10 @@ COMMENT ON COLUMN app_updates.created IS 'UTC time for when record was created';
 -- ----------------------------------------------------------------------------------------
 -- File Inputs table
 -- Inputs associated with an app
--- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
 CREATE TABLE file_inputs
 (
     seq_id SERIAL PRIMARY KEY,
-    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    app_ver_seq_id SERIAL REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     source_url TEXT,
     target_path TEXT,
     in_place BOOLEAN NOT NULL DEFAULT false,
@@ -155,11 +173,11 @@ CREATE TABLE file_inputs
     meta_description TEXT,
     meta_required BOOLEAN NOT NULL DEFAULT false,
     meta_key_value_pairs TEXT[] NOT NULL,
-    UNIQUE (app_seq_id, source_url, target_path)
+    UNIQUE (app_ver_seq_id, source_url, target_path)
 );
 ALTER TABLE file_inputs OWNER TO tapis_app;
 COMMENT ON COLUMN file_inputs.seq_id IS 'File input sequence id';
-COMMENT ON COLUMN file_inputs.app_seq_id IS 'Sequence id of application requiring the file input';
+COMMENT ON COLUMN file_inputs.app_ver_seq_id IS 'Sequence id of application requiring the file input';
 
 -- ----------------------------------------------------------------------------------------
 --                           NOTIFICATIONS
@@ -168,7 +186,7 @@ COMMENT ON COLUMN file_inputs.app_seq_id IS 'Sequence id of application requirin
 CREATE TABLE notification_subscriptions
 (
     seq_id     SERIAL PRIMARY KEY,
-    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    app_ver_seq_id SERIAL REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     filter VARCHAR(128) -- TODO length?
 );
 ALTER TABLE notification_subscriptions OWNER TO tapis_app;
@@ -194,24 +212,23 @@ ALTER TABLE notification_mechanisms OWNER TO tapis_app;
 CREATE TABLE app_args
 (
     seq_id SERIAL PRIMARY KEY,
-    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    app_ver_seq_id SERIAL REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     arg_val VARCHAR(128) NOT NULL DEFAULT '',
-    meta_name VARCHAR(128),
-    meta_description VARCHAR(128),
+    meta_name VARCHAR(128) NOT NULL DEFAULT '',
+    meta_description VARCHAR(128) NOT NULL DEFAULT '',
     meta_required BOOLEAN NOT NULL DEFAULT true,
     meta_key_value_pairs TEXT[] NOT NULL
 );
 ALTER TABLE app_args OWNER TO tapis_app;
 COMMENT ON COLUMN app_args.seq_id IS 'Arg sequence id';
-COMMENT ON COLUMN app_args.app_seq_id IS 'Sequence id of application';
+COMMENT ON COLUMN app_args.app_ver_seq_id IS 'Sequence id of application';
 
 -- Container args table
 -- Container arguments associated with an app
--- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
 CREATE TABLE container_args
 (
     seq_id SERIAL PRIMARY KEY,
-    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    app_ver_seq_id SERIAL REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     arg_val VARCHAR(128) NOT NULL DEFAULT '',
     meta_name VARCHAR(128) NOT NULL DEFAULT '',
     meta_description VARCHAR(128) NOT NULL DEFAULT '',
@@ -220,15 +237,14 @@ CREATE TABLE container_args
 );
 ALTER TABLE container_args OWNER TO tapis_app;
 COMMENT ON COLUMN container_args.seq_id IS 'Arg sequence id';
-COMMENT ON COLUMN container_args.app_seq_id IS 'Sequence id of application';
+COMMENT ON COLUMN container_args.app_ver_seq_id IS 'Sequence id of application';
 
 -- Scheduler options table
 -- Scheduler options associated with an app
--- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
 CREATE TABLE scheduler_options
 (
     seq_id SERIAL PRIMARY KEY,
-    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    app_ver_seq_id SERIAL REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     arg_val VARCHAR(128) NOT NULL DEFAULT '',
     meta_name VARCHAR(128) NOT NULL DEFAULT '',
     meta_description VARCHAR(128) NOT NULL DEFAULT '',
@@ -237,7 +253,7 @@ CREATE TABLE scheduler_options
 );
 ALTER TABLE scheduler_options OWNER TO tapis_app;
 COMMENT ON COLUMN scheduler_options.seq_id IS 'Arg sequence id';
-COMMENT ON COLUMN scheduler_options.app_seq_id IS 'Sequence id of application';
+COMMENT ON COLUMN scheduler_options.app_ver_seq_id IS 'Sequence id of application';
 
 -- ******************************************************************************
 --                         PROCEDURES and TRIGGERS
@@ -254,3 +270,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER app_updated
   BEFORE UPDATE ON apps
   EXECUTE PROCEDURE trigger_set_updated();
+
+CREATE TRIGGER app_version_updated
+    BEFORE UPDATE ON apps_versions
+EXECUTE PROCEDURE trigger_set_updated();

@@ -55,7 +55,8 @@ public class AppsServiceTest
   // Test data
   private static final String svcName = "apps";
   private static final String siteId = "tacc";
-  private static final String adminUser = "admin";
+  private static final String adminUser = "testuser9";
+//TODO  private static final String adminUser = "admin";
   private static final String adminTenantName = "admin";
   private static final String filesSvcName = "files";
   private static final String testUser0 = "testuser0";
@@ -149,8 +150,8 @@ public class AppsServiceTest
   public void testCreateApp() throws Exception
   {
     App app0 = apps[0];
-    int itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
   }
 
   // Create an app using minimal attributes:
@@ -158,8 +159,8 @@ public class AppsServiceTest
   public void testCreateAppMinimal() throws Exception
   {
     App app0 = makeMinimalApp(apps[11]);
-    int itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
   }
 
   // Test retrieving an app.
@@ -167,8 +168,8 @@ public class AppsServiceTest
   public void testGetApp() throws Exception
   {
     App app0 = apps[1];
-    int itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
     // Retrieve the app as filesSvc and as owner
     App tmpApp = svc.getApp(authenticatedFilesSvc, app0.getId(), app0.getVersion(), false);
     checkCommonAppAttrs(app0, tmpApp);
@@ -185,12 +186,12 @@ public class AppsServiceTest
     App app0 = apps[13];
     String createText = "{\"testUpdate\": \"0-create\"}";
     String patch1Text = "{\"testUpdate\": \"1-patch1\"}";
-    PatchApp patchApp = new PatchApp("description PATCHED", false, tags2, notes2);
+    PatchApp patchApp = new PatchApp("description PATCHED", tags2, notes2);
     patchApp.setTenant(tenantName);
     patchApp.setId(app0.getId());
     patchApp.setVersion(app0.getVersion());
-    int itemSeqId = svc.createApp(authenticatedOwner1, app0, createText);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId = svc.createApp(authenticatedOwner1, app0, createText);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
     // Update using updateApp
     svc.updateApp(authenticatedOwner1, patchApp, patch1Text);
     App tmpApp = svc.getApp(authenticatedOwner1, app0.getId(), app0.getVersion(), false);
@@ -207,7 +208,6 @@ public class AppsServiceTest
     // Update original app definition with patched values
 //    app0.setJobCapabilities(cap2List);
     app0.setDescription("description PATCHED");
-    app0.setEnabled(false);
     app0.setTags(tags2);
     app0.setNotes(notes2);
     // Check common app attributes:
@@ -221,8 +221,8 @@ public class AppsServiceTest
     App app0 = apps[15];
     String createText = "{\"testChangeOwner\": \"0-create\"}";
     String newOwnerName = testUser2;
-    int itemSeqId = svc.createApp(authenticatedOwner1, app0, createText);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId = svc.createApp(authenticatedOwner1, app0, createText);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
     // Change owner using api
     svc.changeAppOwner(authenticatedOwner1, app0.getId(), newOwnerName);
     App tmpApp = svc.getApp(authenticatedTestUser2, app0.getId(), app0.getVersion(), false);
@@ -266,8 +266,8 @@ public class AppsServiceTest
 //  {
 //    App app0 = apps[7];//5
 //    app0.setOwner("${apiUserId}");
-//    int itemSeqId = svc.createApp(authenticatedOwnerUser1, app0, scrubbedJson);
-//    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+//    int appVerSeqId = svc.createApp(authenticatedOwnerUser1, app0, scrubbedJson);
+//    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
 //    App tmpApp = svc.getApp(authenticatedOwnerUser1, app0.getId(), app0.getVersion(), false);
 //    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
 //    System.out.println("Found item: " + app0.getId());
@@ -287,11 +287,11 @@ public class AppsServiceTest
   public void testGetAppNames() throws Exception
   {
     App app0 = apps[2];
-    int itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
     app0 = apps[3];
-    itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
     List<String> appNames = svc.getAppNames(authenticatedOwner1);
     for (String name : appNames) {
       System.out.println("Found item: " + name);
@@ -304,8 +304,8 @@ public class AppsServiceTest
   public void testGetApps() throws Exception
   {
     App app0 = apps[4];
-    int itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
     List<App> apps = svc.getApps(authenticatedOwner1, null);
     for (App app : apps) {
       System.out.println("Found item with id: " + app.getSeqId() + " and name: " + app.getId());
@@ -320,25 +320,29 @@ public class AppsServiceTest
     App app0 = apps[16];
     String app1Name = app0.getId();
     app0.setOwner(authenticatedTestUser3.getName());
-    int itemSeqId =  svc.createApp(authenticatedTestUser3, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId =  svc.createApp(authenticatedTestUser3, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
+
     app0 = apps[17];
     String app2Name = app0.getId();
     app0.setOwner(authenticatedTestUser3.getName());
-    itemSeqId =  svc.createApp(authenticatedTestUser3, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    appVerSeqId =  svc.createApp(authenticatedTestUser3, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
+
     app0 = apps[18];
-    itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
+
     // When retrieving apps as testUser3 only 2 should be returned
     List<App> apps = svc.getApps(authenticatedTestUser3, null);
     System.out.println("Total number of apps retrieved: " + apps.size());
     for (App app : apps)
     {
-      System.out.println("Found item with id: " + app.getSeqId() + " and name: " + app.getId());
+      System.out.println("Found item with appSeqId: " + app.getSeqId() + " and appVerSeqId: " + app.getVerSeqId()
+                                          + " and Id: " + app.getId() + " and Version: " + app.getVersion());
       Assert.assertTrue(app.getId().equals(app1Name) || app.getId().equalsIgnoreCase(app2Name));
     }
-    Assert.assertEquals(2, apps.size());
+    Assert.assertEquals(apps.size(), 2);
   }
 
   @Test
@@ -346,8 +350,8 @@ public class AppsServiceTest
   {
     // Create the app
     App app0 = apps[5];
-    int itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
 
     // Soft delete the app
     int changeCount = svc.softDeleteApp(authenticatedOwner1, app0.getId());
@@ -363,8 +367,8 @@ public class AppsServiceTest
     Assert.assertFalse(svc.checkForApp(authenticatedOwner1, apps[6].getId()));
     // After creating app we should get true
     App app0 = apps[6];
-    int itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
     Assert.assertTrue(svc.checkForApp(authenticatedOwner1, apps[6].getId()));
   }
 
@@ -374,8 +378,8 @@ public class AppsServiceTest
   {
     // Create the app
     App app0 = apps[8];
-    int itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
     Assert.assertTrue(svc.checkForApp(authenticatedOwner1, app0.getId()));
     // Now attempt to create again, should get IllegalStateException with msg APPLIB_APP_EXISTS
     svc.createApp(authenticatedOwner1, app0, scrubbedJson);
@@ -387,8 +391,8 @@ public class AppsServiceTest
   {
     // Create an app
     App app0 = apps[9];
-    int itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
     // Create user perms for the app
     svc.grantUserPermissions(authenticatedOwner1, app0.getId(), testUser1, testPermsREADMODIFY, scrubbedJson);
     // Get the app perms for the user and make sure permissions are there
@@ -458,7 +462,7 @@ public class AppsServiceTest
   public void testAuthDeny() throws Exception
   {
     App app0 = apps[12];
-    PatchApp patchApp = new PatchApp("description PATCHED", false, tags2, notes2);
+    PatchApp patchApp = new PatchApp("description PATCHED", tags2, notes2);
     patchApp.setTenant(tenantName);
     patchApp.setId(app0.getId());
     patchApp.setVersion(app0.getVersion());
@@ -480,8 +484,8 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
 
-    int itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
     // Grant User1 - READ and User2 - MODIFY
     svc.grantUserPermissions(authenticatedOwner1, app0.getId(), testUser1, testPermsREAD, scrubbedJson);
     svc.grantUserPermissions(authenticatedOwner1, app0.getId(), testUser2, testPermsMODIFY, scrubbedJson);
@@ -627,8 +631,8 @@ public class AppsServiceTest
   {
     App app0 = apps[14];
     // Create app for remaining auth access tests
-    int itemSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
-    Assert.assertTrue(itemSeqId > 0, "Invalid app id: " + itemSeqId);
+    int appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
     // Grant User1 - READ,EXECUTE and User2 - MODIFY
     svc.grantUserPermissions(authenticatedOwner1, app0.getId(), testUser1, testPermsREADEXECUTE, scrubbedJson);
     svc.grantUserPermissions(authenticatedOwner1, app0.getId(), testUser2, testPermsMODIFY, scrubbedJson);

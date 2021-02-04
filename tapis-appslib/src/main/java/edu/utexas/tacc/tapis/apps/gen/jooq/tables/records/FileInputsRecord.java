@@ -19,7 +19,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class FileInputsRecord extends UpdatableRecordImpl<FileInputsRecord> implements Record9<Integer, Integer, String, String, Boolean, String, String, Boolean, String[]> {
 
-    private static final long serialVersionUID = -311051851;
+    private static final long serialVersionUID = 825495986;
 
     /**
      * Setter for <code>tapis_app.file_inputs.seq_id</code>. File input sequence id
@@ -36,16 +36,16 @@ public class FileInputsRecord extends UpdatableRecordImpl<FileInputsRecord> impl
     }
 
     /**
-     * Setter for <code>tapis_app.file_inputs.app_seq_id</code>. Sequence id of application requiring the file input
+     * Setter for <code>tapis_app.file_inputs.app_ver_seq_id</code>. Sequence id of application requiring the file input
      */
-    public void setAppSeqId(Integer value) {
+    public void setAppVerSeqId(Integer value) {
         set(1, value);
     }
 
     /**
-     * Getter for <code>tapis_app.file_inputs.app_seq_id</code>. Sequence id of application requiring the file input
+     * Getter for <code>tapis_app.file_inputs.app_ver_seq_id</code>. Sequence id of application requiring the file input
      */
-    public Integer getAppSeqId() {
+    public Integer getAppVerSeqId() {
         return (Integer) get(1);
     }
 
@@ -177,7 +177,7 @@ public class FileInputsRecord extends UpdatableRecordImpl<FileInputsRecord> impl
 
     @Override
     public Field<Integer> field2() {
-        return FileInputs.FILE_INPUTS.APP_SEQ_ID;
+        return FileInputs.FILE_INPUTS.APP_VER_SEQ_ID;
     }
 
     @Override
@@ -222,7 +222,7 @@ public class FileInputsRecord extends UpdatableRecordImpl<FileInputsRecord> impl
 
     @Override
     public Integer component2() {
-        return getAppSeqId();
+        return getAppVerSeqId();
     }
 
     @Override
@@ -267,7 +267,7 @@ public class FileInputsRecord extends UpdatableRecordImpl<FileInputsRecord> impl
 
     @Override
     public Integer value2() {
-        return getAppSeqId();
+        return getAppVerSeqId();
     }
 
     @Override
@@ -313,7 +313,7 @@ public class FileInputsRecord extends UpdatableRecordImpl<FileInputsRecord> impl
 
     @Override
     public FileInputsRecord value2(Integer value) {
-        setAppSeqId(value);
+        setAppVerSeqId(value);
         return this;
     }
 
@@ -387,11 +387,11 @@ public class FileInputsRecord extends UpdatableRecordImpl<FileInputsRecord> impl
     /**
      * Create a detached, initialised FileInputsRecord
      */
-    public FileInputsRecord(Integer seqId, Integer appSeqId, String sourceUrl, String targetPath, Boolean inPlace, String metaName, String metaDescription, Boolean metaRequired, String[] metaKeyValuePairs) {
+    public FileInputsRecord(Integer seqId, Integer appVerSeqId, String sourceUrl, String targetPath, Boolean inPlace, String metaName, String metaDescription, Boolean metaRequired, String[] metaKeyValuePairs) {
         super(FileInputs.FILE_INPUTS);
 
         set(0, seqId);
-        set(1, appSeqId);
+        set(1, appVerSeqId);
         set(2, sourceUrl);
         set(3, targetPath);
         set(4, inPlace);

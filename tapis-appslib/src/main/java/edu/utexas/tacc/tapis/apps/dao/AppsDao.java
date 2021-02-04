@@ -22,7 +22,8 @@ public interface AppsDao
 
   int softDeleteApp(AuthenticatedUser authenticatedUser, int seqId) throws TapisException;
 
-  void addUpdateRecord(AuthenticatedUser authenticatedUser, int seqId, AppOperation op, String upd_json, String upd_text) throws TapisException;
+  void addUpdateRecord(AuthenticatedUser authenticatedUser, int seqId, int verSeqId, AppOperation op,
+                       String upd_json, String upd_text) throws TapisException;
 
   int hardDeleteApp(String tenant, String id) throws TapisException;
 
@@ -33,6 +34,8 @@ public interface AppsDao
   boolean checkForApp(String tenant, String id, boolean includeDeleted) throws TapisException;
 
   boolean checkForApp(String tenant, String id, String version, boolean includeDeleted) throws TapisException;
+
+  boolean isEnabled(String tenant, String id) throws TapisException;
 
   App getApp(String tenant, String id) throws TapisException;
 

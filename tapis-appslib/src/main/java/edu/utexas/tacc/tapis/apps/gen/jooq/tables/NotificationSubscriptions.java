@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NotificationSubscriptions extends TableImpl<NotificationSubscriptionsRecord> {
 
-    private static final long serialVersionUID = -1752786403;
+    private static final long serialVersionUID = 1976541250;
 
     /**
      * The reference instance of <code>tapis_app.notification_subscriptions</code>
@@ -53,9 +53,9 @@ public class NotificationSubscriptions extends TableImpl<NotificationSubscriptio
     public final TableField<NotificationSubscriptionsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('notification_subscriptions_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "");
 
     /**
-     * The column <code>tapis_app.notification_subscriptions.app_seq_id</code>.
+     * The column <code>tapis_app.notification_subscriptions.app_ver_seq_id</code>.
      */
-    public final TableField<NotificationSubscriptionsRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('notification_subscriptions_app_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+    public final TableField<NotificationSubscriptionsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('notification_subscriptions_app_ver_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "");
 
     /**
      * The column <code>tapis_app.notification_subscriptions.filter</code>.
@@ -117,11 +117,11 @@ public class NotificationSubscriptions extends TableImpl<NotificationSubscriptio
 
     @Override
     public List<ForeignKey<NotificationSubscriptionsRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<NotificationSubscriptionsRecord, ?>>asList(Keys.NOTIFICATION_SUBSCRIPTIONS__NOTIFICATION_SUBSCRIPTIONS_APP_SEQ_ID_FKEY);
+        return Arrays.<ForeignKey<NotificationSubscriptionsRecord, ?>>asList(Keys.NOTIFICATION_SUBSCRIPTIONS__NOTIFICATION_SUBSCRIPTIONS_APP_VER_SEQ_ID_FKEY);
     }
 
-    public Apps apps() {
-        return new Apps(this, Keys.NOTIFICATION_SUBSCRIPTIONS__NOTIFICATION_SUBSCRIPTIONS_APP_SEQ_ID_FKEY);
+    public AppsVersions appsVersions() {
+        return new AppsVersions(this, Keys.NOTIFICATION_SUBSCRIPTIONS__NOTIFICATION_SUBSCRIPTIONS_APP_VER_SEQ_ID_FKEY);
     }
 
     @Override

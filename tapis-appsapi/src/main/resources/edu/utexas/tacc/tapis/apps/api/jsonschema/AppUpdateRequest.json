@@ -8,7 +8,6 @@
   "properties": {
     "version": { "type": "string", "maxLength": 64 },
     "description": { "type": "string", "maxLength": 2048 },
-    "enabled": { "type": "boolean", "default": true },
     "tags": {
       "type": "array",
       "items": { "type":  "string", "minLength": 1, "maxLength": 128 }

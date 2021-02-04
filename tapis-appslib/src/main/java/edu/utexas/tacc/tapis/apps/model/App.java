@@ -57,6 +57,7 @@ public final class App
   // NOTE: In order to use jersey's SelectableEntityFilteringFeature fields cannot be final.
   // === Start fields in main table =============================================
   private int seqId;           // Unique database sequence number
+  private int verSeqId;
   private String tenant;     // Name of the tenant for which the app is defined
   private String id;       // Name of the app
   private String version;    // Version of the app
@@ -129,21 +130,41 @@ public final class App
   }
 
   /**
+   * Constructor using top level attributes
+   */
+  public App(int seqId1, String tenant1, String id1, String version1, AppType appType1,
+             String owner1, boolean enabled1, boolean containerized1,
+             String importRefId1, boolean deleted1)
+  {
+    seqId = seqId1;
+    tenant = tenant1;
+    id = id1;
+    version = version1;
+    appType = appType1;
+    owner = owner1;
+    enabled = enabled1;
+    containerized = containerized1;
+    importRefId = importRefId1;
+    deleted = deleted1;
+  }
+
+  /**
    * Constructor for jOOQ with input parameter matching order of columns in DB
    * Also useful for testing
    */
-  public App(int seqId1, String tenant1, String id1, String version1, String description1, AppType appType1,
-             String owner1, boolean enabled1, boolean containerized1, Runtime runtime1, String runtimeVersion1,
-             String containerImage1, int maxJobs1, int maxJobsPerUser1, boolean strictFileInputs1,
-             String jobDescription1, boolean dynamicExecSystem1, String[] execSystemConstraints1,
-             String execSystemId1, String execSystemExecDir1, String execSystemInputDir1, String execSystemOutputDir1,
-             String execSystemLogicalQueue1, String archiveSystemId1, String archiveSystemDir1,
-             boolean archiveOnAppError1, int nodeCount1, int coresPerNode1, int memoryMb1, int maxMinutes1,
-             String[] envVariables1, String[] archiveIncludes1, String[] archiveExcludes1, String[] jobTags1,
-             String[] tags1, Object notes1, String importRefId1, boolean deleted1,
-             Instant created1, Instant updated1)
+  public App(int seqId1, int verSeqId1, String tenant1, String id1, String version1, String description1,
+             AppType appType1, String owner1, boolean enabled1, boolean containerized1,
+             Runtime runtime1, String runtimeVersion1, String containerImage1, int maxJobs1, int maxJobsPerUser1,
+             boolean strictFileInputs1, String jobDescription1, boolean dynamicExecSystem1,
+             String[] execSystemConstraints1, String execSystemId1, String execSystemExecDir1,
+             String execSystemInputDir1, String execSystemOutputDir1, String execSystemLogicalQueue1,
+             String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1, int nodeCount1,
+             int coresPerNode1, int memoryMb1, int maxMinutes1, String[] envVariables1,
+             String[] archiveIncludes1, String[] archiveExcludes1, String[] jobTags1,
+             String[] tags1, Object notes1, String importRefId1, boolean deleted1, Instant created1, Instant updated1)
   {
     seqId = seqId1;
+    verSeqId = verSeqId1;
     tenant = tenant1;
     id = id1;
     version = version1;
@@ -193,6 +214,7 @@ public final class App
   {
     if (a==null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT"));
     seqId = a.getSeqId();
+    verSeqId = a.getVerSeqId();
     tenant = a.getTenant();
     id = a.getId();
     version = a.getVersion();
@@ -257,6 +279,8 @@ public final class App
   // ************************************************************************
 
   public int getSeqId() { return seqId; }
+
+  public int getVerSeqId() { return verSeqId; }
 
   @Schema(type = "string")
   public Instant getCreated() { return created; }

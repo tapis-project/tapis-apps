@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
 
-    private static final long serialVersionUID = -180861878;
+    private static final long serialVersionUID = -213705267;
 
     /**
      * The reference instance of <code>tapis_app.scheduler_options</code>
@@ -53,9 +53,9 @@ public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
     public final TableField<SchedulerOptionsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('scheduler_options_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Arg sequence id");
 
     /**
-     * The column <code>tapis_app.scheduler_options.app_seq_id</code>. Sequence id of application
+     * The column <code>tapis_app.scheduler_options.app_ver_seq_id</code>. Sequence id of application
      */
-    public final TableField<SchedulerOptionsRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('scheduler_options_app_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application");
+    public final TableField<SchedulerOptionsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('scheduler_options_app_ver_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application");
 
     /**
      * The column <code>tapis_app.scheduler_options.arg_val</code>.
@@ -137,11 +137,11 @@ public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
 
     @Override
     public List<ForeignKey<SchedulerOptionsRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<SchedulerOptionsRecord, ?>>asList(Keys.SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_SEQ_ID_FKEY);
+        return Arrays.<ForeignKey<SchedulerOptionsRecord, ?>>asList(Keys.SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_VER_SEQ_ID_FKEY);
     }
 
-    public Apps apps() {
-        return new Apps(this, Keys.SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_SEQ_ID_FKEY);
+    public AppsVersions appsVersions() {
+        return new AppsVersions(this, Keys.SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_VER_SEQ_ID_FKEY);
     }
 
     @Override

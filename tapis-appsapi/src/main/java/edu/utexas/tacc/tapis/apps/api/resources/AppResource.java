@@ -202,7 +202,7 @@ public class AppResource
       if (e.getMessage().contains("APPLIB_APP_EXISTS"))
       {
         // IllegalStateException with msg containing APP_EXISTS indicates object exists - return 409 - Conflict
-        msg = ApiUtils.getMsgAuth("APPAPI_APP_EXISTS", authenticatedUser, appId);
+        msg = ApiUtils.getMsgAuth("APPAPI_APP_EXISTS", authenticatedUser, appId, app.getVersion());
         _log.warn(msg);
         return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
       }
@@ -826,7 +826,7 @@ public class AppResource
     var parmSet = jobAttrs.parameterSet;
     if (parmSet == null) parmSet = new ParameterSet();
     String[] envVariables = ApiUtils.getKeyValuesAsArray(parmSet.envVariables);
-    var app = new App(-1, null, req.id, req.version, req.description, req.appType, req.owner, req.enabled,
+    var app = new App(-1, -1, null, req.id, req.version, req.description, req.appType, req.owner, req.enabled,
           req.containerized,  req.runtime,
           req.runtimeVersion, req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
@@ -852,7 +852,7 @@ public class AppResource
    */
   private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String appId, String rawJson)
   {
-    PatchApp patchApp = new PatchApp(req.description, req.enabled, req.tags, req.notes);
+    PatchApp patchApp = new PatchApp(req.description, req.tags, req.notes);
     // Update tenant name and app name
     patchApp.setTenant(tenantName);
     patchApp.setId(appId);

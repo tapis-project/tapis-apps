@@ -132,7 +132,7 @@ public final class IntegrationUtils
       String suffix = key + "_" + String.format("%03d", i+1);
       String appId = appIdPrefix + "_" + suffix;
       // Constructor initializes all attributes except for JobCapabilities
-      apps[i] = new App(-1, tenantName, appId, appVersion+suffix, "description "+suffix, AppType.BATCH, ownerUser, enabledTrue,
+      apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, "description "+suffix, AppType.BATCH, ownerUser, enabledTrue,
                         containerizedTrue,
                         runtime, runtimeVersion+suffix, containerImage+suffix, maxJobs, maxJobsPerUser, strictFileInputsFalse,
                         jobDescription+suffix, dynamicExecSystem,
@@ -158,7 +158,7 @@ public final class IntegrationUtils
    */
   public static App makeMinimalApp(App app)
   {
-    return new App(-1, tenantName, app.getId(), app.getVersion(), null, null, null, enabledTrue,
+    return new App(-1, -1, tenantName, app.getId(), app.getVersion(), null, null, null, enabledTrue,
             containerizedTrue,
             null, null, null, maxJobs, maxJobsPerUser, strictFileInputsFalse,
             null, dynamicExecSystem,

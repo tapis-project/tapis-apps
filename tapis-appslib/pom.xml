@@ -224,7 +224,7 @@
                     <userType>com.google.gson.JsonElement</userType>
                     <binding>edu.utexas.tacc.tapis.apps.dao.JSONBToJsonElementBinding</binding>
                     <!-- Match only certain columns, no need to filter on type -->
-                    <includeExpression>(apps\.notes|app_updates\.upd_json)</includeExpression>
+                    <includeExpression>(apps_versions\.notes|app_updates\.upd_json)</includeExpression>
                     <includeTypes>.*</includeTypes>
                   </forcedType>
                   <!-- ****************************************** -->
@@ -245,7 +245,7 @@
                   <forcedType>
                     <userType>edu.utexas.tacc.tapis.apps.model.App.Runtime</userType>
                     <enumConverter>true</enumConverter>
-                    <includeExpression>apps\.runtime</includeExpression>
+                    <includeExpression>apps_versions\.runtime</includeExpression>
                     <includeTypes>.*</includeTypes>
                   </forcedType>
                   <forcedType>

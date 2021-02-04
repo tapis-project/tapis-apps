@@ -5,6 +5,7 @@ package edu.utexas.tacc.tapis.apps.gen.jooq;
 
 
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppsVersions;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
 
 import org.jooq.Index;
@@ -22,7 +23,8 @@ public class Indexes {
     // INDEX definitions
     // -------------------------------------------------------------------------
 
-    public static final Index APP_TENANT_NAME_IDX = Indexes0.APP_TENANT_NAME_IDX;
+    public static final Index APP_TENANT_ID_IDX = Indexes0.APP_TENANT_ID_IDX;
+    public static final Index APP_VERSION_SEQID_IDX = Indexes0.APP_VERSION_SEQID_IDX;
     public static final Index FLYWAY_SCHEMA_HISTORY_S_IDX = Indexes0.FLYWAY_SCHEMA_HISTORY_S_IDX;
 
     // -------------------------------------------------------------------------
@@ -30,7 +32,8 @@ public class Indexes {
     // -------------------------------------------------------------------------
 
     private static class Indexes0 {
-        public static Index APP_TENANT_NAME_IDX = Internal.createIndex("app_tenant_name_idx", Apps.APPS, new OrderField[] { Apps.APPS.TENANT, Apps.APPS.ID }, false);
+        public static Index APP_TENANT_ID_IDX = Internal.createIndex("app_tenant_id_idx", Apps.APPS, new OrderField[] { Apps.APPS.TENANT, Apps.APPS.ID }, false);
+        public static Index APP_VERSION_SEQID_IDX = Internal.createIndex("app_version_seqid_idx", AppsVersions.APPS_VERSIONS, new OrderField[] { AppsVersions.APPS_VERSIONS.VERSION, AppsVersions.APPS_VERSIONS.APP_SEQ_ID }, false);
         public static Index FLYWAY_SCHEMA_HISTORY_S_IDX = Internal.createIndex("flyway_schema_history_s_idx", FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY, new OrderField[] { FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY.SUCCESS }, false);
     }
 }

@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppArgs extends TableImpl<AppArgsRecord> {
 
-    private static final long serialVersionUID = -989968240;
+    private static final long serialVersionUID = -1585208385;
 
     /**
      * The reference instance of <code>tapis_app.app_args</code>
@@ -53,9 +53,9 @@ public class AppArgs extends TableImpl<AppArgsRecord> {
     public final TableField<AppArgsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_args_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Arg sequence id");
 
     /**
-     * The column <code>tapis_app.app_args.app_seq_id</code>. Sequence id of application
+     * The column <code>tapis_app.app_args.app_ver_seq_id</code>. Sequence id of application
      */
-    public final TableField<AppArgsRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_args_app_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application");
+    public final TableField<AppArgsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_args_app_ver_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application");
 
     /**
      * The column <code>tapis_app.app_args.arg_val</code>.
@@ -65,12 +65,12 @@ public class AppArgs extends TableImpl<AppArgsRecord> {
     /**
      * The column <code>tapis_app.app_args.meta_name</code>.
      */
-    public final TableField<AppArgsRecord, String> META_NAME = createField(DSL.name("meta_name"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+    public final TableField<AppArgsRecord, String> META_NAME = createField(DSL.name("meta_name"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
 
     /**
      * The column <code>tapis_app.app_args.meta_description</code>.
      */
-    public final TableField<AppArgsRecord, String> META_DESCRIPTION = createField(DSL.name("meta_description"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+    public final TableField<AppArgsRecord, String> META_DESCRIPTION = createField(DSL.name("meta_description"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
 
     /**
      * The column <code>tapis_app.app_args.meta_required</code>.
@@ -137,11 +137,11 @@ public class AppArgs extends TableImpl<AppArgsRecord> {
 
     @Override
     public List<ForeignKey<AppArgsRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<AppArgsRecord, ?>>asList(Keys.APP_ARGS__APP_ARGS_APP_SEQ_ID_FKEY);
+        return Arrays.<ForeignKey<AppArgsRecord, ?>>asList(Keys.APP_ARGS__APP_ARGS_APP_VER_SEQ_ID_FKEY);
     }
 
-    public Apps apps() {
-        return new Apps(this, Keys.APP_ARGS__APP_ARGS_APP_SEQ_ID_FKEY);
+    public AppsVersions appsVersions() {
+        return new AppsVersions(this, Keys.APP_ARGS__APP_ARGS_APP_VER_SEQ_ID_FKEY);
     }
 
     @Override

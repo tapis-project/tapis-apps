@@ -7,6 +7,7 @@ package edu.utexas.tacc.tapis.apps.gen.jooq;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppArgs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppUpdates;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppsVersions;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.ContainerArgs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FileInputs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
@@ -29,7 +30,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class TapisApp extends SchemaImpl {
 
-    private static final long serialVersionUID = 1984999450;
+    private static final long serialVersionUID = 1322001188;
 
     /**
      * The reference instance of <code>tapis_app</code>
@@ -50,6 +51,11 @@ public class TapisApp extends SchemaImpl {
      * The table <code>tapis_app.apps</code>.
      */
     public final Apps APPS = Apps.APPS;
+
+    /**
+     * The table <code>tapis_app.apps_versions</code>.
+     */
+    public final AppsVersions APPS_VERSIONS = AppsVersions.APPS_VERSIONS;
 
     /**
      * The table <code>tapis_app.container_args</code>.
@@ -97,20 +103,22 @@ public class TapisApp extends SchemaImpl {
     @Override
     public final List<Sequence<?>> getSequences() {
         return Arrays.<Sequence<?>>asList(
-            Sequences.APP_ARGS_APP_SEQ_ID_SEQ,
+            Sequences.APP_ARGS_APP_VER_SEQ_ID_SEQ,
             Sequences.APP_ARGS_SEQ_ID_SEQ,
             Sequences.APP_UPDATES_APP_SEQ_ID_SEQ,
             Sequences.APP_UPDATES_SEQ_ID_SEQ,
             Sequences.APPS_SEQ_ID_SEQ,
-            Sequences.CONTAINER_ARGS_APP_SEQ_ID_SEQ,
+            Sequences.APPS_VERSIONS_APP_SEQ_ID_SEQ,
+            Sequences.APPS_VERSIONS_SEQ_ID_SEQ,
+            Sequences.CONTAINER_ARGS_APP_VER_SEQ_ID_SEQ,
             Sequences.CONTAINER_ARGS_SEQ_ID_SEQ,
-            Sequences.FILE_INPUTS_APP_SEQ_ID_SEQ,
+            Sequences.FILE_INPUTS_APP_VER_SEQ_ID_SEQ,
             Sequences.FILE_INPUTS_SEQ_ID_SEQ,
             Sequences.NOTIFICATION_MECHANISMS_SEQ_ID_SEQ,
             Sequences.NOTIFICATION_MECHANISMS_SUBSCRIPTION_SEQ_ID_SEQ,
-            Sequences.NOTIFICATION_SUBSCRIPTIONS_APP_SEQ_ID_SEQ,
+            Sequences.NOTIFICATION_SUBSCRIPTIONS_APP_VER_SEQ_ID_SEQ,
             Sequences.NOTIFICATION_SUBSCRIPTIONS_SEQ_ID_SEQ,
-            Sequences.SCHEDULER_OPTIONS_APP_SEQ_ID_SEQ,
+            Sequences.SCHEDULER_OPTIONS_APP_VER_SEQ_ID_SEQ,
             Sequences.SCHEDULER_OPTIONS_SEQ_ID_SEQ);
     }
 
@@ -120,6 +128,7 @@ public class TapisApp extends SchemaImpl {
             AppArgs.APP_ARGS,
             AppUpdates.APP_UPDATES,
             Apps.APPS,
+            AppsVersions.APPS_VERSIONS,
             ContainerArgs.CONTAINER_ARGS,
             FileInputs.FILE_INPUTS,
             FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY,

@@ -21,7 +21,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row8;
+import org.jooq.Row9;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -37,7 +37,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppUpdates extends TableImpl<AppUpdatesRecord> {
 
-    private static final long serialVersionUID = 300247810;
+    private static final long serialVersionUID = -2026614622;
 
     /**
      * The reference instance of <code>tapis_app.app_updates</code>
@@ -61,6 +61,11 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
      * The column <code>tapis_app.app_updates.app_seq_id</code>. Sequence id of application being updated
      */
     public final TableField<AppUpdatesRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_updates_app_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application being updated");
+
+    /**
+     * The column <code>tapis_app.app_updates.app_ver_seq_id</code>.
+     */
+    public final TableField<AppUpdatesRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "");
 
     /**
      * The column <code>tapis_app.app_updates.user_name</code>. Name of user who requested the update
@@ -181,11 +186,11 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row8 type methods
+    // Row9 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row8<Integer, Integer, String, String, AppOperation, JsonElement, String, LocalDateTime> fieldsRow() {
-        return (Row8) super.fieldsRow();
+    public Row9<Integer, Integer, Integer, String, String, AppOperation, JsonElement, String, LocalDateTime> fieldsRow() {
+        return (Row9) super.fieldsRow();
     }
 }

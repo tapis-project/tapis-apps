@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class FileInputs extends TableImpl<FileInputsRecord> {
 
-    private static final long serialVersionUID = -306312535;
+    private static final long serialVersionUID = -1294078454;
 
     /**
      * The reference instance of <code>tapis_app.file_inputs</code>
@@ -53,9 +53,9 @@ public class FileInputs extends TableImpl<FileInputsRecord> {
     public final TableField<FileInputsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('file_inputs_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "File input sequence id");
 
     /**
-     * The column <code>tapis_app.file_inputs.app_seq_id</code>. Sequence id of application requiring the file input
+     * The column <code>tapis_app.file_inputs.app_ver_seq_id</code>. Sequence id of application requiring the file input
      */
-    public final TableField<FileInputsRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('file_inputs_app_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application requiring the file input");
+    public final TableField<FileInputsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('file_inputs_app_ver_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application requiring the file input");
 
     /**
      * The column <code>tapis_app.file_inputs.source_url</code>.
@@ -142,16 +142,16 @@ public class FileInputs extends TableImpl<FileInputsRecord> {
 
     @Override
     public List<UniqueKey<FileInputsRecord>> getKeys() {
-        return Arrays.<UniqueKey<FileInputsRecord>>asList(Keys.FILE_INPUTS_PKEY, Keys.FILE_INPUTS_APP_SEQ_ID_SOURCE_URL_TARGET_PATH_KEY);
+        return Arrays.<UniqueKey<FileInputsRecord>>asList(Keys.FILE_INPUTS_PKEY, Keys.FILE_INPUTS_APP_VER_SEQ_ID_SOURCE_URL_TARGET_PATH_KEY);
     }
 
     @Override
     public List<ForeignKey<FileInputsRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<FileInputsRecord, ?>>asList(Keys.FILE_INPUTS__FILE_INPUTS_APP_SEQ_ID_FKEY);
+        return Arrays.<ForeignKey<FileInputsRecord, ?>>asList(Keys.FILE_INPUTS__FILE_INPUTS_APP_VER_SEQ_ID_FKEY);
     }
 
-    public Apps apps() {
-        return new Apps(this, Keys.FILE_INPUTS__FILE_INPUTS_APP_SEQ_ID_FKEY);
+    public AppsVersions appsVersions() {
+        return new AppsVersions(this, Keys.FILE_INPUTS__FILE_INPUTS_APP_VER_SEQ_ID_FKEY);
     }
 
     @Override

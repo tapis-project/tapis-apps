@@ -19,7 +19,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SchedulerOptionsRecord extends UpdatableRecordImpl<SchedulerOptionsRecord> implements Record7<Integer, Integer, String, String, String, Boolean, String[]> {
 
-    private static final long serialVersionUID = 792187597;
+    private static final long serialVersionUID = 282183348;
 
     /**
      * Setter for <code>tapis_app.scheduler_options.seq_id</code>. Arg sequence id
@@ -36,16 +36,16 @@ public class SchedulerOptionsRecord extends UpdatableRecordImpl<SchedulerOptions
     }
 
     /**
-     * Setter for <code>tapis_app.scheduler_options.app_seq_id</code>. Sequence id of application
+     * Setter for <code>tapis_app.scheduler_options.app_ver_seq_id</code>. Sequence id of application
      */
-    public void setAppSeqId(Integer value) {
+    public void setAppVerSeqId(Integer value) {
         set(1, value);
     }
 
     /**
-     * Getter for <code>tapis_app.scheduler_options.app_seq_id</code>. Sequence id of application
+     * Getter for <code>tapis_app.scheduler_options.app_ver_seq_id</code>. Sequence id of application
      */
-    public Integer getAppSeqId() {
+    public Integer getAppVerSeqId() {
         return (Integer) get(1);
     }
 
@@ -149,7 +149,7 @@ public class SchedulerOptionsRecord extends UpdatableRecordImpl<SchedulerOptions
 
     @Override
     public Field<Integer> field2() {
-        return SchedulerOptions.SCHEDULER_OPTIONS.APP_SEQ_ID;
+        return SchedulerOptions.SCHEDULER_OPTIONS.APP_VER_SEQ_ID;
     }
 
     @Override
@@ -184,7 +184,7 @@ public class SchedulerOptionsRecord extends UpdatableRecordImpl<SchedulerOptions
 
     @Override
     public Integer component2() {
-        return getAppSeqId();
+        return getAppVerSeqId();
     }
 
     @Override
@@ -219,7 +219,7 @@ public class SchedulerOptionsRecord extends UpdatableRecordImpl<SchedulerOptions
 
     @Override
     public Integer value2() {
-        return getAppSeqId();
+        return getAppVerSeqId();
     }
 
     @Override
@@ -255,7 +255,7 @@ public class SchedulerOptionsRecord extends UpdatableRecordImpl<SchedulerOptions
 
     @Override
     public SchedulerOptionsRecord value2(Integer value) {
-        setAppSeqId(value);
+        setAppVerSeqId(value);
         return this;
     }
 
@@ -315,11 +315,11 @@ public class SchedulerOptionsRecord extends UpdatableRecordImpl<SchedulerOptions
     /**
      * Create a detached, initialised SchedulerOptionsRecord
      */
-    public SchedulerOptionsRecord(Integer seqId, Integer appSeqId, String argVal, String metaName, String metaDescription, Boolean metaRequired, String[] metaKeyValuePairs) {
+    public SchedulerOptionsRecord(Integer seqId, Integer appVerSeqId, String argVal, String metaName, String metaDescription, Boolean metaRequired, String[] metaKeyValuePairs) {
         super(SchedulerOptions.SCHEDULER_OPTIONS);
 
         set(0, seqId);
-        set(1, appSeqId);
+        set(1, appVerSeqId);
         set(2, argVal);
         set(3, metaName);
         set(4, metaDescription);

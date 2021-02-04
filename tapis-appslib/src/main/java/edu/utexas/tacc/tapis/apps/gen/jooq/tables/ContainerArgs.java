@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ContainerArgs extends TableImpl<ContainerArgsRecord> {
 
-    private static final long serialVersionUID = -1447994756;
+    private static final long serialVersionUID = -706010561;
 
     /**
      * The reference instance of <code>tapis_app.container_args</code>
@@ -53,9 +53,9 @@ public class ContainerArgs extends TableImpl<ContainerArgsRecord> {
     public final TableField<ContainerArgsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('container_args_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Arg sequence id");
 
     /**
-     * The column <code>tapis_app.container_args.app_seq_id</code>. Sequence id of application
+     * The column <code>tapis_app.container_args.app_ver_seq_id</code>. Sequence id of application
      */
-    public final TableField<ContainerArgsRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('container_args_app_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application");
+    public final TableField<ContainerArgsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('container_args_app_ver_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application");
 
     /**
      * The column <code>tapis_app.container_args.arg_val</code>.
@@ -137,11 +137,11 @@ public class ContainerArgs extends TableImpl<ContainerArgsRecord> {
 
     @Override
     public List<ForeignKey<ContainerArgsRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<ContainerArgsRecord, ?>>asList(Keys.CONTAINER_ARGS__CONTAINER_ARGS_APP_SEQ_ID_FKEY);
+        return Arrays.<ForeignKey<ContainerArgsRecord, ?>>asList(Keys.CONTAINER_ARGS__CONTAINER_ARGS_APP_VER_SEQ_ID_FKEY);
     }
 
-    public Apps apps() {
-        return new Apps(this, Keys.CONTAINER_ARGS__CONTAINER_ARGS_APP_SEQ_ID_FKEY);
+    public AppsVersions appsVersions() {
+        return new AppsVersions(this, Keys.CONTAINER_ARGS__CONTAINER_ARGS_APP_VER_SEQ_ID_FKEY);
     }
 
     @Override
