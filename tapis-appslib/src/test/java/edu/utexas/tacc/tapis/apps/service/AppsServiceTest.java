@@ -4,8 +4,8 @@ import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
-import edu.utexas.tacc.tapis.security.client.SKClient;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
+import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
@@ -54,11 +54,10 @@ public class AppsServiceTest
           authenticatedTestUser2, authenticatedTestUser3, authenticatedAdminUser, authenticatedFilesSvc;
   // Test data
   private static final String svcName = "apps";
-  private static final String siteId = "tacc";
+  private static final String filesSvcName = "files";
   private static final String adminUser = "testuser9";
 //TODO  private static final String adminUser = "admin";
   private static final String adminTenantName = "admin";
-  private static final String filesSvcName = "files";
   private static final String testUser0 = "testuser0";
   private static final String testUser1 = "testuser1";
   private static final String testUser2 = "testuser2";
@@ -85,8 +84,8 @@ public class AppsServiceTest
         bind(AppsServiceImpl.class).to(AppsService.class);
         bind(AppsServiceImpl.class).to(AppsServiceImpl.class);
         bind(AppsDaoImpl.class).to(AppsDao.class);
-        bindFactory(AppsServiceContextFactory.class).to(ServiceContext.class);
-        bind(SKClient.class).to(SKClient.class);
+        bindFactory(ServiceContextFactory.class).to(ServiceContext.class);
+        bindFactory(ServiceClientsFactory.class).to(ServiceClients.class);
       }
     });
     locator.inject(this);
@@ -98,7 +97,7 @@ public class AppsServiceTest
     // Initialize services
     svc = locator.getService(AppsService.class);
     svcImpl = locator.getService(AppsServiceImpl.class);
-    svcImpl.initService(siteId);
+    svcImpl.initService(RuntimeParameters.getInstance());
 
     // Initialize authenticated user and service
     authenticatedOwner1 = new AuthenticatedUser(ownerUser, tenantName, TapisThreadContext.AccountType.user.name(),

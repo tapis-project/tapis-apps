@@ -5,9 +5,7 @@ import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
-
 import static edu.utexas.tacc.tapis.shared.TapisConstants.SERVICE_NAME_APPS;
-import static edu.utexas.tacc.tapis.shared.TapisConstants.SERVICE_NAME_SYSTEMS;
 
 import org.glassfish.hk2.api.Factory;
 
@@ -16,15 +14,12 @@ import org.glassfish.hk2.api.Factory;
  * ServiceContext is a singleton used to manage JWTs.
  * Binding happens in AppsApplication.java
  */
-public class AppsServiceContextFactory implements Factory<ServiceContext>
+public class ServiceContextFactory implements Factory<ServiceContext>
 {
   @Override
   public ServiceContext provide()
   {
     ServiceContext svcContext = ServiceContext.getInstance();
-
-    String svcAdminTenant = null;
-    String tokenSvcUrl = null;
     RuntimeParameters runParms = RuntimeParameters.getInstance();
     try {
       svcContext.initServiceJWT(runParms.getSiteId(), SERVICE_NAME_APPS, runParms.getServicePassword());
@@ -32,7 +27,7 @@ public class AppsServiceContextFactory implements Factory<ServiceContext>
     }
     catch (TapisException | TapisClientException te)
     {
-      String msg = LibUtils.getMsg("APPLIB_SVCJWT_ERROR", svcAdminTenant, tokenSvcUrl);
+      String msg = LibUtils.getMsg("APPLIB_SVCJWT_ERROR", runParms.getSiteId(), SERVICE_NAME_APPS);
       throw new RuntimeException(msg, te);
     }
   }

@@ -2,7 +2,8 @@ package edu.utexas.tacc.tapis.apps.api;
 
 import javax.ws.rs.ApplicationPath;
 
-import edu.utexas.tacc.tapis.security.client.SKClient;
+import edu.utexas.tacc.tapis.apps.service.ServiceClientsFactory;
+import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
@@ -16,7 +17,7 @@ import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
 import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
-import edu.utexas.tacc.tapis.apps.service.AppsServiceContextFactory;
+import edu.utexas.tacc.tapis.apps.service.ServiceContextFactory;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -62,6 +63,7 @@ public class AppsApplication extends ResourceConfig
     // Output version information on startup
     System.out.println("**** Starting tapis-apps. Version: " + TapisUtils.getTapisFullVersion() + " ****");
 
+    // TODO clean up comments once filtering is implemented.
     // Setup and register Jersey's dynamic filtering
     // This allows for returning selected attributes in a return result
     //   using the query parameter select, e.g.
@@ -75,8 +77,10 @@ public class AppsApplication extends ResourceConfig
 //    register(new MoxyJsonConfig().resolver());
 // NOTE on Selectable feature: gave up on this (for now) as too cumbersome and limited. Awkward to specify attributes
 //      and could not get it to work when list of systems nested in results->search.
-// Use jackson as is done for files? Yes, breaks getting notes but allows for Credential
-// With a custom objectmapper and custom jsonobject serializer this now works for both notes and accessCredential
+
+    // Use jackson as opposed to Moxy.
+    // Initially there were problems with notes and authnCredential but with a custom objectmapper
+    // and custom jsonobject serializer the problems were resolved.
     register(JacksonFeature.class);
 
     // Needed for properly returning timestamps
@@ -91,7 +95,7 @@ public class AppsApplication extends ResourceConfig
 
     // We specify what packages JAX-RS should recursively scan to find annotations. By setting the value to the
     // top-level directory in all projects, we can use JAX-RS annotations in any tapis class. In particular, the filter
-    // classes in tapis-sharedapi will be discovered whenever that project is included as a maven dependency.
+    // classes in tapis-shared-api will be discovered whenever that project is included as a maven dependency.
     packages("edu.utexas.tacc.tapis");
 
     // Set the application name. Note that this has no impact on base URL
@@ -122,8 +126,8 @@ public class AppsApplication extends ResourceConfig
           bind(AppsServiceImpl.class).to(AppsService.class); // Used in Resource classes for most service calls
           bind(AppsServiceImpl.class).to(AppsServiceImpl.class); // Used in AppsResource for checkDB
           bind(AppsDaoImpl.class).to(AppsDao.class); // Used in service impl
-          bindFactory(AppsServiceContextFactory.class).to(ServiceContext.class); // Used in service impl and AppsResource
-          bind(SKClient.class).to(SKClient.class); // Used in service impl
+          bindFactory(ServiceContextFactory.class).to(ServiceContext.class); // Used in service impl and AppsResource
+          bindFactory(ServiceClientsFactory.class).to(ServiceClients.class); // Used in service impl
         }
       });
     } catch (Exception e) {
@@ -145,13 +149,14 @@ public class AppsApplication extends ResourceConfig
     if (StringUtils.isBlank(servicePort)) servicePort = "8080";
 
     // Set base protocol and port. If mainly running in k8s this may not need to be configurable.
-    final URI BASE_URI = URI.create("http://0.0.0.0:" + servicePort + "/");
+    final URI baseUri = URI.create("http://0.0.0.0:" + servicePort + "/");
+
     // Initialize the application container
     AppsApplication config = new AppsApplication();
     // Initialize the service
     // In order to instantiate our service class using HK2 we need to create an application handler
     //   which allows us to get an injection manager which is used to get a locator.
-    //   The locator allows us to get classes that have been registered using AbstractBinder.
+    //   The locator is used get classes that have been registered using AbstractBinder.
     // NOTE: As of Jersey 2.26 dependency injection was abstracted out to make it easier to use DI frameworks
     //       other than HK2, although finding docs and examples on how to do so seems difficult.
     ApplicationHandler handler = new ApplicationHandler(config);
@@ -159,9 +164,9 @@ public class AppsApplication extends ResourceConfig
     ServiceLocator locator = im.getInstance(ServiceLocator.class);
     AppsServiceImpl svcImpl = locator.getService(AppsServiceImpl.class);
     // Call the main service init method
-    svcImpl.initService(AppsApplication.getSiteId());
+    svcImpl.initService(RuntimeParameters.getInstance());
     // Create and start the server
-    final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config, false);
+    final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(baseUri, config, false);
     server.start();
   }
 }

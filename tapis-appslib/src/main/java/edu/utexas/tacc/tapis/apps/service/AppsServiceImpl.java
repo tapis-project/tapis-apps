@@ -10,6 +10,8 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
 import edu.utexas.tacc.tapis.security.client.gen.model.SkRole;
+import edu.utexas.tacc.tapis.shared.TapisConstants;
+import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -21,8 +23,8 @@ import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.security.client.SKClient;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
+import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
-import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
@@ -33,10 +35,10 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
-import edu.utexas.tacc.tapis.tenants.client.gen.model.Tenant;
 import static edu.utexas.tacc.tapis.apps.model.App.APIUSERID_VAR;
 import static edu.utexas.tacc.tapis.apps.model.App.OWNER_VAR;
 import static edu.utexas.tacc.tapis.apps.model.App.TENANT_VAR;
+import static edu.utexas.tacc.tapis.shared.TapisConstants.APPS_SERVICE;
 
 /*
  * Service level methods for Apps.
@@ -58,10 +60,6 @@ public class AppsServiceImpl implements AppsService
   private static final Set<Permission> READMODIFY_PERMS = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY));
   private static final String PERM_SPEC_PREFIX = "app:";
 
-  private static final String HDR_TAPIS_TOKEN = "X-Tapis-Token";
-  private static final String HDR_TAPIS_TENANT = "X-Tapis-Tenant";
-  private static final String HDR_TAPIS_USER = "X-Tapis-User";
-
   // TODO determine if certain services need special permissions
   private static final String FILES_SERVICE = "files";
   private static final String JOBS_SERVICE = "jobs";
@@ -80,13 +78,10 @@ public class AppsServiceImpl implements AppsService
   private AppsDao dao;
 
   @Inject
-  private SKClient skClient;
+  private ServiceClients serviceClients;
 
   @Inject
   private ServiceContext serviceContext;
-
-  // We must be running on a specific site and this will never change.
-  private static String siteId;
 
   // ************************************************************************
   // *********************** Public Methods *********************************
@@ -431,9 +426,10 @@ public class AppsServiceImpl implements AppsService
    * Initialize the service:
    *   Check for Apps admin role. If not found create it
    */
-  public void initService(String svcSiteId) throws TapisException, TapisClientException
+  public void initService(RuntimeParameters runParms) throws TapisException, TapisClientException
   {
-    siteId = svcSiteId;
+    // Initialize service context
+    serviceContext.initServiceJWT(runParms.getSiteId(), APPS_SERVICE, runParms.getServicePassword());
     // Make sure DB is present and updated to latest version using flyway
     dao.migrateDB();
   }
@@ -917,42 +913,37 @@ public class AppsServiceImpl implements AppsService
   // ************************************************************************
 
   /**
-   *  TODO: revisit this. There is now ServiceContext which will probably help.
    * Get Security Kernel client associated with specified tenant
-   * NOTE: This is public so test code can use it but it is not part of the public interface.
    * @param authenticatedUser - name of tenant
    * @return SK client
    * @throws TapisException - for Tapis related exceptions
    */
-  public SKClient getSKClient(AuthenticatedUser authenticatedUser) throws TapisException
+  private SKClient getSKClient(AuthenticatedUser authenticatedUser) throws TapisException
   {
-    // Use TenantManager to get tenant info. Needed for tokens and SK base URLs.
-    Tenant userTenant = TenantManager.getInstance().getTenant(authenticatedUser.getTenantId());
-
-    // Update SKClient on the fly. If this becomes a bottleneck we can add a cache.
-    // Get Security Kernel URL from the env or the tenants service. Env value has precedence.
-    //    String skURL = "https://dev.develop.tapis.io/v3";
-    String skURL = RuntimeParameters.getInstance().getSkSvcURL();
-    if (StringUtils.isBlank(skURL)) skURL = userTenant.getSecurityKernel();
-    if (StringUtils.isBlank(skURL)) throw new TapisException(LibUtils.getMsgAuth("APPLIB_CREATE_SK_URL_ERROR", authenticatedUser));
-    // TODO remove strip-off of everything after /v3 once tenant is updated or we do something different for base URL in auto-generated clients
-    // Strip off everything after the /v3 so we have a valid SK base URL
-    skURL = skURL.substring(0, skURL.indexOf("/v3") + 3);
-
-    skClient.setBasePath(skURL);
-    skClient.addDefaultHeader(HDR_TAPIS_TOKEN, serviceContext.getServiceJWT().getAccessJWT(siteId));
-
-    // For service jwt pass along oboTenant and oboUser in OBO headers
-    // For user jwt use authenticated user name and tenant in OBO headers
+    SKClient skClient;
+    String tenantName;
+    String userName;
+    // If service request use oboTenant and oboUser in OBO headers
+    // else for user request use authenticated user name and tenant in OBO headers
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()))
     {
-      skClient.addDefaultHeader(HDR_TAPIS_TENANT, authenticatedUser.getOboTenantId());
-      skClient.addDefaultHeader(HDR_TAPIS_USER, authenticatedUser.getOboUser());
+      tenantName = authenticatedUser.getOboTenantId();
+      userName = authenticatedUser.getOboUser();
     }
     else
     {
-      skClient.addDefaultHeader(HDR_TAPIS_TENANT, authenticatedUser.getTenantId());
-      skClient.addDefaultHeader(HDR_TAPIS_USER, authenticatedUser.getName());
+      tenantName = authenticatedUser.getTenantId();
+      userName = authenticatedUser.getName();
+    }
+    try
+    {
+      skClient = serviceClients.getClient(userName, tenantName, SKClient.class);
+    }
+    catch (Exception e)
+    {
+      String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY,
+                                   authenticatedUser.getTenantId(), authenticatedUser.getName());
+      throw new TapisException(msg, e);
     }
     return skClient;
   }
