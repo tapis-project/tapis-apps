@@ -9,7 +9,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   
-  <artifactId>api</artifactId>
+  <artifactId>tapis-appsapi</artifactId>
   <packaging>jar</packaging>
   
   <name>Tapis Applications API</name>

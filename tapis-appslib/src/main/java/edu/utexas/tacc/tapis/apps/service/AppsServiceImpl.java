@@ -174,9 +174,6 @@ public class AppsServiceImpl implements AppsService
       // Add permission roles for the app. This is only used for filtering apps based on who is authz
       //   to READ, so no other roles needed.
       roleNameR = App.ROLE_READ_PREFIX + appSeqId;
-      // TODO/TBD: Currently app owner owns the role. Plan is to have apps service own the role
-      //           This will need coordinated changes with SK
-      //   might need to munge app tenant into the role name (?)
       // TODO/TBD: Keep the delete? Also, currently it fails due to skauthz failure
       // Delete role, because role may already exist due to failure of rollback
 //      _log.error("DELETE roleNameR="+ roleNameR);
@@ -1166,18 +1163,12 @@ public class AppsServiceImpl implements AppsService
           throws TapisException, TapisClientException
   {
     // If requester is a service or an admin then all apps allowed
-    // TODO: for all services or just some, such as files and jobs?
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()) ||
         hasAdminRole(authenticatedUser, null, null)) return null;
     var appSeqIDs = new ArrayList<Integer>();
     // Get roles for user and extract app sequence IDs
-    // TODO: Need a way to make sure roles that a user has created and assigned to themselves are not included
-    //       Maybe a special role name? Or a search that only returns roles owned by "apps"
-    // TODO: Is it possible for a user to already have roles in this format that are assigned to them but not owned by "apps"?
-    //       If yes then it is a problem.
     List<String> userRoles = getSKClient(authenticatedUser).getUserRoles(appTenantName, authenticatedUser.getName());
     // Find roles of the form Apps_R_<id> and generate a list of sequence IDs
-    // TODO Create a function and turn this into a stream/lambda
     for (String role: userRoles)
     {
       if (role.startsWith(App.ROLE_READ_PREFIX))

@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
+
+import edu.utexas.tacc.tapis.shared.utils.SkConstants;
+import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 
 /*
  * Tapis Application
@@ -27,6 +29,9 @@ public final class App
   // *********************** Constants **************************************
   // ************************************************************************
 
+  // TODO: Use special role name that cannot be created by a user. E.g., prefix with $! or $~ or something else? Work with SK.
+  //       currently not allowed by SK
+//  public static final String ROLE_READ_PREFIX = SKConstants.INTERNAL_ROLE_PREFIX + "Apps_R_";
   public static final String ROLE_READ_PREFIX = "Apps_R_";
   // Allowed substitution variables
   public static final String APIUSERID_VAR = "${apiUserId}";

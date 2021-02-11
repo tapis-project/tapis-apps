@@ -31,10 +31,23 @@ import org.jooq.tools.StringUtils;
 
 import java.net.URI;
 
-// The path here is appended to the context root and is configured to work when invoked in a standalone
-// container (command line) and in an IDE (eclipse).
-// NOTE: When running using tomcat this path should match the war file name (v3#apps.war) for running
-//       in IntelliJ IDE as well as from a docker container.
+/*
+ * Main startup class for the web application. Uses Jersey and Grizzly frameworks.
+ *   Performs setup for HK2 dependency injection.
+ *   Registers packages and features for Jersey.
+ *   Gets runtime parameters from the environment.
+ *   Initializes the service:
+ *     Tapis site id.
+ *     DB creation or migration
+ *   Starts the Grizzly server.
+ *
+ * The path here is appended to the context root and is configured to work when invoked in a standalone
+ * container (command line) and in an IDE (such as eclipse).
+ * ApplicationPath set to "/" since each resource class includes "/v3/apps" in the
+ *     path set at the class level. See AppResource.java, PermsResource.java, etc.
+ *     This has been found to be a more robust scheme for keeping startup working for both
+ *     running in an IDE and standalone.
+ */
 @ApplicationPath("/")
 public class AppsApplication extends ResourceConfig
 {
@@ -67,6 +80,7 @@ public class AppsApplication extends ResourceConfig
     register(JacksonFeature.class);
 
     // Needed for properly returning timestamps
+    // Also allows for setting a breakpoint when response is being constructed.
     register(ObjectMapperContextResolver.class);
 
     // Register classes needed for returning a standard Tapis response for non-Tapis exceptions.
@@ -81,7 +95,7 @@ public class AppsApplication extends ResourceConfig
     packages("edu.utexas.tacc.tapis");
 
     // Set the application name. Note that this has no impact on base URL
-    setApplicationName("apps");
+    setApplicationName(TapisConstants.SERVICE_NAME_APPS);
 
     // Perform remaining init steps in try block so we can print a fatal error message if something goes wrong.
     try {
@@ -112,7 +126,6 @@ public class AppsApplication extends ResourceConfig
           bind(SKClient.class).to(SKClient.class); // Used in service impl
         }
       });
-
     } catch (Exception e) {
       // This is a fatal error
       System.out.println("**** FAILURE TO INITIALIZE: Tapis Applications Service ****");

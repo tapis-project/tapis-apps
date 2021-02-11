@@ -182,7 +182,6 @@ public class AppsResource
       RespBasic r = new RespBasic("Readiness tenants check failed. Check number: " + checkNum);
       String msg = MsgUtils.getMsg("TAPIS_NOT_READY", "Apps Service");
       // We failed so set the log limiter check.
-      // TODO/TBD Do we need to also check exception type? Info would get lost if exception type changes.
       if (checkTenantsOK.toggleOff())
       {
         _log.warn(msg, readyCheckException);
@@ -203,7 +202,6 @@ public class AppsResource
       RespBasic r = new RespBasic("Readiness JWT check failed. Check number: " + checkNum);
       String msg = MsgUtils.getMsg("TAPIS_NOT_READY", "Apps Service");
       // We failed so set the log limiter check.
-      // TODO/TBD Do we need to also check exception type? Info would get lost if exception type changes.
       if (checkJWTOK.toggleOff())
       {
         _log.warn(msg, readyCheckException);
@@ -224,7 +222,6 @@ public class AppsResource
       RespBasic r = new RespBasic("Readiness DB check failed. Check number: " + checkNum);
       String msg = MsgUtils.getMsg("TAPIS_NOT_READY", "Apps Service");
       // We failed so set the log limiter check.
-      // TODO/TBD Do we need to also check exception type? Info would get lost if exception type changes.
       if (checkDBOK.toggleOff())
       {
         _log.warn(msg, readyCheckException);
@@ -241,8 +238,12 @@ public class AppsResource
     // ---------------------------- Success -------------------------------
     // Create the response payload.
     RespBasic resp = new RespBasic("Ready check passed. Count: " + checkNum);
-    return Response.status(Status.OK).entity(TapisRestUtils.createSuccessResponse(
-            MsgUtils.getMsg("TAPIS_READY", "Apps Service"), false, resp)).build();
+    // Manually create a success response with git info included in version
+    resp.status = ResponseWrapper.RESPONSE_STATUS.success.name();
+    resp.message = MsgUtils.getMsg("TAPIS_READY", "Applications Service");
+    resp.version = TapisUtils.getTapisFullVersion();
+    String respStr = TapisGsonUtils.getGson().toJson(resp);
+    return Response.status(Status.OK).entity(respStr).build();
   }
 
   /* **************************************************************************** */

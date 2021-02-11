@@ -5,7 +5,7 @@
 --   CREATE DATABASE tapisappdb ENCODING='UTF8' LC_COLLATE='en_US.utf8' LC_CTYPE='en_US.utf8';
 --   CREATE USER tapis_app WITH ENCRYPTED PASSWORD '<password>'
 --   GRANT ALL PRIVILEGES ON DATABASE tapisappdb TO tapis_app;
--- Fast way to check for table. Might use this at startup during an init phase.
+-- Fast way to check for table:
 --   SELECT to_regclass('tapis_app.apps');
 --
 --
@@ -28,7 +28,6 @@
 CREATE SCHEMA IF NOT EXISTS tapis_app AUTHORIZATION tapis_app;
 ALTER ROLE tapis_app SET search_path = 'tapis_app';
 SET search_path TO tapis_app;
--- SET search_path TO public;
 
 -- Set permissions
 -- GRANT CONNECT ON DATABASE tapisappdb TO tapis_app;
@@ -81,8 +80,8 @@ COMMENT ON COLUMN apps.updated IS 'UTC time for when record was last updated';
 -- Basic app attributes that can vary by version
 CREATE TABLE apps_versions
 (
-    seq_id  SERIAL PRIMARY KEY,
-    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    seq_id SERIAL PRIMARY KEY,
+    app_seq_id INTEGER REFERENCES apps(seq_id) ON DELETE CASCADE,
     version VARCHAR(64) NOT NULL,
     description VARCHAR(2048),
     runtime runtime_type NOT NULL,
@@ -138,7 +137,7 @@ COMMENT ON COLUMN apps_versions.updated IS 'UTC time for when record was last up
 CREATE TABLE app_updates
 (
     seq_id SERIAL PRIMARY KEY,
-    app_seq_id SERIAL REFERENCES apps(seq_id) ON DELETE CASCADE,
+    app_seq_id INTEGER REFERENCES apps(seq_id) ON DELETE CASCADE,
     app_ver_seq_id INTEGER,
     user_name VARCHAR(60) NOT NULL,
     user_tenant VARCHAR(24) NOT NULL,
@@ -165,7 +164,7 @@ COMMENT ON COLUMN app_updates.created IS 'UTC time for when record was created';
 CREATE TABLE file_inputs
 (
     seq_id SERIAL PRIMARY KEY,
-    app_ver_seq_id SERIAL REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
+    app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     source_url TEXT,
     target_path TEXT,
     in_place BOOLEAN NOT NULL DEFAULT false,
@@ -185,8 +184,8 @@ COMMENT ON COLUMN file_inputs.app_ver_seq_id IS 'Sequence id of application requ
 -- Notification subscriptions table
 CREATE TABLE notification_subscriptions
 (
-    seq_id     SERIAL PRIMARY KEY,
-    app_ver_seq_id SERIAL REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
+    seq_id SERIAL PRIMARY KEY,
+    app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     filter VARCHAR(128) -- TODO length?
 );
 ALTER TABLE notification_subscriptions OWNER TO tapis_app;
@@ -194,8 +193,8 @@ ALTER TABLE notification_subscriptions OWNER TO tapis_app;
 -- Notification mechanisms table
 CREATE TABLE notification_mechanisms
 (
-    seq_id     SERIAL PRIMARY KEY,
-    subscription_seq_id SERIAL REFERENCES notification_subscriptions(seq_id) ON DELETE CASCADE,
+    seq_id SERIAL PRIMARY KEY,
+    subscription_seq_id INTEGER REFERENCES notification_subscriptions(seq_id) ON DELETE CASCADE,
     mechanism notification_mechanism_type,
     webhook_url VARCHAR(128), -- TODO length?
     email_address VARCHAR(128) -- TODO length?
@@ -212,7 +211,7 @@ ALTER TABLE notification_mechanisms OWNER TO tapis_app;
 CREATE TABLE app_args
 (
     seq_id SERIAL PRIMARY KEY,
-    app_ver_seq_id SERIAL REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
+    app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     arg_val VARCHAR(128) NOT NULL DEFAULT '',
     meta_name VARCHAR(128) NOT NULL DEFAULT '',
     meta_description VARCHAR(128) NOT NULL DEFAULT '',
@@ -228,7 +227,7 @@ COMMENT ON COLUMN app_args.app_ver_seq_id IS 'Sequence id of application';
 CREATE TABLE container_args
 (
     seq_id SERIAL PRIMARY KEY,
-    app_ver_seq_id SERIAL REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
+    app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     arg_val VARCHAR(128) NOT NULL DEFAULT '',
     meta_name VARCHAR(128) NOT NULL DEFAULT '',
     meta_description VARCHAR(128) NOT NULL DEFAULT '',
@@ -244,7 +243,7 @@ COMMENT ON COLUMN container_args.app_ver_seq_id IS 'Sequence id of application';
 CREATE TABLE scheduler_options
 (
     seq_id SERIAL PRIMARY KEY,
-    app_ver_seq_id SERIAL REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
+    app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     arg_val VARCHAR(128) NOT NULL DEFAULT '',
     meta_name VARCHAR(128) NOT NULL DEFAULT '',
     meta_description VARCHAR(128) NOT NULL DEFAULT '',

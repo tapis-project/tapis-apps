@@ -28,6 +28,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultBoolean;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.http.server.Request;
@@ -48,6 +49,7 @@ import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.sharedapi.dto.ResponseWrapper;
 import edu.utexas.tacc.tapis.sharedapi.responses.RespAbstract;
+import edu.utexas.tacc.tapis.sharedapi.responses.RespBoolean;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisJSONException;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
@@ -66,7 +68,7 @@ import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultResourceUrl;
 /*
  * JAX-RS REST resource for a Tapis App (edu.utexas.tacc.tapis.apps.model.App)
  * jax-rs annotations map HTTP verb + endpoint to method invocation and map query parameters.
- *  NOTE: For OpenAPI spec please see file located in repo tapis-client-java at apps-client/AppsAPI.yaml
+ *  NOTE: For OpenAPI spec please see repo openapi-apps, file AppsAPI.yaml
  *
  * NOTE: The "pretty" query parameter is available for all endpoints. It is processed in
  *       QueryParametersRequestFilter.java.
@@ -809,6 +811,53 @@ public class AppResource
     RespChangeCount resp1 = new RespChangeCount(count);
     return Response.status(Status.OK).entity(TapisRestUtils.createSuccessResponse(
       MsgUtils.getMsg("TAPIS_DELETED", "App", appId), prettyPrint, resp1)).build();
+  }
+
+  /**
+   * isEnabled
+   * Check if application is enabled.
+   * @param appId - name of the app
+   * @param securityContext - user identity
+   * @return Response with app object as the result
+   */
+  @GET
+  @Path("{appId}/isEnabled")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response isEnabled(@PathParam("appId") String appId,
+                         @Context SecurityContext securityContext)
+  {
+    String opName = "isEnabled";
+    if (_log.isTraceEnabled()) logRequest(opName);
+
+    // Check that we have all we need from the context, the tenant name and apiUserId
+    // Utility method returns null if all OK and appropriate error response if there was a problem.
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
+    boolean prettyPrint = threadContext.getPrettyPrint();
+    Response resp = ApiUtils.checkContext(threadContext, prettyPrint);
+    if (resp != null) return resp;
+
+    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
+    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+
+    boolean isEnabled;
+    try
+    {
+      isEnabled = appsService.isEnabled(authenticatedUser, appId);
+    }
+    catch (Exception e)
+    {
+      String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", authenticatedUser, appId, e.getMessage());
+      _log.error(msg, e);
+      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+    }
+
+    // ---------------------------- Success -------------------------------
+    // Success means we made the check
+    ResultBoolean respResult = new ResultBoolean();
+    respResult.aBool = isEnabled;
+    RespBoolean resp1 = new RespBoolean(respResult);
+    return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
   }
 
   /* **************************************************************************** */

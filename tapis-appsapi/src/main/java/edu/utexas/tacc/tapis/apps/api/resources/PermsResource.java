@@ -40,7 +40,7 @@ import edu.utexas.tacc.tapis.apps.service.AppsService;
 
 /*
  * JAX-RS REST resource for Tapis App permissions
- *  NOTE: For OpenAPI spec please see file located in repo tapis-client-java at apps-client/AppsAPI.yaml
+ *  NOTE: For OpenAPI spec please see repo openapi-apps file AppsAPI.yaml
  * Annotations map HTTP verb + endpoint to method invocation.
  * Permissions are stored in the Security Kernel
  *
