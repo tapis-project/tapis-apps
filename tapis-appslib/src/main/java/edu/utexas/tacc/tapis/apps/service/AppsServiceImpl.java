@@ -110,6 +110,7 @@ public class AppsServiceImpl implements AppsService
     AppOperation op = AppOperation.create;
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (app == null) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", authenticatedUser));
+    _log.trace(LibUtils.getMsgAuth("APPLIB_CREATE_TRACE", authenticatedUser, scrubbedText));
     // Extract various names for convenience
     String tenantName = authenticatedUser.getTenantId();
     String apiUserId = authenticatedUser.getName();

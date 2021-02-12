@@ -186,12 +186,14 @@ public class AppResource
     // Create an app from the request
     App app = createAppFromRequest(req, rawJson);
 
+    // So far no need to scrub out secrets, so scrubbed and raw are the same.
+    String scrubbedJson = rawJson;
+    _log.trace(ApiUtils.getMsgAuth("APPAPI_CREATE_TRACE", authenticatedUser, scrubbedJson));
+
     // Fill in defaults and check constraints on App attributes
     resp = validateApp(app, authenticatedUser, prettyPrint);
     if (resp != null) return resp;
 
-    // So far no need to scrub out secrets, so scrubbed and raw are the same.
-    String scrubbedJson = rawJson;
     // ---------------------------- Make service call to create the app -------------------------------
     // Update tenant name and pull out app name for convenience
     app.setTenant(authenticatedUser.getTenantId());
