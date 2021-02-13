@@ -65,6 +65,10 @@ public class AppsServiceImpl implements AppsService
   private static final String JOBS_SERVICE = "jobs";
   private static final Set<String> SVCLIST_READ = new HashSet<>(Set.of(FILES_SERVICE, JOBS_SERVICE));
 
+  // Message keys
+  private static final String ERROR_ROLLBACK = "APPLIB_ERROR_ROLLBACK";
+  private static final String NOT_FOUND = "APPLIB_NOT_FOUND";
+
   // ************************************************************************
   // *********************** Enums ******************************************
   // ************************************************************************
@@ -193,16 +197,16 @@ public class AppsServiceImpl implements AppsService
       // Rollback
       // Remove app from DB
       if (appVerSeqId != -1) try {dao.hardDeleteApp(appTenantName, appId); }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appId, "hardDelete", e.getMessage()));}
+      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "hardDelete", e.getMessage()));}
       // Remove perms
       try { skClient.revokeUserPermission(appTenantName, app.getOwner(), appsPermSpecALL); }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appId, "revokePermOwner", e.getMessage()));}
+      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "revokePermOwner", e.getMessage()));}
       // Remove role assignments and roles
       if (!StringUtils.isBlank(roleNameR)) {
         try { skClient.revokeUserRole(appTenantName, app.getOwner(), roleNameR);  }
-        catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appId, "revokeRoleOwner", e.getMessage()));}
+        catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "revokeRoleOwner", e.getMessage()));}
         try { skClient.deleteRoleByName(appTenantName, roleNameR);  }
-        catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appId, "deleteRole", e.getMessage()));}
+        catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "deleteRole", e.getMessage()));}
       }
       throw e0;
     }
@@ -251,7 +255,7 @@ public class AppsServiceImpl implements AppsService
     // App must already exist and not be soft deleted
     if (!dao.checkForApp(appTenantName, appId, false))
     {
-      throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", authenticatedUser, appId));
+      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId));
     }
 
     // Retrieve the app being patched and create fully populated App with changes merged in
@@ -307,7 +311,7 @@ public class AppsServiceImpl implements AppsService
 
     // App must already exist and not be soft deleted
     if (!dao.checkForApp(appTenantName, appId, false))
-         throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", authenticatedUser, appId));
+         throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId));
 
     // Retrieve the most recently created version of the app being updated
     App tmpApp = dao.getApp(appTenantName, appId, null);
@@ -341,15 +345,15 @@ public class AppsServiceImpl implements AppsService
     catch (Exception e0)
     {
       // Something went wrong. Attempt to undo all changes and then re-throw the exception
-      try { dao.updateAppOwner(authenticatedUser, appSeqId, oldOwnerName); } catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appId, "updateOwner", e.getMessage()));}
+      try { dao.updateAppOwner(authenticatedUser, appSeqId, oldOwnerName); } catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "updateOwner", e.getMessage()));}
       try { skClient.revokeUserRole(appTenantName, newOwnerName, roleNameR); }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appId, "revokeRoleNewOwner", e.getMessage()));}
+      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "revokeRoleNewOwner", e.getMessage()));}
       try { skClient.revokeUserPermission(appTenantName, newOwnerName, appsPermSpec); }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appId, "revokePermNewOwner", e.getMessage()));}
+      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "revokePermNewOwner", e.getMessage()));}
       try { skClient.grantUserPermission(appTenantName, oldOwnerName, appsPermSpec); }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appId, "grantPermOldOwner", e.getMessage()));}
+      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "grantPermOldOwner", e.getMessage()));}
       try { skClient.grantUserRole(appTenantName, oldOwnerName, roleNameR); }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth("APPLIB_ERROR_ROLLBACK", authenticatedUser, appId, "grantRoleOldOwner", e.getMessage()));}
+      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "grantRoleOldOwner", e.getMessage()));}
       throw e0;
     }
     return 1;
@@ -713,8 +717,11 @@ public class AppsServiceImpl implements AppsService
   // -----------------------------------------------------------------------
 
   /**
-   * Grant permissions to a user for an app
-   * NOTE: This only impacts the default user role
+   * Grant permissions and roles to a user for an app.
+   * If READ or MODIFY after grant then grant special role to the user.
+   * The role is used when fetching applications the user is allowed to view.
+   * Grant of MODIFY implies grant of READ
+   * NOTE: Permissions only impact the default user role
    * @param authenticatedUser - principal user containing tenant and user info
    * @param appId - name of app
    * @param userName - Target user for operation
@@ -731,68 +738,90 @@ public class AppsServiceImpl implements AppsService
     AppOperation op = AppOperation.grantPerms;
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId) || StringUtils.isBlank(userName))
-         throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", authenticatedUser));
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_SYSTEM", authenticatedUser));
     String appTenantName = authenticatedUser.getTenantId();
     // For service request use oboTenant for tenant associated with the app
-    if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
+    if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()))
+    {
+      appTenantName = authenticatedUser.getOboTenantId();
+    }
 
-    // If app does not exist or has been soft deleted then throw an exception
+    // If system does not exist or has been soft deleted then throw an exception
     if (!dao.checkForApp(appTenantName, appId, false))
-      throw new TapisException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", authenticatedUser, appId));
+      throw new TapisException(LibUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId));
 
     // ------------------------- Check service level authorization -------------------------
     checkAuth(authenticatedUser, op, appId, null, null, null);
 
-    int appSeqId = dao.getAppSeqId(appTenantName, appId);
-
-    // Extract various names for convenience
-    String tenantName = authenticatedUser.getTenantId();
+    int seqId = dao.getAppSeqId(appTenantName, appId);
 
     // Check inputs. If anything null or empty throw an exception
-    if (StringUtils.isBlank(tenantName) || permissions == null || permissions.isEmpty())
+    if (permissions == null || permissions.isEmpty())
     {
       throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT"));
     }
+
+    // Grant of MODIFY implies grant of READ
+    if (permissions.contains(Permission.MODIFY)) permissions.add(Permission.READ);
 
     // Create a set of individual permSpec entries based on the list passed in
     Set<String> permSpecSet = getPermSpecSet(appTenantName, appId, permissions);
 
     // Get the Security Kernel client
     var skClient = getSKClient(authenticatedUser);
+    // Special role for view access
+    String roleNameR = App.ROLE_READ_PREFIX + seqId;
 
-    // TODO: Mutliple txns. Need to handle failure
-    // TODO: Use try/catch to rollback in case of failure.
+    // Determine if user can currently view the app
+    boolean userCanView = skClient.hasRole(appTenantName, userName, roleNameR);
 
     // Assign perms and roles to user.
+    // Start of updates. Will need to rollback on failure.
     try
     {
-      // Grant permission roles as appropriate, RoleR
-      String roleNameR = App.ROLE_READ_PREFIX + appSeqId;
-      for (Permission perm : permissions)
-      {
-        if (perm.equals(Permission.READ)) skClient.grantUserRole(appTenantName, userName, roleNameR);
-      }
       // Assign perms to user. SK creates a default role for the user
       for (String permSpec : permSpecSet)
       {
         skClient.grantUserPermission(appTenantName, userName, permSpec);
       }
+      // If user could not view before but now can then grant special role.
+      if (!userCanView && isPermittedAny(authenticatedUser, appTenantName, userName, appId, READMODIFY_PERMS))
+      {
+        skClient.grantUserRole(appTenantName, userName, roleNameR);
+      }
     }
-    // If tapis client exception then log error and convert to TapisException
     catch (TapisClientException tce)
     {
-      _log.error(tce.toString());
-      throw new TapisException(LibUtils.getMsgAuth("APPLIB_PERM_SK_ERROR", authenticatedUser, appSeqId, op.name()), tce);
+      // Rollback
+      // Something went wrong. Attempt to undo all changes and then re-throw the exception
+      String msg = LibUtils.getMsgAuth("APPLIB_PERM_ERROR_ROLLBACK", authenticatedUser, appId, tce.getMessage());
+      _log.error(msg);
+
+      // NOTE: We do not have to worry about revoking the role because if it is granted it is granted last in the
+      //       sequence of operations above. So if there is an exception it was never granted.
+
+      // Revoke permissions that may have been granted.
+      for (String permSpec : permSpecSet)
+      {
+        try { skClient.revokeUserPermission(appTenantName, userName, permSpec); }
+        catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "revokePerm", e.getMessage()));}
+      }
+      // Convert to TapisException and re-throw
+      throw new TapisException(LibUtils.getMsgAuth("APPLIB_PERM_SK_ERROR", authenticatedUser, appId, op.name()), tce);
     }
+
     // Construct Json string representing the update
     String updateJsonStr = TapisGsonUtils.getGson().toJson(permissions);
     // Create a record of the update
-    dao.addUpdateRecord(authenticatedUser, appSeqId, -1, op, updateJsonStr, updateText);
+    dao.addUpdateRecord(authenticatedUser, seqId, -1, op, updateJsonStr, updateText);
   }
 
   /**
    * Revoke permissions from a user for an app
-   * NOTE: This only impacts the default user role
+   * If after revoking the user does not have READ or MODIFY then also revoke the special role used to filter
+   *   for users having view access.
+   * Revoke of READ implies revoke of MODIFY
+   * NOTE: Permissions only impact the default user role
    * @param authenticatedUser - principal user containing tenant and user info
    * @param appId - name of app
    * @param userName - Target user for operation
@@ -809,7 +838,7 @@ public class AppsServiceImpl implements AppsService
     AppOperation op = AppOperation.revokePerms;
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId) || StringUtils.isBlank(userName))
-         throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", authenticatedUser));
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_SYSTEM", authenticatedUser));
     String appTenantName = authenticatedUser.getTenantId();
     // For service request use oboTenant for tenant associated with the app
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
@@ -822,41 +851,65 @@ public class AppsServiceImpl implements AppsService
     checkAuth(authenticatedUser, op, appId, null, null, null);
 
     // Retrieve the sequence Id. Used to add an update record.
-    int appSeqId = dao.getAppSeqId(appTenantName, appId);
-
-    // Extract various names for convenience
-    String tenantName = authenticatedUser.getTenantId();
+    int seqId = dao.getAppSeqId(appTenantName, appId);
 
     // Check inputs. If anything null or empty throw an exception
-    if (StringUtils.isBlank(tenantName) || permissions == null || permissions.isEmpty())
+    if (permissions == null || permissions.isEmpty())
     {
       throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT"));
     }
 
+    // Revoke of READ implies revoke of MODIFY
+    if (permissions.contains(Permission.READ)) permissions.add(Permission.MODIFY);
+
     var skClient = getSKClient(authenticatedUser);
     int changeCount;
+    String roleNameR = App.ROLE_READ_PREFIX + seqId;
 
-    // TODO: Mutliple txns. Need to handle failure
-    // TODO: Use try/catch to rollback in case of failure.
+    // Determine if user can currently view the system
+    boolean userCanView = skClient.hasRole(appTenantName, userName, roleNameR);
+    // Determine current set of user permissions
+    var userPermSet = getUserPermSet(skClient, userName, appTenantName, appId);
 
-    try {
-      // Revoke permission roles as appropriate, RoleR
-      String roleNameR = App.ROLE_READ_PREFIX + appSeqId;
-      for (Permission perm : permissions) {
-        if (perm.equals(Permission.READ)) skClient.revokeUserRole(appTenantName, userName, roleNameR);
-      }
+    try
+    {
+      // Revoke perms
       changeCount = revokePermissions(skClient, appTenantName, appId, userName, permissions);
+      // If user was able to view and can no longer view then revoke special role.
+      if (userCanView && permissions.contains(Permission.READ))
+      {
+        skClient.revokeUserRole(appTenantName, userName, roleNameR);
+      }
     }
     catch (TapisClientException tce)
     {
-      // If tapis client exception then log error and convert to TapisException
-      _log.error(tce.toString());
+      // Rollback
+      // Something went wrong. Attempt to undo all changes and then re-throw the exception
+      String msg = LibUtils.getMsgAuth("APPLIB_PERM_ERROR_ROLLBACK", authenticatedUser, appId, tce.getMessage());
+      _log.error(msg);
+
+      // NOTE: We do not have to worry about granting the role because if it is revoked it is revoked last in the
+      //       sequence of operations above. So if there is an exception it was never revoked.
+
+      // Grant permissions that may have been revoked and that the user previously held.
+      for (Permission perm : permissions)
+      {
+        if (userPermSet.contains(perm))
+        {
+          String permSpec = getPermSpecStr(appTenantName, appId, perm);
+          try { skClient.grantUserPermission(appTenantName, userName, permSpec); }
+          catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "grantPerm", e.getMessage()));}
+        }
+      }
+
+      // Convert to TapisException and re-throw
       throw new TapisException(LibUtils.getMsgAuth("APPLIB_PERM_SK_ERROR", authenticatedUser, appId, op.name()), tce);
     }
+
     // Construct Json string representing the update
     String updateJsonStr = TapisGsonUtils.getGson().toJson(permissions);
     // Create a record of the update
-    dao.addUpdateRecord(authenticatedUser, appSeqId, -1, op, updateJsonStr, updateText);
+    dao.addUpdateRecord(authenticatedUser, seqId, -1, op, updateJsonStr, updateText);
     return changeCount;
   }
 
@@ -889,24 +942,8 @@ public class AppsServiceImpl implements AppsService
     checkAuth(authenticatedUser, op, appId, null, userName, null);
 
     // Use Security Kernel client to check for each permission in the enum list
-    var userPerms = new HashSet<Permission>();
     var skClient = getSKClient(authenticatedUser);
-    for (Permission perm : Permission.values())
-    {
-      String permSpec = PERM_SPEC_PREFIX + appTenantName + ":" + perm.name() + ":" + appId;
-      try
-      {
-        Boolean isAuthorized = skClient.isPermitted(appTenantName, userName, permSpec);
-        if (Boolean.TRUE.equals(isAuthorized)) userPerms.add(perm);
-      }
-      // If tapis client exception then log error and convert to TapisException
-      catch (TapisClientException tce)
-      {
-        _log.error(tce.toString());
-        throw new TapisException(LibUtils.getMsgAuth("APPLIB_PERM_SK_ERROR", authenticatedUser, appId, op.name()), tce);
-      }
-    }
-    return userPerms;
+    return getUserPermSet(skClient, userName, appTenantName, appId);
   }
 
   // ************************************************************************
@@ -991,6 +1028,27 @@ public class AppsServiceImpl implements AppsService
       _log.error(allErrors);
       throw new IllegalStateException(allErrors);
     }
+  }
+
+  /**
+   * Retrieve set of user permissions given sk client, user, tenant, id
+   * @param skClient - SK client
+   * @param userName - name of user
+   * @param tenantName - name of tenant
+   * @param resourceId - Id of resource
+   * @return - Set of Permissions for the user
+   */
+  private static Set<Permission> getUserPermSet(SKClient skClient, String userName, String tenantName,
+                                                String resourceId)
+          throws TapisClientException
+  {
+    var userPerms = new HashSet<Permission>();
+    for (Permission perm : Permission.values())
+    {
+      String permSpec = PERM_SPEC_PREFIX + tenantName + ":" + perm.name() + ":" + resourceId;
+      if (skClient.isPermitted(tenantName, userName, permSpec)) userPerms.add(perm);
+    }
+    return userPerms;
   }
 
   /**
@@ -1250,9 +1308,6 @@ public class AppsServiceImpl implements AppsService
   private void removeSKArtifacts(AuthenticatedUser authenticatedUser, String appId, AppOperation op)
           throws TapisException, TapisClientException
   {
-    // Extract various names for convenience
-    String tenantName = authenticatedUser.getTenantId();
-    String apiUserId = authenticatedUser.getName();
     // For service request use oboTenant for tenant associated with the app
     String appTenantName = authenticatedUser.getTenantId();
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
@@ -1268,8 +1323,12 @@ public class AppsServiceImpl implements AppsService
     String permSpec = PERM_SPEC_PREFIX + appTenantName + ":%:" + appId;
     var userNames = skClient.getUsersWithPermission(appTenantName, permSpec);
     // Revoke all perms for all users
-    for (String userName : userNames) {
+    for (String userName : userNames)
+    {
       revokePermissions(skClient, appTenantName, appId, userName, ALL_PERMS);
+      // Remove wildcard perm
+      String wildCardPermSpec = getPermSpecAllStr(appTenantName, appId);
+      skClient.revokeUserPermission(appTenantName, userName, wildCardPermSpec);
     }
     // If role is present then remove role assignments and roles
     // TODO: Ask SK to either provide checkForRole() or return null if role does not exist.

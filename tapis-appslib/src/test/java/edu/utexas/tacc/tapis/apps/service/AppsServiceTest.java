@@ -62,6 +62,7 @@ public class AppsServiceTest
   private static final String testUser1 = "testuser1";
   private static final String testUser2 = "testuser2";
   private static final String testUser3 = "testuser3";
+  private static final Set<Permission> testPermsALL = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY, Permission.EXECUTE));
   private static final Set<Permission> testPermsREADMODIFY = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY));
   private static final Set<Permission> testPermsREADEXECUTE = new HashSet<>(Set.of(Permission.READ, Permission.EXECUTE));
   private static final Set<Permission> testPermsREAD = new HashSet<>(Set.of(Permission.READ));
@@ -393,18 +394,19 @@ public class AppsServiceTest
     int appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
     Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
     // Create user perms for the app
-    svc.grantUserPermissions(authenticatedOwner1, app0.getId(), testUser1, testPermsREADMODIFY, scrubbedJson);
+    Set<Permission> permsToCheck = testPermsALL;
+    svc.grantUserPermissions(authenticatedOwner1, app0.getId(), testUser1, permsToCheck, scrubbedJson);
     // Get the app perms for the user and make sure permissions are there
     Set<Permission> userPerms = svc.getUserPermissions(authenticatedOwner1, app0.getId(), testUser1);
     Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
-    Assert.assertEquals(userPerms.size(), testPermsREADMODIFY.size(), "Incorrect number of perms returned.");
-    for (Permission perm: testPermsREADMODIFY) { if (!userPerms.contains(perm)) Assert.fail("User perms should contain permission: " + perm.name()); }
+    Assert.assertEquals(userPerms.size(), permsToCheck.size(), "Incorrect number of perms returned.");
+    for (Permission perm: permsToCheck) { if (!userPerms.contains(perm)) Assert.fail("User perms should contain permission: " + perm.name()); }
     // Remove perms for the user. Should return a change count of 2
-    int changeCount = svc.revokeUserPermissions(authenticatedOwner1, app0.getId(), testUser1, testPermsREADMODIFY, scrubbedJson);
-    Assert.assertEquals(changeCount, 2, "Change count incorrect when revoking permissions.");
+    int changeCount = svc.revokeUserPermissions(authenticatedOwner1, app0.getId(), testUser1, permsToCheck, scrubbedJson);
+    Assert.assertEquals(changeCount, permsToCheck.size(), "Change count incorrect when revoking permissions.");
     // Get the app perms for the user and make sure permissions are gone.
     userPerms = svc.getUserPermissions(authenticatedOwner1, app0.getId(), testUser1);
-    for (Permission perm: testPermsREADMODIFY) { if (userPerms.contains(perm)) Assert.fail("User perms should not contain permission: " + perm.name()); }
+    for (Permission perm: permsToCheck) { if (userPerms.contains(perm)) Assert.fail("User perms should not contain permission: " + perm.name()); }
   }
 
   // Test various cases when app is missing
