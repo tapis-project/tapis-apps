@@ -13,7 +13,7 @@ MAINTAINER CIC Support <cicsupport@tacc.utexas.edu>
 WORKDIR /app
 
 # Copy jar file into place
-COPY "v3#apps.jar" .
+COPY "apps.jar" .
 COPY /dependencies dependencies
 
 

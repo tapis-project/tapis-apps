@@ -125,7 +125,7 @@
         </executions>
       </plugin>
     </plugins>
-    <finalName>v3#apps</finalName>
+    <finalName>apps</finalName>
   </build>
 
 </project>
