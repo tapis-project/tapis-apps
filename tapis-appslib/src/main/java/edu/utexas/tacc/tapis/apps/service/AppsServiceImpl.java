@@ -60,7 +60,6 @@ public class AppsServiceImpl implements AppsService
   private static final Set<Permission> READMODIFY_PERMS = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY));
   private static final String PERM_SPEC_PREFIX = "app:";
 
-  // TODO determine if certain services need special permissions
   private static final String FILES_SERVICE = "files";
   private static final String JOBS_SERVICE = "jobs";
   private static final Set<String> SVCLIST_READ = new HashSet<>(Set.of(FILES_SERVICE, JOBS_SERVICE));
@@ -174,11 +173,7 @@ public class AppsServiceImpl implements AppsService
       // Add permission roles for the app. This is only used for filtering apps based on who is authz
       //   to READ, so no other roles needed.
       roleNameR = App.ROLE_READ_PREFIX + appSeqId;
-      // TODO/TBD: Keep the delete? Also, currently it fails due to skauthz failure
-      // Delete role, because role may already exist due to failure of rollback
-//      _log.error("DELETE roleNameR="+ roleNameR);
-//      skClient.deleteRoleByName(appTenantName, "apps", roleNameR);
-//      skClient.deleteRoleByName(appTenantName, app.getOwner(), roleNameR);
+      // TODO use service tenant name, "admin" ?
       skClient.createRole(appTenantName, roleNameR, "Role allowing READ for app " + appId);
       skClient.addRolePermission(appTenantName, roleNameR, appsPermSpecR);
 
@@ -333,7 +328,6 @@ public class AppsServiceImpl implements AppsService
     String roleNameR = App.ROLE_READ_PREFIX + appSeqId;
     try {
       // ------------------- Make Dao call to update the app owner -----------------------------------
-      // TODO: This will actually need to be for all versions (i.e. all seqId's) of the app
       dao.updateAppOwner(authenticatedUser, appSeqId, newOwnerName);
       // Add role and permissions for new owner
       skClient.grantUserRole(appTenantName, newOwnerName, roleNameR);
@@ -628,7 +622,7 @@ public class AppsServiceImpl implements AppsService
       appTenantName = authenticatedUser.getOboTenantId();
 
     // Validate and parse the sql string into an abstract syntax tree (AST)
-    // TODO/TBD: The activemq parser validates and parses the string into an AST but there does not appear to be a way
+    // The activemq parser validates and parses the string into an AST but there does not appear to be a way
     //          to use the resulting BooleanExpression to walk the tree. How to now create a usable AST?
     //   I believe we don't want to simply try to run the where clause for various reasons:
     //      - SQL injection
@@ -1244,7 +1238,7 @@ public class AppsServiceImpl implements AppsService
     // Use tenant and user from authenticatedUsr or optional provided values
     String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
-    // TODO: Remove this
+    // TODO: Remove this when admin access is available
     if ("testuser9".equalsIgnoreCase(userName)) return true;
     var skClient = getSKClient(authenticatedUser);
     return skClient.isAdmin(tenantName, userName);
@@ -1317,8 +1311,6 @@ public class AppsServiceImpl implements AppsService
 
     var skClient = getSKClient(authenticatedUser);
 
-    // TODO/TBD: How to make sure all perms for an app are removed?
-    // TODO: See if it makes sense to have a SK method to do this in one operation
     // Use Security Kernel client to find all users with perms associated with the app.
     String permSpec = PERM_SPEC_PREFIX + appTenantName + ":%:" + appId;
     var userNames = skClient.getUsersWithPermission(appTenantName, permSpec);
@@ -1331,7 +1323,6 @@ public class AppsServiceImpl implements AppsService
       skClient.revokeUserPermission(appTenantName, userName, wildCardPermSpec);
     }
     // If role is present then remove role assignments and roles
-    // TODO: Ask SK to either provide checkForRole() or return null if role does not exist.
     String roleNameR = App.ROLE_READ_PREFIX + app.getSeqId();
     SkRole role = null;
     try
