@@ -769,6 +769,7 @@ public class AppResource
   /**
    * deleteApp
    * @param appId - name of the app to delete
+   * @param confirmDelete - confirm the action
    * @param securityContext - user identity
    * @return - response with change count as the result
    */
@@ -776,8 +777,8 @@ public class AppResource
   @Path("{appId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-// TODO Add query parameter "confirm" which must be set to true since this is an operation that cannot be undone by a user
   public Response deleteApp(@PathParam("appId") String appId,
+                            @QueryParam("confirm") @DefaultValue("false") boolean confirmDelete,
                             @Context SecurityContext securityContext)
   {
     String opName = "deleteApp";
@@ -793,6 +794,15 @@ public class AppResource
 
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
     AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+
+    // If confirmDelete is false then return error response
+    if (confirmDelete)
+    {
+      String msg = ApiUtils.getMsgAuth("APPAPI_DELETE_NOCONFIRM", authenticatedUser, appId);
+      _log.warn(msg);
+      return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+    }
+
 
     int changeCount;
     try
