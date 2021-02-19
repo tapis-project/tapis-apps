@@ -8,6 +8,7 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 
 import java.util.List;
+import java.util.Set;
 
 public interface AppsDao
 {
@@ -43,11 +44,11 @@ public interface AppsDao
 
   App getApp(String tenant, String id, String version, boolean includeDeleted) throws TapisException;
 
-  List<App> getApps(String tenant, List<String> searchList, List<Integer> seqIDs) throws TapisException;
+  List<App> getApps(String tenant, List<String> searchList, Set<String> seqIDs) throws TapisException;
 
-  List<App> getAppsUsingSearchAST(String tenant, ASTNode searchAST, List<Integer> seqIDs) throws TapisException;
+  List<App> getAppsUsingSearchAST(String tenant, ASTNode searchAST, Set<String> seqIDs) throws TapisException;
 
-  List<String> getAppNames(String tenant) throws TapisException;
+  Set<String> getAppIDs(String tenant) throws TapisException;
 
   String getAppOwner(String tenant, String id) throws TapisException;
 

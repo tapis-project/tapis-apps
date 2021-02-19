@@ -284,7 +284,7 @@ public class AppsServiceTest
 //  }
 
   @Test
-  public void testGetAppNames() throws Exception
+  public void testGetAppIDs() throws Exception
   {
     App app0 = apps[2];
     int appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
@@ -292,12 +292,12 @@ public class AppsServiceTest
     app0 = apps[3];
     appVerSeqId = svc.createApp(authenticatedOwner1, app0, scrubbedJson);
     Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
-    List<String> appNames = svc.getAppNames(authenticatedOwner1);
-    for (String name : appNames) {
+    Set<String> appIDs = svc.getAppIDs(authenticatedOwner1);
+    for (String name : appIDs) {
       System.out.println("Found item: " + name);
     }
-    Assert.assertTrue(appNames.contains(apps[2].getId()), "List of apps did not contain app name: " + apps[2].getId());
-    Assert.assertTrue(appNames.contains(apps[3].getId()), "List of apps did not contain app name: " + apps[3].getId());
+    Assert.assertTrue(appIDs.contains(apps[2].getId()), "List of apps did not contain app name: " + apps[2].getId());
+    Assert.assertTrue(appIDs.contains(apps[3].getId()), "List of apps did not contain app name: " + apps[3].getId());
   }
 
   @Test

@@ -47,7 +47,7 @@ public interface AppsService
   List<App> getAppsUsingSqlSearchStr(AuthenticatedUser authenticatedUser, String searchStr)
           throws TapisException, TapisClientException;
 
-  List<String> getAppNames(AuthenticatedUser authenticatedUser)
+  Set<String> getAppIDs(AuthenticatedUser authenticatedUser)
           throws TapisException;
 
   String getAppOwner(AuthenticatedUser authenticatedUser, String appId)

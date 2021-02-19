@@ -6,7 +6,9 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -652,18 +654,18 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *   prior to this call for proper validation and treatment of special characters.
    * @param tenant - tenant name
    * @param searchList - optional list of conditions used for searching
-   * @param appSeqIDs - list of app seqIDs to consider. null indicates no restriction.
+   * @param appIDs - list of app seqIDs to consider. null indicates no restriction.
    * @return - list of App objects
    * @throws TapisException - on error
    */
   @Override
-  public List<App> getApps(String tenant, List<String> searchList, List<Integer> appSeqIDs) throws TapisException
+  public List<App> getApps(String tenant, List<String> searchList, Set<String> appIDs) throws TapisException
   {
     // The result list should always be non-null.
     var retList = new ArrayList<App>();
 
     // If no seqIDs in list then we are done.
-    if (appSeqIDs != null && appSeqIDs.isEmpty()) return retList;
+    if (appIDs != null && appIDs.isEmpty()) return retList;
 
     // TODO: Support search
     //       If attempt made to search return empty list
@@ -702,7 +704,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       whereCondition = addSearchListToWhere(whereCondition, searchList);
 
       // Add IN condition for list of seqIDs
-      if (appSeqIDs != null && !appSeqIDs.isEmpty()) whereCondition = whereCondition.and(APPS.SEQ_ID.in(appSeqIDs));
+      if (appIDs != null && !appIDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(appIDs));
 
       // Execute the select
       Result<AppsRecord> appsRecords;
@@ -739,20 +741,20 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Search for apps using an abstract syntax tree (AST).
    * @param tenant - tenant name
    * @param searchAST - AST containing search conditions
-   * @param appSeqIDs - list of app seqIDs to consider. null indicates no restriction.
+   * @param appIDs - list of app seqIDs to consider. null indicates no restriction.
    * @return - list of App objects
    * @throws TapisException - on error
    */
   @Override
-  public List<App> getAppsUsingSearchAST(String tenant, ASTNode searchAST, List<Integer> appSeqIDs) throws TapisException
+  public List<App> getAppsUsingSearchAST(String tenant, ASTNode searchAST, Set<String> appIDs) throws TapisException
   {
     // If searchAST null or empty delegate to getApps
-    if (searchAST == null) return getApps(tenant, null, appSeqIDs);
+    if (searchAST == null) return getApps(tenant, null, appIDs);
     // The result list should always be non-null.
     var retList = new ArrayList<App>();
 
     // If no seqIDs in list then we are done.
-    if (appSeqIDs != null && appSeqIDs.isEmpty()) return retList;
+    if (appIDs != null && appIDs.isEmpty()) return retList;
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -770,7 +772,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (astCondition != null) whereCondition = whereCondition.and(astCondition);
 
       // Add IN condition for list of seqIDs
-      if (appSeqIDs != null && !appSeqIDs.isEmpty()) whereCondition = whereCondition.and(APPS.SEQ_ID.in(appSeqIDs));
+      if (appIDs != null && !appIDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(appIDs));
 
       // Execute the select
       Result<AppsRecord> results = db.selectFrom(APPS).where(whereCondition).fetch();
@@ -805,16 +807,16 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * getAppNames
+   * getAppIDs
    * @param tenant - tenant name
    * @return - List of app names
    * @throws TapisException - on error
    */
   @Override
-  public List<String> getAppNames(String tenant) throws TapisException
+  public Set<String> getAppIDs(String tenant) throws TapisException
   {
     // The result list is always non-null.
-    var list = new ArrayList<String>();
+    var names = new HashSet<String>();
 
     Connection conn = null;
     try
@@ -826,7 +828,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       DSLContext db = DSL.using(conn);
       Result<?> result = db.select(APPS.ID).from(APPS).where(APPS.TENANT.eq(tenant)).fetch();
       // Iterate over result
-      for (Record r : result) { list.add(r.get(APPS.ID)); }
+      for (Record r : result) { names.add(r.get(APPS.ID)); }
     }
     catch (Exception e)
     {
@@ -838,7 +840,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Always return the connection back to the connection pool.
       LibUtils.finalCloseDB(conn);
     }
-    return list;
+    return names;
   }
 
   /**

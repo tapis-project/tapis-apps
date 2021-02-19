@@ -15,9 +15,9 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
@@ -256,7 +256,7 @@ public class AppsDaoTest
     appVerSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
     // Get all apps
-    List<String> appNames = dao.getAppNames(tenantName);
+    Set<String> appNames = dao.getAppIDs(tenantName);
     for (String name : appNames) {
       System.out.println("Found item: " + name);
     }
@@ -279,27 +279,25 @@ public class AppsDaoTest
 
   // Test retrieving all apps in a list of sequenceIDs
   @Test
-  public void testGetAppsInSeqIDList() throws Exception {
-    var appSeqIdList = new ArrayList<Integer>();
+  public void testGetAppsInIDList() throws Exception {
+    var appIdList = new HashSet<String>();
     // Create 2 apps
     App app0 = apps[5];
     int appVerSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
-    int appSeqId = dao.getAppSeqId(tenantName, app0.getId());
-    appSeqIdList.add(appSeqId);
+    appIdList.add(app0.getId());
     app0 = apps[6];
     appVerSeqId = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
-    appSeqId = dao.getAppSeqId(tenantName, app0.getId());
-    appSeqIdList.add(appSeqId);
+    appIdList.add(app0.getId());
     // Get all apps in list of seqIDs
-    List<App> apps = dao.getApps(tenantName, null, appSeqIdList);
+    List<App> apps = dao.getApps(tenantName, null, appIdList);
     for (App app : apps) {
       System.out.println("Found item with appSeqId: " + app.getSeqId() +
               " and appVerSeqId: " + appVerSeqId + " and Id: " + app.getId());
-      Assert.assertTrue(appSeqIdList.contains(app.getSeqId()));
+      Assert.assertTrue(appIdList.contains(app.getId()));
     }
-    Assert.assertEquals(apps.size(), appSeqIdList.size());
+    Assert.assertEquals(apps.size(), appIdList.size());
   }
 
   // Test change app owner

@@ -29,10 +29,7 @@ public final class App
   // *********************** Constants **************************************
   // ************************************************************************
 
-  // TODO: Use special role name that cannot be created by a user. E.g., prefix with $! or $~ or something else? Work with SK.
-  //       currently not allowed by SK
-//  public static final String ROLE_READ_PREFIX = SKConstants.INTERNAL_ROLE_PREFIX + "Apps_R_";
-  public static final String ROLE_READ_PREFIX = "Apps_R_";
+  public static final String PERMISSION_WILDCARD = "*";
   // Allowed substitution variables
   public static final String APIUSERID_VAR = "${apiUserId}";
   public static final String OWNER_VAR = "${owner}";
