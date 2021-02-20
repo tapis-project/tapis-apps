@@ -35,14 +35,12 @@ import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import static edu.utexas.tacc.tapis.apps.model.App.APIUSERID_VAR;
-import static edu.utexas.tacc.tapis.apps.model.App.OWNER_VAR;
-import static edu.utexas.tacc.tapis.apps.model.App.TENANT_VAR;
 import static edu.utexas.tacc.tapis.shared.TapisConstants.APPS_SERVICE;
 
 /*
  * Service level methods for Apps.
  *   Uses Dao layer and other service library classes to perform all top level service operations.
- * Annotate as an hk2 Service so that default scope for DI is singleton
+ * Annotate as an hk2 Service so that default scope for Dependency Injection is singleton
  */
 @Service
 public class AppsServiceImpl implements AppsService
@@ -54,7 +52,6 @@ public class AppsServiceImpl implements AppsService
   // Tracing.
   private static final Logger _log = LoggerFactory.getLogger(AppsServiceImpl.class);
 
-  private static final String[] ALL_VARS = {APIUSERID_VAR, OWNER_VAR, TENANT_VAR};
   private static final Set<Permission> ALL_PERMS = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY, Permission.EXECUTE));
   private static final Set<Permission> READMODIFY_PERMS = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY));
   private static final String PERM_SPEC_PREFIX = "app";
@@ -158,7 +155,6 @@ public class AppsServiceImpl implements AppsService
     // Creation of app and perms not in single DB transaction.
     // Use try/catch to rollback any writes in case of failure.
     int appVerSeqId = -1;
-    String appsPermSpecR = getPermSpecStr(appTenantName, appId, Permission.READ);
     String appsPermSpecALL = getPermSpecAllStr(appTenantName, appId);
 
     // Get SK client now. If we cannot get this rollback not needed.
@@ -166,7 +162,6 @@ public class AppsServiceImpl implements AppsService
     try {
       // ------------------- Make Dao call to persist the app -----------------------------------
       appVerSeqId = dao.createApp(authenticatedUser, app, createJsonStr, scrubbedText);
-      int appSeqId = dao.getAppSeqId(appTenantName, appId);
 
       // ------------------- Add permissions -----------------------------
       // Give owner full access to the app
@@ -364,8 +359,8 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * Hard delete an app record given the app name.
-   * Also remove artifacts from the Security Kernel
-   * NOTE: This is public so test code can use it but it is not part of the public interface.
+   * Also remove artifacts from the Security Kernel.
+   * NOTE: This is package-private. Only test code should ever use it.
    *
    * @param authenticatedUser - principal user containing tenant and user info
    * @param appId - name of app
@@ -373,7 +368,7 @@ public class AppsServiceImpl implements AppsService
    * @throws TapisException - for Tapis related exceptions
    * @throws NotAuthorizedException - unauthorized
    */
-  public int hardDeleteApp(AuthenticatedUser authenticatedUser, String appId)
+  int hardDeleteApp(AuthenticatedUser authenticatedUser, String appId)
           throws TapisException, TapisClientException, NotAuthorizedException
   {
     AppOperation op = AppOperation.hardDelete;
@@ -930,16 +925,6 @@ public class AppsServiceImpl implements AppsService
     String owner = app.getOwner();
     if (StringUtils.isBlank(owner) || owner.equalsIgnoreCase(APIUSERID_VAR)) owner = oboUser;
     app.setOwner(owner);
-
-//    // Perform variable substitutions that happen at create time: bucketName, rootDir, jobLocalWorkingDir, jobLocalArchiveDir
-//    // NOTE: effectiveUserId is not processed. Var reference is retained and substitution done as needed when system is retrieved.
-//    //    ALL_VARS = {APIUSERID_VAR, OWNER_VAR, TENANT_VAR};
-//    String[] allVarSubstitutions = {oboUser, owner, system.getTenant()};
-//    system.setBucketName(StringUtils.replaceEach(system.getBucketName(), ALL_VARS, allVarSubstitutions));
-//    system.setRootDir(StringUtils.replaceEach(system.getRootDir(), ALL_VARS, allVarSubstitutions));
-//    system.setJobLocalWorkingDir(StringUtils.replaceEach(system.getJobLocalWorkingDir(), ALL_VARS, allVarSubstitutions));
-//    system.setJobLocalArchiveDir(StringUtils.replaceEach(system.getJobLocalArchiveDir(), ALL_VARS, allVarSubstitutions));
-//    system.setJobRemoteArchiveDir(StringUtils.replaceEach(system.getJobRemoteArchiveDir(), ALL_VARS, allVarSubstitutions));
     return app;
   }
 
@@ -953,6 +938,7 @@ public class AppsServiceImpl implements AppsService
   {
     String msg;
     var errMessages = new ArrayList<String>();
+    // TODO Add checks
     // If validation failed throw an exception
     if (!errMessages.isEmpty())
     {
@@ -1003,7 +989,7 @@ public class AppsServiceImpl implements AppsService
    */
   private static String getPermSpecStr(String tenantName, String appId, Permission perm)
   {
-    return PERM_SPEC_PREFIX + ":" + tenantName + ":" + perm.name().toUpperCase() + ":" + appId;
+    return PERM_SPEC_PREFIX + ":" + tenantName + ":" + perm.name() + ":" + appId;
   }
 
   /**
