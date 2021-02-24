@@ -914,7 +914,7 @@ public class AppResource
    */
   private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String appId, String rawJson)
   {
-    PatchApp patchApp = new PatchApp(req.description, req.tags, req.notes);
+    PatchApp patchApp = new PatchApp(req.description, req.enabled, req.containerized, req.tags, req.notes);
     // Update tenant name and app name
     patchApp.setTenant(tenantName);
     patchApp.setId(appId);
@@ -980,22 +980,6 @@ public class AppResource
       msg = ApiUtils.getMsg("APPAPI_ARCHIVE_NODIR");
       errMessages.add(msg);
     }
-
-// TODO
-//    // If not containerized command and execCodes must be given
-//    if (!app1.isContainerized())
-//    {
-//      if (StringUtils.isBlank(app1.getCommand()))
-//      {
-//        msg = ApiUtils.getMsg("APPAPI_NOTCONTAINERIZED_NOCMD");
-//        errMessages.add(msg);
-//      }
-//      if (app1.getExecCodes() == null || app1.getExecCodes().isEmpty())
-//      {
-//        msg = ApiUtils.getMsg("APPAPI_NOTCONTAINERIZED_NOCODES");
-//        errMessages.add(msg);
-//      }
-//    }
 
     // If validation failed log error message and return response
     if (!errMessages.isEmpty())

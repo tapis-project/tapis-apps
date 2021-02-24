@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ContainerArgs extends TableImpl<ContainerArgsRecord> {
 
-    private static final long serialVersionUID = -706010561;
+    private static final long serialVersionUID = 142733131;
 
     /**
      * The reference instance of <code>tapis_app.container_args</code>
@@ -55,7 +55,7 @@ public class ContainerArgs extends TableImpl<ContainerArgsRecord> {
     /**
      * The column <code>tapis_app.container_args.app_ver_seq_id</code>. Sequence id of application
      */
-    public final TableField<ContainerArgsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('container_args_app_ver_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application");
+    public final TableField<ContainerArgsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "Sequence id of application");
 
     /**
      * The column <code>tapis_app.container_args.arg_val</code>.

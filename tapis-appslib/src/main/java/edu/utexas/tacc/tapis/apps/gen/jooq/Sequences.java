@@ -15,19 +15,9 @@ import org.jooq.impl.Internal;
 public class Sequences {
 
     /**
-     * The sequence <code>tapis_app.app_args_app_ver_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> APP_ARGS_APP_VER_SEQ_ID_SEQ = Internal.createSequence("app_args_app_ver_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
      * The sequence <code>tapis_app.app_args_seq_id_seq</code>
      */
     public static final Sequence<Integer> APP_ARGS_SEQ_ID_SEQ = Internal.createSequence("app_args_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
-     * The sequence <code>tapis_app.app_updates_app_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> APP_UPDATES_APP_SEQ_ID_SEQ = Internal.createSequence("app_updates_app_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
 
     /**
      * The sequence <code>tapis_app.app_updates_seq_id_seq</code>
@@ -40,29 +30,14 @@ public class Sequences {
     public static final Sequence<Integer> APPS_SEQ_ID_SEQ = Internal.createSequence("apps_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
 
     /**
-     * The sequence <code>tapis_app.apps_versions_app_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> APPS_VERSIONS_APP_SEQ_ID_SEQ = Internal.createSequence("apps_versions_app_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
      * The sequence <code>tapis_app.apps_versions_seq_id_seq</code>
      */
     public static final Sequence<Integer> APPS_VERSIONS_SEQ_ID_SEQ = Internal.createSequence("apps_versions_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
 
     /**
-     * The sequence <code>tapis_app.container_args_app_ver_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> CONTAINER_ARGS_APP_VER_SEQ_ID_SEQ = Internal.createSequence("container_args_app_ver_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
      * The sequence <code>tapis_app.container_args_seq_id_seq</code>
      */
     public static final Sequence<Integer> CONTAINER_ARGS_SEQ_ID_SEQ = Internal.createSequence("container_args_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
-     * The sequence <code>tapis_app.file_inputs_app_ver_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> FILE_INPUTS_APP_VER_SEQ_ID_SEQ = Internal.createSequence("file_inputs_app_ver_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
 
     /**
      * The sequence <code>tapis_app.file_inputs_seq_id_seq</code>
@@ -75,24 +50,9 @@ public class Sequences {
     public static final Sequence<Integer> NOTIFICATION_MECHANISMS_SEQ_ID_SEQ = Internal.createSequence("notification_mechanisms_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
 
     /**
-     * The sequence <code>tapis_app.notification_mechanisms_subscription_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> NOTIFICATION_MECHANISMS_SUBSCRIPTION_SEQ_ID_SEQ = Internal.createSequence("notification_mechanisms_subscription_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
-     * The sequence <code>tapis_app.notification_subscriptions_app_ver_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> NOTIFICATION_SUBSCRIPTIONS_APP_VER_SEQ_ID_SEQ = Internal.createSequence("notification_subscriptions_app_ver_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
      * The sequence <code>tapis_app.notification_subscriptions_seq_id_seq</code>
      */
     public static final Sequence<Integer> NOTIFICATION_SUBSCRIPTIONS_SEQ_ID_SEQ = Internal.createSequence("notification_subscriptions_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
-     * The sequence <code>tapis_app.scheduler_options_app_ver_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> SCHEDULER_OPTIONS_APP_VER_SEQ_ID_SEQ = Internal.createSequence("scheduler_options_app_ver_seq_id_seq", TapisApp.TAPIS_APP, org.jooq.impl.SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
 
     /**
      * The sequence <code>tapis_app.scheduler_options_seq_id_seq</code>

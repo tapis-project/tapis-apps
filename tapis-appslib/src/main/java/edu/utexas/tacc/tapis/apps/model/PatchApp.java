@@ -15,6 +15,8 @@ public final class PatchApp
   private String id;       // Name of the app
   private String version;    // Version of the app
   private final String description; // Full description of the app
+  private final Boolean enabled;
+  private final Boolean containerized;
   private final String[] tags;       // List of arbitrary tags as strings
   private Object notes;      // Simple metadata as json
 
@@ -25,9 +27,11 @@ public final class PatchApp
   /**
    * Constructor setting all final attributes.
    */
-  public PatchApp(String description1, String[] tags1, Object notes1)
+  public PatchApp(String description1, Boolean enabled1, Boolean containerized1,  String[] tags1, Object notes1)
   {
     description = description1;
+    enabled = enabled1;
+    containerized = containerized1;
     tags = (tags1 == null) ? null : tags1.clone();
     notes = notes1;
   }
@@ -46,9 +50,9 @@ public final class PatchApp
 
   public String getDescription() { return description; }
 
-//  public List<Capability> getJobCapabilities() {
-//    return (jobCapabilities == null) ? null : new ArrayList<>(jobCapabilities);
-//  }
+  public Boolean isEnabled() { return enabled; }
+
+  public Boolean isContainerized() { return containerized; }
 
   public String[] getTags() {
     return (tags == null) ? null : tags.clone();

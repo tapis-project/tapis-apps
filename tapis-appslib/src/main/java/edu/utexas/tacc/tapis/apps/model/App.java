@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
 
-import edu.utexas.tacc.tapis.shared.utils.SkConstants;
+import edu.utexas.tacc.tapis.apps.utils.LibUtils;
+
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 
 /*
@@ -32,8 +32,6 @@ public final class App
   public static final String PERMISSION_WILDCARD = "*";
   // Allowed substitution variables
   public static final String APIUSERID_VAR = "${apiUserId}";
-  public static final String OWNER_VAR = "${owner}";
-  public static final String TENANT_VAR = "${tenant}";
 
   // Default values
   public static final String DEFAULT_OWNER = APIUSERID_VAR;

@@ -20,10 +20,10 @@ import java.util.Set;
 @Contract
 public interface AppsService
 {
-  int createApp(AuthenticatedUser authenticatedUser, App app, String scrubbedText)
+  void createApp(AuthenticatedUser authenticatedUser, App app, String scrubbedText)
           throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, TapisClientException;
 
-  int updateApp(AuthenticatedUser authenticatedUser, PatchApp patchApp, String scrubbedText)
+  void updateApp(AuthenticatedUser authenticatedUser, PatchApp patchApp, String scrubbedText)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
   int changeAppOwner(AuthenticatedUser authenticatedUser, String appId, String newOwnerName)

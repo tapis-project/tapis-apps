@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class FileInputs extends TableImpl<FileInputsRecord> {
 
-    private static final long serialVersionUID = -1294078454;
+    private static final long serialVersionUID = 526486959;
 
     /**
      * The reference instance of <code>tapis_app.file_inputs</code>
@@ -55,7 +55,7 @@ public class FileInputs extends TableImpl<FileInputsRecord> {
     /**
      * The column <code>tapis_app.file_inputs.app_ver_seq_id</code>. Sequence id of application requiring the file input
      */
-    public final TableField<FileInputsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('file_inputs_app_ver_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application requiring the file input");
+    public final TableField<FileInputsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "Sequence id of application requiring the file input");
 
     /**
      * The column <code>tapis_app.file_inputs.source_url</code>.

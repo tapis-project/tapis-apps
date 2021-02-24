@@ -61,6 +61,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   private static final String VERS_ANY = "%";
   private static final String EMPTY_JSON = "{}";
   private static final String[] EMPTY_STR_ARRAY = {};
+  private static final int INVALID_SEQ_ID = -1;
+  private static final String NO_APP_VERSION = null;
 
   /* ********************************************************************** */
   /*                             Public Methods                             */
@@ -69,17 +71,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Create a new app with id+version
    *
-   * @return Sequence id of specific version of App created
+   * @return true if created
    * @throws TapisException - on error
    * @throws IllegalStateException - if app id+version already exists or app has been deleted
    */
   @Override
-  public int createApp(AuthenticatedUser authenticatedUser, App app, String createJsonStr, String scrubbedText)
+  public boolean createApp(AuthenticatedUser authenticatedUser, App app, String createJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException {
     String opName = "createApp";
-    // Generated sequence IDs
-    int appSeqId = -1;
-    int appVerSeqId = -1;
     // ------------------------- Check Input -------------------------
     if (app == null) LibUtils.logAndThrowNullParmException(opName, "app");
     if (authenticatedUser == null) LibUtils.logAndThrowNullParmException(opName, "authenticatedUser");
@@ -124,6 +123,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (app.getTags() != null) tagsStrArray = app.getTags();
       if (app.getNotes() != null) notesObj = (JsonObject) app.getNotes();
 
+      // Generated sequence IDs
+      int appSeqId = -1;
+      int appVerSeqId = -1;
       // If no top level app entry this is the first version. Create the initial top level record
       if (!checkIfAppExists(db, app.getTenant(), app.getId(), null, false))
       {
@@ -191,7 +193,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       db.update(APPS).set(APPS.LATEST_VERSION, app.getVersion()).execute();
 
       // Persist update record
-      addUpdate(db, authenticatedUser, appSeqId, appVerSeqId, AppOperation.create, createJsonStr, scrubbedText);
+      addUpdate(db, authenticatedUser, app.getTenant(), app.getId(), app.getVersion(), appSeqId, appVerSeqId,
+                AppOperation.create, createJsonStr, scrubbedText);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -206,20 +209,19 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Always return the connection back to the connection pool.
       LibUtils.finalCloseDB(conn);
     }
-    return appVerSeqId;
+    return true;
   }
 
   /**
    * Update an existing specific version of an application.
    * Following columns will be updated:
-   *  description, tags, notes
-   * @return Sequence id of object updated
+   *  description, enabled, containerized
    * @throws TapisException - on error
    * @throws IllegalStateException - if app already exists
    */
   @Override
-  public int updateApp(AuthenticatedUser authenticatedUser, App patchedApp, PatchApp patchApp,
-                       String updateJsonStr, String scrubbedText)
+  public void updateApp(AuthenticatedUser authenticatedUser, App patchedApp, PatchApp patchApp,
+                        String updateJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException {
     String opName = "updateApp";
     // ------------------------- Check Input -------------------------
@@ -231,15 +233,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     String tenant = patchedApp.getTenant();
     String appId = patchedApp.getId();
     String appVersion = patchedApp.getVersion();
-    int appSeqId = patchedApp.getSeqId();
-    int appVerSeqId = patchedApp.getVerSeqId();
     // Check required attributes have been provided
     if (StringUtils.isBlank(updateJsonStr)) LibUtils.logAndThrowNullParmException(opName, "updateJson");
     if (StringUtils.isBlank(tenant)) LibUtils.logAndThrowNullParmException(opName, "tenant");
     if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
     if (StringUtils.isBlank(appVersion)) LibUtils.logAndThrowNullParmException(opName, "appVersion");
-    if (appSeqId < 1) LibUtils.logAndThrowNullParmException(opName, "appSeqId");
-    if (appVerSeqId < 1) LibUtils.logAndThrowNullParmException(opName, "appVerSeqId");
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -259,22 +257,32 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       JsonObject notesObj =  App.DEFAULT_NOTES;
       if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
 
-      db.update(APPS_VERSIONS)
-              .set(APPS_VERSIONS.DESCRIPTION, patchedApp.getDescription())
-              .set(APPS_VERSIONS.TAGS, tagsStrArray)
-              .set(APPS_VERSIONS.NOTES, notesObj)
-              .where(APPS_VERSIONS.SEQ_ID.eq(appVerSeqId))
-              .execute();
-
-//      // If jobCapabilities updated then replace them
-//      if (patchApp.getJobCapabilities() != null) {
-//        db.deleteFrom(CAPABILITIES).where(CAPABILITIES.APP_ID.eq(seqId)).execute();
-//        persistJobCapabilities(db, patchedApp, seqId);
-//      }
+      // TODO/TBD Patch top level attributes first?
+      // TODO: For now just patch top level attributes enabled, containerized
+      int appSeqId = db.update(APPS)
+              .set(APPS.ENABLED, patchedApp.isEnabled())
+              .set(APPS.CONTAINERIZED, patchedApp.isContainerized())
+              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId))
+              .returningResult(APPS.SEQ_ID)
+              .fetchOne().getValue(APPS.SEQ_ID);
 
       // Persist update record
-      addUpdate(db, authenticatedUser, appSeqId, appVerSeqId, AppOperation.modify, updateJsonStr, scrubbedText);
+      addUpdate(db, authenticatedUser, tenant, appId, appVersion, appSeqId, INVALID_SEQ_ID, AppOperation.modify,
+                updateJsonStr, scrubbedText);
 
+//      // TODO/TBD Need to select on tenant + appId?
+//      int appVerSeqId = db.update(APPS_VERSIONS)
+//              .set(APPS_VERSIONS.DESCRIPTION, patchedApp.getDescription())
+//              .set(APPS_VERSIONS.TAGS, tagsStrArray)
+//              .set(APPS_VERSIONS.NOTES, notesObj)
+//              .where(APPS_VERSIONS.VERSION.eq(appVersion))
+//              .returningResult(APPS_VERSIONS.SEQ_ID)
+//              .fetchOne().getValue(APPS_VERSIONS.SEQ_ID);
+//
+//      // Persist update record
+//      addUpdate(db, authenticatedUser, tenant, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
+//                updateJsonStr, scrubbedText);
+//
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
@@ -288,7 +296,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Always return the connection back to the connection pool.
       LibUtils.finalCloseDB(conn);
     }
-    return appSeqId;
   }
 
   /**
@@ -296,12 +303,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *
    */
   @Override
-  public void updateAppOwner(AuthenticatedUser authenticatedUser, int appSeqId, String newOwnerName) throws TapisException
+  public void updateAppOwner(AuthenticatedUser authenticatedUser, String appId, String newOwnerName) throws TapisException
   {
     String opName = "changeOwner";
     // ------------------------- Check Input -------------------------
-    if (appSeqId < 1) LibUtils.logAndThrowNullParmException(opName, "appSeqId");
+    if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
     if (StringUtils.isBlank(newOwnerName)) LibUtils.logAndThrowNullParmException(opName, "newOwnerName");
+
+    String tenant = authenticatedUser.getOboTenantId();
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -310,17 +319,18 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      db.update(APPS).set(APPS.OWNER, newOwnerName).where(APPS.SEQ_ID.eq(appSeqId)).execute();
+      db.update(APPS).set(APPS.OWNER, newOwnerName).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
       // Persist update record
       String updateJsonStr = TapisGsonUtils.getGson().toJson(newOwnerName);
-      addUpdate(db, authenticatedUser, appSeqId, -1, AppOperation.changeOwner, updateJsonStr , null);
+      addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+                AppOperation.changeOwner, updateJsonStr , null);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
     catch (Exception e)
     {
       // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps", appSeqId);
+      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps", appId);
     }
     finally
     {
@@ -333,12 +343,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Soft delete an app record given the app id.
    */
   @Override
-  public int softDeleteApp(AuthenticatedUser authenticatedUser, int appSeqId) throws TapisException
+  public int softDeleteApp(AuthenticatedUser authenticatedUser, String appId) throws TapisException
   {
     String opName = "softDeleteApp";
     int rows = -1;
     // ------------------------- Check Input -------------------------
-    if (appSeqId < 1) LibUtils.logAndThrowNullParmException(opName, "appSeqId");
+    if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
+
+    String tenant = authenticatedUser.getOboTenantId();
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -348,13 +360,15 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
       // If app does not exist or has been soft deleted return 0
-      if (!db.fetchExists(APPS, APPS.SEQ_ID.eq(appSeqId), APPS.DELETED.eq(false)))
+      if (!db.fetchExists(APPS,APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false)))
       {
         return 0;
       }
-      rows = db.update(APPS).set(APPS.DELETED, true).where(APPS.SEQ_ID.eq(appSeqId)).execute();
+      rows = db.update(APPS).set(APPS.DELETED, true).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
+
       // Persist update record
-      addUpdate(db, authenticatedUser, appSeqId, -1, AppOperation.softDelete, EMPTY_JSON, null);
+      addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+                AppOperation.softDelete, EMPTY_JSON, null);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -362,7 +376,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     catch (Exception e)
     {
       // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps", appSeqId);
+      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps", appId);
     }
     finally
     {
@@ -816,7 +830,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   public Set<String> getAppIDs(String tenant) throws TapisException
   {
     // The result list is always non-null.
-    var names = new HashSet<String>();
+    var idList = new HashSet<String>();
 
     Connection conn = null;
     try
@@ -828,7 +842,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       DSLContext db = DSL.using(conn);
       Result<?> result = db.select(APPS.ID).from(APPS).where(APPS.TENANT.eq(tenant)).fetch();
       // Iterate over result
-      for (Record r : result) { names.add(r.get(APPS.ID)); }
+      for (Record r : result) { idList.add(r.get(APPS.ID)); }
     }
     catch (Exception e)
     {
@@ -840,7 +854,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Always return the connection back to the connection pool.
       LibUtils.finalCloseDB(conn);
     }
-    return names;
+    return idList;
   }
 
   /**
@@ -879,48 +893,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * getAppSeqId
-   * Retrieve sequence Id for latest version of the app.
-   * @param tenant - name of tenant
-   * @param appId - name of app
-   * @return appSeqId or -1 if no app found
-   * @throws TapisException - on error
-   */
-  @Override
-  public int getAppSeqId(String tenant, String appId) throws TapisException
-  {
-    int appSeqId = -1;
-    // ------------------------- Call SQL ----------------------------
-    Connection conn = null;
-    try
-    {
-      // Get a database connection.
-      conn = getConnection();
-      DSLContext db = DSL.using(conn);
-      appSeqId = getAppSeqIdUsingDb(db, tenant, appId);
-      // Close out and commit
-      LibUtils.closeAndCommitDB(conn, null, null);
-    }
-    catch (Exception e)
-    {
-      // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_QUERY_ERROR", "apps", e.getMessage());
-    }
-    finally
-    {
-      // Always return the connection back to the connection pool.
-      LibUtils.finalCloseDB(conn);
-    }
-    return appSeqId;
-  }
-
-  /**
-   * Add an update record given the app Id and operation type
+   * Add an update record given the app Id, app version and operation type
    *
    */
   @Override
-  public void addUpdateRecord(AuthenticatedUser authenticatedUser, int appSeqId, int appVerSeqId, AppOperation op,
-                              String upd_json, String upd_text) throws TapisException
+  public void addUpdateRecord(AuthenticatedUser authenticatedUser, String tenant, String appId, String appVer,
+                              AppOperation op, String upd_json, String upd_text)
+          throws TapisException
   {
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -929,7 +908,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      addUpdate(db, authenticatedUser, appSeqId, appVerSeqId, op, upd_json, upd_text);
+      addUpdate(db, authenticatedUser, tenant, appId, appVer, INVALID_SEQ_ID, INVALID_SEQ_ID, op, upd_json, upd_text);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -952,18 +931,46 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
   /**
    * Given an sql connection and basic info add an update record
+   * If appSeqId < 1 then appSeqId is fetched.
+   * If appVerSeqId < 1 and version is provided then appVerSeqId is fetched.
+   * NOTE: Both app tenant and user tenant are recorded. If a service makes an update on behalf of itself
+   *       the tenants may differ.
    *
+   * @param db - Database connection
+   * @param authenticatedUser - User who requested the update
+   * @param tenant - Tenant of the app being updated
+   * @param id - Id of the app being updated
+   * @param version - Version of the app being updated, may be null
+   * @param appSeqId - Sequence Id of app being updated, if < 1 will be fetched
+   * @param appVerSeqId - Sequence Id of version being updated, if < 1 and version given will be fetched
+   * @param op - Operation, such as create, modify, etc.
+   * @param upd_json - JSON representing the update - with secrets scrubbed
+   * @param upd_text - Text data supplied by client - secrets should be scrubbed
    */
-  private static void addUpdate(DSLContext db, AuthenticatedUser authenticatedUser, int appSeqId, int appVerSeqId,
-                         AppOperation op, String upd_json, String upd_text)
+  private static void addUpdate(DSLContext db, AuthenticatedUser authenticatedUser, String tenant, String id,
+                                String version, int appSeqId, int appVerSeqId, AppOperation op,
+                                String upd_json, String upd_text)
   {
     String updJsonStr = (StringUtils.isBlank(upd_json)) ? EMPTY_JSON : upd_json;
+    if (appSeqId < 1)
+    {
+      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(id)).fetchOne(APPS.SEQ_ID);
+    }
+    if (appVerSeqId < 1 && !StringUtils.isBlank(version))
+    {
+      appVerSeqId = db.selectFrom(APPS_VERSIONS)
+        .where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId),APPS_VERSIONS.VERSION.eq(version))
+        .fetchOne(APPS_VERSIONS.SEQ_ID);
+    }
     // Persist update record
     db.insertInto(APP_UPDATES)
             .set(APP_UPDATES.APP_SEQ_ID, appSeqId)
             .set(APP_UPDATES.APP_VER_SEQ_ID, appVerSeqId)
-            .set(APP_UPDATES.USER_NAME, authenticatedUser.getOboUser())
+            .set(APP_UPDATES.APP_TENANT, tenant)
+            .set(APP_UPDATES.APP_ID, id)
+            .set(APP_UPDATES.APP_VERSION, version)
             .set(APP_UPDATES.USER_TENANT, authenticatedUser.getOboTenantId())
+            .set(APP_UPDATES.USER_NAME, authenticatedUser.getOboUser())
             .set(APP_UPDATES.OPERATION, op)
             .set(APP_UPDATES.UPD_JSON, TapisGsonUtils.getGson().fromJson(updJsonStr, JsonElement.class))
             .set(APP_UPDATES.UPD_TEXT, upd_text)
@@ -986,12 +993,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // First check if app with given ID is present.
     if (includeDeleted)
     {
-      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(appId))
+      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId))
                    .fetchOne(APPS.SEQ_ID);
     }
     else
     {
-      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant), APPS.ID.eq(appId), APPS.DELETED.eq(false))
+      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false))
                    .fetchOne(APPS.SEQ_ID);
     }
 
@@ -1039,7 +1046,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     App app = null;
     int appSeqId = appRecord.getSeqId();
     // Use either specified version or most recently created version
-    boolean findLatest = (StringUtils.isBlank(appVersion) ? true : false);
+    boolean findLatest = StringUtils.isBlank(appVersion);
 
     // Fetch specific or latest app version.
     AppsVersionsRecord appVerRecord;

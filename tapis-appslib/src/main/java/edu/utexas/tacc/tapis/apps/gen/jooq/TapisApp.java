@@ -30,7 +30,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class TapisApp extends SchemaImpl {
 
-    private static final long serialVersionUID = 1322001188;
+    private static final long serialVersionUID = -1320590446;
 
     /**
      * The reference instance of <code>tapis_app</code>
@@ -103,22 +103,14 @@ public class TapisApp extends SchemaImpl {
     @Override
     public final List<Sequence<?>> getSequences() {
         return Arrays.<Sequence<?>>asList(
-            Sequences.APP_ARGS_APP_VER_SEQ_ID_SEQ,
             Sequences.APP_ARGS_SEQ_ID_SEQ,
-            Sequences.APP_UPDATES_APP_SEQ_ID_SEQ,
             Sequences.APP_UPDATES_SEQ_ID_SEQ,
             Sequences.APPS_SEQ_ID_SEQ,
-            Sequences.APPS_VERSIONS_APP_SEQ_ID_SEQ,
             Sequences.APPS_VERSIONS_SEQ_ID_SEQ,
-            Sequences.CONTAINER_ARGS_APP_VER_SEQ_ID_SEQ,
             Sequences.CONTAINER_ARGS_SEQ_ID_SEQ,
-            Sequences.FILE_INPUTS_APP_VER_SEQ_ID_SEQ,
             Sequences.FILE_INPUTS_SEQ_ID_SEQ,
             Sequences.NOTIFICATION_MECHANISMS_SEQ_ID_SEQ,
-            Sequences.NOTIFICATION_MECHANISMS_SUBSCRIPTION_SEQ_ID_SEQ,
-            Sequences.NOTIFICATION_SUBSCRIPTIONS_APP_VER_SEQ_ID_SEQ,
             Sequences.NOTIFICATION_SUBSCRIPTIONS_SEQ_ID_SEQ,
-            Sequences.SCHEDULER_OPTIONS_APP_VER_SEQ_ID_SEQ,
             Sequences.SCHEDULER_OPTIONS_SEQ_ID_SEQ);
     }
 

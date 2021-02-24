@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
 
-    private static final long serialVersionUID = -213705267;
+    private static final long serialVersionUID = 1882961302;
 
     /**
      * The reference instance of <code>tapis_app.scheduler_options</code>
@@ -55,7 +55,7 @@ public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
     /**
      * The column <code>tapis_app.scheduler_options.app_ver_seq_id</code>. Sequence id of application
      */
-    public final TableField<SchedulerOptionsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('scheduler_options_app_ver_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application");
+    public final TableField<SchedulerOptionsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "Sequence id of application");
 
     /**
      * The column <code>tapis_app.scheduler_options.arg_val</code>.

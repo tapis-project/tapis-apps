@@ -21,7 +21,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row9;
+import org.jooq.Row12;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -37,7 +37,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppUpdates extends TableImpl<AppUpdatesRecord> {
 
-    private static final long serialVersionUID = -2026614622;
+    private static final long serialVersionUID = 712555161;
 
     /**
      * The reference instance of <code>tapis_app.app_updates</code>
@@ -60,22 +60,37 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     /**
      * The column <code>tapis_app.app_updates.app_seq_id</code>. Sequence id of application being updated
      */
-    public final TableField<AppUpdatesRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_updates_app_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application being updated");
+    public final TableField<AppUpdatesRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "Sequence id of application being updated");
 
     /**
-     * The column <code>tapis_app.app_updates.app_ver_seq_id</code>.
+     * The column <code>tapis_app.app_updates.app_ver_seq_id</code>. Sequence id of application version being updated
      */
-    public final TableField<AppUpdatesRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "");
+    public final TableField<AppUpdatesRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "Sequence id of application version being updated");
 
     /**
-     * The column <code>tapis_app.app_updates.user_name</code>. Name of user who requested the update
+     * The column <code>tapis_app.app_updates.app_tenant</code>. Tenant of application being updated
      */
-    public final TableField<AppUpdatesRecord, String> USER_NAME = createField(DSL.name("user_name"), org.jooq.impl.SQLDataType.VARCHAR(60).nullable(false), this, "Name of user who requested the update");
+    public final TableField<AppUpdatesRecord, String> APP_TENANT = createField(DSL.name("app_tenant"), org.jooq.impl.SQLDataType.VARCHAR(24).nullable(false), this, "Tenant of application being updated");
+
+    /**
+     * The column <code>tapis_app.app_updates.app_id</code>. Id of application being updated
+     */
+    public final TableField<AppUpdatesRecord, String> APP_ID = createField(DSL.name("app_id"), org.jooq.impl.SQLDataType.VARCHAR(80).nullable(false), this, "Id of application being updated");
+
+    /**
+     * The column <code>tapis_app.app_updates.app_version</code>. Version of application being updated
+     */
+    public final TableField<AppUpdatesRecord, String> APP_VERSION = createField(DSL.name("app_version"), org.jooq.impl.SQLDataType.VARCHAR(64), this, "Version of application being updated");
 
     /**
      * The column <code>tapis_app.app_updates.user_tenant</code>. Tenant of user who requested the update
      */
     public final TableField<AppUpdatesRecord, String> USER_TENANT = createField(DSL.name("user_tenant"), org.jooq.impl.SQLDataType.VARCHAR(24).nullable(false), this, "Tenant of user who requested the update");
+
+    /**
+     * The column <code>tapis_app.app_updates.user_name</code>. Name of user who requested the update
+     */
+    public final TableField<AppUpdatesRecord, String> USER_NAME = createField(DSL.name("user_name"), org.jooq.impl.SQLDataType.VARCHAR(60).nullable(false), this, "Name of user who requested the update");
 
     /**
      * The column <code>tapis_app.app_updates.operation</code>. Type of update operation
@@ -186,11 +201,11 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row9 type methods
+    // Row12 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row9<Integer, Integer, Integer, String, String, AppOperation, JsonElement, String, LocalDateTime> fieldsRow() {
-        return (Row9) super.fieldsRow();
+    public Row12<Integer, Integer, Integer, String, String, String, String, String, AppOperation, JsonElement, String, LocalDateTime> fieldsRow() {
+        return (Row12) super.fieldsRow();
     }
 }

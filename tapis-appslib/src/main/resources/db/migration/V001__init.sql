@@ -139,8 +139,11 @@ CREATE TABLE app_updates
     seq_id SERIAL PRIMARY KEY,
     app_seq_id INTEGER REFERENCES apps(seq_id) ON DELETE CASCADE,
     app_ver_seq_id INTEGER,
-    user_name VARCHAR(60) NOT NULL,
+    app_tenant VARCHAR(24) NOT NULL,
+    app_id VARCHAR(80) NOT NULL,
+    app_version VARCHAR(64),
     user_tenant VARCHAR(24) NOT NULL,
+    user_name VARCHAR(60) NOT NULL,
     operation operation_type NOT NULL,
     upd_json JSONB NOT NULL,
     upd_text VARCHAR,
@@ -149,8 +152,12 @@ CREATE TABLE app_updates
 ALTER TABLE app_updates OWNER TO tapis_app;
 COMMENT ON COLUMN app_updates.seq_id IS 'Application update request id';
 COMMENT ON COLUMN app_updates.app_seq_id IS 'Sequence id of application being updated';
-COMMENT ON COLUMN app_updates.user_name IS 'Name of user who requested the update';
+COMMENT ON COLUMN app_updates.app_ver_seq_id IS 'Sequence id of application version being updated';
+COMMENT ON COLUMN app_updates.app_tenant IS 'Tenant of application being updated';
+COMMENT ON COLUMN app_updates.app_id IS 'Id of application being updated';
+COMMENT ON COLUMN app_updates.app_version IS 'Version of application being updated';
 COMMENT ON COLUMN app_updates.user_tenant IS 'Tenant of user who requested the update';
+COMMENT ON COLUMN app_updates.user_name IS 'Name of user who requested the update';
 COMMENT ON COLUMN app_updates.operation IS 'Type of update operation';
 COMMENT ON COLUMN app_updates.upd_json IS 'JSON representing the update - with secrets scrubbed';
 COMMENT ON COLUMN app_updates.upd_text IS 'Text data supplied by client - secrets should be scrubbed';

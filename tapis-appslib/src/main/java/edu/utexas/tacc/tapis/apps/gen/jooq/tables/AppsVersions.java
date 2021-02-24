@@ -38,7 +38,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppsVersions extends TableImpl<AppsVersionsRecord> {
 
-    private static final long serialVersionUID = 1989908464;
+    private static final long serialVersionUID = 895865667;
 
     /**
      * The reference instance of <code>tapis_app.apps_versions</code>
@@ -61,7 +61,7 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     /**
      * The column <code>tapis_app.apps_versions.app_seq_id</code>. Sequence id of application
      */
-    public final TableField<AppsVersionsRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('apps_versions_app_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id of application");
+    public final TableField<AppsVersionsRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "Sequence id of application");
 
     /**
      * The column <code>tapis_app.apps_versions.version</code>. Application version

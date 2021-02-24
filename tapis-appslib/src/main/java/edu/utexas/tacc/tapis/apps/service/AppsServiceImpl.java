@@ -64,6 +64,9 @@ public class AppsServiceImpl implements AppsService
   private static final String ERROR_ROLLBACK = "APPLIB_ERROR_ROLLBACK";
   private static final String NOT_FOUND = "APPLIB_NOT_FOUND";
 
+  // Constants indicating app version is not relevant.
+  private static final String NO_APP_VERSION = null;
+
   // ************************************************************************
   // *********************** Enums ******************************************
   // ************************************************************************
@@ -96,14 +99,13 @@ public class AppsServiceImpl implements AppsService
    * @param authenticatedUser - principal user containing tenant and user info
    * @param app - Pre-populated App object
    * @param scrubbedText - Text used to create the App object - secrets should be scrubbed. Saved in update record.
-   * @return Sequence id of object created. This is for a specific version of the application.
    * @throws TapisException - for Tapis related exceptions
    * @throws IllegalStateException - app exists OR App in invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
    */
   @Override
-  public int createApp(AuthenticatedUser authenticatedUser, App app, String scrubbedText)
+  public void createApp(AuthenticatedUser authenticatedUser, App app, String scrubbedText)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotAuthorizedException
   {
     AppOperation op = AppOperation.create;
@@ -154,14 +156,14 @@ public class AppsServiceImpl implements AppsService
     // ----------------- Create all artifacts --------------------
     // Creation of app and perms not in single DB transaction.
     // Use try/catch to rollback any writes in case of failure.
-    int appVerSeqId = -1;
+    boolean appCreated = false;
     String appsPermSpecALL = getPermSpecAllStr(appTenantName, appId);
 
     // Get SK client now. If we cannot get this rollback not needed.
     var skClient = getSKClient(authenticatedUser);
     try {
       // ------------------- Make Dao call to persist the app -----------------------------------
-      appVerSeqId = dao.createApp(authenticatedUser, app, createJsonStr, scrubbedText);
+      appCreated = dao.createApp(authenticatedUser, app, createJsonStr, scrubbedText);
 
       // ------------------- Add permissions -----------------------------
       // Give owner full access to the app
@@ -176,14 +178,13 @@ public class AppsServiceImpl implements AppsService
 
       // Rollback
       // Remove app from DB
-      if (appVerSeqId != -1) try {dao.hardDeleteApp(appTenantName, appId); }
+      if (appCreated) try {dao.hardDeleteApp(appTenantName, appId); }
       catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "hardDelete", e.getMessage()));}
       // Remove perms
       try { skClient.revokeUserPermission(appTenantName, app.getOwner(), appsPermSpecALL); }
       catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "revokePermOwner", e.getMessage()));}
       throw e0;
     }
-    return appVerSeqId;
   }
 
   /**
@@ -196,7 +197,7 @@ public class AppsServiceImpl implements AppsService
    * @param authenticatedUser - principal user containing tenant and user info
    * @param patchApp - Pre-populated PatchApp object
    * @param scrubbedText - Text used to create the PatchApp object - secrets should be scrubbed. Saved in update record.
-   * @return Sequence id of object updated
+   *
    * @throws TapisException - for Tapis related exceptions
    * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
@@ -204,7 +205,7 @@ public class AppsServiceImpl implements AppsService
    * @throws NotFoundException - App not found
    */
   @Override
-  public int updateApp(AuthenticatedUser authenticatedUser, PatchApp patchApp, String scrubbedText)
+  public void updateApp(AuthenticatedUser authenticatedUser, PatchApp patchApp, String scrubbedText)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException
   {
     AppOperation op = AppOperation.modify;
@@ -248,7 +249,6 @@ public class AppsServiceImpl implements AppsService
     // No distributed transactions so no distributed rollback needed
     // ------------------- Make Dao call to persist the app -----------------------------------
     dao.updateApp(authenticatedUser, patchedApp, patchApp, updateJsonStr, scrubbedText);
-    return origApp.getSeqId();
   }
 
   /**
@@ -257,6 +257,7 @@ public class AppsServiceImpl implements AppsService
    * @param appId - name of app
    * @param newOwnerName - User name of new owner
    * @return Number of items updated
+   *
    * @throws TapisException - for Tapis related exceptions
    * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
@@ -286,13 +287,11 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(appTenantName, appId, false))
          throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId));
 
-    // Retrieve the most recently created version of the app being updated
-    App tmpApp = dao.getApp(appTenantName, appId, null);
-    int appSeqId = tmpApp.getSeqId();
-    String oldOwnerName = tmpApp.getOwner();
+    // Retrieve the old owner
+    String oldOwnerName = dao.getAppOwner(appTenantName, appId);
 
     // ------------------------- Check service level authorization -------------------------
-    checkAuth(authenticatedUser, op, appId, tmpApp.getOwner(), null, null);
+    checkAuth(authenticatedUser, op, appId, oldOwnerName, null, null);
 
     // If new owner same as old owner then this is a no-op
     if (newOwnerName.equals(oldOwnerName)) return 0;
@@ -305,7 +304,7 @@ public class AppsServiceImpl implements AppsService
     String appsPermSpec = getPermSpecAllStr(appTenantName, appId);
     try {
       // ------------------- Make Dao call to update the app owner -----------------------------------
-      dao.updateAppOwner(authenticatedUser, appSeqId, newOwnerName);
+      dao.updateAppOwner(authenticatedUser, appId, newOwnerName);
       // Add permissions for new owner
       skClient.grantUserPermission(appTenantName, newOwnerName, appsPermSpec);
       // Remove permissions from old owner
@@ -314,7 +313,7 @@ public class AppsServiceImpl implements AppsService
     catch (Exception e0)
     {
       // Something went wrong. Attempt to undo all changes and then re-throw the exception
-      try { dao.updateAppOwner(authenticatedUser, appSeqId, oldOwnerName); } catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "updateOwner", e.getMessage()));}
+      try { dao.updateAppOwner(authenticatedUser, appId, oldOwnerName); } catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "updateOwner", e.getMessage()));}
       try { skClient.revokeUserPermission(appTenantName, newOwnerName, appsPermSpec); }
       catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, authenticatedUser, appId, "revokePermNewOwner", e.getMessage()));}
       try { skClient.grantUserPermission(appTenantName, oldOwnerName, appsPermSpec); }
@@ -353,8 +352,7 @@ public class AppsServiceImpl implements AppsService
     removeSKArtifacts(authenticatedUser, appId, op);
 
     // Delete the app.
-    int appSeqId = dao.getAppSeqId(appTenantName, appId);
-    return dao.softDeleteApp(authenticatedUser, appSeqId);
+    return dao.softDeleteApp(authenticatedUser, appId);
   }
 
   /**
@@ -605,8 +603,8 @@ public class AppsServiceImpl implements AppsService
       throw new IllegalArgumentException(msg);
     }
 
-    // Get list of sequence IDs of apps for which requester has READ permission.
-    // This is either all apps (null) or a list of sequence IDs based on roles.
+    // Get list of IDs of apps for which requester has READ permission.
+    // This is either all apps (null) or a list of IDs.
     Set<String> allowedAppIDs = getAllowedAppIDs(authenticatedUser, appTenantName);
 
     // Get all allowed apps matching the search conditions
@@ -708,8 +706,6 @@ public class AppsServiceImpl implements AppsService
     // ------------------------- Check service level authorization -------------------------
     checkAuth(authenticatedUser, op, appId, null, null, null);
 
-    int seqId = dao.getAppSeqId(appTenantName, appId);
-
     // Check inputs. If anything null or empty throw an exception
     if (permissions == null || permissions.isEmpty())
     {
@@ -755,7 +751,7 @@ public class AppsServiceImpl implements AppsService
     // Construct Json string representing the update
     String updateJsonStr = TapisGsonUtils.getGson().toJson(permissions);
     // Create a record of the update
-    dao.addUpdateRecord(authenticatedUser, seqId, -1, op, updateJsonStr, updateText);
+    dao.addUpdateRecord(authenticatedUser, appTenantName, appId, NO_APP_VERSION, op, updateJsonStr, updateText);
   }
 
   /**
@@ -767,6 +763,8 @@ public class AppsServiceImpl implements AppsService
    * @param userName - Target user for operation
    * @param permissions - list of permissions to be revoked
    * @param updateText - Client provided text used to create the permissions list. Saved in update record.
+   * @return Number of items revoked
+   *
    * @throws TapisException - for Tapis related exceptions
    * @throws NotAuthorizedException - unauthorized
    */
@@ -789,9 +787,6 @@ public class AppsServiceImpl implements AppsService
 
     // ------------------------- Check service level authorization -------------------------
     checkAuth(authenticatedUser, op, appId, null, null, null);
-
-    // Retrieve the sequence Id. Used to add an update record.
-    int seqId = dao.getAppSeqId(appTenantName, appId);
 
     // Check inputs. If anything null or empty throw an exception
     if (permissions == null || permissions.isEmpty())
@@ -837,7 +832,7 @@ public class AppsServiceImpl implements AppsService
     // Construct Json string representing the update
     String updateJsonStr = TapisGsonUtils.getGson().toJson(permissions);
     // Create a record of the update
-    dao.addUpdateRecord(authenticatedUser, seqId, -1, op, updateJsonStr, updateText);
+    dao.addUpdateRecord(authenticatedUser, appTenantName, appId, NO_APP_VERSION, op, updateJsonStr, updateText);
     return changeCount;
   }
 
@@ -938,7 +933,37 @@ public class AppsServiceImpl implements AppsService
   {
     String msg;
     var errMessages = new ArrayList<String>();
-    // TODO Add checks
+
+    // If containerized is true then containerImage must be set
+    if (app.isContainerized() && StringUtils.isBlank(app.getContainerImage()))
+    {
+      msg = LibUtils.getMsg("APPLIB_CONTAINERIZED_NOIMAGE");
+      errMessages.add(msg);
+    }
+
+    // If dynamicExecSystem then execSystemConstraints must be given
+    if (app.isDynamicExecSystem() &&
+            app.getExecSystemConstraints() == null ||
+            (app.getExecSystemConstraints() != null && app.getExecSystemConstraints().length == 0))
+    {
+      msg = LibUtils.getMsg("APPLIB_DYNAMIC_NOCONSTRAINTS");
+      errMessages.add(msg);
+    }
+
+    // If not dynamicExecSystem then execSystemId must be given
+    if (!app.isDynamicExecSystem() && StringUtils.isBlank(app.getExecSystemId()))
+    {
+      msg = LibUtils.getMsg("APPLIB_NOTDYNAMIC_NOSYSTEMID");
+      errMessages.add(msg);
+    }
+
+    // If archiveSystem given then archive dir must be given
+    if (!StringUtils.isBlank(app.getArchiveSystemId()) && StringUtils.isBlank(app.getArchiveSystemDir()))
+    {
+      msg = LibUtils.getMsg("APPLIB_ARCHIVE_NODIR");
+      errMessages.add(msg);
+    }
+
     // If validation failed throw an exception
     if (!errMessages.isEmpty())
     {
@@ -1056,13 +1081,14 @@ public class AppsServiceImpl implements AppsService
    * If no owner is passed in and one cannot be found then an error is logged and
    *   authorization is denied.
    * Operations:
-   *  Create - must be owner or have admin role
-   *  Read - must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
-   *  Delete - must be owner or have admin role
+   *  Create -      must be owner or have admin role
+   *  Delete -      must be owner or have admin role
+   *  ChangeOwner - must be owner or have admin role
+   *  GrantPerm -   must be owner or have admin role
+   *  Read -     must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
+   *  getPerms - must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
    *  Modify - must be owner or have admin role or have MODIFY permission
    *  Execute - must be owner or have admin role or have EXECUTE permission
-   *  ChangeOwner - must be owner or have admin role
-   *  GrantPerm -  must be owner or have admin role
    *  RevokePerm -  must be owner or have admin role or apiUserId=targetUser and meet certain criteria (allowUserRevokePerm)
    *
    * @param authenticatedUser - principal user containing tenant and user info
@@ -1094,7 +1120,8 @@ public class AppsServiceImpl implements AppsService
       case softDelete:
       case changeOwner:
       case grantPerms:
-        if (owner.equals(userName) || hasAdminRole(authenticatedUser, tenantName, userName)) return;
+        if (owner.equals(userName) || hasAdminRole(authenticatedUser, tenantName, userName))
+          return;
         break;
       case hardDelete:
         if (hasAdminRole(authenticatedUser, tenantName, userName)) return;
@@ -1102,20 +1129,24 @@ public class AppsServiceImpl implements AppsService
       case read:
       case getPerms:
         if (owner.equals(userName) || hasAdminRole(authenticatedUser, tenantName, userName) ||
-              isPermittedAny(authenticatedUser, tenantName, userName, appId, READMODIFY_PERMS)) return;
+              isPermittedAny(authenticatedUser, tenantName, userName, appId, READMODIFY_PERMS))
+          return;
         break;
       case modify:
         if (owner.equals(userName) || hasAdminRole(authenticatedUser, tenantName, userName) ||
-                isPermitted(authenticatedUser, tenantName, userName, appId, Permission.MODIFY)) return;
+                isPermitted(authenticatedUser, tenantName, userName, appId, Permission.MODIFY))
+          return;
         break;
       case execute:
         if (owner.equals(userName) || hasAdminRole(authenticatedUser, tenantName, userName) ||
-                isPermitted(authenticatedUser, tenantName, userName, appId, Permission.EXECUTE)) return;
+                isPermitted(authenticatedUser, tenantName, userName, appId, Permission.EXECUTE))
+          return;
         break;
       case revokePerms:
         if (owner.equals(userName) || hasAdminRole(authenticatedUser, tenantName, userName) ||
                 (userName.equals(targetUser) &&
-                        allowUserRevokePerm(authenticatedUser, tenantName, userName, appId, perms))) return;
+                        allowUserRevokePerm(authenticatedUser, tenantName, userName, appId, perms)))
+          return;
         break;
     }
     // Not authorized, throw an exception
@@ -1273,6 +1304,8 @@ public class AppsServiceImpl implements AppsService
   {
     App p1 = new App(o);
     if (p.getDescription() != null) p1.setDescription(p.getDescription());
+    if (p.isEnabled() != null) p1.setEnabled(p.isEnabled());
+    if (p.isContainerized() != null) p1.setContainerized(p.isContainerized());
     if (p.getTags() != null) p1.setTags(p.getTags());
     if (p.getNotes() != null) p1.setNotes(p.getNotes());
     return p1;

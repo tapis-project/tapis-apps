@@ -33,7 +33,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NotificationMechanisms extends TableImpl<NotificationMechanismsRecord> {
 
-    private static final long serialVersionUID = -1652618104;
+    private static final long serialVersionUID = -873458595;
 
     /**
      * The reference instance of <code>tapis_app.notification_mechanisms</code>
@@ -56,7 +56,7 @@ public class NotificationMechanisms extends TableImpl<NotificationMechanismsReco
     /**
      * The column <code>tapis_app.notification_mechanisms.subscription_seq_id</code>.
      */
-    public final TableField<NotificationMechanismsRecord, Integer> SUBSCRIPTION_SEQ_ID = createField(DSL.name("subscription_seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('notification_mechanisms_subscription_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+    public final TableField<NotificationMechanismsRecord, Integer> SUBSCRIPTION_SEQ_ID = createField(DSL.name("subscription_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "");
 
     /**
      * The column <code>tapis_app.notification_mechanisms.mechanism</code>.

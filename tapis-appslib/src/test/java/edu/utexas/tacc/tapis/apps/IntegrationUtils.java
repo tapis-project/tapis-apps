@@ -31,8 +31,9 @@ public final class IntegrationUtils
   public static final String appVersion = "0.0.1";
   public static final String appVersion2 = "0.0.2";
   public static final boolean enabledTrue = true;
-  public static final boolean containerizedTrue = true;
   public static final boolean enabledFalse = false;
+  public static final boolean containerizedTrue = true;
+  public static final boolean containerizedFalse = false;
   public static final boolean strictFileInputsFalse = false;
   public static final boolean inPlaceTrue = true;
   public static final boolean inPlaceFalse = false;
@@ -41,7 +42,8 @@ public final class IntegrationUtils
   public static final Runtime runtime = Runtime.DOCKER;
   public static final String runtimeVersion = "0.0.1";
   public static final String containerImage = "containerImage";
-  public static final boolean dynamicExecSystem = true;
+  public static final boolean dynamicExecSystemTrue = true;
+  public static final boolean dynamicExecSystemFalse = false;
   public static final String[] execSystemConstraints = {"Constraint1 AND", "Constraint2"};
   public static final String execSystemId = "execSystem";
   public static final String execSystemExecDir = "execSystemExecDir";
@@ -135,7 +137,7 @@ public final class IntegrationUtils
       apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, "description "+suffix, AppType.BATCH, ownerUser, enabledTrue,
                         containerizedTrue,
                         runtime, runtimeVersion+suffix, containerImage+suffix, maxJobs, maxJobsPerUser, strictFileInputsFalse,
-                        jobDescription+suffix, dynamicExecSystem,
+                        jobDescription+suffix, dynamicExecSystemTrue,
                         execSystemConstraints, execSystemId+suffix, execSystemExecDir+suffix, execSystemInputDir+suffix,
                         execSystemOutputDir+suffix, execSystemLogicalQueue+suffix, archiveSystemId+suffix,
                         archiveSystemDir+suffix, archiveOnAppError, nodeCount, coresPerNode, memoryMb, maxMinutes,
@@ -154,18 +156,15 @@ public final class IntegrationUtils
   /**
    * Create App in memory with minimal attributes set based on App given
    *   id, version
-   * NOTE: many args to contructer are primitives so cannot be set to null.
+   * NOTE: many args to constructer are primitives so cannot be set to null.
    */
   public static App makeMinimalApp(App app)
   {
     return new App(-1, -1, tenantName, app.getId(), app.getVersion(), null, null, null, enabledTrue,
-            containerizedTrue,
-            null, null, null, maxJobs, maxJobsPerUser, strictFileInputsFalse,
-            null, dynamicExecSystem,
-            null, null, null, null,
-            null, null, null,
-            null, archiveOnAppError, nodeCount, coresPerNode, memoryMb, maxMinutes,
-            null, null, null, null,
-            null, null, null, deletedFalse, createdNull, updatedNull);
+            containerizedTrue, null, null, containerImage, maxJobs, maxJobsPerUser, strictFileInputsFalse,
+            null, dynamicExecSystemFalse, null, execSystemId,
+            null, null, null, null, null, null, archiveOnAppError,
+            nodeCount, coresPerNode, memoryMb, maxMinutes,
+            null, null, null, null, null, null, null, deletedFalse, createdNull, updatedNull);
   }
 }
