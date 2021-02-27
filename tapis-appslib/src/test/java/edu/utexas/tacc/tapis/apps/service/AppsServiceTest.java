@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.utexas.tacc.tapis.apps.IntegrationUtils.*;
+import static edu.utexas.tacc.tapis.apps.IntegrationUtils.notes2;
+import static edu.utexas.tacc.tapis.apps.IntegrationUtils.tags2;
 
 /**
  * Test the AppsService implementation class against a DB running locally
@@ -182,7 +184,8 @@ public class AppsServiceTest
     App app0 = apps[13];
     String createText = "{\"testUpdate\": \"0-create\"}";
     String patch1Text = "{\"testUpdate\": \"1-patch1\"}";
-    PatchApp patchApp = new PatchApp("description PATCHED", enabledFalse, containerizedFalse, tags2, notes2);
+    PatchApp patchApp = new PatchApp("description PATCHED", enabledFalse, runtime, runtimeVersion, containerImage,
+                                     maxJobs, maxJobsPerUser, strictFileInputsFalse, tags2, notes2);
     patchApp.setTenant(tenantName);
     patchApp.setId(app0.getId());
     patchApp.setVersion(app0.getVersion());
@@ -210,7 +213,7 @@ public class AppsServiceTest
 
     // TODO: For now only enabled and containerized are being updated
     Assert.assertFalse(tmpApp.isEnabled());
-    Assert.assertFalse(tmpApp.isContainerized());
+//    Assert.assertFalse(tmpApp.isContainerized());
   }
 
   // Test changing app owner
@@ -452,7 +455,8 @@ public class AppsServiceTest
   public void testAuthDeny() throws Exception
   {
     App app0 = apps[12];
-    PatchApp patchApp = new PatchApp("description PATCHED", enabledTrue, containerizedTrue, tags2, notes2);
+    PatchApp patchApp = new PatchApp("description PATCHED", enabledFalse, runtime2, runtimeVersion2, containerImage2,
+            maxJobs2, maxJobsPerUser2, strictFileInputsTrue, tags2, notes2);
     patchApp.setTenant(tenantName);
     patchApp.setId(app0.getId());
     patchApp.setVersion(app0.getVersion());

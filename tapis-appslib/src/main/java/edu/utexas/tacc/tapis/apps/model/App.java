@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
 
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
-
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 
 /*
@@ -40,6 +39,12 @@ public final class App
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
   public static final JsonObject DEFAULT_NOTES = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
   public static final String[] EMPTY_STR_ARRAY = new String[0];
+
+  // Attribute names, also used as field names in Json
+  public static final String ID_FIELD = "id";
+  public static final String VERSION_FIELD = "version";
+  public static final String NOTES_FIELD = "notes";
+
 
   // ************************************************************************
   // *********************** Enums ******************************************
@@ -261,17 +266,85 @@ public final class App
     updated = a.getUpdated();
   }
 
+  /**
+   * Resolve variables for App attributes
+   */
+  public void resolveVariables(String oboUser)
+  {
+    // Resolve owner if necessary. If empty or "${apiUserId}" then fill in oboUser.
+    // Note that for a user request oboUser and apiUserId are the same and for a service request we want oboUser here.
+    if (StringUtils.isBlank(owner) || owner.equalsIgnoreCase(APIUSERID_VAR)) setOwner(oboUser);
+  }
+
   // ************************************************************************
   // *********************** Public methods *********************************
   // ************************************************************************
-  public static App checkAndSetDefaults(App app)
+  public void setDefaults()
   {
-    if (app==null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT"));
-    if (StringUtils.isBlank(app.getOwner())) app.setOwner(DEFAULT_OWNER);
-    if (app.getJobTags() == null) app.setJobTags(EMPTY_STR_ARRAY);
-    if (app.getTags() == null) app.setTags(EMPTY_STR_ARRAY);
-    if (app.getNotes() == null) app.setNotes(DEFAULT_NOTES);
-    return app;
+    if (StringUtils.isBlank(owner)) setOwner(DEFAULT_OWNER);
+    if (jobTags == null) setJobTags(EMPTY_STR_ARRAY);
+    if (tags == null) setTags(EMPTY_STR_ARRAY);
+    if (notes == null) setNotes(DEFAULT_NOTES);
+  }
+
+  /**
+   * Check constraints on App attributes.
+   * Make checks that do not require a dao or service call. Check only internal consistency.
+   *  Id and version must be set.
+   *  If containerized is true then containerImage must be set
+   *  If dynamicExecSystem then execSystemConstraints must be given
+   *  If not dynamicExecSystem then execSystemId must be given
+   *  If archiveSystem given then archive dir must be given
+   *
+   * @return  list of error messages, empty list if no errors
+   */
+  public List<String> checkAttributeConstraints()
+  {
+    String msg;
+    var errMessages = new ArrayList<String>();
+
+    // Id and version must be set
+    if (StringUtils.isBlank(id))
+    {
+      msg = LibUtils.getMsg("APPLIB_CREATE_MISSING_ATTR", ID_FIELD);
+      errMessages.add(msg);
+    }
+    if (StringUtils.isBlank(version))
+    {
+      msg = LibUtils.getMsg("APPLIB_CREATE_MISSING_ATTR", VERSION_FIELD);
+      errMessages.add(msg);
+    }
+
+    // If containerized is true then containerImage must be set
+    if (containerized && StringUtils.isBlank(containerImage))
+    {
+      msg = LibUtils.getMsg("APPLIB_CONTAINERIZED_NOIMAGE");
+      errMessages.add(msg);
+    }
+
+    // If dynamicExecSystem then execSystemConstraints must be given
+    if (dynamicExecSystem && execSystemConstraints == null ||
+         (execSystemConstraints != null && execSystemConstraints.length == 0))
+    {
+      msg = LibUtils.getMsg("APPLIB_DYNAMIC_NOCONSTRAINTS");
+      errMessages.add(msg);
+    }
+
+    // If not dynamicExecSystem then execSystemId must be given
+    if (!dynamicExecSystem && StringUtils.isBlank(execSystemId))
+    {
+      msg = LibUtils.getMsg("APPLIB_NOTDYNAMIC_NOSYSTEMID");
+      errMessages.add(msg);
+    }
+
+    // If archiveSystem given then archive dir must be given
+    if (!StringUtils.isBlank(archiveSystemId) && StringUtils.isBlank(archiveSystemDir))
+    {
+      msg = LibUtils.getMsg("APPLIB_ARCHIVE_NODIR");
+      errMessages.add(msg);
+    }
+
+    return errMessages;
   }
 
   // ************************************************************************
@@ -312,7 +385,7 @@ public final class App
   public App setContainerized(boolean b) { containerized = b;  return this; }
 
   public Runtime getRuntime() { return runtime; }
-  void setRuntime(Runtime r) { runtime = r; }
+  public void setRuntime(Runtime r) { runtime = r; }
 
   public String getRuntimeVersion() { return runtimeVersion; }
   public App setRuntimeVersion(String s) { runtimeVersion = s; return this; }

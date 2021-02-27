@@ -410,7 +410,8 @@ public class AppsDaoTest
   public void testMissingApp() throws Exception {
     String fakeAppId = "AMissingAppId";
     String fakeAppVersion = "AMissingAppVersion";
-    PatchApp patchApp = new PatchApp("description PATCHED", enabledTrue, containerizedTrue, tags, notes);
+    PatchApp patchApp = new PatchApp("description PATCHED", enabledFalse, runtime2, runtimeVersion2, containerImage2,
+                                      maxJobs2, maxJobsPerUser2, strictFileInputsTrue, tags2, notes2);
     patchApp.setTenant(tenantName);
     patchApp.setId(fakeAppId);
     patchApp.setVersion(fakeAppVersion);

@@ -2,7 +2,6 @@ package edu.utexas.tacc.tapis.apps.api.resources;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.inject.Inject;
@@ -88,11 +87,6 @@ public class AppResource
   private static final String FILE_APP_UPDATE_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppUpdateRequest.json";
   private static final String FILE_APP_SEARCH_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppSearchRequest.json";
 
-  // Field names used in Json
-  private static final String ID_FIELD = "id";
-  private static final String VERSION_FIELD = "version";
-  private static final String NOTES_FIELD = "notes";
-
   // ************************************************************************
   // *********************** Fields *****************************************
   // ************************************************************************
@@ -166,9 +160,7 @@ public class AppResource
 
     ReqCreateApp req;
     // ------------------------- Create an app from the json and validate constraints -------------------------
-    try {
-      req = TapisGsonUtils.getGson().fromJson(rawJson, ReqCreateApp.class);
-    }
+    try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqCreateApp.class); }
     catch (JsonSyntaxException e)
     {
       msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName, e.getMessage());
@@ -188,9 +180,10 @@ public class AppResource
 
     // So far no need to scrub out secrets, so scrubbed and raw are the same.
     String scrubbedJson = rawJson;
-    _log.trace(ApiUtils.getMsgAuth("APPAPI_CREATE_TRACE", authenticatedUser, scrubbedJson));
+    if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_CREATE_TRACE", authenticatedUser, scrubbedJson));
 
     // Fill in defaults and check constraints on App attributes
+    app.setDefaults();
     resp = validateApp(app, authenticatedUser, prettyPrint);
     if (resp != null) return resp;
 
@@ -251,18 +244,20 @@ public class AppResource
 
   /**
    * Update existing version of an app
-   * @param appId - name of the app
+   * @param appId - id of the app
+   * @param appVersion - version of the app
    * @param payloadStream - request body
    * @param securityContext - user identity
    * @return response containing reference to updated object
    */
   @PATCH
-  @Path("{appId}")
+  @Path("{appId}/{appVersion}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response updateApp(@PathParam("appId") String appId,
-                               InputStream payloadStream,
-                               @Context SecurityContext securityContext)
+                            @PathParam("appVersion") String appVersion,
+                            InputStream payloadStream,
+                            @Context SecurityContext securityContext)
   {
     String opName = "updateApp";
     // Trace this request.
@@ -301,16 +296,14 @@ public class AppResource
 
     // ------------------------- Create a PatchApp from the json and validate constraints -------------------------
     ReqUpdateApp req;
-    try {
-      req = TapisGsonUtils.getGson().fromJson(rawJson, ReqUpdateApp.class);
-    }
+    try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqUpdateApp.class); }
     catch (JsonSyntaxException e)
     {
       msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
-    PatchApp patchApp = createPatchAppFromRequest(req, authenticatedUser.getTenantId(), appId, rawJson);
+    PatchApp patchApp = createPatchAppFromRequest(req, authenticatedUser.getTenantId(), appId, appVersion, rawJson);
 
     // No attributes are required. Constraints validated and defaults filled in on server side.
     // No secrets in PatchApp so no need to scrub
@@ -912,13 +905,17 @@ public class AppResource
   /**
    * Create a PatchApp from a ReqUpdateApp
    */
-  private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String appId, String rawJson)
+  private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String id, String version,
+                                                    String rawJson)
   {
-    PatchApp patchApp = new PatchApp(req.description, req.enabled, req.containerized, req.tags, req.notes);
-    // Update tenant name and app name
+    PatchApp patchApp = new PatchApp(req.description, req.enabled, req.runtime, req.runtimeVersion, req.containerImage,
+            req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
+            req.tags, req.notes);
+    // Update tenant, id and version
     patchApp.setTenant(tenantName);
-    patchApp.setId(appId);
-    patchApp.setVersion(req.version);
+    patchApp.setId(id);
+    patchApp.setVersion(version);
+
     // Extract Notes from the raw json.
     Object notes = extractNotes(rawJson);
     patchApp.setNotes(notes);
@@ -933,59 +930,19 @@ public class AppResource
    *
    * @return null if OK or error Response
    */
-  private static Response validateApp(App app, AuthenticatedUser authenticatedUser, boolean prettyPrint)
+  private static Response validateApp(App app1, AuthenticatedUser authenticatedUser, boolean prettyPrint)
   {
-    // Make sure owner, notes and tags are all set
-    App app1 = App.checkAndSetDefaults(app);
+    // Make call for lib level validation
+    List<String> errMessages = app1.checkAttributeConstraints();
 
-    String appId = app1.getId();
-    String msg;
-    var errMessages = new ArrayList<String>();
-    if (StringUtils.isBlank(app1.getId()))
-    {
-      msg = ApiUtils.getMsg("APPAPI_CREATE_MISSING_ATTR", ID_FIELD);
-      errMessages.add(msg);
-    }
-    if (StringUtils.isBlank(app1.getVersion()))
-    {
-      msg = ApiUtils.getMsg("APPAPI_CREATE_MISSING_ATTR", VERSION_FIELD);
-      errMessages.add(msg);
-    }
-
-    // If containerized is true then containerImage must be set
-    if (app1.isContainerized() && StringUtils.isBlank(app1.getContainerImage()))
-    {
-      msg = ApiUtils.getMsg("APPAPI_CONTAINERIZED_NOIMAGE");
-      errMessages.add(msg);
-    }
-
-    // If dynamicExecSystem then execSystemConstraints must be given
-    if (app1.isDynamicExecSystem() &&
-        app1.getExecSystemConstraints() == null || app1.getExecSystemConstraints().length == 0)
-    {
-      msg = ApiUtils.getMsg("APPAPI_DYNAMIC_NOCONSTRAINTS");
-      errMessages.add(msg);
-    }
-
-    // If not dynamicExecSystem then execSystemId must be given
-    if (!app1.isDynamicExecSystem() && StringUtils.isBlank(app1.getExecSystemId()))
-    {
-      msg = ApiUtils.getMsg("APPAPI_NOTDYNAMIC_NOSYSTEMID");
-      errMessages.add(msg);
-    }
-
-    // If archiveSystem given then archive dir must be given
-    if (!StringUtils.isBlank(app1.getArchiveSystemId()) && StringUtils.isBlank(app1.getArchiveSystemDir()))
-    {
-      msg = ApiUtils.getMsg("APPAPI_ARCHIVE_NODIR");
-      errMessages.add(msg);
-    }
+    // Now validate attributes that have special handling at API level.
+    // Currently no additional checks.
 
     // If validation failed log error message and return response
     if (!errMessages.isEmpty())
     {
       // Construct message reporting all errors
-      String allErrors = getListOfErrors(errMessages, authenticatedUser, appId);
+      String allErrors = getListOfErrors(errMessages, authenticatedUser, app1.getId());
       _log.error(allErrors);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(allErrors, prettyPrint)).build();
     }
@@ -1002,8 +959,8 @@ public class AppResource
     if (StringUtils.isBlank(rawJson)) return notes;
     // Turn the request string into a json object and extract the notes object
     JsonObject topObj = TapisGsonUtils.getGson().fromJson(rawJson, JsonObject.class);
-    if (!topObj.has(NOTES_FIELD)) return notes;
-    notes = topObj.getAsJsonObject(NOTES_FIELD);
+    if (!topObj.has(App.NOTES_FIELD)) return notes;
+    notes = topObj.getAsJsonObject(App.NOTES_FIELD);
     return notes;
   }
 

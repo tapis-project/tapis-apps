@@ -202,7 +202,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     catch (Exception e)
     {
       // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_INSERT_FAILURE", "apps");
+      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps", app.getId());
     }
     finally
     {
@@ -916,7 +916,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     catch (Exception e)
     {
       // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_INSERT_FAILURE", "apps");
+      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps", appId);
     }
     finally
     {

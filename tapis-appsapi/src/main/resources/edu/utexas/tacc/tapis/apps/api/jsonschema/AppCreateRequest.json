@@ -20,53 +20,9 @@
     "maxJobs": { "type": "integer", "default": -1 },
     "maxJobsPerUser": { "type": "integer", "default": -1 },
     "strictFileInputs": { "type": "boolean", "default": false },
-    "jobAttributes": { "$ref": "#/definitions/JobAttributes" },
-    "tags": {
-      "type": "array",
-      "uniqueItems": true,
-      "items": { "type":  "string", "minLength": 1, "maxLength": 128 }
-    },
+    "jobAttributes": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/JobAttributes" },
+    "tags": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/tagsDefinition" },
     "notes": { "type": "object" },
     "importRefId": { "type": "string", "maxLength": 128 }
-  },
-  "definitions": {
-    "JobAttributes": {
-      "type": "object",
-      "properties": {
-        "description": { "type": "string", "maxLength": 2048 },
-        "dynamicExecSystem": { "type": "boolean", "default": false },
-        "execSystemConstraints": {
-          "type": "array",
-          "minItems": 1,
-          "items": { "type":  "string", "minLength": 3 }
-        },
-        "execSystemId": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/SystemId" },
-        "execSystemExecDir": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/DirPath" },
-        "execSystemInputDir": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/DirPath" },
-        "execSystemOutputDir": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/DirPath" },
-        "execSystemLogicalQueue": { "type": "string", "minLength": 1, "maxLength": 128 },
-        "archiveSystemId": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/SystemId" },
-        "archiveDir": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/DirPath" },
-        "archiveOnAppError": { "type": "boolean", "default": true },
-        "parameterSet": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/ParameterSet" },
-        "fileInputDefinitions": {
-          "type": "array",
-          "items":  { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/FileInputDefinition" }
-        },
-        "nodeCount": { "type": "integer", "default": -1 },
-        "coresPerNode": { "type": "integer", "default": -1 },
-        "memoryMB": { "type": "integer", "default": -1 },
-        "maxMinutes": { "type": "integer", "default": -1 },
-        "subscriptions": {
-          "type": "array",
-          "items":  { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/NotificationSubscription" }
-        },
-        "tags": {
-          "type": "array",
-          "uniqueItems": true,
-          "items": { "type":  "string", "minLength": 1, "maxLength": 128 }
-        }
-      }
-    }
   }
 }

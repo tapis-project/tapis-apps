@@ -11,7 +11,45 @@
   "AppTypeEnum": { "type": "string", "enum": [ "BATCH", "DIRECT" ] },
   "RuntimeEnum": { "type": "string", "enum": [ "SINGULARITY", "DOCKER" ] },
   "NotificationMechanismEnum": { "type": "string", "enum": [ "WEBHOOK", "EMAIL", "QUEUE", "ACTOR" ] },
-
+  "tagsDefinition": {
+    "type": "array",
+    "uniqueItems": true,
+    "items": { "type":  "string", "minLength": 1, "maxLength": 128 }
+  },
+  "JobAttributes": {
+    "type": "object",
+    "properties": {
+      "description": { "type": "string", "maxLength": 2048 },
+      "dynamicExecSystem": { "type": "boolean", "default": false },
+      "execSystemConstraints": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "type":  "string", "minLength": 3 }
+      },
+      "execSystemId": { "$ref": "#/SystemId" },
+      "execSystemExecDir": { "$ref": "#/DirPath" },
+      "execSystemInputDir": { "$ref": "#/DirPath" },
+      "execSystemOutputDir": { "$ref": "#/DirPath" },
+      "execSystemLogicalQueue": { "type": "string", "minLength": 1, "maxLength": 128 },
+      "archiveSystemId": { "$ref": "#/SystemId" },
+      "archiveDir": { "$ref": "#/DirPath" },
+      "archiveOnAppError": { "type": "boolean", "default": true },
+      "parameterSet": { "$ref": "#/ParameterSet" },
+      "fileInputDefinitions": {
+        "type": "array",
+        "items":  { "$ref": "#/FileInputDefinition" }
+      },
+      "nodeCount": { "type": "integer", "default": -1 },
+      "coresPerNode": { "type": "integer", "default": -1 },
+      "memoryMB": { "type": "integer", "default": -1 },
+      "maxMinutes": { "type": "integer", "default": -1 },
+      "subscriptions": {
+        "type": "array",
+        "items":  { "$ref": "#/NotificationSubscription" }
+      },
+      "tags": { "$ref": "#/tagsDefinition" }
+    }
+  },
   "ParameterSet": {
     "type": "object",
     "properties": {

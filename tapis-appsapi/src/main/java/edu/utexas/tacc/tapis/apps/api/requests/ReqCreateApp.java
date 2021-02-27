@@ -29,7 +29,7 @@ public final class ReqCreateApp
   public int maxJobsPerUser;
   public boolean strictFileInputs;
   public JobAttributes jobAttributes;
-  public String[] tags = EMPTY_STR_ARRAY;       // List of arbitrary tags as strings
-  public Object notes = DEFAULT_NOTES;      // Simple metadata as json
-  public String importRefId; // Optional reference ID for an app created via import
+  public String[] tags = EMPTY_STR_ARRAY;
+  public Object notes = DEFAULT_NOTES;
+  public String importRefId;
 }

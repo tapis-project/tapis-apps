@@ -34,18 +34,24 @@ public final class IntegrationUtils
   public static final boolean enabledFalse = false;
   public static final boolean containerizedTrue = true;
   public static final boolean containerizedFalse = false;
+  public static final boolean strictFileInputsTrue = true;
   public static final boolean strictFileInputsFalse = false;
   public static final boolean inPlaceTrue = true;
   public static final boolean inPlaceFalse = false;
   public static final boolean metaRequiredTrue = true;
   public static final boolean metaRequiredFalse = false;
   public static final Runtime runtime = Runtime.DOCKER;
+  public static final Runtime runtime2 = Runtime.SINGULARITY;
   public static final String runtimeVersion = "0.0.1";
+  public static final String runtimeVersion2 = "0.0.2";
   public static final String containerImage = "containerImage";
+  public static final String containerImage2 = "containerImage2";
   public static final boolean dynamicExecSystemTrue = true;
   public static final boolean dynamicExecSystemFalse = false;
-  public static final String[] execSystemConstraints = {"Constraint1 AND", "Constraint2"};
+  public static final String[] execSystemConstraints = {"Constraint1a AND", "Constraint1b"};
+  public static final String[] execSystemConstraints2 = {"Constraint2a AND", "Constraint2b"};
   public static final String execSystemId = "execSystem";
+  public static final String execSystemId2 = "execSystem2";
   public static final String execSystemExecDir = "execSystemExecDir";
   public static final String execSystemInputDir = "execSystemInputDir";
   public static final String execSystemOutputDir = "execSystemOutputDir";
@@ -55,7 +61,9 @@ public final class IntegrationUtils
   public static final boolean archiveOnAppError = true;
   public static final String jobDescription = "job description 1";
   public static final int maxJobs = 1;
+  public static final int maxJobs2 = 2;
   public static final int maxJobsPerUser = 1;
+  public static final int maxJobsPerUser2 = 2;
   public static final int nodeCount = 1;
   public static final int coresPerNode = 1;
   public static final int memoryMb = 1;
@@ -70,12 +78,16 @@ public final class IntegrationUtils
   public static final String[] archiveIncludes = {"/include1", "/include2"};
   public static final String[] archiveExcludes = {"/exclude1", "/exclude2"};
 
-  public static final String[] jobTags = {"jobtag1", "jobtag2"};
-  public static final String[] tags = {"value1", "value2", "a",
+  public static final String[] jobTags = {"jobtag1a", "jobtag1b"};
+  public static final String[] jobTags2 = {"jobtag2b", "jobtag2b"};
+  public static final String[] tags = {"value1a", "value1b", "a",
             "a long tag with spaces and numbers (1 3 2) and special characters " +
             " [_ $ - & * % @ + = ! ^ ? < > , . ( ) { } / \\ | ]. Backslashes must be escaped."};
+  public static final String[] tags2 = {"value2a", "value2b", "b"};
   public static final Object notes =
           TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj1\", \"testdata\": \"abc1\"}", JsonObject.class);
+  public static final Object notes2 =
+          TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj2\", \"testdata\": \"abc2\"}", JsonObject.class);
   public static final JsonObject notesObj = (JsonObject) notes;
   public static final String scrubbedJson = "{}";
 

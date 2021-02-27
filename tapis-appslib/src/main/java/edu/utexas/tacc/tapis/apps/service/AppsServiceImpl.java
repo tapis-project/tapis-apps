@@ -138,10 +138,10 @@ public class AppsServiceImpl implements AppsService
     // Make sure owner, notes and tags are all set
     // Note that this is done before auth so owner can get resolved and used during auth check.
     app.setTenant(appTenantName);
-    App.checkAndSetDefaults(app);
+    app.setDefaults();
 
     // ----------------- Resolve variables for any attributes that might contain them --------------------
-    resolveVariables(app, authenticatedUser.getOboUser());
+    app.resolveVariables(authenticatedUser.getOboUser());
 
     // ------------------------- Check service level authorization -------------------------
     checkAuth(authenticatedUser, op, app.getId(), app.getOwner(), null, null);
@@ -910,59 +910,13 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Resolve variables for App attributes
-   * @param app - the App to process
-   */
-  private static App resolveVariables(App app, String oboUser)
-  {
-    // Resolve owner if necessary. If empty or "${apiUserId}" then fill in oboUser.
-    // Note that for a user request oboUser and apiUserId are the same and for a service request we want oboUser here.
-    String owner = app.getOwner();
-    if (StringUtils.isBlank(owner) || owner.equalsIgnoreCase(APIUSERID_VAR)) owner = oboUser;
-    app.setOwner(owner);
-    return app;
-  }
-
-  /**
    * Check constraints on App attributes.
-   * Notes must be json
    * @param app - the App to check
    * @throws IllegalStateException - if any constraints are violated
    */
   private static void validateApp(AuthenticatedUser authenticatedUser, App app) throws IllegalStateException
   {
-    String msg;
-    var errMessages = new ArrayList<String>();
-
-    // If containerized is true then containerImage must be set
-    if (app.isContainerized() && StringUtils.isBlank(app.getContainerImage()))
-    {
-      msg = LibUtils.getMsg("APPLIB_CONTAINERIZED_NOIMAGE");
-      errMessages.add(msg);
-    }
-
-    // If dynamicExecSystem then execSystemConstraints must be given
-    if (app.isDynamicExecSystem() &&
-            app.getExecSystemConstraints() == null ||
-            (app.getExecSystemConstraints() != null && app.getExecSystemConstraints().length == 0))
-    {
-      msg = LibUtils.getMsg("APPLIB_DYNAMIC_NOCONSTRAINTS");
-      errMessages.add(msg);
-    }
-
-    // If not dynamicExecSystem then execSystemId must be given
-    if (!app.isDynamicExecSystem() && StringUtils.isBlank(app.getExecSystemId()))
-    {
-      msg = LibUtils.getMsg("APPLIB_NOTDYNAMIC_NOSYSTEMID");
-      errMessages.add(msg);
-    }
-
-    // If archiveSystem given then archive dir must be given
-    if (!StringUtils.isBlank(app.getArchiveSystemId()) && StringUtils.isBlank(app.getArchiveSystemDir()))
-    {
-      msg = LibUtils.getMsg("APPLIB_ARCHIVE_NODIR");
-      errMessages.add(msg);
-    }
+    List<String> errMessages = app.checkAttributeConstraints();
 
     // If validation failed throw an exception
     if (!errMessages.isEmpty())
@@ -1298,16 +1252,21 @@ public class AppsServiceImpl implements AppsService
   /**
    * Merge a patch into an existing App
    * Attributes that can be updated:
-   *   description, enabled, tags, notes.
+   *   description, enabled, runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser,
+   *   tags, notes.
    */
   private App createPatchedApp(App o, PatchApp p)
   {
-    App p1 = new App(o);
-    if (p.getDescription() != null) p1.setDescription(p.getDescription());
-    if (p.isEnabled() != null) p1.setEnabled(p.isEnabled());
-    if (p.isContainerized() != null) p1.setContainerized(p.isContainerized());
-    if (p.getTags() != null) p1.setTags(p.getTags());
-    if (p.getNotes() != null) p1.setNotes(p.getNotes());
-    return p1;
+    App app1 = new App(o);
+    if (p.getDescription() != null) app1.setDescription(p.getDescription());
+    if (p.isEnabled() != null) app1.setEnabled(p.isEnabled());
+    if (p.getRuntime() != null) app1.setRuntime(p.getRuntime());
+    if (p.getRuntimeVersion() != null) app1.setRuntimeVersion(p.getRuntimeVersion());
+    if (p.getContainerImage() != null) app1.setContainerImage(p.getContainerImage());
+    if (p.getMaxJobs() != null) app1.setMaxJobs(p.getMaxJobs());
+    if (p.getMaxJobsPerUser() != null) app1.setMaxJobsPerUser(p.getMaxJobsPerUser());
+    if (p.getTags() != null) app1.setTags(p.getTags());
+    if (p.getNotes() != null) app1.setNotes(p.getNotes());
+    return app1;
   }
 }
