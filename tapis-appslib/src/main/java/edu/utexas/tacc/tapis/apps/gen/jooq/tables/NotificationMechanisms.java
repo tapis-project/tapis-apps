@@ -33,7 +33,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NotificationMechanisms extends TableImpl<NotificationMechanismsRecord> {
 
-    private static final long serialVersionUID = -873458595;
+    private static final long serialVersionUID = -1707661059;
 
     /**
      * The reference instance of <code>tapis_app.notification_mechanisms</code>
@@ -66,12 +66,12 @@ public class NotificationMechanisms extends TableImpl<NotificationMechanismsReco
     /**
      * The column <code>tapis_app.notification_mechanisms.webhook_url</code>.
      */
-    public final TableField<NotificationMechanismsRecord, String> WEBHOOK_URL = createField(DSL.name("webhook_url"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+    public final TableField<NotificationMechanismsRecord, String> WEBHOOK_URL = createField(DSL.name("webhook_url"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.notification_mechanisms.email_address</code>.
      */
-    public final TableField<NotificationMechanismsRecord, String> EMAIL_ADDRESS = createField(DSL.name("email_address"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+    public final TableField<NotificationMechanismsRecord, String> EMAIL_ADDRESS = createField(DSL.name("email_address"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * Create a <code>tapis_app.notification_mechanisms</code> table reference

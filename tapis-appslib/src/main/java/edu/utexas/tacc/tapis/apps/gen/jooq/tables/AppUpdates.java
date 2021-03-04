@@ -37,7 +37,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppUpdates extends TableImpl<AppUpdatesRecord> {
 
-    private static final long serialVersionUID = 712555161;
+    private static final long serialVersionUID = 1136433310;
 
     /**
      * The reference instance of <code>tapis_app.app_updates</code>
@@ -70,27 +70,27 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     /**
      * The column <code>tapis_app.app_updates.app_tenant</code>. Tenant of application being updated
      */
-    public final TableField<AppUpdatesRecord, String> APP_TENANT = createField(DSL.name("app_tenant"), org.jooq.impl.SQLDataType.VARCHAR(24).nullable(false), this, "Tenant of application being updated");
+    public final TableField<AppUpdatesRecord, String> APP_TENANT = createField(DSL.name("app_tenant"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Tenant of application being updated");
 
     /**
      * The column <code>tapis_app.app_updates.app_id</code>. Id of application being updated
      */
-    public final TableField<AppUpdatesRecord, String> APP_ID = createField(DSL.name("app_id"), org.jooq.impl.SQLDataType.VARCHAR(80).nullable(false), this, "Id of application being updated");
+    public final TableField<AppUpdatesRecord, String> APP_ID = createField(DSL.name("app_id"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Id of application being updated");
 
     /**
      * The column <code>tapis_app.app_updates.app_version</code>. Version of application being updated
      */
-    public final TableField<AppUpdatesRecord, String> APP_VERSION = createField(DSL.name("app_version"), org.jooq.impl.SQLDataType.VARCHAR(64), this, "Version of application being updated");
+    public final TableField<AppUpdatesRecord, String> APP_VERSION = createField(DSL.name("app_version"), org.jooq.impl.SQLDataType.CLOB, this, "Version of application being updated");
 
     /**
      * The column <code>tapis_app.app_updates.user_tenant</code>. Tenant of user who requested the update
      */
-    public final TableField<AppUpdatesRecord, String> USER_TENANT = createField(DSL.name("user_tenant"), org.jooq.impl.SQLDataType.VARCHAR(24).nullable(false), this, "Tenant of user who requested the update");
+    public final TableField<AppUpdatesRecord, String> USER_TENANT = createField(DSL.name("user_tenant"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Tenant of user who requested the update");
 
     /**
      * The column <code>tapis_app.app_updates.user_name</code>. Name of user who requested the update
      */
-    public final TableField<AppUpdatesRecord, String> USER_NAME = createField(DSL.name("user_name"), org.jooq.impl.SQLDataType.VARCHAR(60).nullable(false), this, "Name of user who requested the update");
+    public final TableField<AppUpdatesRecord, String> USER_NAME = createField(DSL.name("user_name"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Name of user who requested the update");
 
     /**
      * The column <code>tapis_app.app_updates.operation</code>. Type of update operation
@@ -105,7 +105,7 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     /**
      * The column <code>tapis_app.app_updates.upd_text</code>. Text data supplied by client - secrets should be scrubbed
      */
-    public final TableField<AppUpdatesRecord, String> UPD_TEXT = createField(DSL.name("upd_text"), org.jooq.impl.SQLDataType.VARCHAR, this, "Text data supplied by client - secrets should be scrubbed");
+    public final TableField<AppUpdatesRecord, String> UPD_TEXT = createField(DSL.name("upd_text"), org.jooq.impl.SQLDataType.CLOB, this, "Text data supplied by client - secrets should be scrubbed");
 
     /**
      * The column <code>tapis_app.app_updates.created</code>. UTC time for when record was created

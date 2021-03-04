@@ -30,6 +30,9 @@ public final class IntegrationUtils
   public static final String appIdPrefix = "TestApp";
   public static final String appVersion = "0.0.1";
   public static final String appVersion2 = "0.0.2";
+  public static final String descriptionNull = null;
+  public static final AppType appType = AppType.BATCH;
+  public static final String ownerNull = null;
   public static final boolean enabledTrue = true;
   public static final boolean enabledFalse = false;
   public static final boolean containerizedTrue = true;
@@ -42,24 +45,36 @@ public final class IntegrationUtils
   public static final boolean metaRequiredFalse = false;
   public static final Runtime runtime = Runtime.DOCKER;
   public static final Runtime runtime2 = Runtime.SINGULARITY;
+  public static final Runtime runtimeNull = null;
   public static final String runtimeVersion = "0.0.1";
   public static final String runtimeVersion2 = "0.0.2";
+  public static final String runtimeVersionNull = null;
   public static final String containerImage = "containerImage";
   public static final String containerImage2 = "containerImage2";
+  public static final String containerImageNull = null;
   public static final boolean dynamicExecSystemTrue = true;
   public static final boolean dynamicExecSystemFalse = false;
   public static final String[] execSystemConstraints = {"Constraint1a AND", "Constraint1b"};
   public static final String[] execSystemConstraints2 = {"Constraint2a AND", "Constraint2b"};
-  public static final String execSystemId = "execSystem";
-  public static final String execSystemId2 = "execSystem2";
+  public static final String[] execSystemConstraintsNull = null;
+  public static final String execSystemId = "exec.system.org";
+  public static final String execSystemId2 = "exec2.system.org";
+  public static final String execSystemIdNull = null;
   public static final String execSystemExecDir = "execSystemExecDir";
+  public static final String execSystemExecDirNull = null;
   public static final String execSystemInputDir = "execSystemInputDir";
+  public static final String execSystemInputDirNull = null;
   public static final String execSystemOutputDir = "execSystemOutputDir";
+  public static final String execSystemOutputDirNull = null;
   public static final String execSystemLogicalQueue = "execSystemLogicalQueue";
-  public static final String archiveSystemId = "archiveSystem";
+  public static final String execSystemLogicalQueueNull = null;
+  public static final String archiveSystemId = "archive.system.org";
+  public static final String archiveSystemIdNull = null;
   public static final String archiveSystemDir = "archiveSystemDir";
+  public static final String archiveSystemDirNull = null;
   public static final boolean archiveOnAppError = true;
   public static final String jobDescription = "job description 1";
+  public static final String jobDescriptionNull = null;
   public static final int maxJobs = 1;
   public static final int maxJobs2 = 2;
   public static final int maxJobsPerUser = 1;
@@ -75,20 +90,26 @@ public final class IntegrationUtils
 
   public static final String[] metaKVPairs = {"key1=val1", "key2=val2"};
   public static final String[] envVariables = {"key1=val1", "key2=val2"};
+  public static final String[] envVariablesNull = null;
   public static final String[] archiveIncludes = {"/include1", "/include2"};
   public static final String[] archiveExcludes = {"/exclude1", "/exclude2"};
+  public static final String[] archiveIncludesNull = null;
+  public static final String[] archiveExcludesNull = null;
 
   public static final String[] jobTags = {"jobtag1a", "jobtag1b"};
   public static final String[] jobTags2 = {"jobtag2b", "jobtag2b"};
+  public static final String[] jobTagsNull = null;
   public static final String[] tags = {"value1a", "value1b", "a",
             "a long tag with spaces and numbers (1 3 2) and special characters " +
             " [_ $ - & * % @ + = ! ^ ? < > , . ( ) { } / \\ | ]. Backslashes must be escaped."};
   public static final String[] tags2 = {"value2a", "value2b", "b"};
+  public static final String[] tagsNull = null;
   public static final Object notes =
           TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj1\", \"testdata\": \"abc1\"}", JsonObject.class);
   public static final Object notes2 =
           TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj2\", \"testdata\": \"abc2\"}", JsonObject.class);
   public static final JsonObject notesObj = (JsonObject) notes;
+  public static final String[] notesNull = null;
   public static final String scrubbedJson = "{}";
 
   public static final FileInput finA1 = new FileInput("/srcA1", "/targetA1", inPlaceTrue, "finA1", "File input A1",
@@ -150,8 +171,8 @@ public final class IntegrationUtils
                         containerizedTrue,
                         runtime, runtimeVersion+suffix, containerImage+suffix, maxJobs, maxJobsPerUser, strictFileInputsFalse,
                         jobDescription+suffix, dynamicExecSystemTrue,
-                        execSystemConstraints, execSystemId+suffix, execSystemExecDir+suffix, execSystemInputDir+suffix,
-                        execSystemOutputDir+suffix, execSystemLogicalQueue+suffix, archiveSystemId+suffix,
+                        execSystemConstraints, execSystemId, execSystemExecDir+suffix, execSystemInputDir+suffix,
+                        execSystemOutputDir+suffix, execSystemLogicalQueue+suffix, archiveSystemId,
                         archiveSystemDir+suffix, archiveOnAppError, nodeCount, coresPerNode, memoryMb, maxMinutes,
                         envVariables, archiveIncludes, archiveExcludes, jobTags,
                         tags, notes, importRefIdNull, deletedFalse, createdNull, updatedNull);
@@ -167,16 +188,17 @@ public final class IntegrationUtils
 
   /**
    * Create App in memory with minimal attributes set based on App given
-   *   id, version
-   * NOTE: many args to constructer are primitives so cannot be set to null.
+   *   id, version, appType
+   * NOTE: many args to constructor are primitives so cannot be set to null.
    */
   public static App makeMinimalApp(App app)
   {
-    return new App(-1, -1, tenantName, app.getId(), app.getVersion(), null, null, null, enabledTrue,
-            containerizedTrue, null, null, containerImage, maxJobs, maxJobsPerUser, strictFileInputsFalse,
-            null, dynamicExecSystemFalse, null, execSystemId,
-            null, null, null, null, null, null, archiveOnAppError,
-            nodeCount, coresPerNode, memoryMb, maxMinutes,
-            null, null, null, null, null, null, null, deletedFalse, createdNull, updatedNull);
+    return new App(-1, -1, tenantName, app.getId(), app.getVersion(), descriptionNull, appType, ownerNull, enabledTrue,
+            containerizedTrue, runtimeNull, runtimeVersionNull, containerImage, maxJobs, maxJobsPerUser,
+            strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
+            execSystemId, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
+            execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppError,
+            nodeCount, coresPerNode, memoryMb, maxMinutes, envVariablesNull, archiveIncludesNull, archiveExcludesNull,
+            jobTagsNull, tagsNull, notesNull, importRefIdNull, deletedFalse, createdNull, updatedNull);
   }
 }

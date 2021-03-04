@@ -38,7 +38,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppsVersions extends TableImpl<AppsVersionsRecord> {
 
-    private static final long serialVersionUID = 895865667;
+    private static final long serialVersionUID = -1369413456;
 
     /**
      * The reference instance of <code>tapis_app.apps_versions</code>
@@ -66,12 +66,12 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     /**
      * The column <code>tapis_app.apps_versions.version</code>. Application version
      */
-    public final TableField<AppsVersionsRecord, String> VERSION = createField(DSL.name("version"), org.jooq.impl.SQLDataType.VARCHAR(64).nullable(false), this, "Application version");
+    public final TableField<AppsVersionsRecord, String> VERSION = createField(DSL.name("version"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Application version");
 
     /**
      * The column <code>tapis_app.apps_versions.description</code>. Application description
      */
-    public final TableField<AppsVersionsRecord, String> DESCRIPTION = createField(DSL.name("description"), org.jooq.impl.SQLDataType.VARCHAR(2048), this, "Application description");
+    public final TableField<AppsVersionsRecord, String> DESCRIPTION = createField(DSL.name("description"), org.jooq.impl.SQLDataType.CLOB, this, "Application description");
 
     /**
      * The column <code>tapis_app.apps_versions.runtime</code>.
@@ -81,12 +81,12 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     /**
      * The column <code>tapis_app.apps_versions.runtime_version</code>.
      */
-    public final TableField<AppsVersionsRecord, String> RUNTIME_VERSION = createField(DSL.name("runtime_version"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+    public final TableField<AppsVersionsRecord, String> RUNTIME_VERSION = createField(DSL.name("runtime_version"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.container_image</code>.
      */
-    public final TableField<AppsVersionsRecord, String> CONTAINER_IMAGE = createField(DSL.name("container_image"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+    public final TableField<AppsVersionsRecord, String> CONTAINER_IMAGE = createField(DSL.name("container_image"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.max_jobs</code>.
@@ -106,7 +106,7 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     /**
      * The column <code>tapis_app.apps_versions.job_description</code>.
      */
-    public final TableField<AppsVersionsRecord, String> JOB_DESCRIPTION = createField(DSL.name("job_description"), org.jooq.impl.SQLDataType.VARCHAR(2048), this, "");
+    public final TableField<AppsVersionsRecord, String> JOB_DESCRIPTION = createField(DSL.name("job_description"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.dynamic_exec_system</code>.
@@ -121,37 +121,37 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     /**
      * The column <code>tapis_app.apps_versions.exec_system_id</code>.
      */
-    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_ID = createField(DSL.name("exec_system_id"), org.jooq.impl.SQLDataType.VARCHAR(80), this, "");
+    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_ID = createField(DSL.name("exec_system_id"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.exec_system_exec_dir</code>.
      */
-    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_EXEC_DIR = createField(DSL.name("exec_system_exec_dir"), org.jooq.impl.SQLDataType.VARCHAR(4096), this, "");
+    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_EXEC_DIR = createField(DSL.name("exec_system_exec_dir"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.exec_system_input_dir</code>.
      */
-    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_INPUT_DIR = createField(DSL.name("exec_system_input_dir"), org.jooq.impl.SQLDataType.VARCHAR(4096), this, "");
+    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_INPUT_DIR = createField(DSL.name("exec_system_input_dir"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.exec_system_output_dir</code>.
      */
-    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_OUTPUT_DIR = createField(DSL.name("exec_system_output_dir"), org.jooq.impl.SQLDataType.VARCHAR(4096), this, "");
+    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_OUTPUT_DIR = createField(DSL.name("exec_system_output_dir"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.exec_system_logical_queue</code>.
      */
-    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_LOGICAL_QUEUE = createField(DSL.name("exec_system_logical_queue"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_LOGICAL_QUEUE = createField(DSL.name("exec_system_logical_queue"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.archive_system_id</code>.
      */
-    public final TableField<AppsVersionsRecord, String> ARCHIVE_SYSTEM_ID = createField(DSL.name("archive_system_id"), org.jooq.impl.SQLDataType.VARCHAR(80), this, "");
+    public final TableField<AppsVersionsRecord, String> ARCHIVE_SYSTEM_ID = createField(DSL.name("archive_system_id"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.archive_system_dir</code>.
      */
-    public final TableField<AppsVersionsRecord, String> ARCHIVE_SYSTEM_DIR = createField(DSL.name("archive_system_dir"), org.jooq.impl.SQLDataType.VARCHAR(4096), this, "");
+    public final TableField<AppsVersionsRecord, String> ARCHIVE_SYSTEM_DIR = createField(DSL.name("archive_system_dir"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.archive_on_app_error</code>.

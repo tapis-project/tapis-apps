@@ -36,7 +36,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Apps extends TableImpl<AppsRecord> {
 
-    private static final long serialVersionUID = -268764454;
+    private static final long serialVersionUID = 1481811238;
 
     /**
      * The reference instance of <code>tapis_app.apps</code>
@@ -59,17 +59,17 @@ public class Apps extends TableImpl<AppsRecord> {
     /**
      * The column <code>tapis_app.apps.tenant</code>. Tenant name associated with the application
      */
-    public final TableField<AppsRecord, String> TENANT = createField(DSL.name("tenant"), org.jooq.impl.SQLDataType.VARCHAR(24).nullable(false), this, "Tenant name associated with the application");
+    public final TableField<AppsRecord, String> TENANT = createField(DSL.name("tenant"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Tenant name associated with the application");
 
     /**
      * The column <code>tapis_app.apps.id</code>. Unique name for the application
      */
-    public final TableField<AppsRecord, String> ID = createField(DSL.name("id"), org.jooq.impl.SQLDataType.VARCHAR(80).nullable(false), this, "Unique name for the application");
+    public final TableField<AppsRecord, String> ID = createField(DSL.name("id"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Unique name for the application");
 
     /**
      * The column <code>tapis_app.apps.latest_version</code>.
      */
-    public final TableField<AppsRecord, String> LATEST_VERSION = createField(DSL.name("latest_version"), org.jooq.impl.SQLDataType.VARCHAR(64).nullable(false), this, "");
+    public final TableField<AppsRecord, String> LATEST_VERSION = createField(DSL.name("latest_version"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "");
 
     /**
      * The column <code>tapis_app.apps.app_type</code>. Type of application
@@ -79,7 +79,7 @@ public class Apps extends TableImpl<AppsRecord> {
     /**
      * The column <code>tapis_app.apps.owner</code>. User name of application owner
      */
-    public final TableField<AppsRecord, String> OWNER = createField(DSL.name("owner"), org.jooq.impl.SQLDataType.VARCHAR(60).nullable(false), this, "User name of application owner");
+    public final TableField<AppsRecord, String> OWNER = createField(DSL.name("owner"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "User name of application owner");
 
     /**
      * The column <code>tapis_app.apps.enabled</code>. Indicates if application is currently active and available for use
@@ -94,7 +94,7 @@ public class Apps extends TableImpl<AppsRecord> {
     /**
      * The column <code>tapis_app.apps.import_ref_id</code>. Optional reference ID for resource created via import
      */
-    public final TableField<AppsRecord, String> IMPORT_REF_ID = createField(DSL.name("import_ref_id"), org.jooq.impl.SQLDataType.VARCHAR(80), this, "Optional reference ID for resource created via import");
+    public final TableField<AppsRecord, String> IMPORT_REF_ID = createField(DSL.name("import_ref_id"), org.jooq.impl.SQLDataType.CLOB, this, "Optional reference ID for resource created via import");
 
     /**
      * The column <code>tapis_app.apps.deleted</code>. Indicates if application has been soft deleted

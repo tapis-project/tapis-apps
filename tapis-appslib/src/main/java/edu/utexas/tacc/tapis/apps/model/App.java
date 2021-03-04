@@ -45,6 +45,7 @@ public final class App
   // Attribute names, also used as field names in Json
   public static final String ID_FIELD = "id";
   public static final String VERSION_FIELD = "version";
+  public static final String APPTYPE_FIELD = "appType";
   public static final String DESCRIPTION_FIELD = "description";
   public static final String OWNER_FIELD = "owner";
   public static final String RUNTIMEVER_FIELD = "runtimeVersion";
@@ -157,15 +158,16 @@ public final class App
    * NOTE: Adding a default constructor changes jOOQ behavior such that when Record.into() uses the default mapper
    *       the column names and POJO attribute names must match (with convention an_attr -> anAttr).
    */
-  public App() { }
+// TODO needed?  public App() { }
 
   /**
    * Constructor using only required attributes.
    */
-  public App(String id1, String version1)
+  public App(String id1, String version1, AppType appType1)
   {
     id = id1;
     version = version1;
+    appType = appType1;
   }
 
   /**
@@ -344,13 +346,13 @@ public final class App
 
   /**
    * Check for missing required attributes
-   *   Id, version
+   *   Id, version, appType
    */
   private void checkAttrRequired(List<String> errMessages)
   {
-    // Id, version must be set
     if (StringUtils.isBlank(id)) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, ID_FIELD));
     if (StringUtils.isBlank(version)) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, VERSION_FIELD));
+    if (appType == null) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, APPTYPE_FIELD));
   }
 
   /**
@@ -458,10 +460,12 @@ public final class App
     }
 
     // If dynamicExecSystem then execSystemConstraints must be given
-    if (dynamicExecSystem && execSystemConstraints == null ||
-            (execSystemConstraints != null && execSystemConstraints.length == 0))
+    if (dynamicExecSystem)
     {
-      errMessages.add(LibUtils.getMsg("APPLIB_DYNAMIC_NOCONSTRAINTS"));
+      if (execSystemConstraints == null || execSystemConstraints.length == 0)
+      {
+        errMessages.add(LibUtils.getMsg("APPLIB_DYNAMIC_NOCONSTRAINTS"));
+      }
     }
 
     // If not dynamicExecSystem then execSystemId must be given

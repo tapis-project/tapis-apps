@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
 
-    private static final long serialVersionUID = 1882961302;
+    private static final long serialVersionUID = 1582282132;
 
     /**
      * The reference instance of <code>tapis_app.scheduler_options</code>
@@ -60,17 +60,17 @@ public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
     /**
      * The column <code>tapis_app.scheduler_options.arg_val</code>.
      */
-    public final TableField<SchedulerOptionsRecord, String> ARG_VAL = createField(DSL.name("arg_val"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
+    public final TableField<SchedulerOptionsRecord, String> ARG_VAL = createField(DSL.name("arg_val"), org.jooq.impl.SQLDataType.CLOB.nullable(false).defaultValue(org.jooq.impl.DSL.field("''::text", org.jooq.impl.SQLDataType.CLOB)), this, "");
 
     /**
      * The column <code>tapis_app.scheduler_options.meta_name</code>.
      */
-    public final TableField<SchedulerOptionsRecord, String> META_NAME = createField(DSL.name("meta_name"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
+    public final TableField<SchedulerOptionsRecord, String> META_NAME = createField(DSL.name("meta_name"), org.jooq.impl.SQLDataType.CLOB.nullable(false).defaultValue(org.jooq.impl.DSL.field("''::text", org.jooq.impl.SQLDataType.CLOB)), this, "");
 
     /**
      * The column <code>tapis_app.scheduler_options.meta_description</code>.
      */
-    public final TableField<SchedulerOptionsRecord, String> META_DESCRIPTION = createField(DSL.name("meta_description"), org.jooq.impl.SQLDataType.VARCHAR(128).nullable(false).defaultValue(org.jooq.impl.DSL.field("''::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
+    public final TableField<SchedulerOptionsRecord, String> META_DESCRIPTION = createField(DSL.name("meta_description"), org.jooq.impl.SQLDataType.CLOB.nullable(false).defaultValue(org.jooq.impl.DSL.field("''::text", org.jooq.impl.SQLDataType.CLOB)), this, "");
 
     /**
      * The column <code>tapis_app.scheduler_options.meta_required</code>.

@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NotificationSubscriptions extends TableImpl<NotificationSubscriptionsRecord> {
 
-    private static final long serialVersionUID = -727924231;
+    private static final long serialVersionUID = 977355226;
 
     /**
      * The reference instance of <code>tapis_app.notification_subscriptions</code>
@@ -60,7 +60,7 @@ public class NotificationSubscriptions extends TableImpl<NotificationSubscriptio
     /**
      * The column <code>tapis_app.notification_subscriptions.filter</code>.
      */
-    public final TableField<NotificationSubscriptionsRecord, String> FILTER = createField(DSL.name("filter"), org.jooq.impl.SQLDataType.VARCHAR(128), this, "");
+    public final TableField<NotificationSubscriptionsRecord, String> FILTER = createField(DSL.name("filter"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * Create a <code>tapis_app.notification_subscriptions</code> table reference

@@ -8,7 +8,7 @@
   "SystemId": { "type": "string", "minLength": 1, "maxLength": 80 },
   "UserName": { "type": "string", "minLength": 1, "maxLength": 60 },
   "DirPath": { "type": "string", "minLength": 1, "maxLength": 4096 },
-  "AppTypeEnum": { "type": "string", "enum": [ "BATCH", "DIRECT" ] },
+  "AppTypeEnum": { "type": "string", "enum": [ "BATCH", "FORK" ] },
   "RuntimeEnum": { "type": "string", "enum": [ "SINGULARITY", "DOCKER" ] },
   "NotificationMechanismEnum": { "type": "string", "enum": [ "WEBHOOK", "EMAIL", "QUEUE", "ACTOR" ] },
   "tagsDefinition": {
