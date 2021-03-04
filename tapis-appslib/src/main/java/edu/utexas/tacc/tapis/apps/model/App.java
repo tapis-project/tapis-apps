@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
+import org.apache.commons.validator.routines.DomainValidator;
+import org.apache.commons.validator.routines.InetAddressValidator;
 
 /*
  * Tapis Application
@@ -43,8 +45,40 @@ public final class App
   // Attribute names, also used as field names in Json
   public static final String ID_FIELD = "id";
   public static final String VERSION_FIELD = "version";
+  public static final String DESCRIPTION_FIELD = "description";
+  public static final String OWNER_FIELD = "owner";
+  public static final String RUNTIMEVER_FIELD = "runtimeVersion";
+  public static final String CONTAINERIMG_FIELD = "containerImage";
+  public static final String JOB_FIELD_PREFIX = "Job-";
+  public static final String EXECSYSID_FIELD = "execSystemId";
+  public static final String EXECSYSEXECDIR_FIELD = "execSystemExecDir";
+  public static final String EXECSYSINDIR_FIELD = "execSystemInputDir";
+  public static final String EXECSYSOUTDIR_FIELD = "execSystemOutputDir";
+  public static final String ARCHIVESYSID_FIELD = "archiveSystemId";
+  public static final String ARCHIVESYSDIR_FIELD = "archiveSystemDir";
   public static final String NOTES_FIELD = "notes";
 
+  // Message keys
+  private static final String CREATE_MISSING_ATTR = "APPLIB_CREATE_MISSING_ATTR";
+  private static final String INVALID_STR_ATTR = "APPLIB_INVALID_STR_ATTR";
+  private static final String TOO_LONG_ATTR = "APPLIB_TOO_LONG_ATTR";
+
+  // Validation patterns
+  //ID Must start alphabetic and contain only alphanumeric and 4 special characters: - . _ ~
+  private final String PATTERN_VALID_ID = "^[a-zA-Z]([a-zA-Z0-9]|[-\\._~])*";
+
+  // Validation constants
+  private final Integer MAX_ID_LEN = 80;
+  private final Integer MAX_VERSION_LEN = 64;
+  private final Integer MAX_DESCRIPTION_LEN = 2048;
+  private final Integer MAX_PATH_LEN = 4096;
+  private final Integer MAX_USERNAME_LEN = 60;
+  private final Integer MAX_RUNTIME_VER_LEN = 128;
+  private final Integer MAX_CONTAINER_IMAGE_LEN = 128;
+  private final Integer MAX_SCHEDULERNAME_LEN = 64;
+  private final Integer MAX_QUEUENAME_LEN = 128;
+  private final Integer MAX_HPCQUEUENAME_LEN = 128;
+  private final Integer MAX_TAG_LEN = 128;
 
   // ************************************************************************
   // *********************** Enums ******************************************
@@ -289,62 +323,176 @@ public final class App
 
   /**
    * Check constraints on App attributes.
-   * Make checks that do not require a dao or service call. Check only internal consistency.
-   *  Id and version must be set.
+   * Make checks that do not require a dao or service call.
+   * Check only internal consistency and restrictions.
+   *
+   * @return  list of error messages, empty list if no errors
+   */
+  public List<String> checkAttributeRestrictions()
+  {
+    var errMessages = new ArrayList<String>();
+    checkAttrRequired(errMessages);
+    checkAttrValidity(errMessages);
+    checkAttrStringLengths(errMessages);
+    checkAttrMisc(errMessages);
+    return errMessages;
+  }
+
+  // ************************************************************************
+  // *********************** Private methods *********************************
+  // ************************************************************************
+
+  /**
+   * Check for missing required attributes
+   *   Id, version
+   */
+  private void checkAttrRequired(List<String> errMessages)
+  {
+    // Id, version must be set
+    if (StringUtils.isBlank(id)) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, ID_FIELD));
+    if (StringUtils.isBlank(version)) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, VERSION_FIELD));
+  }
+
+  /**
+   * Check for invalid attributes
+   *   id, execSystemId, archiveSystemId
+   */
+  private void checkAttrValidity(List<String> errMessages)
+  {
+    if (!StringUtils.isBlank(id) && !isValidId(id)) errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, ID_FIELD, id));
+
+    if (!StringUtils.isBlank(execSystemId) && !isValidHost(execSystemId))
+      errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, EXECSYSID_FIELD, execSystemId));
+
+    if (!StringUtils.isBlank(archiveSystemId) && !isValidHost(archiveSystemId))
+      errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, ARCHIVESYSID_FIELD, archiveSystemId));
+  }
+
+  /**
+   * Check for attribute strings that exceed limits
+   *   id, version, description, owner, runtimeVersion, containerImage, jobDescription,
+   *   execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
+   *   archiveSystemId, archiveSystemDir
+   */
+  private void checkAttrStringLengths(List<String> errMessages)
+  {
+    if (!StringUtils.isBlank(id) && id.length() > MAX_ID_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, ID_FIELD, MAX_ID_LEN));
+    }
+
+    if (!StringUtils.isBlank(version) && version.length() > MAX_VERSION_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, VERSION_FIELD, MAX_VERSION_LEN));
+    }
+
+    if (!StringUtils.isBlank(description) && description.length() > MAX_DESCRIPTION_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, DESCRIPTION_FIELD, MAX_DESCRIPTION_LEN));
+    }
+
+    if (!StringUtils.isBlank(owner) && owner.length() > MAX_USERNAME_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, OWNER_FIELD, MAX_USERNAME_LEN));
+    }
+
+    if (!StringUtils.isBlank(runtimeVersion) && runtimeVersion.length() > MAX_RUNTIME_VER_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, RUNTIMEVER_FIELD, MAX_RUNTIME_VER_LEN));
+    }
+
+    if (!StringUtils.isBlank(containerImage) && containerImage.length() > MAX_CONTAINER_IMAGE_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, CONTAINERIMG_FIELD, MAX_CONTAINER_IMAGE_LEN));
+    }
+
+    if (!StringUtils.isBlank(jobDescription) && jobDescription.length() > MAX_DESCRIPTION_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + DESCRIPTION_FIELD, MAX_DESCRIPTION_LEN));
+    }
+
+    if (!StringUtils.isBlank(execSystemId) && execSystemId.length() > MAX_ID_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + EXECSYSID_FIELD, MAX_ID_LEN));
+    }
+
+    if (!StringUtils.isBlank(execSystemExecDir) && execSystemExecDir.length() > MAX_PATH_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + EXECSYSEXECDIR_FIELD, MAX_PATH_LEN));
+    }
+
+    if (!StringUtils.isBlank(execSystemInputDir) && execSystemInputDir.length() > MAX_PATH_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + EXECSYSINDIR_FIELD, MAX_PATH_LEN));
+    }
+
+    if (!StringUtils.isBlank(execSystemOutputDir) && execSystemOutputDir.length() > MAX_PATH_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + EXECSYSOUTDIR_FIELD, MAX_PATH_LEN));
+    }
+
+    if (!StringUtils.isBlank(archiveSystemId) && archiveSystemId.length() > MAX_ID_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + ARCHIVESYSID_FIELD, MAX_ID_LEN));
+    }
+
+    if (!StringUtils.isBlank(archiveSystemDir) && archiveSystemDir.length() > MAX_PATH_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + ARCHIVESYSDIR_FIELD, MAX_PATH_LEN));
+    }
+  }
+
+  /**
+   * Check misc attribute restrictions
    *  If containerized is true then containerImage must be set
    *  If dynamicExecSystem then execSystemConstraints must be given
    *  If not dynamicExecSystem then execSystemId must be given
    *  If archiveSystem given then archive dir must be given
-   *
-   * @return  list of error messages, empty list if no errors
    */
-  public List<String> checkAttributeConstraints()
+  private void checkAttrMisc(List<String> errMessages)
   {
-    String msg;
-    var errMessages = new ArrayList<String>();
-
-    // Id and version must be set
-    if (StringUtils.isBlank(id))
-    {
-      msg = LibUtils.getMsg("APPLIB_CREATE_MISSING_ATTR", ID_FIELD);
-      errMessages.add(msg);
-    }
-    if (StringUtils.isBlank(version))
-    {
-      msg = LibUtils.getMsg("APPLIB_CREATE_MISSING_ATTR", VERSION_FIELD);
-      errMessages.add(msg);
-    }
-
     // If containerized is true then containerImage must be set
     if (containerized && StringUtils.isBlank(containerImage))
     {
-      msg = LibUtils.getMsg("APPLIB_CONTAINERIZED_NOIMAGE");
-      errMessages.add(msg);
+      errMessages.add(LibUtils.getMsg("APPLIB_CONTAINERIZED_NOIMAGE"));
     }
 
     // If dynamicExecSystem then execSystemConstraints must be given
     if (dynamicExecSystem && execSystemConstraints == null ||
-         (execSystemConstraints != null && execSystemConstraints.length == 0))
+            (execSystemConstraints != null && execSystemConstraints.length == 0))
     {
-      msg = LibUtils.getMsg("APPLIB_DYNAMIC_NOCONSTRAINTS");
-      errMessages.add(msg);
+      errMessages.add(LibUtils.getMsg("APPLIB_DYNAMIC_NOCONSTRAINTS"));
     }
 
     // If not dynamicExecSystem then execSystemId must be given
     if (!dynamicExecSystem && StringUtils.isBlank(execSystemId))
     {
-      msg = LibUtils.getMsg("APPLIB_NOTDYNAMIC_NOSYSTEMID");
-      errMessages.add(msg);
+      errMessages.add(LibUtils.getMsg("APPLIB_NOTDYNAMIC_NOSYSTEMID"));
     }
 
     // If archiveSystem given then archive dir must be given
     if (!StringUtils.isBlank(archiveSystemId) && StringUtils.isBlank(archiveSystemDir))
     {
-      msg = LibUtils.getMsg("APPLIB_ARCHIVE_NODIR");
-      errMessages.add(msg);
+      errMessages.add(LibUtils.getMsg("APPLIB_ARCHIVE_NODIR"));
     }
+  }
 
-    return errMessages;
+  /**
+   * Validate an ID string.
+   * Must start alphabetic and contain only alphanumeric and 4 special characters: - . _ ~
+   */
+  private boolean isValidId(String id) { return id.matches(PATTERN_VALID_ID); }
+
+  /**
+   * Validate a host string.
+   * Check if a string is a valid hostname or IP address.
+   * Use methods from org.apache.commons.validator.routines.
+   */
+  private boolean isValidHost(String host)
+  {
+    // First check for valid IP address, then for valid domain name
+    if (DomainValidator.getInstance().isValid(host) || InetAddressValidator.getInstance().isValid(host)) return true;
+    else return false;
   }
 
   // ************************************************************************

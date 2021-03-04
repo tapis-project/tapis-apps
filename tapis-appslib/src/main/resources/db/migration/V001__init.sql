@@ -50,14 +50,14 @@ CREATE TYPE notification_mechanism_type AS ENUM ('WEBHOOK', 'EMAIL', 'QUEUE', 'A
 CREATE TABLE apps
 (
   seq_id  SERIAL PRIMARY KEY,
-  tenant  VARCHAR(24) NOT NULL,
-  id      VARCHAR(80) NOT NULL,
-  latest_version VARCHAR(64) NOT NULL,
+  tenant  TEXT NOT NULL,
+  id      TEXT NOT NULL,
+  latest_version TEXT NOT NULL,
   app_type app_type_type,
-  owner    VARCHAR(60) NOT NULL,
+  owner    TEXT NOT NULL,
   enabled  BOOLEAN NOT NULL DEFAULT true,
   containerized BOOLEAN NOT NULL DEFAULT true,
-  import_ref_id VARCHAR(80),
+  import_ref_id TEXT,
   deleted    BOOLEAN NOT NULL DEFAULT false,
   created    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
   updated    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
@@ -82,25 +82,25 @@ CREATE TABLE apps_versions
 (
     seq_id SERIAL PRIMARY KEY,
     app_seq_id INTEGER REFERENCES apps(seq_id) ON DELETE CASCADE,
-    version VARCHAR(64) NOT NULL,
-    description VARCHAR(2048),
+    version TEXT NOT NULL,
+    description TEXT,
     runtime runtime_type NOT NULL,
-    runtime_version VARCHAR(128),
-    container_image VARCHAR(128),
+    runtime_version TEXT,
+    container_image TEXT,
     max_jobs INTEGER NOT NULL DEFAULT -1,
     max_jobs_per_user INTEGER NOT NULL DEFAULT -1,
     strict_file_inputs BOOLEAN NOT NULL DEFAULT false,
 -- ==== Start jobAttributes ======================================
-    job_description VARCHAR(2048),
+    job_description TEXT,
     dynamic_exec_system BOOLEAN NOT NULL DEFAULT false,
     exec_system_constraints TEXT[] NOT NULL,
-    exec_system_id VARCHAR(80),
-    exec_system_exec_dir VARCHAR(4096),
-    exec_system_input_dir VARCHAR(4096),
-    exec_system_output_dir VARCHAR(4096),
-    exec_system_logical_queue VARCHAR(128),
-    archive_system_id VARCHAR(80),
-    archive_system_dir VARCHAR(4096),
+    exec_system_id TEXT,
+    exec_system_exec_dir TEXT,
+    exec_system_input_dir TEXT,
+    exec_system_output_dir TEXT,
+    exec_system_logical_queue TEXT,
+    archive_system_id TEXT,
+    archive_system_dir TEXT,
     archive_on_app_error BOOLEAN NOT NULL DEFAULT true,
 --   parameterSet location in jobAttributes ===================
 --   parameterSet attributes flattened into this table ========
@@ -139,14 +139,14 @@ CREATE TABLE app_updates
     seq_id SERIAL PRIMARY KEY,
     app_seq_id INTEGER REFERENCES apps(seq_id) ON DELETE CASCADE,
     app_ver_seq_id INTEGER,
-    app_tenant VARCHAR(24) NOT NULL,
-    app_id VARCHAR(80) NOT NULL,
-    app_version VARCHAR(64),
-    user_tenant VARCHAR(24) NOT NULL,
-    user_name VARCHAR(60) NOT NULL,
+    app_tenant TEXT NOT NULL,
+    app_id TEXT NOT NULL,
+    app_version TEXT,
+    user_tenant TEXT NOT NULL,
+    user_name TEXT NOT NULL,
     operation operation_type NOT NULL,
     upd_json JSONB NOT NULL,
-    upd_text VARCHAR,
+    upd_text TEXT,
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
 );
 ALTER TABLE app_updates OWNER TO tapis_app;
@@ -193,7 +193,7 @@ CREATE TABLE notification_subscriptions
 (
     seq_id SERIAL PRIMARY KEY,
     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
-    filter VARCHAR(128) -- TODO length?
+    filter TEXT
 );
 ALTER TABLE notification_subscriptions OWNER TO tapis_app;
 
@@ -203,8 +203,8 @@ CREATE TABLE notification_mechanisms
     seq_id SERIAL PRIMARY KEY,
     subscription_seq_id INTEGER REFERENCES notification_subscriptions(seq_id) ON DELETE CASCADE,
     mechanism notification_mechanism_type,
-    webhook_url VARCHAR(128), -- TODO length?
-    email_address VARCHAR(128) -- TODO length?
+    webhook_url TEXT,
+    email_address TEXT
 );
 ALTER TABLE notification_mechanisms OWNER TO tapis_app;
 
@@ -219,9 +219,9 @@ CREATE TABLE app_args
 (
     seq_id SERIAL PRIMARY KEY,
     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
-    arg_val VARCHAR(128) NOT NULL DEFAULT '',
-    meta_name VARCHAR(128) NOT NULL DEFAULT '',
-    meta_description VARCHAR(128) NOT NULL DEFAULT '',
+    arg_val TEXT NOT NULL DEFAULT '',
+    meta_name TEXT NOT NULL DEFAULT '',
+    meta_description TEXT NOT NULL DEFAULT '',
     meta_required BOOLEAN NOT NULL DEFAULT true,
     meta_key_value_pairs TEXT[] NOT NULL
 );
@@ -235,9 +235,9 @@ CREATE TABLE container_args
 (
     seq_id SERIAL PRIMARY KEY,
     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
-    arg_val VARCHAR(128) NOT NULL DEFAULT '',
-    meta_name VARCHAR(128) NOT NULL DEFAULT '',
-    meta_description VARCHAR(128) NOT NULL DEFAULT '',
+    arg_val TEXT NOT NULL DEFAULT '',
+    meta_name TEXT NOT NULL DEFAULT '',
+    meta_description TEXT NOT NULL DEFAULT '',
     meta_required BOOLEAN NOT NULL DEFAULT true,
     meta_key_value_pairs TEXT[] NOT NULL
 );
@@ -251,9 +251,9 @@ CREATE TABLE scheduler_options
 (
     seq_id SERIAL PRIMARY KEY,
     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
-    arg_val VARCHAR(128) NOT NULL DEFAULT '',
-    meta_name VARCHAR(128) NOT NULL DEFAULT '',
-    meta_description VARCHAR(128) NOT NULL DEFAULT '',
+    arg_val TEXT NOT NULL DEFAULT '',
+    meta_name TEXT NOT NULL DEFAULT '',
+    meta_description TEXT NOT NULL DEFAULT '',
     meta_required BOOLEAN NOT NULL DEFAULT true,
     meta_key_value_pairs TEXT[] NOT NULL
 );

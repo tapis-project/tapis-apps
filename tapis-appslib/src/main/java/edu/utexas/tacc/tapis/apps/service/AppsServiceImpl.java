@@ -34,7 +34,7 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
-import static edu.utexas.tacc.tapis.apps.model.App.APIUSERID_VAR;
+
 import static edu.utexas.tacc.tapis.shared.TapisConstants.APPS_SERVICE;
 
 /*
@@ -191,7 +191,7 @@ public class AppsServiceImpl implements AppsService
    * Update existing version of an app given a PatchApp and the text used to create the PatchApp.
    * Secrets in the text should be masked.
    * Attributes that can be updated:
-   *   TODO/TBD: description, enabled, tags, notes.
+   *   TODO/TBD: description, enabled, tags, notes. Jira cic-3929
    * Attributes that cannot be updated:
    *   tenant, id, version, appType, owner
    * @param authenticatedUser - principal user containing tenant and user info
@@ -916,7 +916,7 @@ public class AppsServiceImpl implements AppsService
    */
   private static void validateApp(AuthenticatedUser authenticatedUser, App app) throws IllegalStateException
   {
-    List<String> errMessages = app.checkAttributeConstraints();
+    List<String> errMessages = app.checkAttributeRestrictions();
 
     // If validation failed throw an exception
     if (!errMessages.isEmpty())
@@ -1149,7 +1149,7 @@ public class AppsServiceImpl implements AppsService
     // Use tenant and user from authenticatedUsr or optional provided values
     String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
-    // TODO: Remove this when admin access is available
+    // TODO: Remove this when admin access is available Jira cic-3964
     if ("testuser9".equalsIgnoreCase(userName)) return true;
     var skClient = getSKClient(authenticatedUser);
     return skClient.isAdmin(tenantName, userName);

@@ -933,7 +933,7 @@ public class AppResource
   private static Response validateApp(App app1, AuthenticatedUser authenticatedUser, boolean prettyPrint)
   {
     // Make call for lib level validation
-    List<String> errMessages = app1.checkAttributeConstraints();
+    List<String> errMessages = app1.checkAttributeRestrictions();
 
     // Now validate attributes that have special handling at API level.
     // Currently no additional checks.
