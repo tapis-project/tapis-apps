@@ -13,17 +13,13 @@
   <component name="ChangeListManager">
     <list default="true" id="34efd738-2b9a-4e43-b14d-018fde0be61f" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appsapi/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/AppsApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/AppsApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/model/ArchiveFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/model/ArchiveFilter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppsResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/AppsResource.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/PermsResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/resources/PermsResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/responses/results/ResultApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/src/main/java/edu/utexas/tacc/tapis/apps/api/responses/results/ResultApp.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appsapi/tapis-appsapi.iml" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appsapi/tapis-appsapi.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/model/App.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/service/AppsServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/service/AppsServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tapis-appslib/src/main/resources/db/migration/V001__init.sql" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/src/main/resources/db/migration/V001__init.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tapis-appslib/tapis-appslib.iml" beforeDir="false" afterPath="$PROJECT_DIR$/tapis-appslib/tapis-appslib.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-api/src/main/java/edu/utexas/tacc/tapis/sharedapi/jaxrs/filters/JWTValidateRequestFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-api/src/main/java/edu/utexas/tacc/tapis/sharedapi/jaxrs/filters/JWTValidateRequestFilter.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,11 +76,12 @@
   <component name="RunManager" selected="TestNG.AppsServiceTest">
     <list>
       <item itemvalue="Application.AppsApplication" />
+      <item itemvalue="TestNG.AppsDaoTest.testGetAppsInIDList" />
+      <item itemvalue="TestNG.AppsServiceTest.testUserPerms" />
       <item itemvalue="TestNG.AppsDaoTest.testSoftDelete" />
       <item itemvalue="TestNG.AppsServiceTest.testGetAppsAuth" />
       <item itemvalue="TestNG.AppsDaoTest" />
       <item itemvalue="TestNG.AppsDaoTest.testGet" />
-      <item itemvalue="TestNG.AppsDaoTest.testGetAppsInSeqIDList" />
       <item itemvalue="TestNG.AppsServiceTest" />
       <item itemvalue="TestNG.SearchASTDaoTest" />
       <item itemvalue="TestNG.SearchDaoTest" />

@@ -1187,7 +1187,7 @@ public class AppsServiceImpl implements AppsService
     for (Permission perm : perms) {
       permSpecs.add(getPermSpecStr(tenantName, appId, perm));
     }
-    return skClient.isPermittedAny(tenantName, userName, permSpecs.toArray(new String[0]));
+    return skClient.isPermittedAny(tenantName, userName, permSpecs.toArray(App.EMPTY_STR_ARRAY));
   }
 
   /**

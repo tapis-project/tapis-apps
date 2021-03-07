@@ -69,9 +69,6 @@ import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultResourceUrl;
  * JAX-RS REST resource for a Tapis App (edu.utexas.tacc.tapis.apps.model.App)
  * jax-rs annotations map HTTP verb + endpoint to method invocation and map query parameters.
  *  NOTE: For OpenAPI spec please see repo openapi-apps, file AppsAPI.yaml
- *
- * NOTE: The "pretty" query parameter is available for all endpoints. It is processed in
- *       QueryParametersRequestFilter.java.
  */
 @Path("/v3/apps")
 public class AppResource
@@ -86,6 +83,9 @@ public class AppResource
   private static final String FILE_APP_CREATE_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppCreateRequest.json";
   private static final String FILE_APP_UPDATE_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppUpdateRequest.json";
   private static final String FILE_APP_SEARCH_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppSearchRequest.json";
+
+  // Always return a nicely formatted response
+  private static final boolean PRETTY = true;
 
   // ************************************************************************
   // *********************** Fields *****************************************
@@ -129,10 +129,9 @@ public class AppResource
 
     // ------------------------- Retrieve and validate thread context -------------------------
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    boolean prettyPrint = threadContext.getPrettyPrint();
     // Check that we have all we need from the context, the tenant name and apiUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    Response resp = ApiUtils.checkContext(threadContext, prettyPrint);
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
@@ -146,7 +145,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName , e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     // Create validator specification and validate the json against the schema
     JsonValidatorSpec spec = new JsonValidatorSpec(rawJson, FILE_APP_CREATE_REQUEST);
@@ -155,7 +154,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg("TAPIS_JSON_VALIDATION_ERROR", e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     ReqCreateApp req;
@@ -165,7 +164,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // If req is null that is an unrecoverable error
@@ -173,7 +172,7 @@ public class AppResource
     {
       msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, "ReqCreateApp == null");
       _log.error(msg);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     // Create an app from the request
     App app = createAppFromRequest(req, rawJson);
@@ -184,7 +183,7 @@ public class AppResource
 
     // Fill in defaults and check constraints on App attributes
     app.setDefaults();
-    resp = validateApp(app, authenticatedUser, prettyPrint);
+    resp = validateApp(app, authenticatedUser);
     if (resp != null) return resp;
 
     // ---------------------------- Make service call to create the app -------------------------------
@@ -202,21 +201,21 @@ public class AppResource
         // IllegalStateException with msg containing APP_EXISTS indicates object exists - return 409 - Conflict
         msg = ApiUtils.getMsgAuth("APPAPI_APP_EXISTS", authenticatedUser, appId, app.getVersion());
         _log.warn(msg);
-        return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+        return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
       else if (e.getMessage().contains("APPLIB_UNAUTH"))
       {
         // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
         msg = ApiUtils.getMsgAuth("APPAPI_APP_UNAUTH", authenticatedUser, appId, opName);
         _log.warn(msg);
-        return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+        return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
       else
       {
         // IllegalStateException indicates an Invalid App was passed in
         msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, appId, e.getMessage());
         _log.error(msg);
-        return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+        return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
     }
     catch (IllegalArgumentException e)
@@ -224,13 +223,13 @@ public class AppResource
       // IllegalArgumentException indicates somehow a bad argument made it this far
       msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ---------------------------- Success ------------------------------- 
@@ -239,7 +238,7 @@ public class AppResource
     respUrl.url = _request.getRequestURL().toString() + "/" + appId;
     RespResourceUrl resp1 = new RespResourceUrl(respUrl);
     return Response.status(Status.CREATED).entity(TapisRestUtils.createSuccessResponse(
-      ApiUtils.getMsgAuth("APPAPI_CREATED", authenticatedUser, appId), prettyPrint, resp1)).build();
+      ApiUtils.getMsgAuth("APPAPI_CREATED", authenticatedUser, appId), PRETTY, resp1)).build();
   }
 
   /**
@@ -265,10 +264,9 @@ public class AppResource
 
     // ------------------------- Retrieve and validate thread context -------------------------
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    boolean prettyPrint = threadContext.getPrettyPrint();
     // Check that we have all we need from the context, the tenant name and apiUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    Response resp = ApiUtils.checkContext(threadContext, prettyPrint);
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
@@ -282,7 +280,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName , e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     // Create validator specification and validate the json against the schema
     JsonValidatorSpec spec = new JsonValidatorSpec(rawJson, FILE_APP_UPDATE_REQUEST);
@@ -291,7 +289,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg("TAPIS_JSON_VALIDATION_ERROR", e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ------------------------- Create a PatchApp from the json and validate constraints -------------------------
@@ -301,7 +299,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     PatchApp patchApp = createPatchAppFromRequest(req, authenticatedUser.getTenantId(), appId, appVersion, rawJson);
 
@@ -317,7 +315,7 @@ public class AppResource
     {
       msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appId);
       _log.warn(msg);
-      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (IllegalStateException e)
     {
@@ -326,14 +324,14 @@ public class AppResource
         // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
         msg = ApiUtils.getMsgAuth("APPAPI_APP_UNAUTH", authenticatedUser, appId, opName);
         _log.warn(msg);
-        return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+        return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
       else
       {
         // IllegalStateException indicates an Invalid PatchApp was passed in
         msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, e.getMessage());
         _log.error(msg);
-        return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+        return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
     }
     catch (IllegalArgumentException e)
@@ -341,13 +339,13 @@ public class AppResource
       // IllegalArgumentException indicates somehow a bad argument made it this far
       msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ---------------------------- Success -------------------------------
@@ -356,7 +354,7 @@ public class AppResource
     respUrl.url = _request.getRequestURL().toString();
     RespResourceUrl resp1 = new RespResourceUrl(respUrl);
     return Response.status(Status.OK).entity(TapisRestUtils.createSuccessResponse(
-            ApiUtils.getMsgAuth("APPAPI_UPDATED", authenticatedUser, appId), prettyPrint, resp1)).build();
+            ApiUtils.getMsgAuth("APPAPI_UPDATED", authenticatedUser, appId), PRETTY, resp1)).build();
   }
 
   /**
@@ -380,10 +378,9 @@ public class AppResource
 
     // ------------------------- Retrieve and validate thread context -------------------------
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    boolean prettyPrint = threadContext.getPrettyPrint();
     // Check that we have all we need from the context, the tenant name and apiUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    Response resp = ApiUtils.checkContext(threadContext, prettyPrint);
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
@@ -400,7 +397,7 @@ public class AppResource
     {
       msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appId);
       _log.warn(msg);
-      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (IllegalStateException e)
     {
@@ -409,14 +406,14 @@ public class AppResource
         // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
         msg = ApiUtils.getMsgAuth("APPAPI_APP_UNAUTH", authenticatedUser, appId, opName);
         _log.warn(msg);
-        return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+        return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
       else
       {
         // IllegalStateException indicates an Invalid PatchApp was passed in
         msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, e.getMessage());
         _log.error(msg);
-        return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+        return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
     }
     catch (IllegalArgumentException e)
@@ -424,13 +421,13 @@ public class AppResource
       // IllegalArgumentException indicates somehow a bad argument made it this far
       msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ---------------------------- Success -------------------------------
@@ -440,7 +437,7 @@ public class AppResource
     count.changes = changeCount;
     RespChangeCount resp1 = new RespChangeCount(count);
     return Response.status(Status.OK).entity(TapisRestUtils.createSuccessResponse(
-            ApiUtils.getMsgAuth("APPAPI_UPDATED", authenticatedUser, appId), prettyPrint, resp1)).build();
+            ApiUtils.getMsgAuth("APPAPI_UPDATED", authenticatedUser, appId), PRETTY, resp1)).build();
   }
 
   /**
@@ -465,8 +462,7 @@ public class AppResource
     // Check that we have all we need from the context, the tenant name and apiUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    boolean prettyPrint = threadContext.getPrettyPrint();
-    Response resp = ApiUtils.checkContext(threadContext, prettyPrint);
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
@@ -481,7 +477,7 @@ public class AppResource
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg, e);
-      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // Resource was not found.
@@ -489,7 +485,7 @@ public class AppResource
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appId);
       _log.warn(msg);
-      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ---------------------------- Success -------------------------------
@@ -522,8 +518,7 @@ public class AppResource
     // Check that we have all we need from the context, the tenant name and apiUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    boolean prettyPrint = threadContext.getPrettyPrint();
-    Response resp = ApiUtils.checkContext(threadContext, prettyPrint);
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
@@ -538,7 +533,7 @@ public class AppResource
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg, e);
-      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // Resource was not found.
@@ -546,7 +541,7 @@ public class AppResource
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appId);
       _log.warn(msg);
-      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ---------------------------- Success -------------------------------
@@ -576,8 +571,7 @@ public class AppResource
     // Check that we have all we need from the context, the tenant name and apiUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    boolean prettyPrint = threadContext.getPrettyPrint();
-    Response resp = ApiUtils.checkContext(threadContext, prettyPrint);
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
@@ -594,7 +588,7 @@ public class AppResource
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_SEARCH_ERROR", authenticatedUser, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     if (searchList != null && !searchList.isEmpty()) _log.debug("Using searchList. First value = " + searchList.get(0));
@@ -606,7 +600,7 @@ public class AppResource
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_SELECT_ERROR", authenticatedUser, e.getMessage());
       _log.error(msg, e);
-      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ---------------------------- Success -------------------------------
@@ -635,8 +629,7 @@ public class AppResource
     // Check that we have all we need from the context, the tenant name and apiUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    boolean prettyPrint = threadContext.getPrettyPrint();
-    Response resp = ApiUtils.checkContext(threadContext, prettyPrint);
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
@@ -654,7 +647,7 @@ public class AppResource
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_SEARCH_ERROR", authenticatedUser, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     if (searchList != null && !searchList.isEmpty()) _log.debug("Using searchList. First value = " + searchList.get(0));
@@ -666,7 +659,7 @@ public class AppResource
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_SELECT_ERROR", authenticatedUser, e.getMessage());
       _log.error(msg, e);
-      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ---------------------------- Success -------------------------------
@@ -699,8 +692,7 @@ public class AppResource
     // Check that we have all we need from the context, the tenant name and apiUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    boolean prettyPrint = threadContext.getPrettyPrint();
-    Response resp = ApiUtils.checkContext(threadContext, prettyPrint);
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
@@ -714,7 +706,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName , e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     // Create validator specification and validate the json against the schema
     JsonValidatorSpec spec = new JsonValidatorSpec(rawJson, FILE_APP_SEARCH_REQUEST);
@@ -723,7 +715,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg("TAPIS_JSON_VALIDATION_ERROR", e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // Construct final SQL-like search string using the json
@@ -738,7 +730,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     _log.debug("Using search string: " + searchStr);
 
@@ -749,7 +741,7 @@ public class AppResource
     {
       msg = ApiUtils.getMsgAuth("APPAPI_SELECT_ERROR", authenticatedUser, e.getMessage());
       _log.error(msg, e);
-      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ---------------------------- Success -------------------------------
@@ -781,8 +773,7 @@ public class AppResource
     // Check that we have all we need from the context, the tenant name and apiUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    boolean prettyPrint = threadContext.getPrettyPrint();
-    Response resp = ApiUtils.checkContext(threadContext, prettyPrint);
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
@@ -793,7 +784,7 @@ public class AppResource
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_DELETE_NOCONFIRM", authenticatedUser, appId);
       _log.warn(msg);
-      return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
 
@@ -806,7 +797,7 @@ public class AppResource
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_DELETE_NAME_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg, e);
-      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ---------------------------- Success -------------------------------
@@ -816,7 +807,7 @@ public class AppResource
     count.changes = changeCount;
     RespChangeCount resp1 = new RespChangeCount(count);
     return Response.status(Status.OK).entity(TapisRestUtils.createSuccessResponse(
-      MsgUtils.getMsg("TAPIS_DELETED", "App", appId), prettyPrint, resp1)).build();
+      MsgUtils.getMsg("TAPIS_DELETED", "App", appId), PRETTY, resp1)).build();
   }
 
   /**
@@ -839,8 +830,7 @@ public class AppResource
     // Check that we have all we need from the context, the tenant name and apiUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    boolean prettyPrint = threadContext.getPrettyPrint();
-    Response resp = ApiUtils.checkContext(threadContext, prettyPrint);
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
@@ -855,7 +845,7 @@ public class AppResource
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", authenticatedUser, appId, e.getMessage());
       _log.error(msg, e);
-      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(RestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ---------------------------- Success -------------------------------
@@ -930,7 +920,7 @@ public class AppResource
    *
    * @return null if OK or error Response
    */
-  private static Response validateApp(App app1, AuthenticatedUser authenticatedUser, boolean prettyPrint)
+  private static Response validateApp(App app1, AuthenticatedUser authenticatedUser)
   {
     // Make call for lib level validation
     List<String> errMessages = app1.checkAttributeRestrictions();
@@ -944,7 +934,7 @@ public class AppResource
       // Construct message reporting all errors
       String allErrors = getListOfErrors(errMessages, authenticatedUser, app1.getId());
       _log.error(allErrors);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(allErrors, prettyPrint)).build();
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(allErrors, PRETTY)).build();
     }
     return null;
   }

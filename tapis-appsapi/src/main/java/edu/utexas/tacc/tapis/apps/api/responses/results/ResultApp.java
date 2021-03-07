@@ -60,5 +60,8 @@ public final class ResultApp
     tags = a.getTags();
     notes = a.getNotes();
     importRefId = a.getImportRefId();
-  }
+    // Check for -1 in max values and return Integer.MAX_VALUE instead.
+    //   As requested by Jobs service.
+    if (maxJobs < 0) maxJobs = Integer.MAX_VALUE;
+    if (maxJobsPerUser < 0) maxJobsPerUser = Integer.MAX_VALUE;  }
 }

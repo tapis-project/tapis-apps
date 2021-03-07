@@ -12,8 +12,8 @@ public final class ArchiveFilter
 
   public ArchiveFilter()
   {
-    includes = new String[0];
-    excludes = new String[0];
+    includes = App.EMPTY_STR_ARRAY;
+    excludes = App.EMPTY_STR_ARRAY;
   }
   ArchiveFilter(App a)
   {
