@@ -9,6 +9,8 @@ import edu.utexas.tacc.tapis.shared.utils.JsonObjectSerializer;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import java.util.UUID;
+
 /*
   Classes representing a returned App result
  */
@@ -34,7 +36,7 @@ public final class ResultApp
   // Json objects require special serializer for Jackson to handle properly in outgoing response.
   @JsonSerialize(using = JsonObjectSerializer.class)
   public Object notes;
-  public String importRefId;
+  public UUID uuid;
 
   // Zero arg constructor needed to use jersey's SelectableEntityFilteringFeature
   public ResultApp() { }
@@ -59,7 +61,7 @@ public final class ResultApp
     jobAttributes = new JobAttributes(a);
     tags = a.getTags();
     notes = a.getNotes();
-    importRefId = a.getImportRefId();
+    uuid = a.getUuid();
     // Check for -1 in max values and return Integer.MAX_VALUE instead.
     //   As requested by Jobs service.
     if (maxJobs < 0) maxJobs = Integer.MAX_VALUE;

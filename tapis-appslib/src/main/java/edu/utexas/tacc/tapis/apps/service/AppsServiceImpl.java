@@ -36,7 +36,7 @@ import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 
 import static edu.utexas.tacc.tapis.shared.TapisConstants.APPS_SERVICE;
-
+import static edu.utexas.tacc.tapis.apps.model.App.NO_APP_VERSION;
 /*
  * Service level methods for Apps.
  *   Uses Dao layer and other service library classes to perform all top level service operations.
@@ -63,9 +63,6 @@ public class AppsServiceImpl implements AppsService
   // Message keys
   private static final String ERROR_ROLLBACK = "APPLIB_ERROR_ROLLBACK";
   private static final String NOT_FOUND = "APPLIB_NOT_FOUND";
-
-  // Constants indicating app version is not relevant.
-  private static final String NO_APP_VERSION = null;
 
   // ************************************************************************
   // *********************** Enums ******************************************

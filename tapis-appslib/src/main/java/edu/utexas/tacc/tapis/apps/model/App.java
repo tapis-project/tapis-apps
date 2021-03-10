@@ -3,6 +3,7 @@ package edu.utexas.tacc.tapis.apps.model;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import com.google.gson.JsonObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,6 +30,11 @@ public final class App
   // ************************************************************************
   // *********************** Constants **************************************
   // ************************************************************************
+
+  // Constants indicating app version, uuid or seq_id is not relevant.
+  public static final int INVALID_SEQ_ID = -1;
+  public static final UUID INVALID_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+  public static final String NO_APP_VERSION = null;
 
   public static final String PERMISSION_WILDCARD = "*";
   // Allowed substitution variables
@@ -144,6 +150,7 @@ public final class App
 
   private String[] tags;       // List of arbitrary tags as strings
   private Object notes;      // Simple metadata as json
+  private UUID uuid;
   private String importRefId; // Optional reference ID for object created via import
   private boolean deleted;
   private Instant created; // UTC time for when record was created
@@ -168,6 +175,7 @@ public final class App
     id = id1;
     version = version1;
     appType = appType1;
+    uuid = UUID.randomUUID();
   }
 
   /**
@@ -202,7 +210,8 @@ public final class App
              String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1, int nodeCount1,
              int coresPerNode1, int memoryMb1, int maxMinutes1, String[] envVariables1,
              String[] archiveIncludes1, String[] archiveExcludes1, String[] jobTags1,
-             String[] tags1, Object notes1, String importRefId1, boolean deleted1, Instant created1, Instant updated1)
+             String[] tags1, Object notes1, UUID uuid1, String importRefId1, boolean deleted1,
+             Instant created1, Instant updated1)
   {
     seqId = seqId1;
     verSeqId = verSeqId1;
@@ -241,6 +250,7 @@ public final class App
     jobTags = (jobTags1 == null) ? null : jobTags1.clone();
     tags = (tags1 == null) ? null : tags1.clone();
     notes = notes1;
+    uuid = (uuid == null) ? UUID.randomUUID() : uuid1;
     importRefId = importRefId1;
     deleted = deleted1;
     created = created1;
@@ -296,6 +306,7 @@ public final class App
     schedulerOptions = a.getSchedulerOptions();
     tags = a.getTags();
     notes = a.getNotes();
+    uuid = a.getUuid();
     importRefId = a.getImportRefId();
     deleted = a.isDeleted();
     created = a.getCreated();
@@ -702,6 +713,9 @@ public final class App
 
   public Object getNotes() { return notes; }
   public App setNotes(Object n) { notes = n; return this; }
+
+  public UUID getUuid() { return uuid; }
+  public App setUuid(UUID u) { uuid = u; return this; }
 
   public boolean isDeleted() { return deleted; }
 }

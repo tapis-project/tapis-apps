@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -47,6 +48,10 @@ import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 
+import static edu.utexas.tacc.tapis.apps.model.App.INVALID_SEQ_ID;
+import static edu.utexas.tacc.tapis.apps.model.App.INVALID_UUID;
+import static edu.utexas.tacc.tapis.apps.model.App.NO_APP_VERSION;
+
 /*
  * Class to handle persistence and queries for Tapis App objects.
  */
@@ -61,8 +66,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   private static final String VERS_ANY = "%";
   private static final String EMPTY_JSON = "{}";
   private static final String[] EMPTY_STR_ARRAY = {};
-  private static final int INVALID_SEQ_ID = -1;
-  private static final String NO_APP_VERSION = null;
 
   /* ********************************************************************** */
   /*                             Public Methods                             */
@@ -178,6 +181,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.JOB_TAGS, jobTagsStrArray)
               .set(APPS_VERSIONS.TAGS, tagsStrArray)
               .set(APPS_VERSIONS.NOTES, notesObj)
+              .set(APPS_VERSIONS.UUID, app.getUuid())
               .returningResult(APPS_VERSIONS.SEQ_ID)
               .fetchOne();
       appVerSeqId = record.getValue(APPS_VERSIONS.SEQ_ID);
@@ -194,7 +198,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
       // Persist update record
       addUpdate(db, authenticatedUser, app.getTenant(), app.getId(), app.getVersion(), appSeqId, appVerSeqId,
-                AppOperation.create, createJsonStr, scrubbedText);
+                AppOperation.create, createJsonStr, scrubbedText, app.getUuid());
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -268,7 +272,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
       // Persist update record
       addUpdate(db, authenticatedUser, tenant, appId, appVersion, appSeqId, INVALID_SEQ_ID, AppOperation.modify,
-                updateJsonStr, scrubbedText);
+                updateJsonStr, scrubbedText, patchedApp.getUuid());
 
 //      // TODO/TBD Need to select on tenant + appId?
 //      int appVerSeqId = db.update(APPS_VERSIONS)
@@ -281,7 +285,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 //
 //      // Persist update record
 //      addUpdate(db, authenticatedUser, tenant, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
-//                updateJsonStr, scrubbedText);
+//                updateJsonStr, scrubbedText, );
 //
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -323,7 +327,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Persist update record
       String updateJsonStr = TapisGsonUtils.getGson().toJson(newOwnerName);
       addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
-                AppOperation.changeOwner, updateJsonStr , null);
+                AppOperation.changeOwner, updateJsonStr , null, INVALID_UUID);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
@@ -368,7 +372,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
       // Persist update record
       addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
-                AppOperation.softDelete, EMPTY_JSON, null);
+                AppOperation.softDelete, EMPTY_JSON, null, INVALID_UUID);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -908,7 +912,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      addUpdate(db, authenticatedUser, tenant, appId, appVer, INVALID_SEQ_ID, INVALID_SEQ_ID, op, upd_json, upd_text);
+      addUpdate(db, authenticatedUser, tenant, appId, appVer, INVALID_SEQ_ID, INVALID_SEQ_ID, op,
+                upd_json, upd_text, INVALID_UUID);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -949,7 +954,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    */
   private static void addUpdate(DSLContext db, AuthenticatedUser authenticatedUser, String tenant, String id,
                                 String version, int appSeqId, int appVerSeqId, AppOperation op,
-                                String upd_json, String upd_text)
+                                String upd_json, String upd_text, UUID uuid)
   {
     String updJsonStr = (StringUtils.isBlank(upd_json)) ? EMPTY_JSON : upd_json;
     if (appSeqId < 1)
@@ -974,6 +979,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             .set(APP_UPDATES.OPERATION, op)
             .set(APP_UPDATES.UPD_JSON, TapisGsonUtils.getGson().fromJson(updJsonStr, JsonElement.class))
             .set(APP_UPDATES.UPD_TEXT, upd_text)
+            .set(APP_UPDATES.UUID, uuid)
             .execute();
   }
 
@@ -1088,7 +1094,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             appVerRecord.getArchiveSystemDir(), appVerRecord.getArchiveOnAppError(), appVerRecord.getNodeCount(),
             appVerRecord.getCoresPerNode(), appVerRecord.getMemoryMb(), appVerRecord.getMaxMinutes(),
             appVerRecord.getEnvVariables(), appVerRecord.getArchiveIncludes(), appVerRecord.getArchiveExcludes(),
-            appVerRecord.getJobTags(), appVerRecord.getTags(), appVerRecord.getNotes(),
+            appVerRecord.getJobTags(), appVerRecord.getTags(), appVerRecord.getNotes(), appVerRecord.getUuid(),
             appRecord.getImportRefId(), appRecord.getDeleted(), created, updated);
     // Fill in data from aux tables
     app.setFileInputs(retrieveFileInputs(db, appVerSeqId));
@@ -1318,6 +1324,19 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             db.selectFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId))
                     .fetchInto(AppArg.class);
     return schedulerOptions;
+  }
+
+  /**
+   * Given an sql connection retrieve the app_ver uuid.
+   * @param db - jooq context
+   * @param appSeqId - seqId of app
+   * @param version - Version of app
+   * @return - uuid
+   */
+  private static UUID getUUIDUsingDb(DSLContext db, int appSeqId, String version)
+  {
+    return db.selectFrom(APPS_VERSIONS).where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId),APPS_VERSIONS.VERSION.eq(version))
+            .fetchOne(APPS_VERSIONS.UUID);
   }
 
   /**

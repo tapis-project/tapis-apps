@@ -117,6 +117,7 @@ CREATE TABLE apps_versions
 -- ==== End jobAttributes ======================================
     tags       TEXT[] NOT NULL,
     notes      JSONB NOT NULL,
+    uuid uuid NOT NULL,
     created    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     updated    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     UNIQUE (app_seq_id,version)
@@ -147,6 +148,7 @@ CREATE TABLE app_updates
     operation operation_type NOT NULL,
     upd_json JSONB NOT NULL,
     upd_text TEXT,
+    uuid uuid NOT NULL,
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
 );
 ALTER TABLE app_updates OWNER TO tapis_app;

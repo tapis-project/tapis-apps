@@ -16,6 +16,7 @@ import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
@@ -38,7 +39,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppsVersions extends TableImpl<AppsVersionsRecord> {
 
-    private static final long serialVersionUID = -1369413456;
+    private static final long serialVersionUID = -1453030990;
 
     /**
      * The reference instance of <code>tapis_app.apps_versions</code>
@@ -207,6 +208,11 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
      * The column <code>tapis_app.apps_versions.notes</code>. Notes for general information stored as JSON
      */
     public final TableField<AppsVersionsRecord, JsonElement> NOTES = createField(DSL.name("notes"), org.jooq.impl.SQLDataType.JSONB.nullable(false), this, "Notes for general information stored as JSON", new JSONBToJsonElementBinding());
+
+    /**
+     * The column <code>tapis_app.apps_versions.uuid</code>.
+     */
+    public final TableField<AppsVersionsRecord, UUID> UUID = createField(DSL.name("uuid"), org.jooq.impl.SQLDataType.UUID.nullable(false), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.created</code>. UTC time for when record was created

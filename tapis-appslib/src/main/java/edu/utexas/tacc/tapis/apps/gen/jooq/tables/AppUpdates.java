@@ -15,13 +15,14 @@ import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row12;
+import org.jooq.Row13;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -37,7 +38,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppUpdates extends TableImpl<AppUpdatesRecord> {
 
-    private static final long serialVersionUID = 1136433310;
+    private static final long serialVersionUID = -1925602801;
 
     /**
      * The reference instance of <code>tapis_app.app_updates</code>
@@ -106,6 +107,11 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
      * The column <code>tapis_app.app_updates.upd_text</code>. Text data supplied by client - secrets should be scrubbed
      */
     public final TableField<AppUpdatesRecord, String> UPD_TEXT = createField(DSL.name("upd_text"), org.jooq.impl.SQLDataType.CLOB, this, "Text data supplied by client - secrets should be scrubbed");
+
+    /**
+     * The column <code>tapis_app.app_updates.uuid</code>.
+     */
+    public final TableField<AppUpdatesRecord, UUID> UUID = createField(DSL.name("uuid"), org.jooq.impl.SQLDataType.UUID.nullable(false), this, "");
 
     /**
      * The column <code>tapis_app.app_updates.created</code>. UTC time for when record was created
@@ -201,11 +207,11 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row12 type methods
+    // Row13 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row12<Integer, Integer, Integer, String, String, String, String, String, AppOperation, JsonElement, String, LocalDateTime> fieldsRow() {
-        return (Row12) super.fieldsRow();
+    public Row13<Integer, Integer, Integer, String, String, String, String, String, AppOperation, JsonElement, String, UUID, LocalDateTime> fieldsRow() {
+        return (Row13) super.fieldsRow();
     }
 }

@@ -421,7 +421,7 @@ public class AppsDaoTest
             execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
             execSystemLogicalQueue, archiveSystemId, archiveSystemDir, archiveOnAppError, nodeCount, coresPerNode,
             memoryMb, maxMinutes, envVariables, archiveIncludes, archiveExcludes, jobTags,
-            tags, notes, null, false, null, null);
+            tags, notes, uuidNull, importRefIdNull, isDeletedFalse, createdNull, updatedNull);
     // Make sure app does not exist
     Assert.assertFalse(dao.checkForApp(tenantName, fakeAppId, true));
     Assert.assertFalse(dao.checkForApp(tenantName, fakeAppId, false));

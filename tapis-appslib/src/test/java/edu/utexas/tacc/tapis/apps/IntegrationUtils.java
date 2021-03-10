@@ -15,6 +15,7 @@ import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /*
  * Utilities and data for integration testing
@@ -35,6 +36,7 @@ public final class IntegrationUtils
   public static final String ownerNull = null;
   public static final boolean enabledTrue = true;
   public static final boolean enabledFalse = false;
+  public static final boolean isDeletedFalse = false;
   public static final boolean containerizedTrue = true;
   public static final boolean containerizedFalse = false;
   public static final boolean strictFileInputsTrue = true;
@@ -87,6 +89,7 @@ public final class IntegrationUtils
   public static final boolean deletedFalse = false;
   public static final Instant createdNull = null;
   public static final Instant updatedNull = null;
+  public static final UUID uuidNull = null;
 
   public static final String[] metaKVPairs = {"key1=val1", "key2=val2"};
   public static final String[] envVariables = {"key1=val1", "key2=val2"};
@@ -175,7 +178,7 @@ public final class IntegrationUtils
                         execSystemOutputDir+suffix, execSystemLogicalQueue+suffix, archiveSystemId,
                         archiveSystemDir+suffix, archiveOnAppError, nodeCount, coresPerNode, memoryMb, maxMinutes,
                         envVariables, archiveIncludes, archiveExcludes, jobTags,
-                        tags, notes, importRefIdNull, deletedFalse, createdNull, updatedNull);
+                        tags, notes, uuidNull, importRefIdNull, deletedFalse, createdNull, updatedNull);
       // Aux table data
       apps[i].setFileInputs(finList1);
       apps[i].setNotificationSubscriptions(notifList1);
@@ -199,6 +202,6 @@ public final class IntegrationUtils
             execSystemId, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppError,
             nodeCount, coresPerNode, memoryMb, maxMinutes, envVariablesNull, archiveIncludesNull, archiveExcludesNull,
-            jobTagsNull, tagsNull, notesNull, importRefIdNull, deletedFalse, createdNull, updatedNull);
+            jobTagsNull, tagsNull, notesNull, uuidNull, importRefIdNull, deletedFalse, createdNull, updatedNull);
   }
 }

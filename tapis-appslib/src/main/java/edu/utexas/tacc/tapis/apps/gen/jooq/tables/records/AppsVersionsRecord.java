@@ -10,6 +10,7 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppsVersions;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.jooq.Record1;
 import org.jooq.impl.UpdatableRecordImpl;
@@ -21,7 +22,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> {
 
-    private static final long serialVersionUID = -1305915951;
+    private static final long serialVersionUID = 1807780127;
 
     /**
      * Setter for <code>tapis_app.apps_versions.seq_id</code>. Sequence id for specific version of application
@@ -458,31 +459,45 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
     }
 
     /**
+     * Setter for <code>tapis_app.apps_versions.uuid</code>.
+     */
+    public void setUuid(UUID value) {
+        set(31, value);
+    }
+
+    /**
+     * Getter for <code>tapis_app.apps_versions.uuid</code>.
+     */
+    public UUID getUuid() {
+        return (UUID) get(31);
+    }
+
+    /**
      * Setter for <code>tapis_app.apps_versions.created</code>. UTC time for when record was created
      */
     public void setCreated(LocalDateTime value) {
-        set(31, value);
+        set(32, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps_versions.created</code>. UTC time for when record was created
      */
     public LocalDateTime getCreated() {
-        return (LocalDateTime) get(31);
+        return (LocalDateTime) get(32);
     }
 
     /**
      * Setter for <code>tapis_app.apps_versions.updated</code>. UTC time for when record was last updated
      */
     public void setUpdated(LocalDateTime value) {
-        set(32, value);
+        set(33, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps_versions.updated</code>. UTC time for when record was last updated
      */
     public LocalDateTime getUpdated() {
-        return (LocalDateTime) get(32);
+        return (LocalDateTime) get(33);
     }
 
     // -------------------------------------------------------------------------
@@ -508,7 +523,7 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
     /**
      * Create a detached, initialised AppsVersionsRecord
      */
-    public AppsVersionsRecord(Integer seqId, Integer appSeqId, String version, String description, Runtime runtime, String runtimeVersion, String containerImage, Integer maxJobs, Integer maxJobsPerUser, Boolean strictFileInputs, String jobDescription, Boolean dynamicExecSystem, String[] execSystemConstraints, String execSystemId, String execSystemExecDir, String execSystemInputDir, String execSystemOutputDir, String execSystemLogicalQueue, String archiveSystemId, String archiveSystemDir, Boolean archiveOnAppError, String[] envVariables, String[] archiveIncludes, String[] archiveExcludes, Integer nodeCount, Integer coresPerNode, Integer memoryMb, Integer maxMinutes, String[] jobTags, String[] tags, JsonElement notes, LocalDateTime created, LocalDateTime updated) {
+    public AppsVersionsRecord(Integer seqId, Integer appSeqId, String version, String description, Runtime runtime, String runtimeVersion, String containerImage, Integer maxJobs, Integer maxJobsPerUser, Boolean strictFileInputs, String jobDescription, Boolean dynamicExecSystem, String[] execSystemConstraints, String execSystemId, String execSystemExecDir, String execSystemInputDir, String execSystemOutputDir, String execSystemLogicalQueue, String archiveSystemId, String archiveSystemDir, Boolean archiveOnAppError, String[] envVariables, String[] archiveIncludes, String[] archiveExcludes, Integer nodeCount, Integer coresPerNode, Integer memoryMb, Integer maxMinutes, String[] jobTags, String[] tags, JsonElement notes, UUID uuid, LocalDateTime created, LocalDateTime updated) {
         super(AppsVersions.APPS_VERSIONS);
 
         set(0, seqId);
@@ -542,7 +557,8 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
         set(28, jobTags);
         set(29, tags);
         set(30, notes);
-        set(31, created);
-        set(32, updated);
+        set(31, uuid);
+        set(32, created);
+        set(33, updated);
     }
 }
