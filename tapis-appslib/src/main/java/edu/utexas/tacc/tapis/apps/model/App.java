@@ -2,7 +2,9 @@ package edu.utexas.tacc.tapis.apps.model;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import com.google.gson.JsonObject;
@@ -30,6 +32,9 @@ public final class App
   // ************************************************************************
   // *********************** Constants **************************************
   // ************************************************************************
+
+  // Set of reserved application names
+  public static final Set<String> RESERVED_ID_SET = new HashSet<>(Set.of("HEALTHCHECK", "READYCHECK", "SEARCH"));
 
   // Constants indicating app version, uuid or seq_id is not relevant.
   public static final int INVALID_SEQ_ID = -1;

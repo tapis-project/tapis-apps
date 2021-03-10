@@ -71,7 +71,7 @@ public class AppsServiceTest
   private static final String[] tags2 = {"value3", "value4"};
   private static final Object notes2 = TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj2\", \"testdata\": \"abc2\"}", JsonObject.class);
 
-  int numApps = 19;
+  int numApps = 20;
   App[] apps = IntegrationUtils.makeApps(numApps, "Svc");
 
   @BeforeSuite
@@ -376,6 +376,31 @@ public class AppsServiceTest
     Assert.assertTrue(svc.checkForApp(authenticatedOwner1, app0.getId()));
     // Now attempt to create again, should get IllegalStateException with msg APPLIB_APP_EXISTS
     svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+  }
+
+  // Check that reserved names are honored.
+  // Because of endpoints certain IDs should not be allowed: healthcheck, readycheck, search
+  @Test
+  public void testReservedNames() throws Exception
+  {
+    App app0 = apps[19];
+    boolean pass;
+    for (String id : App.RESERVED_ID_SET)
+    {
+      System.out.println("Testing create fail for reserved ID: " + id);
+      app0.setId(id);
+      pass = false;
+      try
+      {
+        svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+        Assert.fail("App create call should have thrown an exception when using a reserved ID. Id: " + id);
+      } catch (Exception e)
+      {
+        Assert.assertTrue(e.getMessage().contains("APPLIB_CREATE_RESERVED"));
+        pass = true;
+      }
+      Assert.assertTrue(pass, "App create call should fail when using a reserved ID. Id: " + id);
+    }
   }
 
   // Test creating, reading and deleting user permissions for an app

@@ -141,7 +141,10 @@ public class AppsServiceImpl implements AppsService
     app.resolveVariables(authenticatedUser.getOboUser());
 
     // ------------------------- Check service level authorization -------------------------
-    checkAuth(authenticatedUser, op, app.getId(), app.getOwner(), null, null);
+    checkAuth(authenticatedUser, op, appId, app.getOwner(), null, null);
+
+    // ---------------- Check for reserved names ------------------------
+    checkReservedIds(authenticatedUser, appId);
 
     // ---------------- Check constraints on App attributes ------------------------
     validateApp(authenticatedUser, app);
@@ -904,6 +907,22 @@ public class AppsServiceImpl implements AppsService
       throw new TapisException(msg, e);
     }
     return skClient;
+  }
+
+  /**
+   * Check for reserved names.
+   * Endpoints defined lead to certain names that are not valid.
+   * Invalid names: healthcheck, readycheck, search
+   * @param id - the id to check
+   * @throws IllegalStateException - if attempt to create a resource with a reserved name
+   */
+  private void checkReservedIds(AuthenticatedUser authenticatedUser, String id) throws IllegalStateException
+  {
+    if (App.RESERVED_ID_SET.contains(id.toUpperCase()))
+    {
+      String msg = LibUtils.getMsgAuth("APPLIB_CREATE_RESERVED", authenticatedUser, id);
+      throw new IllegalStateException(msg);
+    }
   }
 
   /**
