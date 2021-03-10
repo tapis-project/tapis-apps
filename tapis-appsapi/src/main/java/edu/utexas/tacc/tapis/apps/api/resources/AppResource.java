@@ -617,7 +617,7 @@ public class AppResource
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @GET
-  @Path("search/apps")
+  @Path("search")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response searchAppsQueryParameters(@Context SecurityContext securityContext)
@@ -678,7 +678,7 @@ public class AppResource
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @POST
-  @Path("search/apps")
+  @Path("search")
 //  @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
