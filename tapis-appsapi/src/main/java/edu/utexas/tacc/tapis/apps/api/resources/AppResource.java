@@ -780,7 +780,7 @@ public class AppResource
     AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
 
     // If confirmDelete is false then return error response
-    if (confirmDelete)
+    if (!confirmDelete)
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_DELETE_NOCONFIRM", authenticatedUser, appId);
       _log.warn(msg);

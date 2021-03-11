@@ -9,6 +9,7 @@ import edu.utexas.tacc.tapis.shared.utils.JsonObjectSerializer;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /*
@@ -37,6 +38,9 @@ public final class ResultApp
   @JsonSerialize(using = JsonObjectSerializer.class)
   public Object notes;
   public UUID uuid;
+  public boolean deleted;
+  public Instant created;
+  public Instant updated;
 
   // Zero arg constructor needed to use jersey's SelectableEntityFilteringFeature
   public ResultApp() { }
@@ -62,6 +66,9 @@ public final class ResultApp
     tags = a.getTags();
     notes = a.getNotes();
     uuid = a.getUuid();
+    deleted = a.isDeleted();
+    created = a.getCreated();
+    updated = a.getUpdated();
     // Check for -1 in max values and return Integer.MAX_VALUE instead.
     //   As requested by Jobs service.
     if (maxJobs < 0) maxJobs = Integer.MAX_VALUE;
