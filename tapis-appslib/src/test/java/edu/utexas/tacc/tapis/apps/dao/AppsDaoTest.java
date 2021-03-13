@@ -34,7 +34,7 @@ public class AppsDaoTest
   private AuthenticatedUser authenticatedUser;
 
   // Test data
-  int numApps = 12;
+  int numApps = 13;
   App[] apps = IntegrationUtils.makeApps(numApps, "Dao");
 
   @BeforeSuite
@@ -305,6 +305,25 @@ public class AppsDaoTest
       Assert.assertTrue(appIdList.contains(app.getId()));
     }
     Assert.assertEquals(apps.size(), appIdList.size());
+  }
+
+  // Test enable/disable
+  @Test
+  public void testEnableDisable() throws Exception {
+    App app0 = apps[12];
+    boolean appCreated = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
+    Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
+    System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion() +
+                       " enabled: " + app0.isEnabled());
+    // Enabled should start off true, then become false and finally true again.
+    App tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion());
+    Assert.assertTrue(tmpApp.isEnabled());
+    dao.updateEnabled(authenticatedUser, app0.getId(), false);
+    tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion());
+    Assert.assertFalse(tmpApp.isEnabled());
+    dao.updateEnabled(authenticatedUser, app0.getId(), true);
+    tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion());
+    Assert.assertTrue(tmpApp.isEnabled());
   }
 
   // Test change app owner

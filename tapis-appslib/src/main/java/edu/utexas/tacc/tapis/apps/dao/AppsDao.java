@@ -19,6 +19,8 @@ public interface AppsDao
                     String updateJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException;
 
+  void updateEnabled(AuthenticatedUser authenticatedUser, String id, boolean enabled) throws TapisException;
+
   void updateAppOwner(AuthenticatedUser authenticatedUser, String id, String newOwnerName) throws TapisException;
 
   int softDeleteApp(AuthenticatedUser authenticatedUser, String id) throws TapisException;

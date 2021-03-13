@@ -21,7 +21,7 @@ public final class RespAppsSearch extends RespSearch
   // Zero arg constructor needed to use jersey's SelectableEntityFilteringFeature
   public RespAppsSearch() { }
 
-  public RespAppsSearch(List<App> tmpResults, int limit, String sortBy, int skip, String startAfter, int totalCount)
+  public RespAppsSearch(List<App> tmpResults, int limit, String orderBy, int skip, String startAfter, int totalCount)
   {
     result = new ResultSearch();
     result.search = tmpResults;
@@ -29,7 +29,7 @@ public final class RespAppsSearch extends RespSearch
     tmpMeta.recordCount = tmpResults.size();
     tmpMeta.recordLimit = limit;
     tmpMeta.recordsSkipped = skip;
-    tmpMeta.sortBy = sortBy;
+    tmpMeta.orderBy = orderBy;
     tmpMeta.startAfter = startAfter;
     tmpMeta.totalCount = totalCount;
     result.metadata = tmpMeta;

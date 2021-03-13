@@ -26,6 +26,12 @@ public interface AppsService
   void updateApp(AuthenticatedUser authenticatedUser, PatchApp patchApp, String scrubbedText)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
+  int enableApp(AuthenticatedUser authenticatedUser, String appId)
+          throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
+
+  int disableApp(AuthenticatedUser authenticatedUser, String appId)
+          throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
+
   int changeAppOwner(AuthenticatedUser authenticatedUser, String appId, String newOwnerName)
           throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
 

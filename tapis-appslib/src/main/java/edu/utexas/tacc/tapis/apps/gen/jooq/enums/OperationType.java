@@ -27,6 +27,10 @@ public enum OperationType implements EnumType {
 
     changeOwner("changeOwner"),
 
+    enable("enable"),
+
+    disable("disable"),
+
     grantPerms("grantPerms"),
 
     revokePerms("revokePerms");

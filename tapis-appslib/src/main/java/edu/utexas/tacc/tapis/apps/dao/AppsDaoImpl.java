@@ -303,6 +303,48 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
+   * Update attribute enabled for an app given app Id and value
+   */
+  @Override
+  public void updateEnabled(AuthenticatedUser authenticatedUser, String appId, boolean enabled) throws TapisException
+  {
+    String opName = "updateEnabled";
+    // ------------------------- Check Input -------------------------
+    if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
+
+    String tenant = authenticatedUser.getOboTenantId();
+
+    // AppOperation needed for recording the update
+    AppOperation appOp = enabled ? AppOperation.enable : AppOperation.disable;
+
+    // ------------------------- Call SQL ----------------------------
+    Connection conn = null;
+    try
+    {
+      // Get a database connection.
+      conn = getConnection();
+      DSLContext db = DSL.using(conn);
+      db.update(APPS).set(APPS.ENABLED, enabled).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
+      // Persist update record
+      String updateJsonStr = "{\"enabled\":" +  enabled + "}";
+      addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+                appOp, updateJsonStr , null, INVALID_UUID);
+      // Close out and commit
+      LibUtils.closeAndCommitDB(conn, null, null);
+    }
+    catch (Exception e)
+    {
+      // Rollback transaction and throw an exception
+      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps", appId);
+    }
+    finally
+    {
+      // Always return the connection back to the connection pool.
+      LibUtils.finalCloseDB(conn);
+    }
+  }
+
+  /**
    * Update owner of an app given app Id and new owner name
    *
    */
@@ -325,7 +367,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       DSLContext db = DSL.using(conn);
       db.update(APPS).set(APPS.OWNER, newOwnerName).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
       // Persist update record
-      String updateJsonStr = TapisGsonUtils.getGson().toJson(newOwnerName);
+      String updateJsonStr = "{\"owner\":\"" +  newOwnerName + "\"}";
       addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
                 AppOperation.changeOwner, updateJsonStr , null, INVALID_UUID);
       // Close out and commit
@@ -371,8 +413,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       rows = db.update(APPS).set(APPS.DELETED, true).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
 
       // Persist update record
+      String updateJsonStr = "{\"deleted\": true}";
       addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
-                AppOperation.softDelete, EMPTY_JSON, null, INVALID_UUID);
+                AppOperation.softDelete, updateJsonStr, null, INVALID_UUID);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);

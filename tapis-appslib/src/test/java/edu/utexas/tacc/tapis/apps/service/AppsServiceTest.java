@@ -71,7 +71,7 @@ public class AppsServiceTest
   private static final String[] tags2 = {"value3", "value4"};
   private static final Object notes2 = TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj2\", \"testdata\": \"abc2\"}", JsonObject.class);
 
-  int numApps = 20;
+  int numApps = 21;
   App[] apps = IntegrationUtils.makeApps(numApps, "Svc");
 
   @BeforeSuite
@@ -339,6 +339,25 @@ public class AppsServiceTest
       Assert.assertTrue(app.getId().equals(app1Name) || app.getId().equalsIgnoreCase(app2Name));
     }
     Assert.assertEquals(apps.size(), 2);
+  }
+
+  @Test
+  public void testEnableDisable() throws Exception
+  {
+    // Create the app
+    App app0 = apps[20];
+    svc.createApp(authenticatedOwner1, app0, scrubbedJson);
+    // Enabled should start off true, then become false and finally true again.
+    App tmpApp = svc.getApp(authenticatedOwner1, app0.getId(), app0.getVersion(), false);
+    Assert.assertTrue(tmpApp.isEnabled());
+    int changeCount = svc.disableApp(authenticatedOwner1, app0.getId());
+    Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
+    tmpApp = svc.getApp(authenticatedOwner1, app0.getId(), app0.getVersion(), false);
+    Assert.assertFalse(tmpApp.isEnabled());
+    changeCount = svc.enableApp(authenticatedOwner1, app0.getId());
+    Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
+    tmpApp = svc.getApp(authenticatedOwner1, app0.getId(), app0.getVersion(), false);
+    Assert.assertTrue(tmpApp.isEnabled());
   }
 
   @Test

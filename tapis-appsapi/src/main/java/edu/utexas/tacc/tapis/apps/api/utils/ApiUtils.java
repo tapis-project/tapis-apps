@@ -131,18 +131,29 @@ public class ApiUtils
     return msgValue;
   }
 
+  /**
+   * Return single json element as a string
+   * @param jelem Json element
+   * @param defaultVal string value to use as a default if element is null
+   * @return json element as string
+   */
   public static String getValS(JsonElement jelem, String defaultVal)
   {
     if (jelem == null) return defaultVal;
     else return jelem.getAsString();
   }
 
+  /**
+   * ThreadContext.validate checks for tenantId, user, accountType, etc.
+   * If all OK return null, else return error response.
+   *
+   * @param threadContext - thread context to check
+   * @param prettyPrint - flag for pretty print of response
+   * @return null if OK, else error response
+   */
   public static Response checkContext(TapisThreadContext threadContext, boolean prettyPrint)
   {
-    // Validate call checks for tenantId, user and accountType
-    // If all OK return null, else return error response.
     if (threadContext.validate()) return null;
-
     String msg = MsgUtils.getMsg("TAPIS_INVALID_THREADLOCAL_VALUE", "validate");
     _log.error(msg);
     return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();

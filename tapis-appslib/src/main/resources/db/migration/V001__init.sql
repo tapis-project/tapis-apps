@@ -38,7 +38,7 @@ SET search_path TO tapis_app;
 -- Types
 CREATE TYPE app_type_type AS ENUM ('BATCH', 'FORK');
 CREATE TYPE operation_type AS ENUM ('create', 'modify', 'softDelete', 'hardDelete', 'changeOwner',
-                                    'grantPerms', 'revokePerms');
+                                    'enable', 'disable', 'grantPerms', 'revokePerms');
 CREATE TYPE runtime_type AS ENUM ('DOCKER', 'SINGULARITY');
 CREATE TYPE notification_mechanism_type AS ENUM ('WEBHOOK', 'EMAIL', 'QUEUE', 'ACTOR');
 

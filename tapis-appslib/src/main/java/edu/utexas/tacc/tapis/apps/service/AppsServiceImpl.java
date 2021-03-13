@@ -252,6 +252,44 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
+   * Update enabled to true for an app
+   * @param authenticatedUser - principal user containing tenant and user info
+   * @param appId - name of app
+   * @return Number of items updated
+   *
+   * @throws TapisException - for Tapis related exceptions
+   * @throws IllegalStateException - Resulting App would be in an invalid state
+   * @throws IllegalArgumentException - invalid parameter passed in
+   * @throws NotAuthorizedException - unauthorized
+   * @throws NotFoundException - App not found
+   */
+  @Override
+  public int enableApp(AuthenticatedUser authenticatedUser, String appId)
+          throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
+  {
+    return updateEnabled(authenticatedUser, appId, AppOperation.enable);
+  }
+
+  /**
+   * Update enabled to false for an app
+   * @param authenticatedUser - principal user containing tenant and user info
+   * @param appId - name of app
+   * @return Number of items updated
+   *
+   * @throws TapisException - for Tapis related exceptions
+   * @throws IllegalStateException - Resulting App would be in an invalid state
+   * @throws IllegalArgumentException - invalid parameter passed in
+   * @throws NotAuthorizedException - unauthorized
+   * @throws NotFoundException - App not found
+   */
+  @Override
+  public int disableApp(AuthenticatedUser authenticatedUser, String appId)
+          throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
+  {
+    return updateEnabled(authenticatedUser, appId, AppOperation.disable);
+  }
+
+  /**
    * Change owner of an app
    * @param authenticatedUser - principal user containing tenant and user info
    * @param appId - name of app
@@ -874,6 +912,51 @@ public class AppsServiceImpl implements AppsService
   // ************************************************************************
 
   /**
+   * Update enabled attribute for an app
+   * @param authenticatedUser - principal user containing tenant and user info
+   * @param appId - name of app
+   * @param appOp - operation, enable or disable
+   * @return Number of items updated
+   *
+   * @throws TapisException - for Tapis related exceptions
+   * @throws IllegalStateException - Resulting App would be in an invalid state
+   * @throws IllegalArgumentException - invalid parameter passed in
+   * @throws NotAuthorizedException - unauthorized
+   * @throws NotFoundException - App not found
+   */
+  private int updateEnabled(AuthenticatedUser authenticatedUser, String appId, AppOperation appOp)
+          throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
+  {
+    if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+    if (StringUtils.isBlank(appId))
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", authenticatedUser));
+    // Extract various names for convenience
+    String tenantName = authenticatedUser.getTenantId();
+    String apiUserId = authenticatedUser.getName();
+    String appTenantName = tenantName;
+    // For service request use oboTenant for tenant associated with the app
+    if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
+
+    // ---------------------------- Check inputs ------------------------------------
+    if (StringUtils.isBlank(tenantName) || StringUtils.isBlank(apiUserId))
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", authenticatedUser, appId));
+
+    // App must already exist and not be soft deleted
+    if (!dao.checkForApp(appTenantName, appId, false))
+      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId));
+
+    // ------------------------- Check service level authorization -------------------------
+    checkAuth(authenticatedUser, appOp, appId, null, null, null);
+
+    // ----------------- Make update --------------------
+    if (appOp == AppOperation.enable)
+      dao.updateEnabled(authenticatedUser, appId, true);
+    else
+      dao.updateEnabled(authenticatedUser, appId, false);
+    return 1;
+  }
+
+  /**
    * Get Security Kernel client associated with specified tenant
    * @param authenticatedUser - name of tenant
    * @return SK client
@@ -1088,6 +1171,8 @@ public class AppsServiceImpl implements AppsService
     switch(operation) {
       case create:
       case softDelete:
+      case enable:
+      case disable:
       case changeOwner:
       case grantPerms:
         if (owner.equals(userName) || hasAdminRole(authenticatedUser, tenantName, userName))
