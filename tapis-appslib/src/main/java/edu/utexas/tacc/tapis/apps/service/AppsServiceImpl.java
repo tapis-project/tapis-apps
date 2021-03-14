@@ -1010,12 +1010,42 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * Check constraints on App attributes.
+   * TODO: Check that system referenced by execSystemId exists with canExec = true.
+   * TODO: Check that system referenced by archiveSystemId exists.
+   * Collect and report as many errors as possible so they can all be fixed before next attempt
    * @param app - the App to check
    * @throws IllegalStateException - if any constraints are violated
    */
   private static void validateApp(AuthenticatedUser authenticatedUser, App app) throws IllegalStateException
   {
+    String msg;
     List<String> errMessages = app.checkAttributeRestrictions();
+
+// TODO    // If DTN is used (i.e. dtnSystemId is set) verify that dtnSystemId exists with isDtn = true
+//    if (!StringUtils.isBlank(tSystem1.getDtnSystemId()))
+//    {
+//      TSystem dtnSystem = null;
+//      try
+//      {
+//        dtnSystem = dao.getTSystem(tSystem1.getTenant(), tSystem1.getDtnSystemId());
+//      }
+//      catch (TapisException e)
+//      {
+//        msg = LibUtils.getMsg("SYSLIB_DTN_CHECK_ERROR", tSystem1.getDtnSystemId(), e.getMessage());
+//        _log.error(msg, e);
+//        errMessages.add(msg);
+//      }
+//      if (dtnSystem == null)
+//      {
+//        msg = LibUtils.getMsg("SYSLIB_DTN_NO_SYSTEM", tSystem1.getDtnSystemId());
+//        errMessages.add(msg);
+//      }
+//      else if (!dtnSystem.isDtn())
+//      {
+//        msg = LibUtils.getMsg("SYSLIB_DTN_NOT_DTN", tSystem1.getDtnSystemId());
+//        errMessages.add(msg);
+//      }
+//    }
 
     // If validation failed throw an exception
     if (!errMessages.isEmpty())

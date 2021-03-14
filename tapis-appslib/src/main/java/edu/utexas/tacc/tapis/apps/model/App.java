@@ -373,17 +373,11 @@ public final class App
 
   /**
    * Check for invalid attributes
-   *   id, execSystemId, archiveSystemId
+   *   id
    */
   private void checkAttrValidity(List<String> errMessages)
   {
     if (!StringUtils.isBlank(id) && !isValidId(id)) errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, ID_FIELD, id));
-
-    if (!StringUtils.isBlank(execSystemId) && !isValidHost(execSystemId))
-      errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, EXECSYSID_FIELD, execSystemId));
-
-    if (!StringUtils.isBlank(archiveSystemId) && !isValidHost(archiveSystemId))
-      errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, ARCHIVESYSID_FIELD, archiveSystemId));
   }
 
   /**
