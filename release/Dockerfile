@@ -39,4 +39,4 @@ EXPOSE 8080
 EXPOSE 8000
 EXPOSE 9090
 
-CMD ["java", "-Xms4g", "-Xmx4g", "-cp", "v3#apps.jar:dependencies/*", "edu.utexas.tacc.tapis.apps.api.AppsApplication"]
+CMD ["java", "-Xms4g", "-Xmx4g", "-cp", "apps.jar:dependencies/*", "edu.utexas.tacc.tapis.apps.api.AppsApplication"]
