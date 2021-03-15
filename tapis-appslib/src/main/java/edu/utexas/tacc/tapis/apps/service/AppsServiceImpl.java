@@ -16,6 +16,13 @@ import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
+import edu.utexas.tacc.tapis.apps.dao.AppsDao;
+import edu.utexas.tacc.tapis.apps.model.PatchApp;
+import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.App.Permission;
+import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
+import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
 import edu.utexas.tacc.tapis.search.parser.ASTParser;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
@@ -27,13 +34,8 @@ import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
-import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
-import edu.utexas.tacc.tapis.apps.dao.AppsDao;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
-import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.App.Permission;
-import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
-import edu.utexas.tacc.tapis.apps.utils.LibUtils;
+import edu.utexas.tacc.tapis.systems.client.SystemsClient;
+import edu.utexas.tacc.tapis.systems.client.gen.model.TSystem;
 
 import static edu.utexas.tacc.tapis.shared.TapisConstants.APPS_SERVICE;
 import static edu.utexas.tacc.tapis.apps.model.App.NO_APP_VERSION;
@@ -206,7 +208,8 @@ public class AppsServiceImpl implements AppsService
    */
   @Override
   public void updateApp(AuthenticatedUser authenticatedUser, PatchApp patchApp, String scrubbedText)
-          throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException
+          throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException,
+                 NotAuthorizedException, NotFoundException
   {
     AppOperation op = AppOperation.modify;
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -993,6 +996,42 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
+   * Get Systems client associated with specified tenant
+   * @param authenticatedUser - name of tenant
+   * @return Systems client
+   * @throws TapisException - for Tapis related exceptions
+   */
+  private SystemsClient getSystemsClient(AuthenticatedUser authenticatedUser) throws TapisException
+  {
+    SystemsClient sysClient;
+    String tenantName;
+    String userName;
+    // If service request use oboTenant and oboUser in OBO headers
+    // else for user request use authenticated user name and tenant in OBO headers
+    if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()))
+    {
+      tenantName = authenticatedUser.getOboTenantId();
+      userName = authenticatedUser.getOboUser();
+    }
+    else
+    {
+      tenantName = authenticatedUser.getTenantId();
+      userName = authenticatedUser.getName();
+    }
+    try
+    {
+      sysClient = serviceClients.getClient(userName, tenantName, SystemsClient.class);
+    }
+    catch (Exception e)
+    {
+      String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SYSTEMS,
+              authenticatedUser.getTenantId(), authenticatedUser.getName());
+      throw new TapisException(msg, e);
+    }
+    return sysClient;
+  }
+
+  /**
    * Check for reserved names.
    * Endpoints defined lead to certain names that are not valid.
    * Invalid names: healthcheck, readycheck, search
@@ -1010,42 +1049,65 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * Check constraints on App attributes.
-   * TODO: Check that system referenced by execSystemId exists with canExec = true.
-   * TODO: Check that system referenced by archiveSystemId exists.
+   * Check that system referenced by execSystemId exists with canExec = true.
+   * Check that system referenced by archiveSystemId exists.
    * Collect and report as many errors as possible so they can all be fixed before next attempt
    * @param app - the App to check
    * @throws IllegalStateException - if any constraints are violated
    */
-  private static void validateApp(AuthenticatedUser authenticatedUser, App app) throws IllegalStateException
+  private void validateApp(AuthenticatedUser authenticatedUser, App app)
+          throws TapisException, IllegalStateException
   {
     String msg;
     List<String> errMessages = app.checkAttributeRestrictions();
+    var systemsClient = getSystemsClient(authenticatedUser);
 
-// TODO    // If DTN is used (i.e. dtnSystemId is set) verify that dtnSystemId exists with isDtn = true
-//    if (!StringUtils.isBlank(tSystem1.getDtnSystemId()))
-//    {
-//      TSystem dtnSystem = null;
-//      try
-//      {
-//        dtnSystem = dao.getTSystem(tSystem1.getTenant(), tSystem1.getDtnSystemId());
-//      }
-//      catch (TapisException e)
-//      {
-//        msg = LibUtils.getMsg("SYSLIB_DTN_CHECK_ERROR", tSystem1.getDtnSystemId(), e.getMessage());
-//        _log.error(msg, e);
-//        errMessages.add(msg);
-//      }
-//      if (dtnSystem == null)
-//      {
-//        msg = LibUtils.getMsg("SYSLIB_DTN_NO_SYSTEM", tSystem1.getDtnSystemId());
-//        errMessages.add(msg);
-//      }
-//      else if (!dtnSystem.isDtn())
-//      {
-//        msg = LibUtils.getMsg("SYSLIB_DTN_NOT_DTN", tSystem1.getDtnSystemId());
-//        errMessages.add(msg);
-//      }
-//    }
+    // If execSystemId is set verify that it exists with canExec = true
+    if (!StringUtils.isBlank(app.getExecSystemId()))
+    {
+      TSystem execSystem = null;
+      try
+      {
+        execSystem = systemsClient.getSystem(app.getExecSystemId());
+      }
+      catch (TapisClientException e)
+      {
+        msg = LibUtils.getMsg("APPLIB_EXECSYS_CHECK_ERROR", app.getExecSystemId(), e.getMessage());
+        _log.error(msg, e);
+        errMessages.add(msg);
+      }
+      if (execSystem == null)
+      {
+        msg = LibUtils.getMsg("APPLIB_EXECSYS_NO_SYSTEM", app.getExecSystemId());
+        errMessages.add(msg);
+      }
+      else if (!execSystem.getCanExec())
+      {
+        msg = LibUtils.getMsg("APPLIB_EXECSYS_NOT_EXEC", app.getExecSystemId());
+        errMessages.add(msg);
+      }
+    }
+
+    // If archiveSystemId is set verify that it exists
+    if (!StringUtils.isBlank(app.getArchiveSystemId()))
+    {
+      TSystem archiveSystem = null;
+      try
+      {
+        archiveSystem = systemsClient.getSystem(app.getArchiveSystemId());
+      }
+      catch (TapisClientException e)
+      {
+        msg = LibUtils.getMsg("APPLIB_ARCHSYS_CHECK_ERROR", app.getArchiveSystemId(), e.getMessage());
+        _log.error(msg, e);
+        errMessages.add(msg);
+      }
+      if (archiveSystem == null)
+      {
+        msg = LibUtils.getMsg("APPLIB_ARCHSYS_NO_SYSTEM", app.getArchiveSystemId());
+        errMessages.add(msg);
+      }
+    }
 
     // If validation failed throw an exception
     if (!errMessages.isEmpty())

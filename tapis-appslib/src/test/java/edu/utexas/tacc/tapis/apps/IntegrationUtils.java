@@ -25,9 +25,9 @@ public final class IntegrationUtils
   public static final Gson gson =  TapisGsonUtils.getGson();
   // Test data
   public static final String tenantName = "dev";
-  public static final String ownerUser = "owner1";
-  public static final String ownerUser2 = "owner2";
-  public static final String apiUser = "testApiUser";
+  public static final String ownerUser2 = "testuser2";
+  public static final String ownerUser3 = "testuser3";
+  public static final String apiUser = "testuser2";
   public static final String appIdPrefix = "TestApp";
   public static final String appVersion = "0.0.1";
   public static final String appVersion2 = "0.0.2";
@@ -38,7 +38,6 @@ public final class IntegrationUtils
   public static final boolean enabledFalse = false;
   public static final boolean isDeletedFalse = false;
   public static final boolean containerizedTrue = true;
-  public static final boolean containerizedFalse = false;
   public static final boolean strictFileInputsTrue = true;
   public static final boolean strictFileInputsFalse = false;
   public static final boolean inPlaceTrue = true;
@@ -59,8 +58,8 @@ public final class IntegrationUtils
   public static final String[] execSystemConstraints = {"Constraint1a AND", "Constraint1b"};
   public static final String[] execSystemConstraints2 = {"Constraint2a AND", "Constraint2b"};
   public static final String[] execSystemConstraintsNull = null;
-  public static final String execSystemId = "exec.system.org";
-  public static final String execSystemId2 = "exec2.system.org";
+  public static final String execSystemId = "tapisv3-exec";
+  public static final String execSystemId2 = "tapisv3-exec2";
   public static final String execSystemIdNull = null;
   public static final String execSystemExecDir = "execSystemExecDir";
   public static final String execSystemExecDirNull = null;
@@ -70,11 +69,12 @@ public final class IntegrationUtils
   public static final String execSystemOutputDirNull = null;
   public static final String execSystemLogicalQueue = "execSystemLogicalQueue";
   public static final String execSystemLogicalQueueNull = null;
-  public static final String archiveSystemId = "archive.system.org";
+  public static final String archiveSystemId = "tapisv3-storage";
   public static final String archiveSystemIdNull = null;
   public static final String archiveSystemDir = "archiveSystemDir";
   public static final String archiveSystemDirNull = null;
-  public static final boolean archiveOnAppError = true;
+  public static final boolean archiveOnAppErrorTrue = true;
+  public static final boolean archiveOnAppErrorFalse = false;
   public static final String jobDescription = "job description 1";
   public static final String jobDescriptionNull = null;
   public static final int maxJobs = 1;
@@ -170,13 +170,13 @@ public final class IntegrationUtils
       String suffix = key + "_" + String.format("%03d", i+1);
       String appId = appIdPrefix + "_" + suffix;
       // Constructor initializes all attributes except for JobCapabilities
-      apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, "description "+suffix, AppType.BATCH, ownerUser, enabledTrue,
+      apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, "description "+suffix, AppType.BATCH, ownerUser2, enabledTrue,
                         containerizedTrue,
                         runtime, runtimeVersion+suffix, containerImage+suffix, maxJobs, maxJobsPerUser, strictFileInputsFalse,
                         jobDescription+suffix, dynamicExecSystemTrue,
                         execSystemConstraints, execSystemId, execSystemExecDir+suffix, execSystemInputDir+suffix,
                         execSystemOutputDir+suffix, execSystemLogicalQueue+suffix, archiveSystemId,
-                        archiveSystemDir+suffix, archiveOnAppError, nodeCount, coresPerNode, memoryMb, maxMinutes,
+                        archiveSystemDir+suffix, archiveOnAppErrorTrue, nodeCount, coresPerNode, memoryMb, maxMinutes,
                         envVariables, archiveIncludes, archiveExcludes, jobTags,
                         tags, notes, uuidNull, importRefIdNull, deletedFalse, createdNull, updatedNull);
       // Aux table data
@@ -192,6 +192,8 @@ public final class IntegrationUtils
   /**
    * Create App in memory with minimal attributes set based on App given
    *   id, version, appType
+   *   containerized==true -> containterImage
+   *   dynamicExec==false -> execSystemId
    * NOTE: many args to constructor are primitives so cannot be set to null.
    */
   public static App makeMinimalApp(App app)
@@ -200,7 +202,7 @@ public final class IntegrationUtils
             containerizedTrue, runtimeNull, runtimeVersionNull, containerImage, maxJobs, maxJobsPerUser,
             strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
             execSystemId, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
-            execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppError,
+            execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
             nodeCount, coresPerNode, memoryMb, maxMinutes, envVariablesNull, archiveIncludesNull, archiveExcludesNull,
             jobTagsNull, tagsNull, notesNull, uuidNull, importRefIdNull, deletedFalse, createdNull, updatedNull);
   }

@@ -434,11 +434,11 @@ public class AppsDaoTest
     patchApp.setTenant(tenantName);
     patchApp.setId(fakeAppId);
     patchApp.setVersion(fakeAppVersion);
-    App patchedApp = new App(1, 1, tenantName, fakeAppId, fakeAppVersion, "description", AppType.BATCH, ownerUser, enabledTrue,
+    App patchedApp = new App(1, 1, tenantName, fakeAppId, fakeAppVersion, "description", AppType.BATCH, ownerUser2, enabledTrue,
             containerizedTrue,
             runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, strictFileInputsFalse, jobDescription, dynamicExecSystemTrue,
             execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
-            execSystemLogicalQueue, archiveSystemId, archiveSystemDir, archiveOnAppError, nodeCount, coresPerNode,
+            execSystemLogicalQueue, archiveSystemIdNull, archiveSystemDir, archiveOnAppErrorTrue, nodeCount, coresPerNode,
             memoryMb, maxMinutes, envVariables, archiveIncludes, archiveExcludes, jobTags,
             tags, notes, uuidNull, importRefIdNull, isDeletedFalse, createdNull, updatedNull);
     // Make sure app does not exist
