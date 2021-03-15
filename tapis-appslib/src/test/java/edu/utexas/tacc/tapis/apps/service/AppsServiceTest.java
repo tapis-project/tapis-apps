@@ -74,7 +74,7 @@ public class AppsServiceTest
   private static final String[] tags2 = {"value3", "value4"};
   private static final Object notes2 = TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj2\", \"testdata\": \"abc2\"}", JsonObject.class);
 
-  int numApps = 21;
+  int numApps = 22;
   App[] apps = IntegrationUtils.makeApps(numApps, "Svc");
 
   @BeforeSuite
@@ -506,6 +506,50 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
 
+  }
+
+  // Test that app cannot be created when execSystem or archiveSystem is missing or invalid
+  @Test
+  public void testCheckSystemsInvalid() throws Exception
+  {
+    String fakeSysName = "AMissingSystemName";
+    App app0 = apps[21];
+
+    // Create should fail when execSystemId does not exist
+    app0.setExecSystemId(fakeSysName);
+    boolean pass = false;
+    try { svc.createApp(authenticatedTestUser2, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECSYS_NO_SYSTEM"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    app0.setExecSystemId(execSystemId);
+
+    // Create should fail when archiveSystemId does not exist
+    app0.setArchiveSystemId(fakeSysName);
+    pass = false;
+    try { svc.createApp(authenticatedTestUser2, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_ARCHSYS_NO_SYSTEM"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    app0.setArchiveSystemId(archiveSystemId);
+
+    // Create should fail when execSystemId cannot exec
+    app0.setExecSystemId(archiveSystemId);
+    pass = false;
+    try { svc.createApp(authenticatedTestUser2, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECSYS_NOT_EXEC"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    app0.setExecSystemId(execSystemId);
   }
 
   // Test Auth denials
