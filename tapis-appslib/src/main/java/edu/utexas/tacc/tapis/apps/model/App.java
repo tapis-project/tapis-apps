@@ -156,7 +156,6 @@ public final class App
   private String[] tags;       // List of arbitrary tags as strings
   private Object notes;      // Simple metadata as json
   private UUID uuid;
-  private String importRefId; // Optional reference ID for object created via import
   private boolean deleted;
   private Instant created; // UTC time for when record was created
   private Instant updated; // UTC time for when record was last updated
@@ -187,8 +186,7 @@ public final class App
    * Constructor using top level attributes
    */
   public App(int seqId1, String tenant1, String id1, String version1, AppType appType1,
-             String owner1, boolean enabled1, boolean containerized1,
-             String importRefId1, boolean deleted1)
+             String owner1, boolean enabled1, boolean containerized1, boolean deleted1)
   {
     seqId = seqId1;
     tenant = tenant1;
@@ -198,7 +196,6 @@ public final class App
     owner = owner1;
     enabled = enabled1;
     containerized = containerized1;
-    importRefId = importRefId1;
     deleted = deleted1;
   }
 
@@ -215,7 +212,7 @@ public final class App
              String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1, int nodeCount1,
              int coresPerNode1, int memoryMb1, int maxMinutes1, String[] envVariables1,
              String[] archiveIncludes1, String[] archiveExcludes1, String[] jobTags1,
-             String[] tags1, Object notes1, UUID uuid1, String importRefId1, boolean deleted1,
+             String[] tags1, Object notes1, UUID uuid1, boolean deleted1,
              Instant created1, Instant updated1)
   {
     seqId = seqId1;
@@ -256,7 +253,6 @@ public final class App
     tags = (tags1 == null) ? null : tags1.clone();
     notes = notes1;
     uuid = (uuid == null) ? UUID.randomUUID() : uuid1;
-    importRefId = importRefId1;
     deleted = deleted1;
     created = created1;
     updated = updated1;
@@ -312,7 +308,6 @@ public final class App
     tags = a.getTags();
     notes = a.getNotes();
     uuid = a.getUuid();
-    importRefId = a.getImportRefId();
     deleted = a.isDeleted();
     created = a.getCreated();
     updated = a.getUpdated();
@@ -690,9 +685,6 @@ public final class App
     archiveExcludes = (sa == null) ? null : sa.clone();
     return this;
   }
-
-  public String getImportRefId() { return importRefId; }
-  public App setImportRefID(String s) { importRefId = s;  return this;}
 
   public String[] getJobTags() {
     return (jobTags == null) ? null : jobTags.clone();

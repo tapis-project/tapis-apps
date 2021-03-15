@@ -31,5 +31,4 @@ public final class ReqCreateApp
   public JobAttributes jobAttributes;
   public String[] tags = EMPTY_STR_ARRAY;
   public Object notes = DEFAULT_NOTES;
-  public String importRefId;
 }

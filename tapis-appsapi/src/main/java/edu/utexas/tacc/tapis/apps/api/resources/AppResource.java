@@ -911,7 +911,7 @@ public class AppResource
           jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir,
           jobAttrs.archiveOnAppError, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes,
           envVariables, parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes, jobAttrs.tags,
-          req.tags, req.notes, null, req.importRefId, false, null, null);
+          req.tags, req.notes, null, false, null, null);
     // Data for aux tables
     app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputDefinitions));
     app.setNotificationSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));

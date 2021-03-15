@@ -57,7 +57,6 @@ CREATE TABLE apps
   owner    TEXT NOT NULL,
   enabled  BOOLEAN NOT NULL DEFAULT true,
   containerized BOOLEAN NOT NULL DEFAULT true,
-  import_ref_id TEXT,
   deleted    BOOLEAN NOT NULL DEFAULT false,
   created    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
   updated    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
@@ -71,7 +70,6 @@ COMMENT ON COLUMN apps.id IS 'Unique name for the application';
 COMMENT ON COLUMN apps.app_type IS 'Type of application';
 COMMENT ON COLUMN apps.owner IS 'User name of application owner';
 COMMENT ON COLUMN apps.enabled IS 'Indicates if application is currently active and available for use';
-COMMENT ON COLUMN apps.import_ref_id IS 'Optional reference ID for resource created via import';
 COMMENT ON COLUMN apps.deleted IS 'Indicates if application has been soft deleted';
 COMMENT ON COLUMN apps.created IS 'UTC time for when record was created';
 COMMENT ON COLUMN apps.updated IS 'UTC time for when record was last updated';

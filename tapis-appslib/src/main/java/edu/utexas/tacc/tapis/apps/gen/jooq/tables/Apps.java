@@ -20,7 +20,7 @@ import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row12;
+import org.jooq.Row11;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -36,7 +36,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Apps extends TableImpl<AppsRecord> {
 
-    private static final long serialVersionUID = 1481811238;
+    private static final long serialVersionUID = 1387722693;
 
     /**
      * The reference instance of <code>tapis_app.apps</code>
@@ -90,11 +90,6 @@ public class Apps extends TableImpl<AppsRecord> {
      * The column <code>tapis_app.apps.containerized</code>.
      */
     public final TableField<AppsRecord, Boolean> CONTAINERIZED = createField(DSL.name("containerized"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
-
-    /**
-     * The column <code>tapis_app.apps.import_ref_id</code>. Optional reference ID for resource created via import
-     */
-    public final TableField<AppsRecord, String> IMPORT_REF_ID = createField(DSL.name("import_ref_id"), org.jooq.impl.SQLDataType.CLOB, this, "Optional reference ID for resource created via import");
 
     /**
      * The column <code>tapis_app.apps.deleted</code>. Indicates if application has been soft deleted
@@ -196,11 +191,11 @@ public class Apps extends TableImpl<AppsRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row12 type methods
+    // Row11 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row12<Integer, String, String, String, AppType, String, Boolean, Boolean, String, Boolean, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row12) super.fieldsRow();
+    public Row11<Integer, String, String, String, AppType, String, Boolean, Boolean, Boolean, LocalDateTime, LocalDateTime> fieldsRow() {
+        return (Row11) super.fieldsRow();
     }
 }

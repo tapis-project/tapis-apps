@@ -1138,7 +1138,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             appVerRecord.getCoresPerNode(), appVerRecord.getMemoryMb(), appVerRecord.getMaxMinutes(),
             appVerRecord.getEnvVariables(), appVerRecord.getArchiveIncludes(), appVerRecord.getArchiveExcludes(),
             appVerRecord.getJobTags(), appVerRecord.getTags(), appVerRecord.getNotes(), appVerRecord.getUuid(),
-            appRecord.getImportRefId(), appRecord.getDeleted(), created, updated);
+            appRecord.getDeleted(), created, updated);
     // Fill in data from aux tables
     app.setFileInputs(retrieveFileInputs(db, appVerSeqId));
     app.setAppArgs(retrieveAppArgs(db, appVerSeqId));

@@ -85,7 +85,6 @@ public final class IntegrationUtils
   public static final int coresPerNode = 1;
   public static final int memoryMb = 1;
   public static final int maxMinutes = 1;
-  public static final String importRefIdNull = null;
   public static final boolean deletedFalse = false;
   public static final Instant createdNull = null;
   public static final Instant updatedNull = null;
@@ -178,7 +177,7 @@ public final class IntegrationUtils
                         execSystemOutputDir+suffix, execSystemLogicalQueue+suffix, archiveSystemId,
                         archiveSystemDir+suffix, archiveOnAppErrorTrue, nodeCount, coresPerNode, memoryMb, maxMinutes,
                         envVariables, archiveIncludes, archiveExcludes, jobTags,
-                        tags, notes, uuidNull, importRefIdNull, deletedFalse, createdNull, updatedNull);
+                        tags, notes, uuidNull, deletedFalse, createdNull, updatedNull);
       // Aux table data
       apps[i].setFileInputs(finList1);
       apps[i].setNotificationSubscriptions(notifList1);
@@ -204,6 +203,6 @@ public final class IntegrationUtils
             execSystemId, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
             nodeCount, coresPerNode, memoryMb, maxMinutes, envVariablesNull, archiveIncludesNull, archiveExcludesNull,
-            jobTagsNull, tagsNull, notesNull, uuidNull, importRefIdNull, deletedFalse, createdNull, updatedNull);
+            jobTagsNull, tagsNull, notesNull, uuidNull, deletedFalse, createdNull, updatedNull);
   }
 }
