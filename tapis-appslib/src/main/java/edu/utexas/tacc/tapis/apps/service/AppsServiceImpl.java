@@ -58,6 +58,7 @@ public class AppsServiceImpl implements AppsService
   private static final Set<Permission> READMODIFY_PERMS = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY));
   private static final String PERM_SPEC_PREFIX = "app";
 
+  private static final String SERVICE_NAME = TapisConstants.SERVICE_NAME_APPS;
   private static final String FILES_SERVICE = "files";
   private static final String JOBS_SERVICE = "jobs";
   private static final Set<String> SVCLIST_READ = new HashSet<>(Set.of(FILES_SERVICE, JOBS_SERVICE));
@@ -162,7 +163,7 @@ public class AppsServiceImpl implements AppsService
     String appsPermSpecALL = getPermSpecAllStr(appTenantName, appId);
 
     // Get SK client now. If we cannot get this rollback not needed.
-    var skClient = getSKClient(authenticatedUser);
+    var skClient = getSKClient();
     try {
       // ------------------- Make Dao call to persist the app -----------------------------------
       appCreated = dao.createApp(authenticatedUser, app, createJsonStr, scrubbedText);
@@ -341,7 +342,7 @@ public class AppsServiceImpl implements AppsService
     // Changes not in single DB transaction.
     // Use try/catch to rollback any changes in case of failure.
     // Get SK client now. If we cannot get this rollback not needed.
-    var skClient = getSKClient(authenticatedUser);
+    var skClient = getSKClient();
     String appsPermSpec = getPermSpecAllStr(appTenantName, appId);
     try {
       // ------------------- Make Dao call to update the app owner -----------------------------------
@@ -760,7 +761,7 @@ public class AppsServiceImpl implements AppsService
     Set<String> permSpecSet = getPermSpecSet(appTenantName, appId, permissions);
 
     // Get the Security Kernel client
-    var skClient = getSKClient(authenticatedUser);
+    var skClient = getSKClient();
 
     // Assign perms to user.
     // Start of updates. Will need to rollback on failure.
@@ -838,7 +839,7 @@ public class AppsServiceImpl implements AppsService
     // Revoke of READ implies revoke of MODIFY
     if (permissions.contains(Permission.READ)) permissions.add(Permission.MODIFY);
 
-    var skClient = getSKClient(authenticatedUser);
+    var skClient = getSKClient();
     int changeCount;
     // Determine current set of user permissions
     var userPermSet = getUserPermSet(skClient, userName, appTenantName, appId);
@@ -906,7 +907,7 @@ public class AppsServiceImpl implements AppsService
     checkAuth(authenticatedUser, op, appId, null, userName, null);
 
     // Use Security Kernel client to check for each permission in the enum list
-    var skClient = getSKClient(authenticatedUser);
+    var skClient = getSKClient();
     return getUserPermSet(skClient, userName, appTenantName, appId);
   }
 
@@ -960,28 +961,16 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Get Security Kernel client associated with specified tenant
-   * @param authenticatedUser - name of tenant
+   * Get Security Kernel client
+   * Note: The service always calls SK as itself.
    * @return SK client
    * @throws TapisException - for Tapis related exceptions
    */
-  private SKClient getSKClient(AuthenticatedUser authenticatedUser) throws TapisException
+  private SKClient getSKClient() throws TapisException
   {
     SKClient skClient;
-    String tenantName;
-    String userName;
-    // If service request use oboTenant and oboUser in OBO headers
-    // else for user request use authenticated user name and tenant in OBO headers
-    if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()))
-    {
-      tenantName = authenticatedUser.getOboTenantId();
-      userName = authenticatedUser.getOboUser();
-    }
-    else
-    {
-      tenantName = authenticatedUser.getTenantId();
-      userName = authenticatedUser.getName();
-    }
+    String tenantName = TapisConstants.PRIMARY_SITE_TENANT;
+    String userName = SERVICE_NAME;
     try
     {
       skClient = serviceClients.getClient(userName, tenantName, SKClient.class);
@@ -989,7 +978,7 @@ public class AppsServiceImpl implements AppsService
     catch (Exception e)
     {
       String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY,
-                                   authenticatedUser.getTenantId(), authenticatedUser.getName());
+                                   userName, tenantName);
       throw new TapisException(msg, e);
     }
     return skClient;
@@ -1313,7 +1302,7 @@ public class AppsServiceImpl implements AppsService
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()) ||
         hasAdminRole(authenticatedUser, null, null)) return null;
     var appIDs = new HashSet<String>();
-    var userPerms = getSKClient(authenticatedUser).getUserPerms(appTenantName, authenticatedUser.getOboUser());
+    var userPerms = getSKClient().getUserPerms(appTenantName, authenticatedUser.getOboUser());
     // Check each perm to see if it allows user READ access.
     for (String userPerm : userPerms)
     {
@@ -1344,7 +1333,7 @@ public class AppsServiceImpl implements AppsService
     String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
     // TODO: Remove this when admin access is available Jira cic-3964
     if ("testuser9".equalsIgnoreCase(userName)) return true;
-    var skClient = getSKClient(authenticatedUser);
+    var skClient = getSKClient();
     return skClient.isAdmin(tenantName, userName);
   }
 
@@ -1359,7 +1348,7 @@ public class AppsServiceImpl implements AppsService
     // Use tenant and user from authenticatedUsr or optional provided values
     String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
-    var skClient = getSKClient(authenticatedUser);
+    var skClient = getSKClient();
     String permSpecStr = getPermSpecStr(tenantName, appId, perm);
     return skClient.isPermitted(tenantName, userName, permSpecStr);
   }
@@ -1375,7 +1364,7 @@ public class AppsServiceImpl implements AppsService
     // Use tenant and user from authenticatedUsr or optional provided values
     String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
-    var skClient = getSKClient(authenticatedUser);
+    var skClient = getSKClient();
     var permSpecs = new ArrayList<String>();
     for (Permission perm : perms) {
       permSpecs.add(getPermSpecStr(tenantName, appId, perm));
@@ -1410,7 +1399,7 @@ public class AppsServiceImpl implements AppsService
     String appTenantName = authenticatedUser.getTenantId();
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
 
-    var skClient = getSKClient(authenticatedUser);
+    var skClient = getSKClient();
 
     // Use Security Kernel client to find all users with perms associated with the app.
     String permSpec = PERM_SPEC_PREFIX + ":" + appTenantName + ":%:" + appId;
