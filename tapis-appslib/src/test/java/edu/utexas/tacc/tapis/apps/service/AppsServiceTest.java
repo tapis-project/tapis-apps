@@ -176,7 +176,7 @@ public class AppsServiceTest
   {
     App app0 = apps[1];
     svc.createApp(authenticatedTestUser2, app0, scrubbedJson);
-    // Retrieve the app as filesSvc and as owner
+    // Retrieve the app as filesSvc and as owner (with and without requireExecPerm)
     App tmpApp = svc.getApp(authenticatedFilesSvc, app0.getId(), app0.getVersion(), false);
     checkCommonAppAttrs(app0, tmpApp);
     tmpApp = svc.getApp(authenticatedTestUser2, app0.getId(), app0.getVersion(), false);
@@ -186,42 +186,79 @@ public class AppsServiceTest
   }
 
   // Test updating an app
+  // Both update of all possible attributes and only some attributes
   @Test
   public void testUpdateApp() throws Exception
   {
+    // Create initial App
     App app0 = apps[13];
+    App app1 = new App(app0);
+    String appId = app0.getId();
+    String appVersion = app0.getVersion();
     String createText = "{\"testUpdate\": \"0-create\"}";
-    String patch1Text = "{\"testUpdate\": \"1-patch1\"}";
-    PatchApp patchApp = new PatchApp("description PATCHED", enabledFalse, runtime, runtimeVersion, containerImage,
-                                     maxJobs, maxJobsPerUser, strictFileInputsFalse, tags2, notes2);
-    patchApp.setTenant(tenantName);
-    patchApp.setId(app0.getId());
-    patchApp.setVersion(app0.getVersion());
     svc.createApp(authenticatedTestUser2, app0, createText);
+    // Create patchApp where all updatable attributes are changed
+    String patch1Text = "{\"testUpdate\": \"1-patch1\"}";
+    PatchApp patchAppFull = IntegrationUtils.makePatchAppFull();
+    patchAppFull.setTenant(tenantName);
+    patchAppFull.setId(appId);
+    patchAppFull.setVersion(appVersion);
     // Update using updateApp
-    svc.updateApp(authenticatedTestUser2, patchApp, patch1Text);
-    App tmpApp = svc.getApp(authenticatedTestUser2, app0.getId(), app0.getVersion(), false);
-//  App appE = new App(-1, tenantName, "SappE", "description E", AppType.LINUX, ownerUser, "hostE", true,
-//          "effUserE", prot1.getAccessMethod(), "bucketE", "/rootE", prot1.getTransferMethods(),
-//          prot1.getPort(), prot1.isUseProxy(), prot1.getProxyHost(), prot1.getProxyPort(),false,
-//          "jobLocalWorkDirE", "jobLocalArchDirE", "jobRemoteArchAppE","jobRemoteArchDirE",
-//          tags1, notes1, false, null, null);
-//  App appE2 = new App(-1, tenantName, "SappE", "description PATCHED", AppType.LINUX, ownerUser, "hostPATCHED", false,
-//          "effUserPATCHED", prot2.getAccessMethod(), "bucketE", "/rootE", prot2.getTransferMethods(),
-//          prot2.getPort(), prot2.isUseProxy(), prot2.getProxyHost(), prot2.getProxyPort(),false,
-//          "jobLocalWorkDirE", "jobLocalArchDirE", "jobRemoteArchAppE","jobRemoteArchDirE",
-//          tags2, notes2, false, null, null);
+    svc.updateApp(authenticatedTestUser2, patchAppFull, patch1Text);
+    App tmpAppFull = svc.getApp(authenticatedTestUser2, appId, appVersion, false);
     // Update original app definition with patched values
-//    app0.setJobCapabilities(cap2List);
-//    app0.setDescription("description PATCHED");
-//    app0.setTags(tags2);
-//    app0.setNotes(notes2);
-    //TODO Check common app attributes:
-//    checkCommonAppAttrs(app0, tmpApp);
+    app0.setDescription(description2);
+    app0.setRuntime(runtime2);
+    app0.setRuntimeVersion(runtimeVersion2);
+    app0.setContainerImage(containerImage2);
+    app0.setMaxJobs(maxJobs2);
+    app0.setMaxJobsPerUser(maxJobsPerUser2);
+    app0.setStrictFileInputs(strictFileInputsTrue);
+    app0.setJobDescription(jobDescription2);
+    app0.setDynamicExecSystem(dynamicExecSystemFalse);
+    app0.setExecSystemConstraints(execSystemConstraintsNull);
+    app0.setExecSystemId(execSystemId2);
+    app0.setExecSystemExecDir(execSystemExecDir2);
+    app0.setExecSystemInputDir(execSystemInputDir2);
+    app0.setExecSystemOutputDir(execSystemOutputDir2);
+    app0.setExecSystemLogicalQueue(execSystemLogicalQueue2);
+    app0.setArchiveSystemId(archiveSystemId2);
+    app0.setArchiveSystemDir(archiveSystemDir2);
+    app0.setArchiveOnAppError(archiveOnAppErrorFalse);
+    app0.setAppArgs(appArgList2);
+    app0.setContainerArgs(containerArgList2);
+    app0.setSchedulerOptions(schedulerOptionList2);
+    app0.setEnvVariables(envVariables2);
+    app0.setArchiveIncludes(archiveIncludes2);
+    app0.setArchiveExcludes(archiveExcludes2);
+    app0.setFileInputs(finList2);
+    app0.setNodeCount(nodeCount2);
+    app0.setCoresPerNode(coresPerNode2);
+    app0.setMemoryMb(memoryMb2);
+    app0.setMaxMinutes(maxMinutes2);
+    app0.setNotificationSubscriptions(notifList2);
+    app0.setJobTags(jobTags2);
+    app0.setTags(tags2);
+    app0.setNotes(notes2);
+    //Check common app attributes:
+    checkCommonAppAttrs(app0, tmpAppFull);
 
-    // TODO: For now only enabled and containerized are being updated
-    Assert.assertFalse(tmpApp.isEnabled());
-//    Assert.assertFalse(tmpApp.isContainerized());
+    // Create patchApp where some attributes are changed
+    //   * Some attributes are to be updated: description, containerImage, execSystemId,
+    String patch2Text = "{\"testUpdate\": \"1-patch2\"}";
+    PatchApp patchAppPartial = IntegrationUtils.makePatchAppPartial();
+    patchAppPartial.setTenant(tenantName);
+    patchAppPartial.setId(appId);
+    patchAppPartial.setVersion(appVersion);
+    // Update using updateApp
+    svc.updateApp(authenticatedTestUser2, patchAppPartial, patch2Text);
+    App tmpAppPartial = svc.getApp(authenticatedTestUser2, appId, appVersion, false);
+    // Update original app definition with patched values
+    app1.setDescription(description2);
+    app1.setContainerImage(containerImage2);
+    app1.setExecSystemId(execSystemId2);
+    //Check common app attributes:
+    checkCommonAppAttrs(app1, tmpAppPartial);
   }
 
   // Test changing app owner
@@ -417,25 +454,21 @@ public class AppsServiceTest
   // Check that reserved names are honored.
   // Because of endpoints certain IDs should not be allowed: healthcheck, readycheck, search
   @Test
-  public void testReservedNames()
+  public void testReservedNames() throws Exception
   {
     App app0 = apps[19];
-    boolean pass;
     for (String id : App.RESERVED_ID_SET)
     {
       System.out.println("Testing that create fails for reserved ID: " + id);
       app0.setId(id);
-      pass = false;
       try
       {
         svc.createApp(authenticatedTestUser2, app0, scrubbedJson);
         Assert.fail("App create call should have thrown an exception when using a reserved ID. Id: " + id);
-      } catch (Exception e)
+      } catch (IllegalStateException e)
       {
         Assert.assertTrue(e.getMessage().contains("APPLIB_CREATE_RESERVED"));
-        pass = true;
       }
-      Assert.assertTrue(pass, "App create call should fail when using a reserved ID. Id: " + id);
     }
   }
 
@@ -510,7 +543,7 @@ public class AppsServiceTest
 
   // Test that app cannot be created when execSystem or archiveSystem is missing or invalid
   @Test
-  public void testCheckSystemsInvalid() throws Exception
+  public void testCheckSystemsInvalid()
   {
     String fakeSysName = "AMissingSystemName";
     App app0 = apps[21];
@@ -525,7 +558,7 @@ public class AppsServiceTest
       pass = true;
     }
     Assert.assertTrue(pass);
-    app0.setExecSystemId(execSystemId);
+    app0.setExecSystemId(execSystemId1);
 
     // Create should fail when archiveSystemId does not exist
     app0.setArchiveSystemId(fakeSysName);
@@ -537,10 +570,10 @@ public class AppsServiceTest
       pass = true;
     }
     Assert.assertTrue(pass);
-    app0.setArchiveSystemId(archiveSystemId);
+    app0.setArchiveSystemId(archiveSystemId1);
 
     // Create should fail when execSystemId cannot exec
-    app0.setExecSystemId(archiveSystemId);
+    app0.setExecSystemId(archiveSystemId1);
     pass = false;
     try { svc.createApp(authenticatedTestUser2, app0, scrubbedJson); }
     catch (Exception e)
@@ -549,7 +582,7 @@ public class AppsServiceTest
       pass = true;
     }
     Assert.assertTrue(pass);
-    app0.setExecSystemId(execSystemId);
+    app0.setExecSystemId(execSystemId1);
   }
 
   // Test Auth denials
@@ -561,8 +594,7 @@ public class AppsServiceTest
   public void testAuthDeny() throws Exception
   {
     App app0 = apps[12];
-    PatchApp patchApp = new PatchApp("description PATCHED", enabledFalse, runtime2, runtimeVersion2, containerImage2,
-            maxJobs2, maxJobsPerUser2, strictFileInputsTrue, tags2, notes2);
+    PatchApp patchApp = IntegrationUtils.makePatchAppFull();
     patchApp.setTenant(tenantName);
     patchApp.setId(app0.getId());
     patchApp.setVersion(app0.getVersion());
@@ -808,8 +840,8 @@ public class AppsServiceTest
     String[] tmpExecSystemConstraints = tmpApp.getExecSystemConstraints();
     Assert.assertNotNull(tmpExecSystemConstraints, "execSystemConstraints value was null");
     var execSystemConstraintsList = Arrays.asList(tmpExecSystemConstraints);
-    Assert.assertEquals(tmpExecSystemConstraints.length, execSystemConstraints.length, "Wrong number of constraints");
-    for (String execSystemConstraintStr : execSystemConstraints)
+    Assert.assertEquals(tmpExecSystemConstraints.length, execSystemConstraints1.length, "Wrong number of constraints");
+    for (String execSystemConstraintStr : execSystemConstraints1)
     {
       Assert.assertTrue(execSystemConstraintsList.contains(execSystemConstraintStr));
       System.out.println("Found execSystemConstraint: " + execSystemConstraintStr);
@@ -826,8 +858,8 @@ public class AppsServiceTest
     String[] tmpEnvVariables = tmpApp.getEnvVariables();
     Assert.assertNotNull(tmpEnvVariables, "envVariables value was null");
     var envVariablesList = Arrays.asList(tmpEnvVariables);
-    Assert.assertEquals(tmpEnvVariables.length, envVariables.length, "Wrong number of envVariables");
-    for (String envVariableStr : envVariables)
+    Assert.assertEquals(tmpEnvVariables.length, envVariables1.length, "Wrong number of envVariables");
+    for (String envVariableStr : envVariables1)
     {
       Assert.assertTrue(envVariablesList.contains(envVariableStr));
       System.out.println("Found envVariable: " + envVariableStr);
@@ -836,8 +868,8 @@ public class AppsServiceTest
     String[] tmpArchiveIncludes = tmpApp.getArchiveIncludes();
     Assert.assertNotNull(tmpArchiveIncludes, "archiveIncludes value was null");
     var archiveIncludesList = Arrays.asList(tmpArchiveIncludes);
-    Assert.assertEquals(tmpArchiveIncludes.length, archiveIncludes.length, "Wrong number of archiveIncludes");
-    for (String archiveIncludeStr : archiveIncludes)
+    Assert.assertEquals(tmpArchiveIncludes.length, archiveIncludes1.length, "Wrong number of archiveIncludes");
+    for (String archiveIncludeStr : archiveIncludes1)
     {
       Assert.assertTrue(archiveIncludesList.contains(archiveIncludeStr));
       System.out.println("Found archiveInclude: " + archiveIncludeStr);
@@ -846,8 +878,8 @@ public class AppsServiceTest
     String[] tmpArchiveExcludes = tmpApp.getArchiveExcludes();
     Assert.assertNotNull(tmpArchiveExcludes, "archiveExcludes value was null");
     var archiveExcludesList = Arrays.asList(tmpArchiveExcludes);
-    Assert.assertEquals(tmpArchiveExcludes.length, archiveExcludes.length, "Wrong number of archiveExcludes");
-    for (String archiveExcludeStr : archiveExcludes)
+    Assert.assertEquals(tmpArchiveExcludes.length, archiveExcludes1.length, "Wrong number of archiveExcludes");
+    for (String archiveExcludeStr : archiveExcludes1)
     {
       Assert.assertTrue(archiveExcludesList.contains(archiveExcludeStr));
       System.out.println("Found archiveExclude: " + archiveExcludeStr);
@@ -860,8 +892,8 @@ public class AppsServiceTest
     String[] tmpJobTags = tmpApp.getJobTags();
     Assert.assertNotNull(tmpJobTags, "JobTags value was null");
     var jobTagsList = Arrays.asList(tmpJobTags);
-    Assert.assertEquals(tmpJobTags.length, jobTags.length, "Wrong number of jobTags");
-    for (String jobTagStr : jobTags)
+    Assert.assertEquals(tmpJobTags.length, jobTags1.length, "Wrong number of jobTags");
+    for (String jobTagStr : jobTags1)
     {
       Assert.assertTrue(jobTagsList.contains(jobTagStr));
       System.out.println("Found jobTag: " + jobTagStr);

@@ -218,8 +218,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
   /**
    * Update an existing specific version of an application.
-   * Following columns will be updated:
-   *  description, enabled, containerized
    * @throws TapisException - on error
    * @throws IllegalStateException - if app already exists
    */
@@ -255,38 +253,51 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       boolean doesExist = checkIfAppExists(db, tenant, appId, appVersion, false);
       if (!doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", authenticatedUser, appId));
 
-      // Make sure notes and tags are all set
-      String[] tagsStrArray = App.EMPTY_STR_ARRAY;
-      if (patchedApp.getTags() != null) tagsStrArray = patchedApp.getTags();
+      // Make sure notes and tags are set
       JsonObject notesObj =  App.DEFAULT_NOTES;
       if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
+      String[] tagsStrArray = App.DEFAULT_TAGS;
+      if (patchedApp.getTags() != null) tagsStrArray = patchedApp.getTags();
+      String[] jobTagsStrArray = App.DEFAULT_TAGS;
+      if (patchedApp.getJobTags() != null) jobTagsStrArray = patchedApp.getJobTags();
 
-      // TODO/TBD Patch top level attributes first?
-      // TODO: For now just patch top level attributes enabled, containerized
-      int appSeqId = db.update(APPS)
-              .set(APPS.ENABLED, patchedApp.isEnabled())
-              .set(APPS.CONTAINERIZED, patchedApp.isContainerized())
-              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId))
-              .returningResult(APPS.SEQ_ID)
-              .fetchOne().getValue(APPS.SEQ_ID);
-
-      // Persist update record
-      addUpdate(db, authenticatedUser, tenant, appId, appVersion, appSeqId, INVALID_SEQ_ID, AppOperation.modify,
-                updateJsonStr, scrubbedText, patchedApp.getUuid());
-
-//      // TODO/TBD Need to select on tenant + appId?
-//      int appVerSeqId = db.update(APPS_VERSIONS)
-//              .set(APPS_VERSIONS.DESCRIPTION, patchedApp.getDescription())
+      int appSeqId = getAppSeqIdUsingDb(db, tenant, appId);
+      int appVerSeqId = db.update(APPS_VERSIONS)
+              .set(APPS_VERSIONS.DESCRIPTION, patchedApp.getDescription())
+//              .set(APPS_VERSIONS.RUNTIME, runtime)
+//              .set(APPS_VERSIONS.RUNTIME_VERSION, patchedApp.getRuntimeVersion())
+//              .set(APPS_VERSIONS.CONTAINER_IMAGE, app.getContainerImage())
+//              .set(APPS_VERSIONS.MAX_JOBS, app.getMaxJobs())
+//              .set(APPS_VERSIONS.MAX_JOBS_PER_USER, app.getMaxJobsPerUser())
+//              .set(APPS_VERSIONS.JOB_DESCRIPTION, app.getJobDescription())
+//              .set(APPS_VERSIONS.DYNAMIC_EXEC_SYSTEM, app.isDynamicExecSystem())
+//              .set(APPS_VERSIONS.EXEC_SYSTEM_CONSTRAINTS, execSystemConstraintsStrArray)
+//              .set(APPS_VERSIONS.EXEC_SYSTEM_ID, app.getExecSystemId())
+//              .set(APPS_VERSIONS.EXEC_SYSTEM_EXEC_DIR, app.getExecSystemExecDir())
+//              .set(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR, app.getExecSystemInputDir())
+//              .set(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR, app.getExecSystemOutputDir())
+//              .set(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE, app.getExecSystemLogicalQueue())
+//              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, app.getArchiveSystemId())
+//              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, app.getArchiveSystemDir())
+//              .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, app.isArchiveOnAppError())
+//              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
+//              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
+//              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
+//              .set(APPS_VERSIONS.NODE_COUNT, app.getNodeCount())
+//              .set(APPS_VERSIONS.CORES_PER_NODE, app.getCoresPerNode())
+//              .set(APPS_VERSIONS.MEMORY_MB, app.getMemoryMb())
+//              .set(APPS_VERSIONS.MAX_MINUTES, app.getMaxMinutes())
+//              .set(APPS_VERSIONS.JOB_TAGS, jobTagsStrArray)
 //              .set(APPS_VERSIONS.TAGS, tagsStrArray)
 //              .set(APPS_VERSIONS.NOTES, notesObj)
-//              .where(APPS_VERSIONS.VERSION.eq(appVersion))
-//              .returningResult(APPS_VERSIONS.SEQ_ID)
-//              .fetchOne().getValue(APPS_VERSIONS.SEQ_ID);
-//
-//      // Persist update record
-//      addUpdate(db, authenticatedUser, tenant, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
-//                updateJsonStr, scrubbedText, );
-//
+              .where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId),APPS_VERSIONS.VERSION.eq(appVersion))
+              .returningResult(APPS_VERSIONS.SEQ_ID)
+              .fetchOne().getValue(APPS_VERSIONS.SEQ_ID);
+
+      // Persist update record
+      addUpdate(db, authenticatedUser, tenant, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
+                updateJsonStr, scrubbedText, patchedApp.getUuid());
+
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
@@ -1134,10 +1145,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             appVerRecord.getExecSystemId(), appVerRecord.getExecSystemExecDir(),
             appVerRecord.getExecSystemInputDir(), appVerRecord.getExecSystemOutputDir(),
             appVerRecord.getExecSystemLogicalQueue(), appVerRecord.getArchiveSystemId(),
-            appVerRecord.getArchiveSystemDir(), appVerRecord.getArchiveOnAppError(), appVerRecord.getNodeCount(),
-            appVerRecord.getCoresPerNode(), appVerRecord.getMemoryMb(), appVerRecord.getMaxMinutes(),
+            appVerRecord.getArchiveSystemDir(), appVerRecord.getArchiveOnAppError(),
             appVerRecord.getEnvVariables(), appVerRecord.getArchiveIncludes(), appVerRecord.getArchiveExcludes(),
-            appVerRecord.getJobTags(), appVerRecord.getTags(), appVerRecord.getNotes(), appVerRecord.getUuid(),
+            appVerRecord.getNodeCount(), appVerRecord.getCoresPerNode(), appVerRecord.getMemoryMb(),
+            appVerRecord.getMaxMinutes(), appVerRecord.getJobTags(),
+            appVerRecord.getTags(), appVerRecord.getNotes(), appVerRecord.getUuid(),
             appRecord.getDeleted(), created, updated);
     // Fill in data from aux tables
     app.setFileInputs(retrieveFileInputs(db, appVerSeqId));

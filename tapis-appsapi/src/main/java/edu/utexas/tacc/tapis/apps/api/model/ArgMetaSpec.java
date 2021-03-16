@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /*
- * Class for metadata about an appArg, containerArg, schedulerOption or fileInput in an App definition.
+ * Class for metadata about an appArg, containerArg, schedulerOption or fileInput in
+ *  an App definition contained in a request.
  */
 public final class ArgMetaSpec
 {

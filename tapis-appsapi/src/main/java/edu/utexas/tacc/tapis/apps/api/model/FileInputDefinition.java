@@ -1,7 +1,7 @@
 package edu.utexas.tacc.tapis.apps.api.model;
 
 /*
- * Class for a FileInput contained in an App create request.
+ * Class for a FileInput contained in an App definition contained in a request.
  */
 public final class FileInputDefinition
 {

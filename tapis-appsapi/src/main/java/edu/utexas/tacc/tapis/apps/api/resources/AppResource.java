@@ -28,6 +28,9 @@ import javax.ws.rs.core.UriInfo;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import edu.utexas.tacc.tapis.apps.model.AppArg;
+import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultBoolean;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -903,44 +906,61 @@ public class AppResource
     var parmSet = jobAttrs.parameterSet;
     if (parmSet == null) parmSet = new ParameterSet();
     String[] envVariables = ApiUtils.getKeyValuesAsArray(parmSet.envVariables);
+    // Extract Notes from the raw json.
+    Object notes = extractNotes(rawJson);
+    // Create App
     var app = new App(-1, -1, null, req.id, req.version, req.description, req.appType, req.owner, req.enabled,
-          req.containerized,  req.runtime,
-          req.runtimeVersion, req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
+          req.containerized,  req.runtime, req.runtimeVersion, req.containerImage,
+          req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
-          jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir,
-          jobAttrs.archiveOnAppError, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes,
-          envVariables, parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes, jobAttrs.tags,
-          req.tags, req.notes, null, false, null, null);
+          jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
+          envVariables, parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes,
+          jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.tags,
+          req.tags, notes, null, false, null, null);
     // Data for aux tables
     app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputDefinitions));
     app.setNotificationSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
     app.setAppArgs(ApiUtils.buildLibAppArgs(parmSet.appArgs));
     app.setContainerArgs(ApiUtils.buildLibAppArgs(parmSet.containerArgs));
     app.setSchedulerOptions(ApiUtils.buildLibAppArgs(parmSet.schedulerOptions));
-    // Extract Notes from the raw json.
-    Object notes = extractNotes(rawJson);
-    app.setNotes(notes);
     return app;
   }
 
   /**
    * Create a PatchApp from a ReqUpdateApp
+   * Note that tenant, id and version are for tracking and needed by the service call. They are not updated.
    */
   private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String id, String version,
                                                     String rawJson)
   {
-    PatchApp patchApp = new PatchApp(req.description, req.enabled, req.runtime, req.runtimeVersion, req.containerImage,
+    var jobAttrs = req.jobAttributes;
+    if (jobAttrs == null) jobAttrs = new JobAttributes();
+    var parmSet = jobAttrs.parameterSet;
+    if (parmSet == null) parmSet = new ParameterSet();
+    List<FileInput> fileInputs = ApiUtils.buildLibFileInputs(jobAttrs.fileInputDefinitions);
+    List<NotifSubscription> notifSubscriptions = ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions);
+    String[] envVariables = ApiUtils.getKeyValuesAsArray(parmSet.envVariables);
+    List<AppArg> appArgs = ApiUtils.buildLibAppArgs(parmSet.appArgs);
+    List<AppArg> containerArgs = ApiUtils.buildLibAppArgs(parmSet.containerArgs);
+    List<AppArg> schedulerOptions = ApiUtils.buildLibAppArgs(parmSet.schedulerOptions);
+    // Extract Notes from the raw json.
+    Object notes = extractNotes(rawJson);
+    // Create patchApp
+    PatchApp patchApp = new PatchApp(req.description, req.runtime, req.runtimeVersion, req.containerImage,
             req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
-            req.tags, req.notes);
+            jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
+            jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
+            jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir,
+            jobAttrs.archiveOnAppError, appArgs, containerArgs, schedulerOptions, envVariables,
+            parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes,
+            fileInputs, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes,
+            notifSubscriptions, jobAttrs.tags,
+            req.tags, notes);
     // Update tenant, id and version
     patchApp.setTenant(tenantName);
     patchApp.setId(id);
     patchApp.setVersion(version);
-
-    // Extract Notes from the raw json.
-    Object notes = extractNotes(rawJson);
-    patchApp.setNotes(notes);
     return patchApp;
   }
 

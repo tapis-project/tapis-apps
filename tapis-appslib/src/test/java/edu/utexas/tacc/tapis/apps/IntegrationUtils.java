@@ -7,6 +7,7 @@ import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
 import edu.utexas.tacc.tapis.apps.model.NotifMechanism.NotifMechanismType;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
@@ -26,11 +27,12 @@ public final class IntegrationUtils
   // Test data
   public static final String tenantName = "dev";
   public static final String ownerUser2 = "testuser2";
-  public static final String ownerUser3 = "testuser3";
   public static final String apiUser = "testuser2";
   public static final String appIdPrefix = "TestApp";
   public static final String appVersion = "0.0.1";
   public static final String appVersion2 = "0.0.2";
+  public static final String description1 = "App description 1";
+  public static final String description2 = "App description 2";
   public static final String descriptionNull = null;
   public static final AppType appType = AppType.BATCH;
   public static final String ownerNull = null;
@@ -53,104 +55,157 @@ public final class IntegrationUtils
   public static final String containerImage = "containerImage";
   public static final String containerImage2 = "containerImage2";
   public static final String containerImageNull = null;
+  public static final String jobDescription1 = "Description of job 1";
+  public static final String jobDescription2 = "Description of job 2";
+  public static final String jobDescriptionNull = null;
   public static final boolean dynamicExecSystemTrue = true;
   public static final boolean dynamicExecSystemFalse = false;
-  public static final String[] execSystemConstraints = {"Constraint1a AND", "Constraint1b"};
+  public static final String[] execSystemConstraints1 = {"Constraint1a AND", "Constraint1b"};
   public static final String[] execSystemConstraints2 = {"Constraint2a AND", "Constraint2b"};
   public static final String[] execSystemConstraintsNull = null;
-  public static final String execSystemId = "tapisv3-exec";
+  public static final String execSystemId1 = "tapisv3-exec";
   public static final String execSystemId2 = "tapisv3-exec2";
   public static final String execSystemIdNull = null;
-  public static final String execSystemExecDir = "execSystemExecDir";
+  public static final String execSystemExecDir1 = "execSystemExecDir1";
+  public static final String execSystemExecDir2 = "execSystemExecDir2";
   public static final String execSystemExecDirNull = null;
-  public static final String execSystemInputDir = "execSystemInputDir";
+  public static final String execSystemInputDir1 = "execSystemInputDir1";
+  public static final String execSystemInputDir2 = "execSystemInputDir2";
   public static final String execSystemInputDirNull = null;
-  public static final String execSystemOutputDir = "execSystemOutputDir";
+  public static final String execSystemOutputDir1 = "execSystemOutputDir1";
+  public static final String execSystemOutputDir2 = "execSystemOutputDir2";
   public static final String execSystemOutputDirNull = null;
-  public static final String execSystemLogicalQueue = "execSystemLogicalQueue";
+  public static final String execSystemLogicalQueue1 = "execSystemLogicalQueue1";
+  public static final String execSystemLogicalQueue2 = "execSystemLogicalQueue2";
   public static final String execSystemLogicalQueueNull = null;
-  public static final String archiveSystemId = "tapisv3-storage";
+  public static final String archiveSystemId1 = "tapisv3-storage";
+  public static final String archiveSystemId2 = "tapisv3-storage-dev";
   public static final String archiveSystemIdNull = null;
-  public static final String archiveSystemDir = "archiveSystemDir";
+  public static final String archiveSystemDir1 = "archiveSystemDir1";
+  public static final String archiveSystemDir2 = "archiveSystemDir2";
   public static final String archiveSystemDirNull = null;
   public static final boolean archiveOnAppErrorTrue = true;
   public static final boolean archiveOnAppErrorFalse = false;
-  public static final String jobDescription = "job description 1";
-  public static final String jobDescriptionNull = null;
-  public static final int maxJobs = 1;
+  public static final int maxJobs1 = 1;
   public static final int maxJobs2 = 2;
-  public static final int maxJobsPerUser = 1;
+  public static final int maxJobsPerUser1 = 1;
   public static final int maxJobsPerUser2 = 2;
-  public static final int nodeCount = 1;
-  public static final int coresPerNode = 1;
-  public static final int memoryMb = 1;
-  public static final int maxMinutes = 1;
+  public static final int nodeCount1 = 1;
+  public static final int nodeCount2 = 2;
+  public static final int coresPerNode1 = 1;
+  public static final int coresPerNode2 = 2;
+  public static final int memoryMb1 = 1;
+  public static final int memoryMb2 = 2;
+  public static final int maxMinutes1 = 1;
+  public static final int maxMinutes2 = 2;
   public static final boolean deletedFalse = false;
   public static final Instant createdNull = null;
   public static final Instant updatedNull = null;
   public static final UUID uuidNull = null;
 
-  public static final String[] metaKVPairs = {"key1=val1", "key2=val2"};
-  public static final String[] envVariables = {"key1=val1", "key2=val2"};
+  public static final String[] metaKVPairs1 = {"key1A=val1A", "key1B=val1B"};
+  public static final String[] metaKVPairs2 = {"key2A=val2A", "key2B=val2B"};
+  public static final String[] envVariables1 = {"key1A=val1A", "key1B=val1B"};
+  public static final String[] envVariables2 = {"key2A=val2A", "key2B=val2B"};
   public static final String[] envVariablesNull = null;
-  public static final String[] archiveIncludes = {"/include1", "/include2"};
-  public static final String[] archiveExcludes = {"/exclude1", "/exclude2"};
+  public static final String[] archiveIncludes1 = {"/include1A", "/include1B"};
+  public static final String[] archiveIncludes2 = {"/include2A", "/include2B"};
   public static final String[] archiveIncludesNull = null;
+  public static final String[] archiveExcludes1 = {"/exclude1A", "/exclude1B"};
+  public static final String[] archiveExcludes2 = {"/exclude2A", "/exclude2B"};
   public static final String[] archiveExcludesNull = null;
 
-  public static final String[] jobTags = {"jobtag1a", "jobtag1b"};
+  public static final String[] jobTags1 = {"jobtag1a", "jobtag1b"};
   public static final String[] jobTags2 = {"jobtag2b", "jobtag2b"};
   public static final String[] jobTagsNull = null;
-  public static final String[] tags = {"value1a", "value1b", "a",
+  public static final String[] tags1 = {"value1a", "value1b", "a",
             "a long tag with spaces and numbers (1 3 2) and special characters " +
             " [_ $ - & * % @ + = ! ^ ? < > , . ( ) { } / \\ | ]. Backslashes must be escaped."};
   public static final String[] tags2 = {"value2a", "value2b", "b"};
   public static final String[] tagsNull = null;
-  public static final Object notes =
+  public static final Object notes1 =
           TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj1\", \"testdata\": \"abc1\"}", JsonObject.class);
   public static final Object notes2 =
           TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj2\", \"testdata\": \"abc2\"}", JsonObject.class);
-  public static final JsonObject notesObj = (JsonObject) notes;
+  public static final JsonObject notes1Obj = (JsonObject) notes1;
   public static final String[] notesNull = null;
   public static final String scrubbedJson = "{}";
 
-  public static final FileInput finA1 = new FileInput("/srcA1", "/targetA1", inPlaceTrue, "finA1", "File input A1",
-                                                      metaRequiredTrue, metaKVPairs);
-  public static final FileInput finB1 = new FileInput("/srcB1", "/targetB1", inPlaceFalse, "finB1", "File input B1",
-                                                      metaRequiredFalse, metaKVPairs);
-  public static final List<FileInput> finList1 = new ArrayList<>(List.of(finA1, finB1));
+  // FileInputs
+  public static final FileInput fin1A = new FileInput("/src1A", "/target1A", inPlaceTrue, "fin1A", "File input 1A",
+                                                      metaRequiredTrue, metaKVPairs1);
+  public static final FileInput fin1B = new FileInput("/src1B", "/target1B", inPlaceFalse, "fin1B", "File input 1B",
+                                                      metaRequiredFalse, metaKVPairs1);
+  public static final List<FileInput> finList1 = new ArrayList<>(List.of(fin1A, fin1B));
+  public static final FileInput finA2 = new FileInput("/srcA2", "/targetA2", inPlaceTrue, "finA2", "File input A2",
+                                                      metaRequiredTrue, metaKVPairs2);
+  public static final FileInput finB2 = new FileInput("/srcB2", "/targetB2", inPlaceFalse, "finB2", "File input B2",
+                                                      metaRequiredFalse, metaKVPairs2);
+  public static final List<FileInput> finList2 = new ArrayList<>(List.of(finA2, finB2));
+  public static final List<FileInput> finListNull = null;
 
-  public static final NotifMechanism notifMechA1 =
-          new NotifMechanism(NotifMechanismType.WEBHOOK, "webhookUrlA1", "emailAddressA1");
-  public static final NotifMechanism notifMechA2 =
-          new NotifMechanism(NotifMechanismType.ACTOR, "webhookUrlA2", "emailAddressA2");
-  public static final List<NotifMechanism> notifMechListA1 = new ArrayList<>(List.of(notifMechA1, notifMechA2));
-  public static final NotifMechanism notifMechB1 =
-          new NotifMechanism(NotifMechanismType.EMAIL, "webhookUrlB1", "emailAddressB1");
-  public static final NotifMechanism notifMechB2 =
-          new NotifMechanism(NotifMechanismType.QUEUE, "webhookUrlB2", "emailAddressB2");
-  public static final List<NotifMechanism> notifMechListB1 = new ArrayList<>(List.of(notifMechB1, notifMechB2));
-  public static final NotifSubscription notifA1 = new NotifSubscription("filterA1");
-  public static final NotifSubscription notifB1 = new NotifSubscription("filterB1");
+  // NotificationSubscriptions
+  public static final NotifMechanism notifMech1Aa = new NotifMechanism(NotifMechanismType.WEBHOOK, "webhookUrl1Aa", "emailAddress1Aa");
+  public static final NotifMechanism notifMech1Ab = new NotifMechanism(NotifMechanismType.ACTOR, "webhookUrl1Ab", "emailAddress1Ab");
+  public static final List<NotifMechanism> notifMechList1A = new ArrayList<>(List.of(notifMech1Aa, notifMech1Ab));
+  public static final NotifMechanism notifMech1Ba = new NotifMechanism(NotifMechanismType.EMAIL, "webhookUrl1Ba", "emailAddress1Ba");
+  public static final NotifMechanism notifMech1Bb = new NotifMechanism(NotifMechanismType.QUEUE, "webhookUrl1Ba", "emailAddress1Bb");
+  public static final List<NotifMechanism> notifMechList1B = new ArrayList<>(List.of(notifMech1Ba, notifMech1Bb));
+  public static final NotifSubscription notif1A = new NotifSubscription("filter1A");
+  public static final NotifSubscription notif1B = new NotifSubscription("filter1B");
   static {
-    notifA1.setNotificationMechanisms(notifMechListA1);
-    notifB1.setNotificationMechanisms(notifMechListB1);
+    notif1A.setNotificationMechanisms(notifMechList1A);
+    notif1B.setNotificationMechanisms(notifMechList1B);
   }
+  public static final List<NotifSubscription> notifList1 = new ArrayList<>(List.of(notif1A, notif1B));
 
-  public static final List<NotifSubscription> notifList1 = new ArrayList<>(List.of(notifA1, notifB1));
-  public static final AppArg appArgA1 = new AppArg("valueA1", "appArgA1", "App arg A1", metaRequiredTrue, metaKVPairs);
-  public static final AppArg appArgB1 = new AppArg("valueB1", "appArgB1", "App arg B1", metaRequiredFalse, metaKVPairs);
-  public static final List<AppArg> appArgList1 = new ArrayList<>(List.of(appArgA1, appArgB1));
-  public static final AppArg containerArgA1 = new AppArg("valueA1", "containerArgA1", "Container arg A1",
-                                                          metaRequiredTrue, metaKVPairs);
-  public static final AppArg containerArgB1 = new AppArg("valueB1", "containerArgB1", "Container arg B1",
-                                                         metaRequiredFalse, metaKVPairs);
-  public static final List<AppArg> containerArgList1 = new ArrayList<>(List.of(containerArgA1, containerArgB1));
-  public static final AppArg schedulerOptionA1 = new AppArg("valueA1", "schedulerOptionA1", "Scheduler option A1",
-                                                            metaRequiredTrue, metaKVPairs);
-  public static final AppArg schedulerOptionB1 = new AppArg("valueB1", "schedulerOptionB1", "Scheduler option B1",
-                                                            metaRequiredFalse, metaKVPairs);
-  public static final List<AppArg> schedulerOptionList1 = new ArrayList<>(List.of(schedulerOptionA1, schedulerOptionB1));
+  public static final NotifMechanism notifMech2Aa = new NotifMechanism(NotifMechanismType.WEBHOOK, "webhookUrl2Aa", "emailAddress2Aa");
+  public static final NotifMechanism notifMech2Ab = new NotifMechanism(NotifMechanismType.ACTOR, "webhookUrl2Ab", "emailAddress2Ab");
+  public static final List<NotifMechanism> notifMechList2A = new ArrayList<>(List.of(notifMech2Aa, notifMech2Ab));
+  public static final NotifMechanism notifMech2Ba = new NotifMechanism(NotifMechanismType.EMAIL, "webhookUrl2Ba", "emailAddress2Ba");
+  public static final NotifMechanism notifMech2Bb = new NotifMechanism(NotifMechanismType.QUEUE, "webhookUrl2Ba", "emailAddress2Bb");
+  public static final List<NotifMechanism> notifMechList2B = new ArrayList<>(List.of(notifMech2Ba, notifMech2Bb));
+  public static final NotifSubscription notif2A = new NotifSubscription("filter2A");
+  public static final NotifSubscription notif2B = new NotifSubscription("filter2B");
+  static {
+    notif2A.setNotificationMechanisms(notifMechList2A);
+    notif2B.setNotificationMechanisms(notifMechList2B);
+  }
+  public static final List<NotifSubscription> notifList2 = new ArrayList<>(List.of(notif2A, notif2B));
+  public static final List<NotifSubscription> notifListNull = null;
+
+  // AppArgs, ContainerArgs, SchedulerOptions
+  public static final AppArg appArg1A = new AppArg("value1A", "appArg1A", "App arg 1A", metaRequiredTrue, metaKVPairs1);
+  public static final AppArg appArg1B = new AppArg("value1B", "appArg1B", "App arg 1B", metaRequiredFalse, metaKVPairs1);
+  public static final List<AppArg> appArgList1 = new ArrayList<>(List.of(appArg1A, appArg1B));
+  public static final AppArg appArg2A = new AppArg("value2A", "appArg2A", "App arg 2A", metaRequiredTrue, metaKVPairs2);
+  public static final AppArg appArg2B = new AppArg("value2B", "appArg2B", "App arg 2B", metaRequiredFalse, metaKVPairs2);
+  public static final List<AppArg> appArgList2 = new ArrayList<>(List.of(appArg2A, appArg2B));
+  public static final List<AppArg> appArgListNull = null;
+
+  public static final AppArg containerArg1A = new AppArg("value1A", "containerArg1A", "Container arg 1A",
+                                                          metaRequiredTrue, metaKVPairs1);
+  public static final AppArg containerArg1B = new AppArg("value1B", "containerArg1B", "Container arg 1B",
+                                                         metaRequiredFalse, metaKVPairs1);
+  public static final List<AppArg> containerArgList1 = new ArrayList<>(List.of(containerArg1A, containerArg1B));
+  public static final AppArg containerArg2A = new AppArg("value2A", "containerArg2A", "Container arg 2A",
+          metaRequiredTrue, metaKVPairs2);
+  public static final AppArg containerArg2B = new AppArg("value2B", "containerArg2B", "Container arg 2B",
+          metaRequiredFalse, metaKVPairs2);
+  public static final List<AppArg> containerArgList2 = new ArrayList<>(List.of(containerArg2A, containerArg2B));
+  public static final List<AppArg> containerArgListNull = null;
+
+  public static final AppArg schedulerOption1A = new AppArg("value1A", "schedulerOption1A", "Scheduler option 1A",
+                                                            metaRequiredTrue, metaKVPairs1);
+  public static final AppArg schedulerOption1B = new AppArg("value1B", "schedulerOption1B", "Scheduler option 1B",
+                                                            metaRequiredFalse, metaKVPairs1);
+  public static final List<AppArg> schedulerOptionList1 = new ArrayList<>(List.of(schedulerOption1A, schedulerOption1B));
+  public static final AppArg schedulerOption2A = new AppArg("value2A", "schedulerOption2A", "Scheduler option 2A",
+          metaRequiredTrue, metaKVPairs2);
+  public static final AppArg schedulerOption2B = new AppArg("value2B", "schedulerOption2B", "Scheduler option 2B",
+          metaRequiredFalse, metaKVPairs2);
+  public static final List<AppArg> schedulerOptionList2 = new ArrayList<>(List.of(schedulerOption2A, schedulerOption2B));
+  public static final List<AppArg> schedulerOptionListNull = null;
 
   /**
    * Create an array of App objects in memory
@@ -169,15 +224,15 @@ public final class IntegrationUtils
       String suffix = key + "_" + String.format("%03d", i+1);
       String appId = appIdPrefix + "_" + suffix;
       // Constructor initializes all attributes except for JobCapabilities
-      apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, "description "+suffix, AppType.BATCH, ownerUser2, enabledTrue,
+      apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, description1 + suffix, AppType.BATCH, ownerUser2, enabledTrue,
                         containerizedTrue,
-                        runtime, runtimeVersion+suffix, containerImage+suffix, maxJobs, maxJobsPerUser, strictFileInputsFalse,
-                        jobDescription+suffix, dynamicExecSystemTrue,
-                        execSystemConstraints, execSystemId, execSystemExecDir+suffix, execSystemInputDir+suffix,
-                        execSystemOutputDir+suffix, execSystemLogicalQueue+suffix, archiveSystemId,
-                        archiveSystemDir+suffix, archiveOnAppErrorTrue, nodeCount, coresPerNode, memoryMb, maxMinutes,
-                        envVariables, archiveIncludes, archiveExcludes, jobTags,
-                        tags, notes, uuidNull, deletedFalse, createdNull, updatedNull);
+                        runtime, runtimeVersion+suffix, containerImage+suffix, maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
+                        jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
+                        execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
+                        execSystemLogicalQueue1 +suffix, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
+              envVariables1, archiveIncludes1, archiveExcludes1,
+              nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
+              tags1, notes1, uuidNull, deletedFalse, createdNull, updatedNull);
       // Aux table data
       apps[i].setFileInputs(finList1);
       apps[i].setNotificationSubscriptions(notifList1);
@@ -198,11 +253,44 @@ public final class IntegrationUtils
   public static App makeMinimalApp(App app)
   {
     return new App(-1, -1, tenantName, app.getId(), app.getVersion(), descriptionNull, appType, ownerNull, enabledTrue,
-            containerizedTrue, runtimeNull, runtimeVersionNull, containerImage, maxJobs, maxJobsPerUser,
+            containerizedTrue, runtimeNull, runtimeVersionNull, containerImage, maxJobs1, maxJobsPerUser1,
             strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
-            execSystemId, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
+            execSystemId1, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
-            nodeCount, coresPerNode, memoryMb, maxMinutes, envVariablesNull, archiveIncludesNull, archiveExcludesNull,
-            jobTagsNull, tagsNull, notesNull, uuidNull, deletedFalse, createdNull, updatedNull);
+            envVariablesNull, archiveIncludesNull, archiveExcludesNull,
+            nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTagsNull,
+            tagsNull, notesNull, uuidNull, deletedFalse, createdNull, updatedNull);
+  }
+
+  /**
+   * Create a PatchApp in memory for use in testing.
+   * All attributes are to be updated.
+   */
+  public static PatchApp makePatchAppFull()
+  {
+     return new PatchApp(description2, runtime2, runtimeVersion2, containerImage2,
+             maxJobs2, maxJobsPerUser2, strictFileInputsTrue,
+             jobDescription2, dynamicExecSystemFalse, execSystemConstraintsNull,
+             execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
+             archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse,
+             appArgList2, containerArgList2, schedulerOptionList2, envVariables2, archiveIncludes2, archiveExcludes2,
+             finList2, nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, notifList2, jobTags2,
+             tags2, notes2);
+  }
+
+  /**
+   * Create a PatchApp in memory for use in testing.
+   * Some attributes are to be updated: description, containerImage, execSystemId,
+   */
+  public static PatchApp makePatchAppPartial()
+  {
+    return new PatchApp(description2, runtimeNull, runtimeVersionNull, containerImage2,
+            maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
+            jobDescriptionNull, dynamicExecSystemTrue, execSystemConstraints1,
+            execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorTrue,
+            appArgListNull, containerArgListNull, schedulerOptionListNull, envVariablesNull, archiveIncludesNull, archiveExcludesNull,
+            finListNull, nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, notifListNull, jobTagsNull,
+            tagsNull, notesNull);
   }
 }

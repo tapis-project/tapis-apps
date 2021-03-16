@@ -194,9 +194,8 @@ public class AppsServiceImpl implements AppsService
    * Update existing version of an app given a PatchApp and the text used to create the PatchApp.
    * Secrets in the text should be masked.
    * Attributes that can be updated:
-   *   TODO/TBD: description, enabled, tags, notes. Jira cic-3929
-   * Attributes that cannot be updated:
-   *   tenant, id, version, appType, owner
+   *   description, runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, strictFileInputs,
+   *   all of jobAttributes (including all of parameterSet), tags, notes.
    * @param authenticatedUser - principal user containing tenant and user info
    * @param patchApp - Pre-populated PatchApp object
    * @param scrubbedText - Text used to create the PatchApp object - secrets should be scrubbed. Saved in update record.
@@ -1434,19 +1433,48 @@ public class AppsServiceImpl implements AppsService
   /**
    * Merge a patch into an existing App
    * Attributes that can be updated:
-   *   description, enabled, runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser,
-   *   tags, notes.
+   *   description, runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, strictFileInputs,
+   *   jobAttributes, tags, notes.
    */
   private App createPatchedApp(App o, PatchApp p)
   {
     App app1 = new App(o);
     if (p.getDescription() != null) app1.setDescription(p.getDescription());
-    if (p.isEnabled() != null) app1.setEnabled(p.isEnabled());
     if (p.getRuntime() != null) app1.setRuntime(p.getRuntime());
     if (p.getRuntimeVersion() != null) app1.setRuntimeVersion(p.getRuntimeVersion());
     if (p.getContainerImage() != null) app1.setContainerImage(p.getContainerImage());
     if (p.getMaxJobs() != null) app1.setMaxJobs(p.getMaxJobs());
     if (p.getMaxJobsPerUser() != null) app1.setMaxJobsPerUser(p.getMaxJobsPerUser());
+    if (p.isStrictFileInputs() != null) app1.setStrictFileInputs(p.isStrictFileInputs());
+    // Start JobAttributes
+    if (p.getJobDescription() != null) app1.setJobDescription(p.getJobDescription());
+    if (p.isDynamicExecSystem() != null) app1.setDynamicExecSystem(p.isDynamicExecSystem());
+    if (p.getExecSystemConstraints() != null) app1.setExecSystemConstraints(p.getExecSystemConstraints());
+    if (p.getExecSystemId() != null) app1.setExecSystemId(p.getExecSystemId());
+    if (p.getExecSystemExecDir() != null) app1.setExecSystemExecDir(p.getExecSystemExecDir());
+    if (p.getExecSystemInputDir() != null) app1.setExecSystemInputDir(p.getExecSystemInputDir());
+    if (p.getExecSystemOutputDir() != null) app1.setExecSystemOutputDir(p.getExecSystemOutputDir());
+    if (p.getExecSystemLogicalQueue() != null) app1.setExecSystemLogicalQueue(p.getExecSystemLogicalQueue());
+    if (p.getArchiveSystemId() != null) app1.setArchiveSystemId(p.getArchiveSystemId());
+    if (p.getArchiveSystemDir() != null) app1.setArchiveSystemDir(p.getArchiveSystemDir());
+    if (p.getArchiveOnAppError() != null) app1.setArchiveOnAppError(p.getArchiveOnAppError());
+    // Start parameterSet
+    if (p.getAppArgs() != null) app1.setAppArgs(p.getAppArgs());
+    if (p.getContainerArgs() != null) app1.setContainerArgs(p.getAppArgs());
+    if (p.getSchedulerOptions() != null) app1.setSchedulerOptions(p.getSchedulerOptions());
+    if (p.getEnvVariables() != null) app1.setEnvVariables(p.getEnvVariables());
+    if (p.getArchiveIncludes() != null) app1.setArchiveIncludes(p.getArchiveIncludes());
+    if (p.getArchiveExcludes() != null) app1.setArchiveExcludes(p.getArchiveExcludes());
+    // End parameterSet
+    if (p.getFileInputs() != null) app1.setFileInputs(p.getFileInputs());
+    if (p.getNodeCount() != null) app1.setNodeCount(p.getNodeCount());
+    if (p.getCoresPerNode() != null) app1.setCoresPerNode(p.getCoresPerNode());
+    if (p.getMemoryMb() != null) app1.setMemoryMb(p.getMemoryMb());
+    if (p.getMaxMinutes() != null) app1.setMaxMinutes(p.getMaxMinutes());
+    if (p.getNotifSubscriptions() != null) app1.setNotificationSubscriptions(p.getNotifSubscriptions());
+    if (p.getJobTags() != null) app1.setJobTags(p.getJobTags());
+    // End JobAttributes
+
     if (p.getTags() != null) app1.setTags(p.getTags());
     if (p.getNotes() != null) app1.setNotes(p.getNotes());
     return app1;

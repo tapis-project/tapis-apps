@@ -3,7 +3,7 @@ package edu.utexas.tacc.tapis.apps.api.model;
 import java.util.List;
 
 /*
- * Class for a NotificationSubscription in an App create request.
+ * Class for a NotificationSubscription in an App definition contained in a request.
  */
 public final class NotificationSubscription
 {

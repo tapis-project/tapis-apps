@@ -3,7 +3,7 @@ package edu.utexas.tacc.tapis.apps.api.model;
 import edu.utexas.tacc.tapis.apps.model.App;
 
 /*
- * Class for archive include and exclude lists in an App definition.
+ * Class for archive include and exclude lists in an App definition contained in a request.
  */
 public final class ArchiveFilter
 {

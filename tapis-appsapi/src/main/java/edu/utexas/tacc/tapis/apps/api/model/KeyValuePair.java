@@ -3,7 +3,7 @@ package edu.utexas.tacc.tapis.apps.api.model;
 import org.jooq.tools.StringUtils;
 
 /*
- * Class for KeyValuePair in an App definition.
+ * Class for KeyValuePair in an App definition contained in a request.
  * Key should not contain the character "="
  */
 public final class KeyValuePair

@@ -101,8 +101,8 @@ public class AppsDaoTest
     String[] tmpExecSystemConstraints = tmpApp.getExecSystemConstraints();
     Assert.assertNotNull(tmpExecSystemConstraints, "execSystemConstraints value was null");
     var execSystemConstraintsList = Arrays.asList(tmpExecSystemConstraints);
-    Assert.assertEquals(tmpExecSystemConstraints.length, execSystemConstraints.length, "Wrong number of constraints");
-    for (String execSystemConstraintStr : execSystemConstraints)
+    Assert.assertEquals(tmpExecSystemConstraints.length, execSystemConstraints1.length, "Wrong number of constraints");
+    for (String execSystemConstraintStr : execSystemConstraints1)
     {
       Assert.assertTrue(execSystemConstraintsList.contains(execSystemConstraintStr));
       System.out.println("Found execSystemConstraint: " + execSystemConstraintStr);
@@ -119,8 +119,8 @@ public class AppsDaoTest
     String[] tmpEnvVariables = tmpApp.getEnvVariables();
     Assert.assertNotNull(tmpEnvVariables, "envVariables value was null");
     var envVariablesList = Arrays.asList(tmpEnvVariables);
-    Assert.assertEquals(tmpEnvVariables.length, envVariables.length, "Wrong number of envVariables");
-    for (String envVariableStr : envVariables)
+    Assert.assertEquals(tmpEnvVariables.length, envVariables1.length, "Wrong number of envVariables");
+    for (String envVariableStr : envVariables1)
     {
       Assert.assertTrue(envVariablesList.contains(envVariableStr));
       System.out.println("Found envVariable: " + envVariableStr);
@@ -129,8 +129,8 @@ public class AppsDaoTest
     String[] tmpArchiveIncludes = tmpApp.getArchiveIncludes();
     Assert.assertNotNull(tmpArchiveIncludes, "archiveIncludes value was null");
     var archiveIncludesList = Arrays.asList(tmpArchiveIncludes);
-    Assert.assertEquals(tmpArchiveIncludes.length, archiveIncludes.length, "Wrong number of archiveIncludes");
-    for (String archiveIncludeStr : archiveIncludes)
+    Assert.assertEquals(tmpArchiveIncludes.length, archiveIncludes1.length, "Wrong number of archiveIncludes");
+    for (String archiveIncludeStr : archiveIncludes1)
     {
       Assert.assertTrue(archiveIncludesList.contains(archiveIncludeStr));
       System.out.println("Found archiveInclude: " + archiveIncludeStr);
@@ -139,8 +139,8 @@ public class AppsDaoTest
     String[] tmpArchiveExcludes = tmpApp.getArchiveExcludes();
     Assert.assertNotNull(tmpArchiveExcludes, "archiveExcludes value was null");
     var archiveExcludesList = Arrays.asList(tmpArchiveExcludes);
-    Assert.assertEquals(tmpArchiveExcludes.length, archiveExcludes.length, "Wrong number of archiveExcludes");
-    for (String archiveExcludeStr : archiveExcludes)
+    Assert.assertEquals(tmpArchiveExcludes.length, archiveExcludes1.length, "Wrong number of archiveExcludes");
+    for (String archiveExcludeStr : archiveExcludes1)
     {
       Assert.assertTrue(archiveExcludesList.contains(archiveExcludeStr));
       System.out.println("Found archiveExclude: " + archiveExcludeStr);
@@ -153,8 +153,8 @@ public class AppsDaoTest
     String[] tmpJobTags = tmpApp.getJobTags();
     Assert.assertNotNull(tmpJobTags, "JobTags value was null");
     var jobTagsList = Arrays.asList(tmpJobTags);
-    Assert.assertEquals(tmpJobTags.length, jobTags.length, "Wrong number of jobTags");
-    for (String jobTagStr : jobTags)
+    Assert.assertEquals(tmpJobTags.length, jobTags1.length, "Wrong number of jobTags");
+    for (String jobTagStr : jobTags1)
     {
       Assert.assertTrue(jobTagsList.contains(jobTagStr));
       System.out.println("Found jobTag: " + jobTagStr);
@@ -163,8 +163,8 @@ public class AppsDaoTest
     String[] tmpTags = tmpApp.getTags();
     Assert.assertNotNull(tmpTags, "Tags value was null");
     var tagsList = Arrays.asList(tmpTags);
-    Assert.assertEquals(tmpTags.length, tags.length, "Wrong number of tags");
-    for (String tagStr : tags)
+    Assert.assertEquals(tmpTags.length, tags1.length, "Wrong number of tags");
+    for (String tagStr : tags1)
     {
       Assert.assertTrue(tagsList.contains(tagStr));
       System.out.println("Found tag: " + tagStr);
@@ -173,9 +173,9 @@ public class AppsDaoTest
     JsonObject obj = (JsonObject) tmpApp.getNotes();
     Assert.assertNotNull(obj, "Notes object was null");
     Assert.assertTrue(obj.has("project"));
-    Assert.assertEquals(obj.get("project").getAsString(), notesObj.get("project").getAsString());
+    Assert.assertEquals(obj.get("project").getAsString(), notes1Obj.get("project").getAsString());
     Assert.assertTrue(obj.has("testdata"));
-    Assert.assertEquals(obj.get("testdata").getAsString(), notesObj.get("testdata").getAsString());
+    Assert.assertEquals(obj.get("testdata").getAsString(), notes1Obj.get("testdata").getAsString());
     // ===============================================================================================
     // Verify data in aux tables: file_inputs, notification_subscriptions, app_args, container_args, scheduler_options
     // ===============================================================================================
@@ -429,18 +429,18 @@ public class AppsDaoTest
   public void testMissingApp() throws Exception {
     String fakeAppId = "AMissingAppId";
     String fakeAppVersion = "AMissingAppVersion";
-    PatchApp patchApp = new PatchApp("description PATCHED", enabledFalse, runtime2, runtimeVersion2, containerImage2,
-                                      maxJobs2, maxJobsPerUser2, strictFileInputsTrue, tags2, notes2);
+    PatchApp patchApp = IntegrationUtils.makePatchAppFull();
     patchApp.setTenant(tenantName);
     patchApp.setId(fakeAppId);
     patchApp.setVersion(fakeAppVersion);
     App patchedApp = new App(1, 1, tenantName, fakeAppId, fakeAppVersion, "description", AppType.BATCH, ownerUser2, enabledTrue,
             containerizedTrue,
-            runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, strictFileInputsFalse, jobDescription, dynamicExecSystemTrue,
-            execSystemConstraints, execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
-            execSystemLogicalQueue, archiveSystemIdNull, archiveSystemDir, archiveOnAppErrorTrue, nodeCount, coresPerNode,
-            memoryMb, maxMinutes, envVariables, archiveIncludes, archiveExcludes, jobTags,
-            tags, notes, uuidNull, isDeletedFalse, createdNull, updatedNull);
+            runtime, runtimeVersion, containerImage, maxJobs1, maxJobsPerUser1, strictFileInputsFalse, IntegrationUtils.jobDescription1, dynamicExecSystemTrue,
+            execSystemConstraints1, execSystemId1, execSystemExecDir1, execSystemInputDir1, execSystemOutputDir1,
+            execSystemLogicalQueue1, archiveSystemIdNull, archiveSystemDir1, archiveOnAppErrorTrue,
+            envVariables1, archiveIncludes1, archiveExcludes1,
+            nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
+            tags1, notes1, uuidNull, isDeletedFalse, createdNull, updatedNull);
     // Make sure app does not exist
     Assert.assertFalse(dao.checkForApp(tenantName, fakeAppId, true));
     Assert.assertFalse(dao.checkForApp(tenantName, fakeAppId, false));

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /*
- * Class for ParameterSet attributes in an App definition.
+ * Class for ParameterSet attributes in an App definition contained in a request.
  */
 public final class ParameterSet
 {

@@ -9,7 +9,6 @@ import edu.utexas.tacc.tapis.apps.model.App;
 public final class ReqUpdateApp
 {
   public String description;
-  public Boolean enabled;
   public App.Runtime runtime;
   public String runtimeVersion;
   public String containerImage;

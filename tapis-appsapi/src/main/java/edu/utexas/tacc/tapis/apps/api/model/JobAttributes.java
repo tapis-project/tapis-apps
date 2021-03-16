@@ -9,7 +9,7 @@ import java.util.List;
 import static edu.utexas.tacc.tapis.apps.model.App.EMPTY_STR_ARRAY;
 
 /*
- * Class for JobAttributes in an App definition.
+ * Class for JobAttributes in an App definition contained in a request.
  */
 public final class JobAttributes
 {

@@ -46,12 +46,13 @@ public final class App
   public static final String APIUSERID_VAR = "${apiUserId}";
 
   // Default values
+  public static final String[] EMPTY_STR_ARRAY = new String[0];
   public static final String DEFAULT_OWNER = APIUSERID_VAR;
   public static final boolean DEFAULT_ENABLED = true;
   public static final boolean DEFAULT_CONTAINERIZED = true;
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
   public static final JsonObject DEFAULT_NOTES = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
-  public static final String[] EMPTY_STR_ARRAY = new String[0];
+  public static final String[] DEFAULT_TAGS = EMPTY_STR_ARRAY;
 
   // Attribute names, also used as field names in Json
   public static final String ID_FIELD = "id";
@@ -165,13 +166,6 @@ public final class App
   // ************************************************************************
 
   /**
-   * Zero arg constructor needed to use jersey's SelectableEntityFilteringFeature
-   * NOTE: Adding a default constructor changes jOOQ behavior such that when Record.into() uses the default mapper
-   *       the column names and POJO attribute names must match (with convention an_attr -> anAttr).
-   */
-// TODO needed?  public App() { }
-
-  /**
    * Constructor using only required attributes.
    */
   public App(String id1, String version1, AppType appType1)
@@ -202,18 +196,22 @@ public final class App
   /**
    * Constructor for jOOQ with input parameter matching order of columns in DB
    * Also useful for testing
+   * Note that FileInputs, AppArgs, ContainerArgs, SchedulerOptions and Subscriptions must be set separately.
    */
   public App(int seqId1, int verSeqId1, String tenant1, String id1, String version1, String description1,
              AppType appType1, String owner1, boolean enabled1, boolean containerized1,
-             Runtime runtime1, String runtimeVersion1, String containerImage1, int maxJobs1, int maxJobsPerUser1,
-             boolean strictFileInputs1, String jobDescription1, boolean dynamicExecSystem1,
+             Runtime runtime1, String runtimeVersion1, String containerImage1,
+             int maxJobs1, int maxJobsPerUser1, boolean strictFileInputs1,
+             // == Start jobAttributes
+             String jobDescription1, boolean dynamicExecSystem1,
              String[] execSystemConstraints1, String execSystemId1, String execSystemExecDir1,
              String execSystemInputDir1, String execSystemOutputDir1, String execSystemLogicalQueue1,
-             String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1, int nodeCount1,
-             int coresPerNode1, int memoryMb1, int maxMinutes1, String[] envVariables1,
-             String[] archiveIncludes1, String[] archiveExcludes1, String[] jobTags1,
-             String[] tags1, Object notes1, UUID uuid1, boolean deleted1,
-             Instant created1, Instant updated1)
+             String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1,
+             String[] envVariables1, String[] archiveIncludes1, String[] archiveExcludes1, // parameterSet
+             int nodeCount1, int coresPerNode1, int memoryMb1, int maxMinutes1,
+             String[] jobTags1,
+             // == End jobAttributes
+             String[] tags1, Object notes1, UUID uuid1, boolean deleted1, Instant created1, Instant updated1)
   {
     seqId = seqId1;
     verSeqId = verSeqId1;
