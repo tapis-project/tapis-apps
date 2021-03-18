@@ -46,13 +46,13 @@ public final class IntegrationUtils
   public static final boolean inPlaceFalse = false;
   public static final boolean metaRequiredTrue = true;
   public static final boolean metaRequiredFalse = false;
-  public static final Runtime runtime = Runtime.DOCKER;
+  public static final Runtime runtime1 = Runtime.DOCKER;
   public static final Runtime runtime2 = Runtime.SINGULARITY;
   public static final Runtime runtimeNull = null;
-  public static final String runtimeVersion = "0.0.1";
+  public static final String runtimeVersion1 = "0.0.1";
   public static final String runtimeVersion2 = "0.0.2";
   public static final String runtimeVersionNull = null;
-  public static final String containerImage = "containerImage";
+  public static final String containerImage1 = "containerImage";
   public static final String containerImage2 = "containerImage2";
   public static final String containerImageNull = null;
   public static final String jobDescription1 = "Description of job 1";
@@ -226,7 +226,7 @@ public final class IntegrationUtils
       // Constructor initializes all attributes except for JobCapabilities
       apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, description1 + suffix, AppType.BATCH, ownerUser2, enabledTrue,
                         containerizedTrue,
-                        runtime, runtimeVersion+suffix, containerImage+suffix, maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
+              runtime1, runtimeVersion1 +suffix, containerImage1 +suffix, maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
                         jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
                         execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
                         execSystemLogicalQueue1 +suffix, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
@@ -253,7 +253,7 @@ public final class IntegrationUtils
   public static App makeMinimalApp(App app)
   {
     return new App(-1, -1, tenantName, app.getId(), app.getVersion(), descriptionNull, appType, ownerNull, enabledTrue,
-            containerizedTrue, runtimeNull, runtimeVersionNull, containerImage, maxJobs1, maxJobsPerUser1,
+            containerizedTrue, runtimeNull, runtimeVersionNull, containerImage1, maxJobs1, maxJobsPerUser1,
             strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
             execSystemId1, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
@@ -270,7 +270,7 @@ public final class IntegrationUtils
   {
      return new PatchApp(description2, runtime2, runtimeVersion2, containerImage2,
              maxJobs2, maxJobsPerUser2, strictFileInputsTrue,
-             jobDescription2, dynamicExecSystemFalse, execSystemConstraintsNull,
+             jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
              execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
              archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse,
              appArgList2, containerArgList2, schedulerOptionList2, envVariables2, archiveIncludes2, archiveExcludes2,

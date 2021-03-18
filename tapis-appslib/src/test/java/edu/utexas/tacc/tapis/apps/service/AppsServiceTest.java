@@ -71,10 +71,8 @@ public class AppsServiceTest
   private static final Set<Permission> testPermsREADEXECUTE = new HashSet<>(Set.of(Permission.READ, Permission.EXECUTE));
   private static final Set<Permission> testPermsREAD = new HashSet<>(Set.of(Permission.READ));
   private static final Set<Permission> testPermsMODIFY = new HashSet<>(Set.of(Permission.MODIFY));
-  private static final String[] tags2 = {"value3", "value4"};
-  private static final Object notes2 = TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj2\", \"testdata\": \"abc2\"}", JsonObject.class);
 
-  int numApps = 22;
+  int numApps = 23;
   App[] apps = IntegrationUtils.makeApps(numApps, "Svc");
 
   @BeforeSuite
@@ -190,9 +188,8 @@ public class AppsServiceTest
   @Test
   public void testUpdateApp() throws Exception
   {
-    // Create initial App
+    // Test updating all attributes that can be updated.
     App app0 = apps[13];
-    App app1 = new App(app0);
     String appId = app0.getId();
     String appVersion = app0.getVersion();
     String createText = "{\"testUpdate\": \"0-create\"}";
@@ -206,7 +203,7 @@ public class AppsServiceTest
     // Update using updateApp
     svc.updateApp(authenticatedTestUser2, patchAppFull, patch1Text);
     App tmpAppFull = svc.getApp(authenticatedTestUser2, appId, appVersion, false);
-    // Update original app definition with patched values
+    // Update original app definition with patched values so we can use the checkCommon method.
     app0.setDescription(description2);
     app0.setRuntime(runtime2);
     app0.setRuntimeVersion(runtimeVersion2);
@@ -216,7 +213,7 @@ public class AppsServiceTest
     app0.setStrictFileInputs(strictFileInputsTrue);
     app0.setJobDescription(jobDescription2);
     app0.setDynamicExecSystem(dynamicExecSystemFalse);
-    app0.setExecSystemConstraints(execSystemConstraintsNull);
+    app0.setExecSystemConstraints(execSystemConstraints2);
     app0.setExecSystemId(execSystemId2);
     app0.setExecSystemExecDir(execSystemExecDir2);
     app0.setExecSystemInputDir(execSystemInputDir2);
@@ -243,6 +240,12 @@ public class AppsServiceTest
     //Check common app attributes:
     checkCommonAppAttrs(app0, tmpAppFull);
 
+    // Test updating just a few attributes
+    app0 = apps[22];
+    appId = app0.getId();
+    appVersion = app0.getVersion();
+    createText = "{\"testUpdate\": \"0-create\"}";
+    svc.createApp(authenticatedTestUser2, app0, createText);
     // Create patchApp where some attributes are changed
     //   * Some attributes are to be updated: description, containerImage, execSystemId,
     String patch2Text = "{\"testUpdate\": \"1-patch2\"}";
@@ -254,11 +257,11 @@ public class AppsServiceTest
     svc.updateApp(authenticatedTestUser2, patchAppPartial, patch2Text);
     App tmpAppPartial = svc.getApp(authenticatedTestUser2, appId, appVersion, false);
     // Update original app definition with patched values
-    app1.setDescription(description2);
-    app1.setContainerImage(containerImage2);
-    app1.setExecSystemId(execSystemId2);
+    app0.setDescription(description2);
+    app0.setContainerImage(containerImage2);
+    app0.setExecSystemId(execSystemId2);
     //Check common app attributes:
-    checkCommonAppAttrs(app1, tmpAppPartial);
+    checkCommonAppAttrs(app0, tmpAppPartial);
   }
 
   // Test changing app owner
@@ -837,11 +840,12 @@ public class AppsServiceTest
     Assert.assertEquals(tmpApp.getJobDescription(), app0.getJobDescription());
     Assert.assertEquals(tmpApp.isDynamicExecSystem(), app0.isDynamicExecSystem());
     // Verify execSystemConstraints
+    String[] origExecSystemConstraints = app0.getExecSystemConstraints();
     String[] tmpExecSystemConstraints = tmpApp.getExecSystemConstraints();
     Assert.assertNotNull(tmpExecSystemConstraints, "execSystemConstraints value was null");
     var execSystemConstraintsList = Arrays.asList(tmpExecSystemConstraints);
-    Assert.assertEquals(tmpExecSystemConstraints.length, execSystemConstraints1.length, "Wrong number of constraints");
-    for (String execSystemConstraintStr : execSystemConstraints1)
+    Assert.assertEquals(tmpExecSystemConstraints.length, origExecSystemConstraints.length, "Wrong number of constraints");
+    for (String execSystemConstraintStr : origExecSystemConstraints)
     {
       Assert.assertTrue(execSystemConstraintsList.contains(execSystemConstraintStr));
       System.out.println("Found execSystemConstraint: " + execSystemConstraintStr);
@@ -855,31 +859,34 @@ public class AppsServiceTest
     Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
     Assert.assertEquals(tmpApp.isArchiveOnAppError(), app0.isArchiveOnAppError());
     // Verify envVariables
+    String[] origEnvVariables = app0.getEnvVariables();
     String[] tmpEnvVariables = tmpApp.getEnvVariables();
     Assert.assertNotNull(tmpEnvVariables, "envVariables value was null");
     var envVariablesList = Arrays.asList(tmpEnvVariables);
-    Assert.assertEquals(tmpEnvVariables.length, envVariables1.length, "Wrong number of envVariables");
-    for (String envVariableStr : envVariables1)
+    Assert.assertEquals(tmpEnvVariables.length, origEnvVariables.length, "Wrong number of envVariables");
+    for (String envVariableStr : origEnvVariables)
     {
       Assert.assertTrue(envVariablesList.contains(envVariableStr));
       System.out.println("Found envVariable: " + envVariableStr);
     }
     // Verify archiveIncludes
+    String[] origArchiveIncludes = app0.getArchiveIncludes();
     String[] tmpArchiveIncludes = tmpApp.getArchiveIncludes();
     Assert.assertNotNull(tmpArchiveIncludes, "archiveIncludes value was null");
     var archiveIncludesList = Arrays.asList(tmpArchiveIncludes);
-    Assert.assertEquals(tmpArchiveIncludes.length, archiveIncludes1.length, "Wrong number of archiveIncludes");
-    for (String archiveIncludeStr : archiveIncludes1)
+    Assert.assertEquals(tmpArchiveIncludes.length, origArchiveIncludes.length, "Wrong number of archiveIncludes");
+    for (String archiveIncludeStr : origArchiveIncludes)
     {
       Assert.assertTrue(archiveIncludesList.contains(archiveIncludeStr));
       System.out.println("Found archiveInclude: " + archiveIncludeStr);
     }
     // Verify archiveExcludes
+    String[] origArchiveExcludes = app0.getArchiveExcludes();
     String[] tmpArchiveExcludes = tmpApp.getArchiveExcludes();
     Assert.assertNotNull(tmpArchiveExcludes, "archiveExcludes value was null");
     var archiveExcludesList = Arrays.asList(tmpArchiveExcludes);
-    Assert.assertEquals(tmpArchiveExcludes.length, archiveExcludes1.length, "Wrong number of archiveExcludes");
-    for (String archiveExcludeStr : archiveExcludes1)
+    Assert.assertEquals(tmpArchiveExcludes.length, origArchiveExcludes.length, "Wrong number of archiveExcludes");
+    for (String archiveExcludeStr : origArchiveExcludes)
     {
       Assert.assertTrue(archiveExcludesList.contains(archiveExcludeStr));
       System.out.println("Found archiveExclude: " + archiveExcludeStr);
@@ -889,11 +896,12 @@ public class AppsServiceTest
     Assert.assertEquals(tmpApp.getMemoryMb(), app0.getMemoryMb());
     Assert.assertEquals(tmpApp.getMaxMinutes(), app0.getMaxMinutes());
     // Verify jobTags
+    String[] origJobTags = app0.getJobTags();
     String[] tmpJobTags = tmpApp.getJobTags();
     Assert.assertNotNull(tmpJobTags, "JobTags value was null");
     var jobTagsList = Arrays.asList(tmpJobTags);
-    Assert.assertEquals(tmpJobTags.length, jobTags1.length, "Wrong number of jobTags");
-    for (String jobTagStr : jobTags1)
+    Assert.assertEquals(tmpJobTags.length, origJobTags.length, "Wrong number of jobTags");
+    for (String jobTagStr : origJobTags)
     {
       Assert.assertTrue(jobTagsList.contains(jobTagStr));
       System.out.println("Found jobTag: " + jobTagStr);

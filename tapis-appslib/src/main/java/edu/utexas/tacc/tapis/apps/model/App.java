@@ -52,7 +52,6 @@ public final class App
   public static final boolean DEFAULT_CONTAINERIZED = true;
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
   public static final JsonObject DEFAULT_NOTES = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
-  public static final String[] DEFAULT_TAGS = EMPTY_STR_ARRAY;
 
   // Attribute names, also used as field names in Json
   public static final String ID_FIELD = "id";

@@ -253,46 +253,84 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       boolean doesExist = checkIfAppExists(db, tenant, appId, appVersion, false);
       if (!doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", authenticatedUser, appId));
 
-      // Make sure notes and tags are set
-      JsonObject notesObj =  App.DEFAULT_NOTES;
-      if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
-      String[] tagsStrArray = App.DEFAULT_TAGS;
-      if (patchedApp.getTags() != null) tagsStrArray = patchedApp.getTags();
-      String[] jobTagsStrArray = App.DEFAULT_TAGS;
+      // Make sure runtime,  string arrays and json objects are set
+      App.Runtime runtime = App.DEFAULT_RUNTIME;
+      String[] execSystemConstraintsStrArray = App.EMPTY_STR_ARRAY;
+      String[] envVariablesStrArray = App.EMPTY_STR_ARRAY;
+      String[] archiveIncludesStrArray = App.EMPTY_STR_ARRAY;
+      String[] archiveExcludesStrArray = App.EMPTY_STR_ARRAY;
+      String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
+      String[] tagsStrArray = App.EMPTY_STR_ARRAY;
+      JsonObject notesObj = App.DEFAULT_NOTES;
+      if (patchedApp.getRuntime() != null) runtime = patchedApp.getRuntime();
+      if (patchedApp.getExecSystemConstraints() != null) execSystemConstraintsStrArray = patchedApp.getExecSystemConstraints();
+      if (patchedApp.getEnvVariables() != null) envVariablesStrArray = patchedApp.getEnvVariables();
+      if (patchedApp.getArchiveIncludes() != null) archiveIncludesStrArray = patchedApp.getArchiveIncludes();
+      if (patchedApp.getArchiveExcludes() != null) archiveExcludesStrArray = patchedApp.getArchiveExcludes();
       if (patchedApp.getJobTags() != null) jobTagsStrArray = patchedApp.getJobTags();
+      if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
+      if (patchedApp.getTags() != null) tagsStrArray = patchedApp.getTags();
 
       int appSeqId = getAppSeqIdUsingDb(db, tenant, appId);
       int appVerSeqId = db.update(APPS_VERSIONS)
               .set(APPS_VERSIONS.DESCRIPTION, patchedApp.getDescription())
-//              .set(APPS_VERSIONS.RUNTIME, runtime)
-//              .set(APPS_VERSIONS.RUNTIME_VERSION, patchedApp.getRuntimeVersion())
-//              .set(APPS_VERSIONS.CONTAINER_IMAGE, app.getContainerImage())
-//              .set(APPS_VERSIONS.MAX_JOBS, app.getMaxJobs())
-//              .set(APPS_VERSIONS.MAX_JOBS_PER_USER, app.getMaxJobsPerUser())
-//              .set(APPS_VERSIONS.JOB_DESCRIPTION, app.getJobDescription())
-//              .set(APPS_VERSIONS.DYNAMIC_EXEC_SYSTEM, app.isDynamicExecSystem())
-//              .set(APPS_VERSIONS.EXEC_SYSTEM_CONSTRAINTS, execSystemConstraintsStrArray)
-//              .set(APPS_VERSIONS.EXEC_SYSTEM_ID, app.getExecSystemId())
-//              .set(APPS_VERSIONS.EXEC_SYSTEM_EXEC_DIR, app.getExecSystemExecDir())
-//              .set(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR, app.getExecSystemInputDir())
-//              .set(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR, app.getExecSystemOutputDir())
-//              .set(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE, app.getExecSystemLogicalQueue())
-//              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, app.getArchiveSystemId())
-//              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, app.getArchiveSystemDir())
-//              .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, app.isArchiveOnAppError())
-//              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
-//              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
-//              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
-//              .set(APPS_VERSIONS.NODE_COUNT, app.getNodeCount())
-//              .set(APPS_VERSIONS.CORES_PER_NODE, app.getCoresPerNode())
-//              .set(APPS_VERSIONS.MEMORY_MB, app.getMemoryMb())
-//              .set(APPS_VERSIONS.MAX_MINUTES, app.getMaxMinutes())
-//              .set(APPS_VERSIONS.JOB_TAGS, jobTagsStrArray)
-//              .set(APPS_VERSIONS.TAGS, tagsStrArray)
-//              .set(APPS_VERSIONS.NOTES, notesObj)
+              .set(APPS_VERSIONS.RUNTIME, runtime)
+              .set(APPS_VERSIONS.RUNTIME_VERSION, patchedApp.getRuntimeVersion())
+              .set(APPS_VERSIONS.CONTAINER_IMAGE, patchedApp.getContainerImage())
+              .set(APPS_VERSIONS.MAX_JOBS, patchedApp.getMaxJobs())
+              .set(APPS_VERSIONS.MAX_JOBS_PER_USER, patchedApp.getMaxJobsPerUser())
+              .set(APPS_VERSIONS.STRICT_FILE_INPUTS, patchedApp.isStrictFileInputs())
+              .set(APPS_VERSIONS.JOB_DESCRIPTION, patchedApp.getJobDescription())
+              .set(APPS_VERSIONS.DYNAMIC_EXEC_SYSTEM, patchedApp.isDynamicExecSystem())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_CONSTRAINTS, execSystemConstraintsStrArray)
+              .set(APPS_VERSIONS.EXEC_SYSTEM_ID, patchedApp.getExecSystemId())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_EXEC_DIR, patchedApp.getExecSystemExecDir())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR, patchedApp.getExecSystemInputDir())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR, patchedApp.getExecSystemOutputDir())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE, patchedApp.getExecSystemLogicalQueue())
+              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, patchedApp.getArchiveSystemId())
+              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, patchedApp.getArchiveSystemDir())
+              .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, patchedApp.isArchiveOnAppError())
+              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
+              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
+              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
+              .set(APPS_VERSIONS.NODE_COUNT, patchedApp.getNodeCount())
+              .set(APPS_VERSIONS.CORES_PER_NODE, patchedApp.getCoresPerNode())
+              .set(APPS_VERSIONS.MEMORY_MB, patchedApp.getMemoryMb())
+              .set(APPS_VERSIONS.MAX_MINUTES, patchedApp.getMaxMinutes())
+              .set(APPS_VERSIONS.JOB_TAGS, jobTagsStrArray)
+              .set(APPS_VERSIONS.TAGS, tagsStrArray)
+              .set(APPS_VERSIONS.NOTES, notesObj)
               .where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId),APPS_VERSIONS.VERSION.eq(appVersion))
               .returningResult(APPS_VERSIONS.SEQ_ID)
               .fetchOne().getValue(APPS_VERSIONS.SEQ_ID);
+
+      // Persist data to aux tables as needed
+      if (patchedApp.getFileInputs() != null)
+      {
+        db.deleteFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+        persistFileInputs(db, patchedApp, appVerSeqId);
+      }
+      if (patchedApp.getAppArgs() != null)
+      {
+        db.deleteFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+        persistAppArgs(db, patchedApp, appVerSeqId);
+      }
+      if (patchedApp.getContainerArgs() != null)
+      {
+        db.deleteFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+        persistContainerArgs(db, patchedApp, appVerSeqId);
+      }
+      if (patchedApp.getSchedulerOptions() != null)
+      {
+        db.deleteFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+        persistSchedulerOptions(db, patchedApp, appVerSeqId);
+      }
+      if (patchedApp.getNotificationSubscriptions() != null)
+      {
+        db.deleteFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+        persistNotificationSubscriptions(db, patchedApp, appVerSeqId);
+      }
 
       // Persist update record
       addUpdate(db, authenticatedUser, tenant, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
