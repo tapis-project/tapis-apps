@@ -8,6 +8,8 @@ import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_ENABLED;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_CONTAINERIZED;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NOTES;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_OWNER;
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_RUNTIME;
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_STRICT_FILE_INPUTS;
 import static edu.utexas.tacc.tapis.apps.model.App.EMPTY_STR_ARRAY;
 
 /*
@@ -22,12 +24,12 @@ public final class ReqCreateApp
   public String owner = DEFAULT_OWNER;
   public boolean enabled = DEFAULT_ENABLED;
   public boolean containerized = DEFAULT_CONTAINERIZED;
-  public Runtime runtime;
+  public Runtime runtime = DEFAULT_RUNTIME;
   public String runtimeVersion;
   public String containerImage;
   public int maxJobs;
   public int maxJobsPerUser;
-  public boolean strictFileInputs;
+  public boolean strictFileInputs = DEFAULT_STRICT_FILE_INPUTS;
   public JobAttributes jobAttributes;
   public String[] tags = EMPTY_STR_ARRAY;
   public Object notes = DEFAULT_NOTES;

@@ -6,6 +6,10 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_CORES_PER_NODE;
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_MAX_MINUTES;
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_MEMORY_MB;
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NODE_COUNT;
 import static edu.utexas.tacc.tapis.apps.model.App.EMPTY_STR_ARRAY;
 
 /*
@@ -26,10 +30,10 @@ public final class JobAttributes
   public boolean archiveOnAppError;
   public ParameterSet parameterSet;
   public List<FileInputDefinition> fileInputDefinitions;
-  public int nodeCount;
-  public int coresPerNode;
-  public int memoryMB;
-  public int maxMinutes;
+  public int nodeCount = DEFAULT_NODE_COUNT;
+  public int coresPerNode = DEFAULT_CORES_PER_NODE;
+  public int memoryMB = DEFAULT_MEMORY_MB;
+  public int maxMinutes = DEFAULT_MAX_MINUTES;
   public List<NotificationSubscription> subscriptions;
   public String[] tags;
 

@@ -50,8 +50,13 @@ public final class App
   public static final String DEFAULT_OWNER = APIUSERID_VAR;
   public static final boolean DEFAULT_ENABLED = true;
   public static final boolean DEFAULT_CONTAINERIZED = true;
+  public static final boolean DEFAULT_STRICT_FILE_INPUTS = false;
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
   public static final JsonObject DEFAULT_NOTES = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
+  public static final int DEFAULT_NODE_COUNT = 1;
+  public static final int DEFAULT_CORES_PER_NODE = 1;
+  public static final int DEFAULT_MEMORY_MB = 100;
+  public static final int DEFAULT_MAX_MINUTES = 10;
 
   // Attribute names, also used as field names in Json
   public static final String ID_FIELD = "id";
@@ -138,10 +143,10 @@ public final class App
   private String[] envVariables;
   private String[] archiveIncludes;
   private String[] archiveExcludes;
-  private int nodeCount;
-  private int coresPerNode;
-  private int memoryMb;
-  private int maxMinutes;
+  private int nodeCount = DEFAULT_NODE_COUNT;
+  private int coresPerNode = DEFAULT_CORES_PER_NODE;
+  private int memoryMb = DEFAULT_MEMORY_MB;
+  private int maxMinutes = DEFAULT_MAX_MINUTES;
   private String[] jobTags;
   // === End jobAttributes ==========
   // === End fields in main table =============================================

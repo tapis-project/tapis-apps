@@ -105,11 +105,11 @@ CREATE TABLE apps_versions
     env_variables TEXT[] NOT NULL,
     archive_includes TEXT[] NOT NULL,
     archive_excludes TEXT[] NOT NULL,
---   fileInputs location in jobAttributes ====SUBSC=================
-    node_count INTEGER NOT NULL DEFAULT -1,
-    cores_per_node INTEGER NOT NULL DEFAULT -1,
-    memory_mb INTEGER NOT NULL DEFAULT -1,
-    max_minutes INTEGER NOT NULL DEFAULT -1,
+--   fileInputs location in jobAttributes =====================
+    node_count INTEGER NOT NULL DEFAULT 1,
+    cores_per_node INTEGER NOT NULL DEFAULT 1,
+    memory_mb INTEGER NOT NULL DEFAULT 100,
+    max_minutes INTEGER NOT NULL DEFAULT 10,
 --   subscriptions location in jobAttributes ==================
     job_tags TEXT[] NOT NULL,
 -- ==== End jobAttributes ======================================
