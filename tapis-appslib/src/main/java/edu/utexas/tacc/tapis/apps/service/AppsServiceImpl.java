@@ -16,7 +16,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
 import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.model.App;
@@ -39,6 +38,7 @@ import edu.utexas.tacc.tapis.systems.client.gen.model.TSystem;
 
 import static edu.utexas.tacc.tapis.shared.TapisConstants.APPS_SERVICE;
 import static edu.utexas.tacc.tapis.apps.model.App.NO_APP_VERSION;
+
 /*
  * Service level methods for Apps.
  *   Uses Dao layer and other service library classes to perform all top level service operations.
@@ -84,6 +84,13 @@ public class AppsServiceImpl implements AppsService
 
   @Inject
   private ServiceContext serviceContext;
+
+  // We must be running on a specific site and this will never change
+  // These are initialized in method initService()
+  private static String siteId;
+  public static String getSiteId() {return siteId;}
+  private static String siteAdminTenantId;
+  public static String getSiteAdminTenantId() {return siteAdminTenantId;}
 
   // ************************************************************************
   // *********************** Public Methods *********************************
@@ -435,10 +442,12 @@ public class AppsServiceImpl implements AppsService
    * Initialize the service:
    *   Check for Apps admin role. If not found create it
    */
-  public void initService(RuntimeParameters runParms) throws TapisException, TapisClientException
+  public void initService(String siteId1, String siteAdminTenantId1, String svcPassword) throws TapisException, TapisClientException
   {
-    // Initialize service context
-    serviceContext.initServiceJWT(runParms.getSiteId(), APPS_SERVICE, runParms.getServicePassword());
+    // Initialize service context and site info
+    siteId = siteId1;
+    siteAdminTenantId = siteAdminTenantId1;
+    serviceContext.initServiceJWT(siteId, APPS_SERVICE, svcPassword);
     // Make sure DB is present and updated to latest version using flyway
     dao.migrateDB();
   }
@@ -968,7 +977,7 @@ public class AppsServiceImpl implements AppsService
   private SKClient getSKClient() throws TapisException
   {
     SKClient skClient;
-    String tenantName = TapisConstants.PRIMARY_SITE_TENANT;
+    String tenantName = siteAdminTenantId;
     String userName = SERVICE_NAME;
     try
     {
@@ -976,10 +985,10 @@ public class AppsServiceImpl implements AppsService
     }
     catch (Exception e)
     {
-      String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY,
-                                   userName, tenantName);
+      String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY, tenantName, userName);
       throw new TapisException(msg, e);
     }
+
     return skClient;
   }
 

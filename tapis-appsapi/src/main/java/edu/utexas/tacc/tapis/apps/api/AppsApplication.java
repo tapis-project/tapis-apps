@@ -2,7 +2,13 @@ package edu.utexas.tacc.tapis.apps.api;
 
 import javax.ws.rs.ApplicationPath;
 
+import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
+import edu.utexas.tacc.tapis.apps.dao.AppsDao;
+import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
+import edu.utexas.tacc.tapis.apps.service.AppsService;
+import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
 import edu.utexas.tacc.tapis.apps.service.ServiceClientsFactory;
+import edu.utexas.tacc.tapis.apps.service.ServiceContextFactory;
 import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
@@ -12,12 +18,6 @@ import edu.utexas.tacc.tapis.sharedapi.jaxrs.filters.JWTValidateRequestFilter;
 import edu.utexas.tacc.tapis.sharedapi.providers.ObjectMapperContextResolver;
 import edu.utexas.tacc.tapis.sharedapi.providers.TapisExceptionMapper;
 import edu.utexas.tacc.tapis.sharedapi.providers.ValidationExceptionMapper;
-import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
-import edu.utexas.tacc.tapis.apps.dao.AppsDao;
-import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
-import edu.utexas.tacc.tapis.apps.service.AppsService;
-import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
-import edu.utexas.tacc.tapis.apps.service.ServiceContextFactory;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -38,7 +38,7 @@ import java.net.URI;
  *   Registers packages and features for Jersey.
  *   Gets runtime parameters from the environment.
  *   Initializes the service:
- *     Tapis site id.
+ *     Init service context.
  *     DB creation or migration
  *   Starts the Grizzly server.
  *
@@ -55,6 +55,8 @@ public class AppsApplication extends ResourceConfig
   // We must be running on a specific site and this will never change
   private static String siteId;
   public static String getSiteId() {return siteId;}
+  private static String siteAdminTenantId;
+  public static String getSiteAdminTenantId() {return siteAdminTenantId;}
 
   // For all logging use println or similar so we do not have a dependency on a logging subsystem.
   public AppsApplication()
@@ -118,6 +120,8 @@ public class AppsApplication extends ResourceConfig
       // Retrieve the tenant list from the tenant service now to fail fast if we cannot access the list.
       String url = runParms.getTenantsSvcURL();
       TenantManager.getInstance(url).getTenants();
+      // Set admin tenant also, needed when building a client for calling other services (such as SK) as ourselves.
+      siteAdminTenantId = TenantManager.getInstance(url).getSiteAdminTenantId(siteId);
 
       // Initialize bindings for HK2 dependency injection
       register(new AbstractBinder() {
@@ -153,6 +157,7 @@ public class AppsApplication extends ResourceConfig
 
     // Initialize the application container
     AppsApplication config = new AppsApplication();
+
     // Initialize the service
     // In order to instantiate our service class using HK2 we need to create an application handler
     //   which allows us to get an injection manager which is used to get a locator.
@@ -163,8 +168,9 @@ public class AppsApplication extends ResourceConfig
     InjectionManager im = handler.getInjectionManager();
     ServiceLocator locator = im.getInstance(ServiceLocator.class);
     AppsServiceImpl svcImpl = locator.getService(AppsServiceImpl.class);
+
     // Call the main service init method
-    svcImpl.initService(RuntimeParameters.getInstance());
+    svcImpl.initService(siteId, siteAdminTenantId, RuntimeParameters.getInstance().getServicePassword());
     // Create and start the server
     final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(baseUri, config, false);
     server.start();

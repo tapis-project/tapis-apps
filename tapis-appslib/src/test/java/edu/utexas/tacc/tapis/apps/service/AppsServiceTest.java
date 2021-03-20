@@ -60,6 +60,7 @@ public class AppsServiceTest
   private static final String filesSvcName = "files";
   private static final String adminUser = "testuser9";
 //TODO  private static final String adminUser = "admin";
+  private static final String siteId = "tacc";
   private static final String adminTenantName = "admin";
   private static final String testUser0 = "testuser0";
   private static final String testUser1 = "testuser1";
@@ -100,7 +101,7 @@ public class AppsServiceTest
     // Initialize services
     svc = locator.getService(AppsService.class);
     svcImpl = locator.getService(AppsServiceImpl.class);
-    svcImpl.initService(RuntimeParameters.getInstance());
+    svcImpl.initService(siteId, adminTenantName, RuntimeParameters.getInstance().getServicePassword());
 
     // Initialize authenticated user and service
     authenticatedAdminUser = new AuthenticatedUser(adminUser, tenantName, TapisThreadContext.AccountType.user.name(),
