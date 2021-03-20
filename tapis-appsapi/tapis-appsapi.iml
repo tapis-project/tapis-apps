@@ -13,7 +13,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="tapis-appslib" />
-    <orderEntry type="library" name="Maven: edu.utexas.tacc.tapis:tapis-shared-lib:1.11.68-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: edu.utexas.tacc.tapis:tapis-shared-lib:1.11.68" level="project" />
     <orderEntry type="library" name="Maven: edu.utexas.tacc.tapis:apps-client:1.11.60" level="project" />
     <orderEntry type="library" name="Maven: edu.utexas.tacc.tapis:systems-client:1.11.60" level="project" />
     <orderEntry type="library" name="Maven: edu.utexas.tacc.tapis:auth-client:1.11.60" level="project" />
@@ -43,7 +43,7 @@
     <orderEntry type="library" name="Maven: com.zaxxer:HikariCP:3.3.1" level="project" />
     <orderEntry type="library" name="Maven: org.postgresql:postgresql:42.2.6" level="project" />
     <orderEntry type="library" name="Maven: com.jcraft:jsch:0.1.55" level="project" />
-    <orderEntry type="library" name="Maven: edu.utexas.tacc.tapis:tapis-shared-db:1.11.68-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: edu.utexas.tacc.tapis:tapis-shared-db:1.11.68" level="project" />
     <orderEntry type="library" name="Maven: io.dropwizard.metrics:metrics-core:3.2.3" level="project" />
     <orderEntry type="library" name="Maven: p6spy:p6spy:3.8.3" level="project" />
     <orderEntry type="library" name="Maven: edu.utexas.tacc.tapis:security-client:1.11.60" level="project" />
@@ -66,7 +66,7 @@
     <orderEntry type="library" name="Maven: org.jooq:jooq-meta:3.13.1" level="project" />
     <orderEntry type="library" name="Maven: org.jooq:jooq-codegen:3.13.1" level="project" />
     <orderEntry type="library" name="Maven: org.flywaydb:flyway-core:6.0.8" level="project" />
-    <orderEntry type="library" name="Maven: edu.utexas.tacc.tapis:tapis-shared-api:1.11.68-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: edu.utexas.tacc.tapis:tapis-shared-api:1.11.68" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.9" level="project" />
     <orderEntry type="library" name="Maven: jakarta.servlet:jakarta.servlet-api:4.0.2" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.jersey.containers:jersey-container-servlet:2.33" level="project" />
@@ -103,7 +103,7 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.10" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.9.10" level="project" />
     <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-annotations:2.0.10" level="project" />
-    <orderEntry type="library" name="Maven: edu.utexas.tacc.tapis:tapis-shared-searchlib:1.11.68-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: edu.utexas.tacc.tapis:tapis-shared-searchlib:1.11.68" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.javacc:javacc:7.0.6" level="project" />
     <orderEntry type="library" name="Maven: org.apache.activemq:activemq-client:5.16.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.geronimo.specs:geronimo-jms_1.1_spec:1.1.1" level="project" />
