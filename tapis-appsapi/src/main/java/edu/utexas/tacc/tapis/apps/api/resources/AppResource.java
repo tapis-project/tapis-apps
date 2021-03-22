@@ -934,29 +934,58 @@ public class AppResource
   private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String id, String version,
                                                     String rawJson)
   {
-    var jobAttrs = req.jobAttributes;
-    if (jobAttrs == null) jobAttrs = new JobAttributes();
-    var parmSet = jobAttrs.parameterSet;
-    if (parmSet == null) parmSet = new ParameterSet();
-    List<FileInput> fileInputs = ApiUtils.buildLibFileInputs(jobAttrs.fileInputDefinitions);
-    List<NotifSubscription> notifSubscriptions = ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions);
-    String[] envVariables = ApiUtils.getKeyValuesAsArray(parmSet.envVariables);
-    List<AppArg> appArgs = ApiUtils.buildLibAppArgs(parmSet.appArgs);
-    List<AppArg> containerArgs = ApiUtils.buildLibAppArgs(parmSet.containerArgs);
-    List<AppArg> schedulerOptions = ApiUtils.buildLibAppArgs(parmSet.schedulerOptions);
+    PatchApp patchApp;
     // Extract Notes from the raw json.
     Object notes = extractNotes(rawJson);
-    // Create patchApp
-    PatchApp patchApp = new PatchApp(req.description, req.runtime, req.runtimeVersion, req.containerImage,
-            req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
-            jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
-            jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
-            jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir,
-            jobAttrs.archiveOnAppError, appArgs, containerArgs, schedulerOptions, envVariables,
-            parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes,
-            fileInputs, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes,
-            notifSubscriptions, jobAttrs.tags,
-            req.tags, notes);
+
+    // Potentially many arguments are null if jobAttrs or parmSet is null.
+    List<FileInput> fileInputs = null;
+    List<NotifSubscription> notifSubscriptions = null;
+    String[] envVariables = null;
+    List<AppArg> appArgs = null;
+    List<AppArg> containerArgs = null;
+    List<AppArg> schedulerOptions = null;
+    String[] archiveIncludes = null;
+    String[] archiveExcludes = null;
+    var jobAttrs = req.jobAttributes;
+    if (jobAttrs != null)
+    {
+      fileInputs = ApiUtils.buildLibFileInputs(jobAttrs.fileInputDefinitions);
+      notifSubscriptions = ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions);
+      if (jobAttrs.parameterSet != null)
+      {
+        envVariables = ApiUtils.getKeyValuesAsArray(jobAttrs.parameterSet.envVariables);
+        appArgs = ApiUtils.buildLibAppArgs(jobAttrs.parameterSet.appArgs);
+        containerArgs = ApiUtils.buildLibAppArgs(jobAttrs.parameterSet.containerArgs);
+        schedulerOptions = ApiUtils.buildLibAppArgs(jobAttrs.parameterSet.schedulerOptions);
+        if (jobAttrs.parameterSet.archiveFilter != null)
+        {
+          archiveIncludes = jobAttrs.parameterSet.archiveFilter.includes;
+          archiveExcludes = jobAttrs.parameterSet.archiveFilter.excludes;
+        }
+      }
+    }
+
+    // If jobAttrs is null then many arguments are null
+    // else potentially many more arguments are non-null
+    if (jobAttrs == null)
+    {
+      patchApp = new PatchApp(req.description, req.runtime, req.runtimeVersion, req.containerImage,
+            req.maxJobs, req.maxJobsPerUser, req.strictFileInputs, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, req.tags, notes);
+    }
+    else
+    {
+      patchApp = new PatchApp(req.description, req.runtime, req.runtimeVersion, req.containerImage,
+              req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
+              jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
+              jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
+              jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir,
+              jobAttrs.archiveOnAppError, appArgs, containerArgs, schedulerOptions, envVariables,
+              archiveIncludes, archiveExcludes, fileInputs, jobAttrs.nodeCount, jobAttrs.coresPerNode,
+              jobAttrs.memoryMB, jobAttrs.maxMinutes, notifSubscriptions, jobAttrs.tags, req.tags, notes);
+    }
+
     // Update tenant, id and version
     patchApp.setTenant(tenantName);
     patchApp.setId(id);

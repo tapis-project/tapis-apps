@@ -73,6 +73,7 @@ public class AppsServiceTest
   private static final Set<Permission> testPermsREAD = new HashSet<>(Set.of(Permission.READ));
   private static final Set<Permission> testPermsMODIFY = new HashSet<>(Set.of(Permission.MODIFY));
 
+  // Create test app definitions in memory
   int numApps = 23;
   App[] apps = IntegrationUtils.makeApps(numApps, "Svc");
 
@@ -193,7 +194,7 @@ public class AppsServiceTest
     App app0 = apps[13];
     String appId = app0.getId();
     String appVersion = app0.getVersion();
-    String createText = "{\"testUpdate\": \"0-create\"}";
+    String createText = "{\"testUpdate\": \"0-create1\"}";
     svc.createApp(authenticatedTestUser2, app0, createText);
     // Create patchApp where all updatable attributes are changed
     String patch1Text = "{\"testUpdate\": \"1-patch1\"}";
@@ -245,7 +246,7 @@ public class AppsServiceTest
     app0 = apps[22];
     appId = app0.getId();
     appVersion = app0.getVersion();
-    createText = "{\"testUpdate\": \"0-create\"}";
+    createText = "{\"testUpdate\": \"0-create2\"}";
     svc.createApp(authenticatedTestUser2, app0, createText);
     // Create patchApp where some attributes are changed
     //   * Some attributes are to be updated: description, containerImage, execSystemId,

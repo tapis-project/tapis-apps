@@ -193,8 +193,9 @@ public class ApiUtils
    */
   public static List<AppArg> buildLibAppArgs(List<ArgSpec> argSpecs)
   {
+    if (argSpecs == null) return null;
     var retList = new ArrayList<AppArg>();
-    if (argSpecs == null || argSpecs.isEmpty()) return retList;
+    if (argSpecs.isEmpty()) return retList;
     for (ArgSpec argSpec : argSpecs)
     {
       ArgMetaSpec meta = argSpec.meta;
@@ -211,8 +212,9 @@ public class ApiUtils
    */
   public static List<FileInput> buildLibFileInputs(List<FileInputDefinition> fileInputDefinitions)
   {
+    if (fileInputDefinitions == null) return null;
     var retList = new ArrayList<FileInput>();
-    if (fileInputDefinitions == null || fileInputDefinitions.isEmpty()) return retList;
+    if (fileInputDefinitions.isEmpty()) return retList;
     for (FileInputDefinition fid : fileInputDefinitions)
     {
       ArgMetaSpec meta = fid.meta;
@@ -230,8 +232,9 @@ public class ApiUtils
    */
   public static List<NotifSubscription> buildLibNotifSubscriptions(List<NotificationSubscription> apiSubscriptions)
   {
+    if (apiSubscriptions == null) return null;
     var retList = new ArrayList<NotifSubscription>();
-    if (apiSubscriptions == null || apiSubscriptions.isEmpty()) return retList;
+    if (apiSubscriptions.isEmpty()) return retList;
     for (NotificationSubscription apiSubscription : apiSubscriptions)
     {
       NotifSubscription libSubscription = new NotifSubscription(apiSubscription.filter);
@@ -307,7 +310,8 @@ public class ApiUtils
    */
   public static String[] getKeyValuesAsArray(List<KeyValuePair> kvList)
   {
-    if (kvList == null || kvList.size() == 0) return App.EMPTY_STR_ARRAY;
+    if (kvList == null) return null;
+    if (kvList.size() == 0) return App.EMPTY_STR_ARRAY;
     return kvList.stream().map(KeyValuePair::toString).toArray(String[]::new);
   }
 

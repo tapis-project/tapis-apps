@@ -42,6 +42,7 @@ public final class IntegrationUtils
   public static final boolean containerizedTrue = true;
   public static final boolean strictFileInputsTrue = true;
   public static final boolean strictFileInputsFalse = false;
+  public static final Boolean strictFileInputsNull = null;
   public static final boolean inPlaceTrue = true;
   public static final boolean inPlaceFalse = false;
   public static final boolean metaRequiredTrue = true;
@@ -60,6 +61,7 @@ public final class IntegrationUtils
   public static final String jobDescriptionNull = null;
   public static final boolean dynamicExecSystemTrue = true;
   public static final boolean dynamicExecSystemFalse = false;
+  public static final Boolean dynamicExecSystemNull = null;
   public static final String[] execSystemConstraints1 = {"Constraint1a AND", "Constraint1b"};
   public static final String[] execSystemConstraints2 = {"Constraint2a AND", "Constraint2b"};
   public static final String[] execSystemConstraintsNull = null;
@@ -86,18 +88,25 @@ public final class IntegrationUtils
   public static final String archiveSystemDirNull = null;
   public static final boolean archiveOnAppErrorTrue = true;
   public static final boolean archiveOnAppErrorFalse = false;
+  public static final Boolean archiveOnAppErrorNull = null;
   public static final int maxJobs1 = 1;
   public static final int maxJobs2 = 2;
+  public static final Integer maxJobsNull = null;
   public static final int maxJobsPerUser1 = 1;
   public static final int maxJobsPerUser2 = 2;
+  public static final Integer maxJobsPerUserNull = null;
   public static final int nodeCount1 = 1;
   public static final int nodeCount2 = 2;
+  public static final Integer nodeCountNull = null;
   public static final int coresPerNode1 = 1;
   public static final int coresPerNode2 = 2;
+  public static final Integer coresPerNodeNull = null;
   public static final int memoryMb1 = 1;
   public static final int memoryMb2 = 2;
+  public static final Integer memoryMbNull = null;
   public static final int maxMinutes1 = 1;
   public static final int maxMinutes2 = 2;
+  public static final Integer maxMinutesNull = null;
   public static final boolean deletedFalse = false;
   public static final Instant createdNull = null;
   public static final Instant updatedNull = null;
@@ -285,12 +294,12 @@ public final class IntegrationUtils
   public static PatchApp makePatchAppPartial()
   {
     return new PatchApp(description2, runtimeNull, runtimeVersionNull, containerImage2,
-            maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
-            jobDescriptionNull, dynamicExecSystemTrue, execSystemConstraints1,
+            maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
+            jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
-            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorTrue,
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
             appArgListNull, containerArgListNull, schedulerOptionListNull, envVariablesNull, archiveIncludesNull, archiveExcludesNull,
-            finListNull, nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, notifListNull, jobTagsNull,
+            finListNull, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
             tagsNull, notesNull);
   }
 }
