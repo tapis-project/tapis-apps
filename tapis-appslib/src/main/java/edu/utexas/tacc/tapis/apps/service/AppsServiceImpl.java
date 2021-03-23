@@ -753,8 +753,13 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(appTenantName, appId, false))
       throw new TapisException(LibUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId));
 
+    // Check to see if owner is trying to update permissions for themselves.
+    // If so throw an exception because this would be confusing since owner always has full permissions.
+    // For an owner permissions are never checked directly.
+    String owner = checkForOwnerPermUpdate(authenticatedUser, appTenantName, appId, userName, op.name());
+
     // ------------------------- Check service level authorization -------------------------
-    checkAuth(authenticatedUser, op, appId, null, null, null);
+    checkAuth(authenticatedUser, op, appId, owner, null, null);
 
     // Check inputs. If anything null or empty throw an exception
     if (permissions == null || permissions.isEmpty())
@@ -835,8 +840,13 @@ public class AppsServiceImpl implements AppsService
     // if app does not exist or has been soft deleted then return 0 changes
     if (!dao.checkForApp(appTenantName, appId, false)) return 0;
 
+    // Check to see if owner is trying to update permissions for themselves.
+    // If so throw an exception because this would be confusing since owner always has full permissions.
+    // For an owner permissions are never checked directly.
+    String owner = checkForOwnerPermUpdate(authenticatedUser, appTenantName, appId, userName, op.name());
+
     // ------------------------- Check service level authorization -------------------------
-    checkAuth(authenticatedUser, op, appId, null, null, null);
+    checkAuth(authenticatedUser, op, appId, owner, null, null);
 
     // Check inputs. If anything null or empty throw an exception
     if (permissions == null || permissions.isEmpty())
@@ -1177,6 +1187,43 @@ public class AppsServiceImpl implements AppsService
     if (msgList == null || msgList.isEmpty()) return sb.toString();
     for (String msg : msgList) { sb.append("  ").append(msg).append(System.lineSeparator()); }
     return sb.toString();
+  }
+
+  /**
+   * Check to see if owner is trying to update permissions for themselves.
+   * If so throw an exception because this would be confusing since owner always has full permissions.
+   * For an owner permissions are never checked directly.
+   *
+   * @param authenticatedUser User making the request
+   * @param tenant App tenant
+   * @param id App id
+   * @param userName user for whom perms are being updated
+   * @param opStr Operation in progress, for logging
+   * @return name of owner
+   */
+  private String checkForOwnerPermUpdate(AuthenticatedUser authenticatedUser, String tenant, String id,
+                                         String userName, String opStr)
+          throws TapisException, NotAuthorizedException
+  {
+    // Look up owner. If not found then consider not authorized. Very unlikely at this point.
+    String owner = dao.getAppOwner(tenant, id);
+    if (StringUtils.isBlank(owner))
+      throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", authenticatedUser, id, opStr));
+    // If owner making the request and owner is the target user for the perm update then reject.
+    if (owner.equals(authenticatedUser.getOboUser()) && owner.equals(userName))
+    {
+      // If it is a svc making request reject with no auth, if user making request reject with special message.
+      // Need this check since svc not allowed to update perms but checkAuth happens after checkForOwnerPermUpdate.
+      // Without this the op would be denied with a misleading message.
+      // Unfortunately this means auth check for svc in 2 places but not clear how to avoid it.
+      //   On the bright side it means at worst operation will be denied when maybe it should be allowed which is better
+      //   than the other way around.
+      if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()))
+        throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", authenticatedUser, id, opStr));
+      else
+        throw new TapisException(LibUtils.getMsgAuth("APPLIB_PERM_OWNER_UPDATE", authenticatedUser, id, opStr));
+    }
+    return owner;
   }
 
   /**

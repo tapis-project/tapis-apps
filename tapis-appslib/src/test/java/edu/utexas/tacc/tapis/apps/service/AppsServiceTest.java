@@ -498,6 +498,26 @@ public class AppsServiceTest
     // Get the app perms for the user and make sure permissions are gone.
     userPerms = svc.getUserPermissions(authenticatedTestUser2, app0.getId(), testUser4);
     for (Permission perm: permsToCheck) { if (userPerms.contains(perm)) Assert.fail("User perms should not contain permission: " + perm.name()); }
+
+    // Owner should not be able to update perms. It would be confusing since owner always authorized. Perms not checked.
+    boolean pass = false;
+    try {
+      svc.grantUserPermissions(authenticatedTestUser2, app0.getId(), app0.getOwner(), testPermsREAD, scrubbedJson);
+      Assert.fail("Update of perms by owner for owner should have thrown an exception");
+    } catch (Exception e) {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_PERM_OWNER_UPDATE"));
+      pass = true;
+    }
+    Assert.assertTrue(pass, "Update of perms by owner for owner did not throw correct exception");
+    pass = false;
+    try {
+      svc.revokeUserPermissions(authenticatedTestUser2, app0.getId(), app0.getOwner(), testPermsREAD, scrubbedJson);
+      Assert.fail("Update of perms by owner for owner should have thrown an exception");
+    } catch (Exception e) {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_PERM_OWNER_UPDATE"));
+      pass = true;
+    }
+    Assert.assertTrue(pass, "Update of perms by owner for owner did not throw correct exception");
   }
 
   // Test various cases when app is missing
@@ -543,7 +563,6 @@ public class AppsServiceTest
       pass = true;
     }
     Assert.assertTrue(pass);
-
   }
 
   // Test that app cannot be created when execSystem or archiveSystem is missing or invalid
