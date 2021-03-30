@@ -174,6 +174,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
               .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
               .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
+              .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, app.getArchiveIncludeLaunchFiles())
               .set(APPS_VERSIONS.NODE_COUNT, app.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, app.getCoresPerNode())
               .set(APPS_VERSIONS.MEMORY_MB, app.getMemoryMb())
@@ -294,6 +295,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
               .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
               .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
+              .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, patchedApp.getArchiveIncludeLaunchFiles())
               .set(APPS_VERSIONS.NODE_COUNT, patchedApp.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, patchedApp.getCoresPerNode())
               .set(APPS_VERSIONS.MEMORY_MB, patchedApp.getMemoryMb())
@@ -1183,8 +1185,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             appVerRecord.getExecSystemId(), appVerRecord.getExecSystemExecDir(),
             appVerRecord.getExecSystemInputDir(), appVerRecord.getExecSystemOutputDir(),
             appVerRecord.getExecSystemLogicalQueue(), appVerRecord.getArchiveSystemId(),
-            appVerRecord.getArchiveSystemDir(), appVerRecord.getArchiveOnAppError(),
-            appVerRecord.getEnvVariables(), appVerRecord.getArchiveIncludes(), appVerRecord.getArchiveExcludes(),
+            appVerRecord.getArchiveSystemDir(), appVerRecord.getArchiveOnAppError(), appVerRecord.getEnvVariables(),
+            appVerRecord.getArchiveIncludes(), appVerRecord.getArchiveExcludes(), appVerRecord.getArchiveIncludeLaunchFiles(),
             appVerRecord.getNodeCount(), appVerRecord.getCoresPerNode(), appVerRecord.getMemoryMb(),
             appVerRecord.getMaxMinutes(), appVerRecord.getJobTags(),
             appVerRecord.getTags(), appVerRecord.getNotes(), appVerRecord.getUuid(),

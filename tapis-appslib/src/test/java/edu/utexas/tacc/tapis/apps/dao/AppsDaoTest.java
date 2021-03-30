@@ -115,6 +115,7 @@ public class AppsDaoTest
     Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
     Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
     Assert.assertEquals(tmpApp.isArchiveOnAppError(), app0.isArchiveOnAppError());
+    Assert.assertEquals(tmpApp.getArchiveIncludeLaunchFiles(), app0.getArchiveIncludeLaunchFiles());
     // Verify envVariables
     String[] tmpEnvVariables = tmpApp.getEnvVariables();
     Assert.assertNotNull(tmpEnvVariables, "envVariables value was null");
@@ -438,7 +439,7 @@ public class AppsDaoTest
             runtime1, runtimeVersion1, containerImage1, maxJobs1, maxJobsPerUser1, strictFileInputsFalse, IntegrationUtils.jobDescription1, dynamicExecSystemTrue,
             execSystemConstraints1, execSystemId1, execSystemExecDir1, execSystemInputDir1, execSystemOutputDir1,
             execSystemLogicalQueue1, archiveSystemIdNull, archiveSystemDir1, archiveOnAppErrorTrue,
-            envVariables1, archiveIncludes1, archiveExcludes1,
+            envVariables1, archiveIncludes1, archiveExcludes1, archiveIncludeLaunchFilesTrue,
             nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
             tags1, notes1, uuidNull, isDeletedFalse, createdNull, updatedNull);
     // Make sure app does not exist

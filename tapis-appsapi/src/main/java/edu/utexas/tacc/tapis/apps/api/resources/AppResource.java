@@ -915,7 +915,7 @@ public class AppResource
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
           jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
-          envVariables, parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes,
+          envVariables, parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes, parmSet.archiveFilter.includeLaunchFiles,
           jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
     // Data for aux tables
@@ -947,6 +947,7 @@ public class AppResource
     List<AppArg> schedulerOptions = null;
     String[] archiveIncludes = null;
     String[] archiveExcludes = null;
+    Boolean includeLaunchFiles = null;
     var jobAttrs = req.jobAttributes;
     if (jobAttrs != null)
     {
@@ -962,6 +963,7 @@ public class AppResource
         {
           archiveIncludes = jobAttrs.parameterSet.archiveFilter.includes;
           archiveExcludes = jobAttrs.parameterSet.archiveFilter.excludes;
+          includeLaunchFiles = jobAttrs.parameterSet.archiveFilter.includeLaunchFiles;
         }
       }
     }
@@ -972,7 +974,7 @@ public class AppResource
     {
       patchApp = new PatchApp(req.description, req.runtime, req.runtimeVersion, req.containerImage,
             req.maxJobs, req.maxJobsPerUser, req.strictFileInputs, null, null, null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, req.tags, notes);
+            null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, req.tags, notes);
     }
     else
     {
@@ -980,10 +982,10 @@ public class AppResource
               req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
               jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
               jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
-              jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir,
-              jobAttrs.archiveOnAppError, appArgs, containerArgs, schedulerOptions, envVariables,
-              archiveIncludes, archiveExcludes, fileInputs, jobAttrs.nodeCount, jobAttrs.coresPerNode,
-              jobAttrs.memoryMB, jobAttrs.maxMinutes, notifSubscriptions, jobAttrs.tags, req.tags, notes);
+              jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
+              appArgs, containerArgs, schedulerOptions, envVariables, archiveIncludes, archiveExcludes,
+              includeLaunchFiles, fileInputs, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB,
+              jobAttrs.maxMinutes, notifSubscriptions, jobAttrs.tags, req.tags, notes);
     }
 
     // Update tenant, id and version

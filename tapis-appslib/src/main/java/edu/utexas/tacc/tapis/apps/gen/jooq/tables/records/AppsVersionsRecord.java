@@ -22,7 +22,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> {
 
-    private static final long serialVersionUID = 1807780127;
+    private static final long serialVersionUID = 1924711875;
 
     /**
      * Setter for <code>tapis_app.apps_versions.seq_id</code>. Sequence id for specific version of application
@@ -361,143 +361,157 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
     }
 
     /**
+     * Setter for <code>tapis_app.apps_versions.archive_include_launch_files</code>.
+     */
+    public void setArchiveIncludeLaunchFiles(Boolean value) {
+        set(24, value);
+    }
+
+    /**
+     * Getter for <code>tapis_app.apps_versions.archive_include_launch_files</code>.
+     */
+    public Boolean getArchiveIncludeLaunchFiles() {
+        return (Boolean) get(24);
+    }
+
+    /**
      * Setter for <code>tapis_app.apps_versions.node_count</code>.
      */
     public void setNodeCount(Integer value) {
-        set(24, value);
+        set(25, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps_versions.node_count</code>.
      */
     public Integer getNodeCount() {
-        return (Integer) get(24);
+        return (Integer) get(25);
     }
 
     /**
      * Setter for <code>tapis_app.apps_versions.cores_per_node</code>.
      */
     public void setCoresPerNode(Integer value) {
-        set(25, value);
+        set(26, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps_versions.cores_per_node</code>.
      */
     public Integer getCoresPerNode() {
-        return (Integer) get(25);
+        return (Integer) get(26);
     }
 
     /**
      * Setter for <code>tapis_app.apps_versions.memory_mb</code>.
      */
     public void setMemoryMb(Integer value) {
-        set(26, value);
+        set(27, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps_versions.memory_mb</code>.
      */
     public Integer getMemoryMb() {
-        return (Integer) get(26);
+        return (Integer) get(27);
     }
 
     /**
      * Setter for <code>tapis_app.apps_versions.max_minutes</code>.
      */
     public void setMaxMinutes(Integer value) {
-        set(27, value);
+        set(28, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps_versions.max_minutes</code>.
      */
     public Integer getMaxMinutes() {
-        return (Integer) get(27);
+        return (Integer) get(28);
     }
 
     /**
      * Setter for <code>tapis_app.apps_versions.job_tags</code>.
      */
     public void setJobTags(String[] value) {
-        set(28, value);
+        set(29, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps_versions.job_tags</code>.
      */
     public String[] getJobTags() {
-        return (String[]) get(28);
+        return (String[]) get(29);
     }
 
     /**
      * Setter for <code>tapis_app.apps_versions.tags</code>. Tags for user supplied key:value pairs
      */
     public void setTags(String[] value) {
-        set(29, value);
+        set(30, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps_versions.tags</code>. Tags for user supplied key:value pairs
      */
     public String[] getTags() {
-        return (String[]) get(29);
+        return (String[]) get(30);
     }
 
     /**
      * Setter for <code>tapis_app.apps_versions.notes</code>. Notes for general information stored as JSON
      */
     public void setNotes(JsonElement value) {
-        set(30, value);
+        set(31, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps_versions.notes</code>. Notes for general information stored as JSON
      */
     public JsonElement getNotes() {
-        return (JsonElement) get(30);
+        return (JsonElement) get(31);
     }
 
     /**
      * Setter for <code>tapis_app.apps_versions.uuid</code>.
      */
     public void setUuid(UUID value) {
-        set(31, value);
+        set(32, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps_versions.uuid</code>.
      */
     public UUID getUuid() {
-        return (UUID) get(31);
+        return (UUID) get(32);
     }
 
     /**
      * Setter for <code>tapis_app.apps_versions.created</code>. UTC time for when record was created
      */
     public void setCreated(LocalDateTime value) {
-        set(32, value);
+        set(33, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps_versions.created</code>. UTC time for when record was created
      */
     public LocalDateTime getCreated() {
-        return (LocalDateTime) get(32);
+        return (LocalDateTime) get(33);
     }
 
     /**
      * Setter for <code>tapis_app.apps_versions.updated</code>. UTC time for when record was last updated
      */
     public void setUpdated(LocalDateTime value) {
-        set(33, value);
+        set(34, value);
     }
 
     /**
      * Getter for <code>tapis_app.apps_versions.updated</code>. UTC time for when record was last updated
      */
     public LocalDateTime getUpdated() {
-        return (LocalDateTime) get(33);
+        return (LocalDateTime) get(34);
     }
 
     // -------------------------------------------------------------------------
@@ -523,7 +537,7 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
     /**
      * Create a detached, initialised AppsVersionsRecord
      */
-    public AppsVersionsRecord(Integer seqId, Integer appSeqId, String version, String description, Runtime runtime, String runtimeVersion, String containerImage, Integer maxJobs, Integer maxJobsPerUser, Boolean strictFileInputs, String jobDescription, Boolean dynamicExecSystem, String[] execSystemConstraints, String execSystemId, String execSystemExecDir, String execSystemInputDir, String execSystemOutputDir, String execSystemLogicalQueue, String archiveSystemId, String archiveSystemDir, Boolean archiveOnAppError, String[] envVariables, String[] archiveIncludes, String[] archiveExcludes, Integer nodeCount, Integer coresPerNode, Integer memoryMb, Integer maxMinutes, String[] jobTags, String[] tags, JsonElement notes, UUID uuid, LocalDateTime created, LocalDateTime updated) {
+    public AppsVersionsRecord(Integer seqId, Integer appSeqId, String version, String description, Runtime runtime, String runtimeVersion, String containerImage, Integer maxJobs, Integer maxJobsPerUser, Boolean strictFileInputs, String jobDescription, Boolean dynamicExecSystem, String[] execSystemConstraints, String execSystemId, String execSystemExecDir, String execSystemInputDir, String execSystemOutputDir, String execSystemLogicalQueue, String archiveSystemId, String archiveSystemDir, Boolean archiveOnAppError, String[] envVariables, String[] archiveIncludes, String[] archiveExcludes, Boolean archiveIncludeLaunchFiles, Integer nodeCount, Integer coresPerNode, Integer memoryMb, Integer maxMinutes, String[] jobTags, String[] tags, JsonElement notes, UUID uuid, LocalDateTime created, LocalDateTime updated) {
         super(AppsVersions.APPS_VERSIONS);
 
         set(0, seqId);
@@ -550,15 +564,16 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
         set(21, envVariables);
         set(22, archiveIncludes);
         set(23, archiveExcludes);
-        set(24, nodeCount);
-        set(25, coresPerNode);
-        set(26, memoryMb);
-        set(27, maxMinutes);
-        set(28, jobTags);
-        set(29, tags);
-        set(30, notes);
-        set(31, uuid);
-        set(32, created);
-        set(33, updated);
+        set(24, archiveIncludeLaunchFiles);
+        set(25, nodeCount);
+        set(26, coresPerNode);
+        set(27, memoryMb);
+        set(28, maxMinutes);
+        set(29, jobTags);
+        set(30, tags);
+        set(31, notes);
+        set(32, uuid);
+        set(33, created);
+        set(34, updated);
     }
 }

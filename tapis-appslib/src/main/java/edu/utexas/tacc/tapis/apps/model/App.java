@@ -143,6 +143,7 @@ public final class App
   private String[] envVariables;
   private String[] archiveIncludes;
   private String[] archiveExcludes;
+  private boolean archiveIncludeLaunchFiles;
   private int nodeCount = DEFAULT_NODE_COUNT;
   private int coresPerNode = DEFAULT_CORES_PER_NODE;
   private int memoryMb = DEFAULT_MEMORY_MB;
@@ -210,8 +211,8 @@ public final class App
              String jobDescription1, boolean dynamicExecSystem1,
              String[] execSystemConstraints1, String execSystemId1, String execSystemExecDir1,
              String execSystemInputDir1, String execSystemOutputDir1, String execSystemLogicalQueue1,
-             String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1,
-             String[] envVariables1, String[] archiveIncludes1, String[] archiveExcludes1, // parameterSet
+             String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1, String[] envVariables1,
+             String[] archiveIncludes1, String[] archiveExcludes1, boolean archiveIncludeLaunchFiles1,
              int nodeCount1, int coresPerNode1, int memoryMb1, int maxMinutes1,
              String[] jobTags1,
              // == End jobAttributes
@@ -251,6 +252,7 @@ public final class App
     envVariables = (envVariables1 == null) ? null : envVariables1.clone();
     archiveIncludes = (archiveIncludes1 == null) ? null : archiveIncludes1.clone();
     archiveExcludes = (archiveExcludes1 == null) ? null : archiveExcludes1.clone();
+    archiveIncludeLaunchFiles = archiveIncludeLaunchFiles1;
     jobTags = (jobTags1 == null) ? null : jobTags1.clone();
     tags = (tags1 == null) ? null : tags1.clone();
     notes = notes1;
@@ -301,6 +303,7 @@ public final class App
     envVariables = a.getEnvVariables();
     archiveIncludes = a.getArchiveIncludes();
     archiveExcludes = a.getArchiveExcludes();
+    archiveIncludeLaunchFiles = a.getArchiveIncludeLaunchFiles();
     jobTags = a.getJobTags();
     fileInputs = a.getFileInputs();
     notificationSubscriptions = a.getNotificationSubscriptions();
@@ -687,6 +690,9 @@ public final class App
     archiveExcludes = (sa == null) ? null : sa.clone();
     return this;
   }
+
+  public boolean getArchiveIncludeLaunchFiles() { return archiveIncludeLaunchFiles; }
+  public App setArchiveIncludeLaunchFiles(boolean b) { archiveIncludeLaunchFiles = b; return this; }
 
   public String[] getJobTags() {
     return (jobTags == null) ? null : jobTags.clone();

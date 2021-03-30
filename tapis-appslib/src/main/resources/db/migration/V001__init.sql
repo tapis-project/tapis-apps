@@ -105,6 +105,7 @@ CREATE TABLE apps_versions
     env_variables TEXT[] NOT NULL,
     archive_includes TEXT[] NOT NULL,
     archive_excludes TEXT[] NOT NULL,
+    archive_include_launch_files BOOLEAN NOT NULL DEFAULT true,
 --   fileInputs location in jobAttributes =====================
     node_count INTEGER NOT NULL DEFAULT 1,
     cores_per_node INTEGER NOT NULL DEFAULT 1,

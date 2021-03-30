@@ -1521,6 +1521,7 @@ public class AppsServiceImpl implements AppsService
     if (p.getEnvVariables() != null) app1.setEnvVariables(p.getEnvVariables());
     if (p.getArchiveIncludes() != null) app1.setArchiveIncludes(p.getArchiveIncludes());
     if (p.getArchiveExcludes() != null) app1.setArchiveExcludes(p.getArchiveExcludes());
+    if (p.getArchiveIncludeLaunchFiles() != null) app1.setArchiveIncludeLaunchFiles(p.getArchiveIncludeLaunchFiles());
     // End parameterSet
     if (p.getFileInputs() != null) app1.setFileInputs(p.getFileInputs());
     if (p.getNodeCount() != null) app1.setNodeCount(p.getNodeCount());

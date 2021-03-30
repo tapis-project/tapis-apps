@@ -9,15 +9,18 @@ public final class ArchiveFilter
 {
   public String[] includes;
   public String[] excludes;
+  public boolean includeLaunchFiles;
 
   public ArchiveFilter()
   {
     includes = App.EMPTY_STR_ARRAY;
     excludes = App.EMPTY_STR_ARRAY;
+    includeLaunchFiles = true;
   }
   ArchiveFilter(App a)
   {
     includes = a.getArchiveIncludes();
     excludes = a.getArchiveExcludes();
+    includeLaunchFiles = a.getArchiveIncludeLaunchFiles();
   }
 }

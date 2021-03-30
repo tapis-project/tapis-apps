@@ -89,6 +89,9 @@ public final class IntegrationUtils
   public static final boolean archiveOnAppErrorTrue = true;
   public static final boolean archiveOnAppErrorFalse = false;
   public static final Boolean archiveOnAppErrorNull = null;
+  public static final boolean archiveIncludeLaunchFilesTrue = true;
+  public static final boolean archiveIncludeLaunchFilesFalse = false;
+  public static final Boolean archiveIncludeLaunchFilesNull = null;
   public static final int maxJobs1 = 1;
   public static final int maxJobs2 = 2;
   public static final Integer maxJobsNull = null;
@@ -233,13 +236,13 @@ public final class IntegrationUtils
       String suffix = key + "_" + String.format("%03d", i+1);
       String appId = appIdPrefix + "_" + suffix;
       // Constructor initializes all attributes except for JobCapabilities
-      apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, description1 + suffix, AppType.BATCH, ownerUser2, enabledTrue,
-                        containerizedTrue,
+      apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, description1 + suffix, AppType.BATCH, ownerUser2,
+              enabledTrue, containerizedTrue,
               runtime1, runtimeVersion1 +suffix, containerImage1 +suffix, maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
                         jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
                         execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
                         execSystemLogicalQueue1 +suffix, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
-              envVariables1, archiveIncludes1, archiveExcludes1,
+              envVariables1, archiveIncludes1, archiveExcludes1, archiveIncludeLaunchFilesTrue,
               nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
               tags1, notes1, uuidNull, deletedFalse, createdNull, updatedNull);
       // Aux table data
@@ -266,7 +269,7 @@ public final class IntegrationUtils
             strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
             execSystemId1, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
-            envVariablesNull, archiveIncludesNull, archiveExcludesNull,
+            envVariablesNull, archiveIncludesNull, archiveExcludesNull, archiveIncludeLaunchFilesFalse,
             nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTagsNull,
             tagsNull, notesNull, uuidNull, deletedFalse, createdNull, updatedNull);
   }
@@ -281,8 +284,8 @@ public final class IntegrationUtils
              maxJobs2, maxJobsPerUser2, strictFileInputsTrue,
              jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
              execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
-             archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse,
-             appArgList2, containerArgList2, schedulerOptionList2, envVariables2, archiveIncludes2, archiveExcludes2,
+             archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse, appArgList2, containerArgList2,
+             schedulerOptionList2, envVariables2, archiveIncludes2, archiveExcludes2, archiveIncludeLaunchFilesFalse,
              finList2, nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, notifList2, jobTags2,
              tags2, notes2);
   }
@@ -297,8 +300,8 @@ public final class IntegrationUtils
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
             jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
-            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
-            appArgListNull, containerArgListNull, schedulerOptionListNull, envVariablesNull, archiveIncludesNull, archiveExcludesNull,
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, appArgListNull, containerArgListNull,
+            schedulerOptionListNull, envVariablesNull, archiveIncludesNull, archiveExcludesNull, archiveIncludeLaunchFilesNull,
             finListNull, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
             tagsNull, notesNull);
   }

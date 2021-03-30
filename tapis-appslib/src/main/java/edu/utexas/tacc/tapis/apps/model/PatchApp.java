@@ -42,6 +42,7 @@ public final class PatchApp
   private final String[] envVariables;
   private final String[] archiveIncludes;
   private final String[] archiveExcludes;
+  private final Boolean archiveIncludeLaunchFiles;
   private final Integer nodeCount;
   private final Integer coresPerNode;
   private final Integer memoryMb;
@@ -75,8 +76,8 @@ public final class PatchApp
                   String execSystemLogicalQueue1, String archiveSystemId1, String archiveSystemDir1,
                   Boolean archiveOnAppError1,
                   List<AppArg> appArgs1, List<AppArg> containerArgs1, List<AppArg> schedulerOptions1,
-                  String[] envVariables1, String[] archiveIncludes1, String[] archiveExcludes1, // parameterSet
-                  List<FileInput> fileInputs1,
+                  String[] envVariables1, String[] archiveIncludes1, String[] archiveExcludes1,
+                  Boolean archiveIncludeLaunchFiles1, List<FileInput> fileInputs1,
                   Integer nodeCount1, Integer coresPerNode1, Integer memoryMb1, Integer maxMinutes1,
                   List<NotifSubscription> notifSubscriptions1, String[] jobTags1,
                   // == End jobAttributes
@@ -106,6 +107,7 @@ public final class PatchApp
     envVariables = (envVariables1 == null) ? null : envVariables1.clone();
     archiveIncludes = (archiveIncludes1 == null) ? null : archiveIncludes1.clone();
     archiveExcludes = (archiveExcludes1 == null) ? null : archiveExcludes1.clone();
+    archiveIncludeLaunchFiles = archiveIncludeLaunchFiles1;
     fileInputs = fileInputs1;
     nodeCount = nodeCount1;
     coresPerNode = coresPerNode1;
@@ -162,6 +164,7 @@ public final class PatchApp
   public String[] getArchiveExcludes() {
     return (archiveExcludes == null) ? null : archiveExcludes.clone();
   }
+  public Boolean getArchiveIncludeLaunchFiles() { return archiveIncludeLaunchFiles; }
   public List<FileInput> getFileInputs() { return (fileInputs == null) ? null : new ArrayList<>(fileInputs); }
   public Integer getNodeCount() { return nodeCount; }
   public Integer getCoresPerNode() { return coresPerNode; }

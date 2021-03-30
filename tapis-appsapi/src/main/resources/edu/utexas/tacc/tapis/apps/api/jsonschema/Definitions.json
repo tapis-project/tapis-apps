@@ -99,7 +99,8 @@
     "type": "object",
     "properties": {
       "includes": { "type": "array", "items": { "type": "string", "minLength": 1 } },
-      "excludes": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      "excludes": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+      "includeLaunchFiles": { "type": "boolean", "default": true }
     }
   },
   "ArgSpec": {

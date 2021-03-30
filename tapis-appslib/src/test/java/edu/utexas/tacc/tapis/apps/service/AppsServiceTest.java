@@ -230,6 +230,7 @@ public class AppsServiceTest
     app0.setEnvVariables(envVariables2);
     app0.setArchiveIncludes(archiveIncludes2);
     app0.setArchiveExcludes(archiveExcludes2);
+    app0.setArchiveIncludeLaunchFiles(archiveIncludeLaunchFilesFalse);
     app0.setFileInputs(finList2);
     app0.setNodeCount(nodeCount2);
     app0.setCoresPerNode(coresPerNode2);
@@ -879,6 +880,7 @@ public class AppsServiceTest
     Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
     Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
     Assert.assertEquals(tmpApp.isArchiveOnAppError(), app0.isArchiveOnAppError());
+    Assert.assertEquals(tmpApp.getArchiveIncludeLaunchFiles(), app0.getArchiveIncludeLaunchFiles());
     // Verify envVariables
     String[] origEnvVariables = app0.getEnvVariables();
     String[] tmpEnvVariables = tmpApp.getEnvVariables();
