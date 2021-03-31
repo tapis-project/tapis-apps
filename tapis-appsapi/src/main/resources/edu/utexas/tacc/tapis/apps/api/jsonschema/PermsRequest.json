@@ -14,7 +14,7 @@
         "minItems": 1,
         "maxItems": 3,
         "uniqueItems": true,
-        "enum": ["READ","MODIFY","EXECUTE","read","modify","execute","*"]
+        "enum": ["READ","MODIFY","EXECUTE","read","modify","execute"]
       }
     }
   }

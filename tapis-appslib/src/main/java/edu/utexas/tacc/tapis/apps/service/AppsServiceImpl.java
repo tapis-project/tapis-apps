@@ -56,7 +56,9 @@ public class AppsServiceImpl implements AppsService
 
   private static final Set<Permission> ALL_PERMS = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY, Permission.EXECUTE));
   private static final Set<Permission> READMODIFY_PERMS = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY));
+  // Permspec format for systems is "system:<tenant>:<perm_list>:<system_id>"
   private static final String PERM_SPEC_PREFIX = "app";
+  private static final String PERM_SPEC_TEMPLATE = "app:%s:%s:%s";
 
   private static final String SERVICE_NAME = TapisConstants.SERVICE_NAME_APPS;
   private static final String FILES_SERVICE = "files";
@@ -1141,7 +1143,7 @@ public class AppsServiceImpl implements AppsService
     var userPerms = new HashSet<Permission>();
     for (Permission perm : Permission.values())
     {
-      String permSpec = PERM_SPEC_PREFIX + ":" + tenantName + ":" + perm.name() + ":" + resourceId;
+      String permSpec = String.format(PERM_SPEC_TEMPLATE, tenantName, perm.name(), resourceId);
       if (skClient.isPermitted(tenantName, userName, permSpec)) userPerms.add(perm);
     }
     return userPerms;
@@ -1166,7 +1168,7 @@ public class AppsServiceImpl implements AppsService
    */
   private static String getPermSpecStr(String tenantName, String appId, Permission perm)
   {
-    return PERM_SPEC_PREFIX + ":" + tenantName + ":" + perm.name() + ":" + appId;
+    return String.format(PERM_SPEC_TEMPLATE, tenantName, perm.name(), appId);
   }
 
   /**
@@ -1175,7 +1177,7 @@ public class AppsServiceImpl implements AppsService
    */
   private static String getPermSpecAllStr(String tenantName, String appId)
   {
-    return PERM_SPEC_PREFIX + ":" + tenantName + ":*:" + appId;
+    return String.format(PERM_SPEC_TEMPLATE, tenantName, "*", appId);
   }
 
   /**
@@ -1457,15 +1459,14 @@ public class AppsServiceImpl implements AppsService
     var skClient = getSKClient();
 
     // Use Security Kernel client to find all users with perms associated with the app.
-    String permSpec = PERM_SPEC_PREFIX + ":" + appTenantName + ":%:" + appId;
+    String permSpec = String.format(PERM_SPEC_TEMPLATE, appTenantName, "%", appId);
     var userNames = skClient.getUsersWithPermission(appTenantName, permSpec);
     // Revoke all perms for all users
     for (String userName : userNames)
     {
       revokePermissions(skClient, appTenantName, appId, userName, ALL_PERMS);
       // Remove wildcard perm
-      String wildCardPermSpec = getPermSpecAllStr(appTenantName, appId);
-      skClient.revokeUserPermission(appTenantName, userName, wildCardPermSpec);
+      skClient.revokeUserPermission(appTenantName, userName, getPermSpecAllStr(appTenantName, appId));
     }
   }
 
