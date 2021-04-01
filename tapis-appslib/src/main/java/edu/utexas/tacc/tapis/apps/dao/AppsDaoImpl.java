@@ -195,7 +195,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       persistNotificationSubscriptions(db, app, appVerSeqId);
 
       // Update top level table APPS
-      db.update(APPS).set(APPS.LATEST_VERSION, app.getVersion()).execute();
+      db.update(APPS).set(APPS.LATEST_VERSION, app.getVersion()).where(APPS.ID.eq(app.getId())).execute();
 
       // Persist update record
       addUpdate(db, authenticatedUser, app.getTenant(), app.getId(), app.getVersion(), appSeqId, appVerSeqId,

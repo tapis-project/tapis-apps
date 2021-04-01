@@ -117,6 +117,7 @@ public final class IntegrationUtils
 
   public static final String[] metaKVPairs1 = {"key1A=val1A", "key1B=val1B"};
   public static final String[] metaKVPairs2 = {"key2A=val2A", "key2B=val2B"};
+  public static final String[] metaKVPairs3 = {"key3A=val3A", "key3B=val3B"};
   public static final String[] envVariables1 = {"key1A=val1A", "key1B=val1B"};
   public static final String[] envVariables2 = {"key2A=val2A", "key2B=val2B"};
   public static final String[] envVariablesNull = null;
@@ -154,6 +155,11 @@ public final class IntegrationUtils
   public static final FileInput finB2 = new FileInput("/srcB2", "/targetB2", inPlaceFalse, "finB2", "File input B2",
                                                       metaRequiredFalse, metaKVPairs2);
   public static final List<FileInput> finList2 = new ArrayList<>(List.of(finA2, finB2));
+  public static final FileInput finA3 = new FileInput("/srcA3", "/targetA3", inPlaceTrue, "finA3", "File input A3",
+          metaRequiredTrue, metaKVPairs3);
+  public static final FileInput finB3 = new FileInput("/srcB3", "/targetB3", inPlaceFalse, "finB3", "File input B3",
+          metaRequiredFalse, metaKVPairs3);
+  public static final List<FileInput> finList3 = new ArrayList<>(List.of(finA3, finB3));
   public static final List<FileInput> finListNull = null;
 
   // NotificationSubscriptions
@@ -193,6 +199,9 @@ public final class IntegrationUtils
   public static final AppArg appArg2A = new AppArg("value2A", "appArg2A", "App arg 2A", metaRequiredTrue, metaKVPairs2);
   public static final AppArg appArg2B = new AppArg("value2B", "appArg2B", "App arg 2B", metaRequiredFalse, metaKVPairs2);
   public static final List<AppArg> appArgList2 = new ArrayList<>(List.of(appArg2A, appArg2B));
+  public static final AppArg appArg3A = new AppArg("value3A", "appArg3A", "App arg 3A", metaRequiredTrue, metaKVPairs3);
+  public static final AppArg appArg3B = new AppArg("value3B", "appArg3B", "App arg 3B", metaRequiredFalse, metaKVPairs3);
+  public static final List<AppArg> appArgList3 = new ArrayList<>(List.of(appArg3A, appArg3B));
   public static final List<AppArg> appArgListNull = null;
 
   public static final AppArg containerArg1A = new AppArg("value1A", "containerArg1A", "Container arg 1A",
@@ -205,6 +214,11 @@ public final class IntegrationUtils
   public static final AppArg containerArg2B = new AppArg("value2B", "containerArg2B", "Container arg 2B",
           metaRequiredFalse, metaKVPairs2);
   public static final List<AppArg> containerArgList2 = new ArrayList<>(List.of(containerArg2A, containerArg2B));
+  public static final AppArg containerArg3A = new AppArg("value3A", "containerArg3A", "Container arg 3A",
+          metaRequiredTrue, metaKVPairs3);
+  public static final AppArg containerArg3B = new AppArg("value3B", "containerArg3B", "Container arg 3B",
+          metaRequiredFalse, metaKVPairs3);
+  public static final List<AppArg> containerArgList3 = new ArrayList<>(List.of(containerArg3A, containerArg3B));
   public static final List<AppArg> containerArgListNull = null;
 
   public static final AppArg schedulerOption1A = new AppArg("value1A", "schedulerOption1A", "Scheduler option 1A",
@@ -292,15 +306,48 @@ public final class IntegrationUtils
 
   /**
    * Create a PatchApp in memory for use in testing.
-   * Some attributes are to be updated: description, containerImage, execSystemId,
+   * Some attributes are to be updated: description, containerImage, execSystemId
    */
-  public static PatchApp makePatchAppPartial()
+  public static PatchApp makePatchAppPartial1()
   {
     return new PatchApp(description2, runtimeNull, runtimeVersionNull, containerImage2,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
             jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, appArgListNull, containerArgListNull,
+            schedulerOptionListNull, envVariablesNull, archiveIncludesNull, archiveExcludesNull, archiveIncludeLaunchFilesNull,
+            finListNull, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
+            tagsNull, notesNull);
+  }
+
+  /**
+   * Create a PatchApp in memory for use in testing.
+   * Some attributes are to be updated: description, containerImage, execSystemId,
+   *   jobAttributes.fileInputDefinitions, jobAttributes.parameterSet.containerArgs
+   */
+  public static PatchApp makePatchAppPartial2()
+  {
+    return new PatchApp(description2, runtimeNull, runtimeVersionNull, containerImage2,
+            maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
+            jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
+            execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, appArgListNull, containerArgList3,
+            schedulerOptionListNull, envVariablesNull, archiveIncludesNull, archiveExcludesNull, archiveIncludeLaunchFilesNull,
+            finList3, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
+            tagsNull, notesNull);
+  }
+
+  /**
+   * Create a PatchApp in memory for use in testing.
+   * Some attributes are to be updated: jobAttributes.parameterSet.appArgs
+   */
+  public static PatchApp makePatchAppPartial3()
+  {
+    return new PatchApp(descriptionNull, runtimeNull, runtimeVersionNull, containerImageNull,
+            maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
+            jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
+            execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, appArgList3, containerArgListNull,
             schedulerOptionListNull, envVariablesNull, archiveIncludesNull, archiveExcludesNull, archiveIncludeLaunchFilesNull,
             finListNull, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
             tagsNull, notesNull);

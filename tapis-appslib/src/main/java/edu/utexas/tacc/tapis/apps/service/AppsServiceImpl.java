@@ -1517,7 +1517,7 @@ public class AppsServiceImpl implements AppsService
     if (p.getArchiveOnAppError() != null) app1.setArchiveOnAppError(p.getArchiveOnAppError());
     // Start parameterSet
     if (p.getAppArgs() != null) app1.setAppArgs(p.getAppArgs());
-    if (p.getContainerArgs() != null) app1.setContainerArgs(p.getAppArgs());
+    if (p.getContainerArgs() != null) app1.setContainerArgs(p.getContainerArgs());
     if (p.getSchedulerOptions() != null) app1.setSchedulerOptions(p.getSchedulerOptions());
     if (p.getEnvVariables() != null) app1.setEnvVariables(p.getEnvVariables());
     if (p.getArchiveIncludes() != null) app1.setArchiveIncludes(p.getArchiveIncludes());

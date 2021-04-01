@@ -9,7 +9,6 @@ import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
-import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.apps.IntegrationUtils;
 import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
@@ -74,7 +73,7 @@ public class AppsServiceTest
   private static final Set<Permission> testPermsMODIFY = new HashSet<>(Set.of(Permission.MODIFY));
 
   // Create test app definitions in memory
-  int numApps = 23;
+  int numApps = 25;
   App[] apps = IntegrationUtils.makeApps(numApps, "Svc");
 
   @BeforeSuite
@@ -194,16 +193,16 @@ public class AppsServiceTest
     App app0 = apps[13];
     String appId = app0.getId();
     String appVersion = app0.getVersion();
-    String createText = "{\"testUpdate\": \"0-create1\"}";
+    String createText = "{\"testUpdate\": \"0-createFull\"}";
     svc.createApp(authenticatedTestUser2, app0, createText);
     // Create patchApp where all updatable attributes are changed
-    String patch1Text = "{\"testUpdate\": \"1-patch1\"}";
+    String patchFullText = "{\"testUpdate\": \"1-patchFull\"}";
     PatchApp patchAppFull = IntegrationUtils.makePatchAppFull();
     patchAppFull.setTenant(tenantName);
     patchAppFull.setId(appId);
     patchAppFull.setVersion(appVersion);
     // Update using updateApp
-    svc.updateApp(authenticatedTestUser2, patchAppFull, patch1Text);
+    svc.updateApp(authenticatedTestUser2, patchAppFull, patchFullText);
     App tmpAppFull = svc.getApp(authenticatedTestUser2, appId, appVersion, false);
     // Update original app definition with patched values so we can use the checkCommon method.
     app0.setDescription(description2);
@@ -247,22 +246,69 @@ public class AppsServiceTest
     app0 = apps[22];
     appId = app0.getId();
     appVersion = app0.getVersion();
-    createText = "{\"testUpdate\": \"0-create2\"}";
+    createText = "{\"testUpdate\": \"0-createPartial1\"}";
     svc.createApp(authenticatedTestUser2, app0, createText);
     // Create patchApp where some attributes are changed
     //   * Some attributes are to be updated: description, containerImage, execSystemId,
-    String patch2Text = "{\"testUpdate\": \"1-patch2\"}";
-    PatchApp patchAppPartial = IntegrationUtils.makePatchAppPartial();
-    patchAppPartial.setTenant(tenantName);
-    patchAppPartial.setId(appId);
-    patchAppPartial.setVersion(appVersion);
+    String patchPartialText1 = "{\"testUpdate\": \"1-patchPartial1\"}";
+    PatchApp patchAppPartial1 = IntegrationUtils.makePatchAppPartial1();
+    patchAppPartial1.setTenant(tenantName);
+    patchAppPartial1.setId(appId);
+    patchAppPartial1.setVersion(appVersion);
     // Update using updateApp
-    svc.updateApp(authenticatedTestUser2, patchAppPartial, patch2Text);
+    svc.updateApp(authenticatedTestUser2, patchAppPartial1, patchPartialText1);
     App tmpAppPartial = svc.getApp(authenticatedTestUser2, appId, appVersion, false);
     // Update original app definition with patched values
     app0.setDescription(description2);
     app0.setContainerImage(containerImage2);
     app0.setExecSystemId(execSystemId2);
+    //Check common app attributes:
+    checkCommonAppAttrs(app0, tmpAppPartial);
+
+    // Test updating a few more attributes including a collection in JobAttributes
+    //   and a collection in JobAttributes.ParameterSet.
+    //   jobAttributes.fileInputDefinitions, jobAttributes.parameterSet.containerArgs
+    app0 = apps[23];
+    appId = app0.getId();
+    appVersion = app0.getVersion();
+    createText = "{\"testUpdate\": \"0-createPartial2\"}";
+    svc.createApp(authenticatedTestUser2, app0, createText);
+    // Create patchApp where some attributes are changed
+    String patchPartialText2 = "{\"testUpdate\": \"1-patchPartial2\"}";
+    PatchApp patchAppPartial2 = IntegrationUtils.makePatchAppPartial2();
+    patchAppPartial2.setTenant(tenantName);
+    patchAppPartial2.setId(appId);
+    patchAppPartial2.setVersion(appVersion);
+    // Update using updateApp
+    svc.updateApp(authenticatedTestUser2, patchAppPartial2, patchPartialText2);
+    tmpAppPartial = svc.getApp(authenticatedTestUser2, appId, appVersion, false);
+    // Update original app definition with patched values
+    app0.setDescription(description2);
+    app0.setContainerImage(containerImage2);
+    app0.setExecSystemId(execSystemId2);
+    app0.setFileInputs(finList3);
+    app0.setContainerArgs(containerArgList3);
+    //Check common app attributes:
+    checkCommonAppAttrs(app0, tmpAppPartial);
+
+    // Test updating just one of the collections in JobAttributes.ParameterSet.
+    //   jobAttributes.parameterSet.appArgs
+    app0 = apps[24];
+    appId = app0.getId();
+    appVersion = app0.getVersion();
+    createText = "{\"testUpdate\": \"0-createPartial3\"}";
+    svc.createApp(authenticatedTestUser2, app0, createText);
+    // Create patchApp where some attributes are changed
+    String patchPartialText3 = "{\"testUpdate\": \"1-patchPartial3\"}";
+    PatchApp patchAppPartial3 = IntegrationUtils.makePatchAppPartial3();
+    patchAppPartial3.setTenant(tenantName);
+    patchAppPartial3.setId(appId);
+    patchAppPartial3.setVersion(appVersion);
+    // Update using updateApp
+    svc.updateApp(authenticatedTestUser2, patchAppPartial3, patchPartialText3);
+    tmpAppPartial = svc.getApp(authenticatedTestUser2, appId, appVersion, false);
+    // Update original app definition with patched values
+    app0.setAppArgs(appArgList3);
     //Check common app attributes:
     checkCommonAppAttrs(app0, tmpAppPartial);
   }
@@ -984,7 +1030,7 @@ public class AppsServiceTest
     }
     // Verify container args
     origArgs = app0.getContainerArgs();
-    tmpArgs = tmpApp.getAppArgs();
+    tmpArgs = tmpApp.getContainerArgs();
     Assert.assertNotNull(origArgs, "Orig containerArgs was null");
     Assert.assertNotNull(tmpArgs, "Fetched containerArgs was null");
     Assert.assertEquals(tmpArgs.size(), origArgs.size());
