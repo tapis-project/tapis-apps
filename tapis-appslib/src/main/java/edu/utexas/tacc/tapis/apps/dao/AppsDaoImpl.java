@@ -23,6 +23,7 @@ import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.search.parser.ASTUnaryExpression;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
+import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flywaydb.core.Flyway;
 import org.jooq.Condition;
@@ -303,6 +304,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.JOB_TAGS, jobTagsStrArray)
               .set(APPS_VERSIONS.TAGS, tagsStrArray)
               .set(APPS_VERSIONS.NOTES, notesObj)
+              .set(APPS_VERSIONS.UPDATED, TapisUtils.getUTCTimeNow())
               .where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId),APPS_VERSIONS.VERSION.eq(appVersion))
               .returningResult(APPS_VERSIONS.SEQ_ID)
               .fetchOne().getValue(APPS_VERSIONS.SEQ_ID);
@@ -375,7 +377,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      db.update(APPS).set(APPS.ENABLED, enabled).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
+      db.update(APPS)
+              .set(APPS.ENABLED, enabled)
+              .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
+              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
       // Persist update record
       String updateJsonStr = "{\"enabled\":" +  enabled + "}";
       addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
@@ -416,7 +421,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      db.update(APPS).set(APPS.OWNER, newOwnerName).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
+      db.update(APPS)
+              .set(APPS.OWNER, newOwnerName)
+              .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
+              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
       // Persist update record
       String updateJsonStr = "{\"owner\":\"" +  newOwnerName + "\"}";
       addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
@@ -461,7 +469,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       {
         return 0;
       }
-      rows = db.update(APPS).set(APPS.DELETED, true).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
+      rows = db.update(APPS)
+              .set(APPS.DELETED, true)
+              .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
+              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
 
       // Persist update record
       String updateJsonStr = "{\"deleted\": true}";

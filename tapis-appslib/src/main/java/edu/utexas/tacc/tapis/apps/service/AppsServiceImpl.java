@@ -537,13 +537,11 @@ public class AppsServiceImpl implements AppsService
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", authenticatedUser));
     // Extract various names for convenience
-    String apiUserId = authenticatedUser.getName();
     String appTenantName = authenticatedUser.getTenantId();
     // For service request use oboTenant for tenant associated with the app and oboUser as apiUserId
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()))
     {
       appTenantName = authenticatedUser.getOboTenantId();
-      apiUserId = authenticatedUser.getOboUser();
     }
 
     // We need owner to check auth and if app not there cannot find owner, so

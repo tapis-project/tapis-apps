@@ -261,23 +261,3 @@ CREATE TABLE scheduler_options
 ALTER TABLE scheduler_options OWNER TO tapis_app;
 COMMENT ON COLUMN scheduler_options.seq_id IS 'Arg sequence id';
 COMMENT ON COLUMN scheduler_options.app_ver_seq_id IS 'Sequence id of application';
-
--- ******************************************************************************
---                         PROCEDURES and TRIGGERS
--- ******************************************************************************
-
--- Auto update of updated column
-CREATE OR REPLACE FUNCTION trigger_set_updated() RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER app_updated
-  BEFORE UPDATE ON apps
-  EXECUTE PROCEDURE trigger_set_updated();
-
-CREATE TRIGGER app_version_updated
-    BEFORE UPDATE ON apps_versions
-EXECUTE PROCEDURE trigger_set_updated();

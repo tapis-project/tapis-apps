@@ -9,6 +9,7 @@ import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
+import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.apps.IntegrationUtils;
 import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
@@ -27,6 +28,8 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 
 import javax.ws.rs.NotAuthorizedException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -195,6 +198,11 @@ public class AppsServiceTest
     String appVersion = app0.getVersion();
     String createText = "{\"testUpdate\": \"0-createFull\"}";
     svc.createApp(authenticatedTestUser2, app0, createText);
+    App tmpApp = svc.getApp(authenticatedTestUser2, appId, appVersion, false);
+    // Get last updated timestamp
+    LocalDateTime updated = LocalDateTime.ofInstant(tmpApp.getUpdated(), ZoneOffset.UTC);
+    String updatedStr1 = TapisUtils.getSQLStringFromUTCTime(updated);
+    Thread.sleep(300);
     // Create patchApp where all updatable attributes are changed
     String patchFullText = "{\"testUpdate\": \"1-patchFull\"}";
     PatchApp patchAppFull = IntegrationUtils.makePatchAppFull();
@@ -204,6 +212,12 @@ public class AppsServiceTest
     // Update using updateApp
     svc.updateApp(authenticatedTestUser2, patchAppFull, patchFullText);
     App tmpAppFull = svc.getApp(authenticatedTestUser2, appId, appVersion, false);
+    // Get last updated timestamp
+    updated = LocalDateTime.ofInstant(tmpAppFull.getUpdated(), ZoneOffset.UTC);
+    String updatedStr2 = TapisUtils.getSQLStringFromUTCTime(updated);
+    // Make sure update timestamp has been modified
+    System.out.println("Updated timestamp before: " + updatedStr1 + " after: " + updatedStr2);
+    Assert.assertNotEquals(updatedStr1, updatedStr2, "Update timestamp was not updated. Both are: " + updatedStr1);
     // Update original app definition with patched values so we can use the checkCommon method.
     app0.setDescription(description2);
     app0.setRuntime(runtime2);
