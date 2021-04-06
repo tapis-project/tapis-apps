@@ -367,7 +367,7 @@ public class AppsServiceTest
       Assert.fail("Original owner should not have permission to update app after change of ownership. App name: " + app0.getId() +
               " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
     } catch (Exception e) {
-      Assert.assertEquals(e.getMessage(), "HTTP 401 Unauthorized");
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
     }
     // Original owner should not be able to read system
     try {
@@ -375,7 +375,7 @@ public class AppsServiceTest
       Assert.fail("Original owner should not have permission to read app after change of ownership. App name: " + app0.getId() +
               " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
     } catch (Exception e) {
-      Assert.assertEquals(e.getMessage(), "HTTP 401 Unauthorized");
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
     }
   }
 
@@ -688,7 +688,7 @@ public class AppsServiceTest
     try { svc.createApp(authenticatedTestUser0, app0, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -696,7 +696,7 @@ public class AppsServiceTest
     try { svc.createApp(authenticatedFilesSvc, app0, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -712,7 +712,7 @@ public class AppsServiceTest
     try { svc.getApp(authenticatedTestUser0, app0.getId(), app0.getVersion(), false); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -722,7 +722,7 @@ public class AppsServiceTest
     try { svc.getApp(authenticatedTestUser3, app0.getId(), app0.getVersion(), true); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -732,7 +732,7 @@ public class AppsServiceTest
     try { svc.updateApp(authenticatedTestUser0, patchApp, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -740,7 +740,7 @@ public class AppsServiceTest
     try { svc.updateApp(authenticatedTestUser3, patchApp, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -748,7 +748,7 @@ public class AppsServiceTest
     try { svc.updateApp(authenticatedFilesSvc, patchApp, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -758,7 +758,7 @@ public class AppsServiceTest
     try { svc.softDeleteApp(authenticatedTestUser3, app0.getId()); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -766,7 +766,7 @@ public class AppsServiceTest
     try { svc.softDeleteApp(authenticatedFilesSvc, app0.getId()); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -776,7 +776,7 @@ public class AppsServiceTest
     try { svc.changeAppOwner(authenticatedTestUser3, app0.getId(), testUser2); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -784,7 +784,7 @@ public class AppsServiceTest
     try { svc.changeAppOwner(authenticatedFilesSvc, app0.getId(), testUser2); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -794,7 +794,7 @@ public class AppsServiceTest
     try { svc.getUserPermissions(authenticatedTestUser0, app0.getId(), ownerUser2); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -804,7 +804,7 @@ public class AppsServiceTest
     try { svc.grantUserPermissions(authenticatedTestUser3, app0.getId(), testUser3, testPermsREADMODIFY, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -812,7 +812,7 @@ public class AppsServiceTest
     try { svc.grantUserPermissions(authenticatedFilesSvc, app0.getId(), testUser3, testPermsREADMODIFY, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -822,7 +822,7 @@ public class AppsServiceTest
     try { svc.revokeUserPermissions(authenticatedTestUser3, app0.getId(), testUser4, testPermsREADMODIFY, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -830,7 +830,7 @@ public class AppsServiceTest
     try { svc.grantUserPermissions(authenticatedFilesSvc, app0.getId(), testUser4, testPermsREADMODIFY, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -864,7 +864,7 @@ public class AppsServiceTest
     }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = false;
     }
     Assert.assertTrue(pass);
@@ -872,7 +872,7 @@ public class AppsServiceTest
     try { svc.getApp(authenticatedFilesSvc, app0.getId(), app0.getVersion(), false); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = false;
     }
     Assert.assertTrue(pass);
@@ -884,7 +884,7 @@ public class AppsServiceTest
     }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = false;
     }
     Assert.assertTrue(pass);
@@ -892,7 +892,7 @@ public class AppsServiceTest
     try { svc.getApp(authenticatedTestUser4, app0.getId(), app0.getVersion(), false); }
     catch (NotAuthorizedException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("HTTP 401 Unauthorized"));
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = false;
     }
     Assert.assertTrue(pass);

@@ -69,6 +69,9 @@ public class AppsServiceImpl implements AppsService
   private static final String ERROR_ROLLBACK = "APPLIB_ERROR_ROLLBACK";
   private static final String NOT_FOUND = "APPLIB_NOT_FOUND";
 
+  // NotAuthorizedException requires a Challenge, although it serves no purpose here.
+  private static final String NO_CHALLENGE = "NoChallenge";
+
   // ************************************************************************
   // *********************** Enums ******************************************
   // ************************************************************************
@@ -1208,7 +1211,7 @@ public class AppsServiceImpl implements AppsService
     // Look up owner. If not found then consider not authorized. Very unlikely at this point.
     String owner = dao.getAppOwner(tenant, id);
     if (StringUtils.isBlank(owner))
-      throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", authenticatedUser, id, opStr));
+      throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", authenticatedUser, id, opStr), NO_CHALLENGE);
     // If owner making the request and owner is the target user for the perm update then reject.
     if (owner.equals(authenticatedUser.getOboUser()) && owner.equals(userName))
     {
@@ -1219,7 +1222,7 @@ public class AppsServiceImpl implements AppsService
       //   On the bright side it means at worst operation will be denied when maybe it should be allowed which is better
       //   than the other way around.
       if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()))
-        throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", authenticatedUser, id, opStr));
+        throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", authenticatedUser, id, opStr), NO_CHALLENGE);
       else
         throw new TapisException(LibUtils.getMsgAuth("APPLIB_PERM_OWNER_UPDATE", authenticatedUser, id, opStr));
     }
@@ -1232,34 +1235,29 @@ public class AppsServiceImpl implements AppsService
    * If no owner is passed in and one cannot be found then an error is logged and authorization is denied.
    *
    * @param authenticatedUser - principal user containing tenant and user info
-   * @param operation - operation name
+   * @param op - operation name
    * @param appId - name of the app
    * @param owner - app owner
    * @param perms - List of permissions for the revokePerm case
    * @throws NotAuthorizedException - apiUserId not authorized to perform operation
    */
-  private void checkAuth(AuthenticatedUser authenticatedUser, AppOperation operation, String appId,
+  private void checkAuth(AuthenticatedUser authenticatedUser, AppOperation op, String appId,
                          String owner, String targetUser, Set<Permission> perms)
       throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
     // Check service and user requests separately to avoid confusing a service name with a user name
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) {
       // This is a service request. The user name will be the service name. E.g. files, jobs, streams, etc
-      switch (operation) {
-        case read:
-          if (SVCLIST_READ.contains(authenticatedUser.getName())) return;
-          break;
-      }
+      if (op == AppOperation.read && SVCLIST_READ.contains(authenticatedUser.getName())) return;
     }
     else
     {
       // User check
-      checkAuthUser(authenticatedUser, operation, null, null, appId, owner, targetUser, perms);
+      checkAuthUser(authenticatedUser, op, null, null, appId, owner, targetUser, perms);
       return;
     }
     // Not authorized, throw an exception
-    String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH", authenticatedUser, appId, operation.name());
-    throw new NotAuthorizedException(msg);
+    throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", authenticatedUser, appId, op.name()), NO_CHALLENGE);
   }
 
   /**
@@ -1281,7 +1279,7 @@ public class AppsServiceImpl implements AppsService
    *  RevokePerm -  must be owner or have admin role or apiUserId=targetUser and meet certain criteria (allowUserRevokePerm)
    *
    * @param authenticatedUser - principal user containing tenant and user info
-   * @param operation - operation name
+   * @param op - operation name
    * @param tenantToCheck - optional name of the tenant to use. Default is to use authenticatedUser.
    * @param userToCheck - optional name of the user to check. Default is to use authenticatedUser.
    * @param appId - name of the system
@@ -1289,7 +1287,7 @@ public class AppsServiceImpl implements AppsService
    * @param perms - List of permissions for the revokePerm case
    * @throws NotAuthorizedException - apiUserId not authorized to perform operation
    */
-  private void checkAuthUser(AuthenticatedUser authenticatedUser, AppOperation operation,
+  private void checkAuthUser(AuthenticatedUser authenticatedUser, AppOperation op,
                              String tenantToCheck, String userToCheck,
                              String appId, String owner, String targetUser, Set<Permission> perms)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
@@ -1300,11 +1298,11 @@ public class AppsServiceImpl implements AppsService
     // Requires owner. If no owner specified and owner cannot be determined then log an error and deny.
     if (StringUtils.isBlank(owner)) owner = dao.getAppOwner(tenantName, appId);
     if (StringUtils.isBlank(owner)) {
-      String msg = LibUtils.getMsgAuth("APPLIB_AUTH_NO_OWNER", authenticatedUser, appId, operation.name());
+      String msg = LibUtils.getMsgAuth("APPLIB_AUTH_NO_OWNER", authenticatedUser, appId, op.name());
       _log.error(msg);
-      throw new NotAuthorizedException(msg);
+      throw new NotAuthorizedException(msg, NO_CHALLENGE);
     }
-    switch(operation) {
+    switch(op) {
       case create:
       case softDelete:
       case enable:
@@ -1341,8 +1339,7 @@ public class AppsServiceImpl implements AppsService
         break;
     }
     // Not authorized, throw an exception
-    String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH", authenticatedUser, appId, operation.name());
-    throw new NotAuthorizedException(msg);
+    throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", authenticatedUser, appId, op.name()), NO_CHALLENGE);
   }
 
   /**
