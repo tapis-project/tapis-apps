@@ -34,7 +34,7 @@ import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.systems.client.SystemsClient;
-import edu.utexas.tacc.tapis.systems.client.gen.model.TSystem;
+import edu.utexas.tacc.tapis.systems.client.gen.model.ResultSystem;
 
 import static edu.utexas.tacc.tapis.shared.TapisConstants.APPS_SERVICE;
 import static edu.utexas.tacc.tapis.apps.model.App.NO_APP_VERSION;
@@ -1075,7 +1075,7 @@ public class AppsServiceImpl implements AppsService
     // If execSystemId is set verify that it exists with canExec = true
     if (!StringUtils.isBlank(app.getExecSystemId()))
     {
-      TSystem execSystem = null;
+      ResultSystem execSystem = null;
       try
       {
         execSystem = systemsClient.getSystem(app.getExecSystemId());
@@ -1101,7 +1101,7 @@ public class AppsServiceImpl implements AppsService
     // If archiveSystemId is set verify that it exists
     if (!StringUtils.isBlank(app.getArchiveSystemId()))
     {
-      TSystem archiveSystem = null;
+      ResultSystem archiveSystem = null;
       try
       {
         archiveSystem = systemsClient.getSystem(app.getArchiveSystemId());
