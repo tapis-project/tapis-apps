@@ -84,6 +84,7 @@ CREATE TABLE apps_versions
     description TEXT,
     runtime runtime_type NOT NULL,
     runtime_version TEXT,
+    runtime_options TEXT[] NOT NULL,
     container_image TEXT,
     max_jobs INTEGER NOT NULL DEFAULT -1,
     max_jobs_per_user INTEGER NOT NULL DEFAULT -1,

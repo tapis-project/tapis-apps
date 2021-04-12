@@ -206,7 +206,7 @@ public class AppsServiceImpl implements AppsService
    * Update existing version of an app given a PatchApp and the text used to create the PatchApp.
    * Secrets in the text should be masked.
    * Attributes that can be updated:
-   *   description, runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, strictFileInputs,
+   *   description, runtime, runtimeVersion, runtimeOptions, containerImage, maxJobs, maxJobsPerUser, strictFileInputs,
    *   all of jobAttributes (including all of parameterSet), tags, notes.
    * @param authenticatedUser - principal user containing tenant and user info
    * @param patchApp - Pre-populated PatchApp object
@@ -1485,7 +1485,7 @@ public class AppsServiceImpl implements AppsService
   /**
    * Merge a patch into an existing App
    * Attributes that can be updated:
-   *   description, runtime, runtimeVersion, containerImage, maxJobs, maxJobsPerUser, strictFileInputs,
+   *   description, runtime, runtimeVersion, runtimeOptions, containerImage, maxJobs, maxJobsPerUser, strictFileInputs,
    *   jobAttributes, tags, notes.
    */
   private App createPatchedApp(App o, PatchApp p)
@@ -1494,6 +1494,7 @@ public class AppsServiceImpl implements AppsService
     if (p.getDescription() != null) app1.setDescription(p.getDescription());
     if (p.getRuntime() != null) app1.setRuntime(p.getRuntime());
     if (p.getRuntimeVersion() != null) app1.setRuntimeVersion(p.getRuntimeVersion());
+    if (p.getRuntimeOptions() != null) app1.setRuntimeOptions(p.getRuntimeOptions());
     if (p.getContainerImage() != null) app1.setContainerImage(p.getContainerImage());
     if (p.getMaxJobs() != null) app1.setMaxJobs(p.getMaxJobs());
     if (p.getMaxJobsPerUser() != null) app1.setMaxJobsPerUser(p.getMaxJobsPerUser());

@@ -12,6 +12,7 @@ import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
+import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -50,6 +51,9 @@ public final class IntegrationUtils
   public static final Runtime runtime1 = Runtime.DOCKER;
   public static final Runtime runtime2 = Runtime.SINGULARITY;
   public static final Runtime runtimeNull = null;
+  public static final List<RuntimeOption> runtimeOptions1 = new ArrayList<>(List.of(RuntimeOption.SINGULARITY_RUN));
+  public static final List<RuntimeOption> runtimeOptions2 = new ArrayList<>(List.of(RuntimeOption.SINGULARITY_START));
+  public static final List<RuntimeOption> runtimeOptionsNull = null;
   public static final String runtimeVersion1 = "0.0.1";
   public static final String runtimeVersion2 = "0.0.2";
   public static final String runtimeVersionNull = null;
@@ -251,14 +255,14 @@ public final class IntegrationUtils
       String appId = appIdPrefix + "_" + suffix;
       // Constructor initializes all attributes except for JobCapabilities
       apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, description1 + suffix, AppType.BATCH, ownerUser2,
-              enabledTrue, containerizedTrue,
-              runtime1, runtimeVersion1 +suffix, containerImage1 +suffix, maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
-                        jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
-                        execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
-                        execSystemLogicalQueue1 +suffix, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
-              envVariables1, archiveIncludes1, archiveExcludes1, archiveIncludeLaunchFilesTrue,
-              nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
-              tags1, notes1, uuidNull, deletedFalse, createdNull, updatedNull);
+                 enabledTrue, containerizedTrue, runtime1, runtimeVersion1 +suffix, runtimeOptions1,
+                 containerImage1 +suffix, maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
+                 jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
+                 execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
+                 execSystemLogicalQueue1 +suffix, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
+                 envVariables1, archiveIncludes1, archiveExcludes1, archiveIncludeLaunchFilesTrue,
+                 nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
+                 tags1, notes1, uuidNull, deletedFalse, createdNull, updatedNull);
       // Aux table data
       apps[i].setFileInputs(finList1);
       apps[i].setNotificationSubscriptions(notifList1);
@@ -279,7 +283,7 @@ public final class IntegrationUtils
   public static App makeMinimalApp(App app)
   {
     return new App(-1, -1, tenantName, app.getId(), app.getVersion(), descriptionNull, appType, ownerNull, enabledTrue,
-            containerizedTrue, runtimeNull, runtimeVersionNull, containerImage1, maxJobs1, maxJobsPerUser1,
+            containerizedTrue, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage1, maxJobs1, maxJobsPerUser1,
             strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
             execSystemId1, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
@@ -294,7 +298,7 @@ public final class IntegrationUtils
    */
   public static PatchApp makePatchAppFull()
   {
-     return new PatchApp(description2, runtime2, runtimeVersion2, containerImage2,
+     return new PatchApp(description2, runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
              maxJobs2, maxJobsPerUser2, strictFileInputsTrue,
              jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
              execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
@@ -310,7 +314,7 @@ public final class IntegrationUtils
    */
   public static PatchApp makePatchAppPartial1()
   {
-    return new PatchApp(description2, runtimeNull, runtimeVersionNull, containerImage2,
+    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
             jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
@@ -327,7 +331,7 @@ public final class IntegrationUtils
    */
   public static PatchApp makePatchAppPartial2()
   {
-    return new PatchApp(description2, runtimeNull, runtimeVersionNull, containerImage2,
+    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
             jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
@@ -343,7 +347,7 @@ public final class IntegrationUtils
    */
   public static PatchApp makePatchAppPartial3()
   {
-    return new PatchApp(descriptionNull, runtimeNull, runtimeVersionNull, containerImageNull,
+    return new PatchApp(descriptionNull, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImageNull,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
             jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,

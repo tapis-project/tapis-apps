@@ -4,12 +4,14 @@ import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
+import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
 import edu.utexas.tacc.tapis.shared.utils.JsonObjectSerializer;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /*
@@ -28,6 +30,7 @@ public final class ResultApp
   public boolean containerized;
   public Runtime runtime;
   public String runtimeVersion;
+  public List<RuntimeOption> runtimeOptions;
   public String containerImage;
   public int maxJobs;
   public int maxJobsPerUser;
@@ -58,6 +61,7 @@ public final class ResultApp
     containerized = a.isContainerized();
     runtime = a.getRuntime();
     runtimeVersion = a.getRuntimeVersion();
+    runtimeOptions = a.getRuntimeOptions();
     containerImage = a.getContainerImage();
     maxJobs = a.getMaxJobs();
     maxJobsPerUser = a.getMaxJobsPerUser();

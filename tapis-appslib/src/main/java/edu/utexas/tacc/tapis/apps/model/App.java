@@ -105,6 +105,7 @@ public final class App
                             enable, disable, getPerms, grantPerms, revokePerms}
   public enum Permission {READ, MODIFY, EXECUTE}
   public enum Runtime {DOCKER, SINGULARITY}
+  public enum RuntimeOption {SINGULARITY_START, SINGULARITY_RUN}
 
   // ************************************************************************
   // *********************** Fields *****************************************
@@ -124,6 +125,7 @@ public final class App
   private boolean containerized;
   private Runtime runtime;
   private String runtimeVersion;
+  private List<RuntimeOption> runtimeOptions;
   private String containerImage;
   private int maxJobs;
   private int maxJobsPerUser;
@@ -205,7 +207,7 @@ public final class App
    */
   public App(int seqId1, int verSeqId1, String tenant1, String id1, String version1, String description1,
              AppType appType1, String owner1, boolean enabled1, boolean containerized1,
-             Runtime runtime1, String runtimeVersion1, String containerImage1,
+             Runtime runtime1, String runtimeVersion1, List<RuntimeOption> runtimeOptions1, String containerImage1,
              int maxJobs1, int maxJobsPerUser1, boolean strictFileInputs1,
              // == Start jobAttributes
              String jobDescription1, boolean dynamicExecSystem1,
@@ -230,6 +232,7 @@ public final class App
     containerized = containerized1;
     runtime = runtime1;
     runtimeVersion = runtimeVersion1;
+    runtimeOptions = (runtimeOptions1 == null) ? null : new ArrayList<>(runtimeOptions1);
     containerImage = containerImage1;
     maxJobs = maxJobs1;
     maxJobsPerUser = maxJobsPerUser1;
@@ -281,6 +284,7 @@ public final class App
     containerized = a.isContainerized();
     runtime = a.getRuntime();
     runtimeVersion = a.getRuntimeVersion();
+    runtimeOptions = a.getRuntimeOptions();
     containerImage = a.getContainerImage();
     maxJobs = a.getMaxJobs();
     maxJobsPerUser = a.getMaxJobsPerUser();
@@ -551,6 +555,17 @@ public final class App
 
   public String getRuntimeVersion() { return runtimeVersion; }
   public App setRuntimeVersion(String s) { runtimeVersion = s; return this; }
+
+  public List<RuntimeOption> getRuntimeOptions()
+  {
+    return (runtimeOptions == null) ? null : new ArrayList<>(runtimeOptions);
+  }
+  public App setRuntimeOptions(List<RuntimeOption> rol)
+  {
+    runtimeOptions = (rol == null) ? null : new ArrayList<>(rol);
+    return this;
+  }
+
 
   public String getContainerImage() { return containerImage; }
   public App setContainerImage(String s) { containerImage = s; return this; }

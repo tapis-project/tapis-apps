@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
+import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
+
 /*
  * Class representing an update to a Tapis App.
  * Fields set to null indicate attribute not updated.
@@ -23,6 +25,7 @@ public final class PatchApp
   private final String description;
   private final Runtime runtime;
   private final String runtimeVersion;
+  private List<RuntimeOption> runtimeOptions;
   private final String containerImage;
   private final Integer maxJobs;
   private final Integer maxJobsPerUser;
@@ -68,7 +71,7 @@ public final class PatchApp
    * Note that because PatchApp does not have a corresponding table in the DB we can pass in
    *   FileInputs, AppArgs, ContainerArgs, SchedulerOptions and Subscriptions.
    */
-  public PatchApp(String description1, Runtime runtime1, String runtimeVersion1,
+  public PatchApp(String description1, Runtime runtime1, String runtimeVersion1, List<RuntimeOption> runtimeOptions1,
                   String containerImage1, Integer maxJobs1, Integer maxJobsPerUser1, Boolean strictFileInputs1,
                   // == Start jobAttributes
                   String jobDescription1, Boolean dynamicExecSystem1, String[] execSystemConstraints1,
@@ -86,6 +89,7 @@ public final class PatchApp
     description = description1;
     runtime = runtime1;
     runtimeVersion = runtimeVersion1;
+    runtimeOptions = (runtimeOptions1 == null) ? null : new ArrayList<>(runtimeOptions1);
     containerImage = containerImage1;
     maxJobs = maxJobs1;
     maxJobsPerUser = maxJobsPerUser1;
@@ -134,6 +138,10 @@ public final class PatchApp
   public String getDescription() { return description; }
   public Runtime getRuntime() { return runtime; }
   public String getRuntimeVersion() { return runtimeVersion; }
+  public List<RuntimeOption> getRuntimeOptions()
+  {
+    return (runtimeOptions == null) ? null : new ArrayList<>(runtimeOptions);
+  }
   public String getContainerImage() { return containerImage; }
   public Integer getMaxJobs() { return maxJobs; }
   public Integer getMaxJobsPerUser() { return maxJobsPerUser; }

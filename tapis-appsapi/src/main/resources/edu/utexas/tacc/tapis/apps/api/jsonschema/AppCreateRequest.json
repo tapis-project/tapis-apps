@@ -16,12 +16,13 @@
     "containerized": { "type": "boolean", "default": true },
     "runtime": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/RuntimeEnum" },
     "runtimeVersion": { "type": "string", "maxLength": 128 },
+    "runtimeOptions": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/RuntimeOptionsDefinition" },
     "containerImage": { "type": "string", "maxLength": 128 },
     "maxJobs": { "type": "integer", "default": -1 },
     "maxJobsPerUser": { "type": "integer", "default": -1 },
     "strictFileInputs": { "type": "boolean", "default": false },
     "jobAttributes": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/JobAttributes" },
-    "tags": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/tagsDefinition" },
+    "tags": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/TagsDefinition" },
     "notes": { "type": "object" }
   }
 }

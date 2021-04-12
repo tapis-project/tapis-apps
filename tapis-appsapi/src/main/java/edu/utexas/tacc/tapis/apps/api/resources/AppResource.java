@@ -910,7 +910,7 @@ public class AppResource
     Object notes = extractNotes(rawJson);
     // Create App
     var app = new App(-1, -1, null, req.id, req.version, req.description, req.appType, req.owner, req.enabled,
-          req.containerized,  req.runtime, req.runtimeVersion, req.containerImage,
+          req.containerized,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
@@ -972,14 +972,14 @@ public class AppResource
     // else potentially many more arguments are non-null
     if (jobAttrs == null)
     {
-      patchApp = new PatchApp(req.description, req.runtime, req.runtimeVersion, req.containerImage,
+      patchApp = new PatchApp(req.description, req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
             req.maxJobs, req.maxJobsPerUser, req.strictFileInputs, null, null, null, null, null, null, null, null, null,
             null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, req.tags, notes);
     }
     else
     {
-      patchApp = new PatchApp(req.description, req.runtime, req.runtimeVersion, req.containerImage,
-              req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
+      patchApp = new PatchApp(req.description, req.runtime, req.runtimeVersion, req.runtimeOptions,
+              req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
               jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
               jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
               jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,

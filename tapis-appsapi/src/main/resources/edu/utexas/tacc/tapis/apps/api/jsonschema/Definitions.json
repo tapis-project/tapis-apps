@@ -10,8 +10,14 @@
   "DirPath": { "type": "string", "minLength": 1, "maxLength": 4096 },
   "AppTypeEnum": { "type": "string", "enum": [ "BATCH", "FORK" ] },
   "RuntimeEnum": { "type": "string", "enum": [ "SINGULARITY", "DOCKER" ] },
+  "RuntimeOptionEnum": { "type": "string", "enum": [ "SINGULARITY_START", "SINGULARITY_RUN" ] },
   "NotificationMechanismEnum": { "type": "string", "enum": [ "WEBHOOK", "EMAIL", "QUEUE", "ACTOR" ] },
-  "tagsDefinition": {
+  "RuntimeOptionsDefinition": {
+    "type": "array",
+    "uniqueItems": true,
+    "items": { "$ref": "#/RuntimeOptionEnum" }
+  },
+  "TagsDefinition": {
     "type": "array",
     "uniqueItems": true,
     "items": { "type":  "string", "minLength": 1, "maxLength": 128 }
@@ -47,7 +53,7 @@
         "type": "array",
         "items":  { "$ref": "#/NotificationSubscription" }
       },
-      "tags": { "$ref": "#/tagsDefinition" }
+      "tags": { "$ref": "#/TagsDefinition" }
     }
   },
   "ParameterSet": {

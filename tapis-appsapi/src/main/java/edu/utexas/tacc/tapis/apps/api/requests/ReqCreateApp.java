@@ -3,6 +3,9 @@ package edu.utexas.tacc.tapis.apps.api.requests;
 import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
+import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
+
+import java.util.List;
 
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_ENABLED;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_CONTAINERIZED;
@@ -26,6 +29,7 @@ public final class ReqCreateApp
   public boolean containerized = DEFAULT_CONTAINERIZED;
   public Runtime runtime = DEFAULT_RUNTIME;
   public String runtimeVersion;
+  public List<RuntimeOption> runtimeOptions;
   public String containerImage;
   public int maxJobs;
   public int maxJobsPerUser;

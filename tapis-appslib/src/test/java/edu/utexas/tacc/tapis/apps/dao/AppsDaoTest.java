@@ -435,8 +435,8 @@ public class AppsDaoTest
     patchApp.setId(fakeAppId);
     patchApp.setVersion(fakeAppVersion);
     App patchedApp = new App(1, 1, tenantName, fakeAppId, fakeAppVersion, "description", AppType.BATCH, ownerUser2, enabledTrue,
-            containerizedTrue,
-            runtime1, runtimeVersion1, containerImage1, maxJobs1, maxJobsPerUser1, strictFileInputsFalse, IntegrationUtils.jobDescription1, dynamicExecSystemTrue,
+            containerizedTrue, runtime1, runtimeVersion1, runtimeOptions1, containerImage1,
+            maxJobs1, maxJobsPerUser1, strictFileInputsFalse, IntegrationUtils.jobDescription1, dynamicExecSystemTrue,
             execSystemConstraints1, execSystemId1, execSystemExecDir1, execSystemInputDir1, execSystemOutputDir1,
             execSystemLogicalQueue1, archiveSystemIdNull, archiveSystemDir1, archiveOnAppErrorTrue,
             envVariables1, archiveIncludes1, archiveExcludes1, archiveIncludeLaunchFilesTrue,

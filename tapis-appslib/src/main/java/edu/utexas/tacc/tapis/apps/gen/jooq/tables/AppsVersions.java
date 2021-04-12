@@ -39,7 +39,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppsVersions extends TableImpl<AppsVersionsRecord> {
 
-    private static final long serialVersionUID = -801745806;
+    private static final long serialVersionUID = -1505970231;
 
     /**
      * The reference instance of <code>tapis_app.apps_versions</code>
@@ -83,6 +83,11 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
      * The column <code>tapis_app.apps_versions.runtime_version</code>.
      */
     public final TableField<AppsVersionsRecord, String> RUNTIME_VERSION = createField(DSL.name("runtime_version"), org.jooq.impl.SQLDataType.CLOB, this, "");
+
+    /**
+     * The column <code>tapis_app.apps_versions.runtime_options</code>.
+     */
+    public final TableField<AppsVersionsRecord, String[]> RUNTIME_OPTIONS = createField(DSL.name("runtime_options"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.container_image</code>.

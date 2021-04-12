@@ -5,25 +5,16 @@ import java.sql.Types;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsVersionsRecord;
-import edu.utexas.tacc.tapis.apps.model.AppArg;
-import edu.utexas.tacc.tapis.apps.model.FileInput;
-import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
-import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
-import edu.utexas.tacc.tapis.search.parser.ASTBinaryExpression;
-import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
-import edu.utexas.tacc.tapis.search.parser.ASTNode;
-import edu.utexas.tacc.tapis.search.parser.ASTUnaryExpression;
-import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
-import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flywaydb.core.Flyway;
 import org.jooq.Condition;
@@ -35,17 +26,32 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsVersionsRecord;
+import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
+import edu.utexas.tacc.tapis.apps.model.App.Runtime;
+import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
+import edu.utexas.tacc.tapis.apps.model.AppArg;
+import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
+import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.apps.model.PatchApp;
+import edu.utexas.tacc.tapis.search.parser.ASTBinaryExpression;
+import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
+import edu.utexas.tacc.tapis.search.parser.ASTNode;
+import edu.utexas.tacc.tapis.search.parser.ASTUnaryExpression;
+import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
+import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
+
+
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsRecord;
 import static edu.utexas.tacc.tapis.apps.gen.jooq.Tables.*;
 import static edu.utexas.tacc.tapis.apps.gen.jooq.Tables.APPS;
 
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.search.SearchUtils.SearchOperator;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
-import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 
@@ -109,7 +115,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
                                                             app.getVersion()));
       // Make sure owner, runtime, notes, tags etc are set
       String owner = App.DEFAULT_OWNER;
-      App.Runtime runtime = App.DEFAULT_RUNTIME;
+      Runtime runtime = App.DEFAULT_RUNTIME;
+      String[] runtimeOptionsStrArray = App.EMPTY_STR_ARRAY;
       String[] execSystemConstraintsStrArray = App.EMPTY_STR_ARRAY;
       String[] envVariablesStrArray = App.EMPTY_STR_ARRAY;
       String[] archiveIncludesStrArray = App.EMPTY_STR_ARRAY;
@@ -119,6 +126,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       JsonObject notesObj = App.DEFAULT_NOTES;
       if (StringUtils.isNotBlank(app.getOwner())) owner = app.getOwner();
       if (app.getRuntime() != null) runtime = app.getRuntime();
+      // Convert runtimeOptions array from enum to string
+      if (app.getRuntimeOptions() != null)
+      {
+        runtimeOptionsStrArray = app.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
+      }
       if (app.getExecSystemConstraints() != null) execSystemConstraintsStrArray = app.getExecSystemConstraints();
       if (app.getEnvVariables() != null) envVariablesStrArray = app.getEnvVariables();
       if (app.getArchiveIncludes() != null) archiveIncludesStrArray = app.getArchiveIncludes();
@@ -158,6 +170,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.DESCRIPTION, app.getDescription())
               .set(APPS_VERSIONS.RUNTIME, runtime)
               .set(APPS_VERSIONS.RUNTIME_VERSION, app.getRuntimeVersion())
+              .set(APPS_VERSIONS.RUNTIME_OPTIONS, runtimeOptionsStrArray)
               .set(APPS_VERSIONS.CONTAINER_IMAGE, app.getContainerImage())
               .set(APPS_VERSIONS.MAX_JOBS, app.getMaxJobs())
               .set(APPS_VERSIONS.MAX_JOBS_PER_USER, app.getMaxJobsPerUser())
@@ -255,8 +268,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       boolean doesExist = checkIfAppExists(db, tenant, appId, appVersion, false);
       if (!doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", authenticatedUser, appId));
 
-      // Make sure runtime,  string arrays and json objects are set
-      App.Runtime runtime = App.DEFAULT_RUNTIME;
+      // Make sure runtime, string arrays and json objects are set
+      Runtime runtime = App.DEFAULT_RUNTIME;
+      String[] runtimeOptionsStrArray = App.EMPTY_STR_ARRAY;
       String[] execSystemConstraintsStrArray = App.EMPTY_STR_ARRAY;
       String[] envVariablesStrArray = App.EMPTY_STR_ARRAY;
       String[] archiveIncludesStrArray = App.EMPTY_STR_ARRAY;
@@ -265,6 +279,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       String[] tagsStrArray = App.EMPTY_STR_ARRAY;
       JsonObject notesObj = App.DEFAULT_NOTES;
       if (patchedApp.getRuntime() != null) runtime = patchedApp.getRuntime();
+      // Convert runtimeOptions array from enum to string
+      if (patchedApp.getRuntimeOptions() != null)
+      {
+        runtimeOptionsStrArray = patchedApp.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
+      }
       if (patchedApp.getExecSystemConstraints() != null) execSystemConstraintsStrArray = patchedApp.getExecSystemConstraints();
       if (patchedApp.getEnvVariables() != null) envVariablesStrArray = patchedApp.getEnvVariables();
       if (patchedApp.getArchiveIncludes() != null) archiveIncludesStrArray = patchedApp.getArchiveIncludes();
@@ -278,6 +297,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.DESCRIPTION, patchedApp.getDescription())
               .set(APPS_VERSIONS.RUNTIME, runtime)
               .set(APPS_VERSIONS.RUNTIME_VERSION, patchedApp.getRuntimeVersion())
+              .set(APPS_VERSIONS.RUNTIME_OPTIONS, runtimeOptionsStrArray)
               .set(APPS_VERSIONS.CONTAINER_IMAGE, patchedApp.getContainerImage())
               .set(APPS_VERSIONS.MAX_JOBS, patchedApp.getMaxJobs())
               .set(APPS_VERSIONS.MAX_JOBS_PER_USER, patchedApp.getMaxJobsPerUser())
@@ -1187,9 +1207,16 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // Convert LocalDateTime to Instant. Note that although "Local" is in the type timestamps from the DB are in UTC.
     Instant created = appVerRecord.getCreated().toInstant(ZoneOffset.UTC);
     Instant updated = appVerRecord.getUpdated().toInstant(ZoneOffset.UTC);
+
+    // Convert runtimeOption strings to enums
+    String[] runtimeOptionsStrArray = appVerRecord.getRuntimeOptions();
+    List<RuntimeOption> runtimeOptions =
+            Arrays.stream(runtimeOptionsStrArray).map(RuntimeOption::valueOf).collect(Collectors.toList());
+
     app = new App(appSeqId, appVerSeqId, appRecord.getTenant(), appRecord.getId(), appVerRecord.getVersion(),
             appVerRecord.getDescription(), appRecord.getAppType(), appRecord.getOwner(), appRecord.getEnabled(),
             appRecord.getContainerized(), appVerRecord.getRuntime(), appVerRecord.getRuntimeVersion(),
+            runtimeOptions,
             appVerRecord.getContainerImage(), appVerRecord.getMaxJobs(), appVerRecord.getMaxJobsPerUser(),
             appVerRecord.getStrictFileInputs(), appVerRecord.getJobDescription(),
             appVerRecord.getDynamicExecSystem(), appVerRecord.getExecSystemConstraints(),
