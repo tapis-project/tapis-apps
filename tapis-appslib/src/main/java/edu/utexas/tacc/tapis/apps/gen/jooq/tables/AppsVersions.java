@@ -39,7 +39,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppsVersions extends TableImpl<AppsVersionsRecord> {
 
-    private static final long serialVersionUID = -1505970231;
+    private static final long serialVersionUID = -1431708701;
 
     /**
      * The reference instance of <code>tapis_app.apps_versions</code>
@@ -77,7 +77,7 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     /**
      * The column <code>tapis_app.apps_versions.runtime</code>.
      */
-    public final TableField<AppsVersionsRecord, Runtime> RUNTIME = createField(DSL.name("runtime"), org.jooq.impl.SQLDataType.VARCHAR.nullable(false).asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.RuntimeType.class), this, "", new org.jooq.impl.EnumConverter<edu.utexas.tacc.tapis.apps.gen.jooq.enums.RuntimeType, edu.utexas.tacc.tapis.apps.model.App.Runtime>(edu.utexas.tacc.tapis.apps.gen.jooq.enums.RuntimeType.class, edu.utexas.tacc.tapis.apps.model.App.Runtime.class));
+    public final TableField<AppsVersionsRecord, Runtime> RUNTIME = createField(DSL.name("runtime"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "", new org.jooq.impl.EnumConverter<java.lang.String, edu.utexas.tacc.tapis.apps.model.App.Runtime>(java.lang.String.class, edu.utexas.tacc.tapis.apps.model.App.Runtime.class));
 
     /**
      * The column <code>tapis_app.apps_versions.runtime_version</code>.

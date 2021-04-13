@@ -35,13 +35,6 @@ SET search_path TO tapis_app;
 -- GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA tapis_app TO tapis_app;
 -- GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA tapis_app TO tapis_app;
 
--- Types
-CREATE TYPE app_type_type AS ENUM ('BATCH', 'FORK');
-CREATE TYPE operation_type AS ENUM ('create', 'modify', 'softDelete', 'hardDelete', 'changeOwner',
-                                    'enable', 'disable', 'grantPerms', 'revokePerms');
-CREATE TYPE runtime_type AS ENUM ('DOCKER', 'SINGULARITY');
-CREATE TYPE notification_mechanism_type AS ENUM ('WEBHOOK', 'EMAIL', 'QUEUE', 'ACTOR');
-
 -- ----------------------------------------------------------------------------------------
 --                                     APPS
 -- ----------------------------------------------------------------------------------------
@@ -53,7 +46,7 @@ CREATE TABLE apps
   tenant  TEXT NOT NULL,
   id      TEXT NOT NULL,
   latest_version TEXT NOT NULL,
-  app_type app_type_type,
+  app_type TEXT NOT NULL,
   owner    TEXT NOT NULL,
   enabled  BOOLEAN NOT NULL DEFAULT true,
   containerized BOOLEAN NOT NULL DEFAULT true,
@@ -82,7 +75,7 @@ CREATE TABLE apps_versions
     app_seq_id INTEGER REFERENCES apps(seq_id) ON DELETE CASCADE,
     version TEXT NOT NULL,
     description TEXT,
-    runtime runtime_type NOT NULL,
+    runtime TEXT NOT NULL,
     runtime_version TEXT,
     runtime_options TEXT[] NOT NULL,
     container_image TEXT,
@@ -145,7 +138,7 @@ CREATE TABLE app_updates
     app_version TEXT,
     user_tenant TEXT NOT NULL,
     user_name TEXT NOT NULL,
-    operation operation_type NOT NULL,
+    operation TEXT NOT NULL,
     upd_json JSONB NOT NULL,
     upd_text TEXT,
     uuid uuid NOT NULL,
@@ -204,7 +197,7 @@ CREATE TABLE notification_mechanisms
 (
     seq_id SERIAL PRIMARY KEY,
     subscription_seq_id INTEGER REFERENCES notification_subscriptions(seq_id) ON DELETE CASCADE,
-    mechanism notification_mechanism_type,
+    mechanism TEXT NOT NULL,
     webhook_url TEXT,
     email_address TEXT
 );

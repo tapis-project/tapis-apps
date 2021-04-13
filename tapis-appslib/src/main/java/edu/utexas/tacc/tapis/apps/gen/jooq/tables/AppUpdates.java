@@ -38,7 +38,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppUpdates extends TableImpl<AppUpdatesRecord> {
 
-    private static final long serialVersionUID = -1925602801;
+    private static final long serialVersionUID = 911775196;
 
     /**
      * The reference instance of <code>tapis_app.app_updates</code>
@@ -96,7 +96,7 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     /**
      * The column <code>tapis_app.app_updates.operation</code>. Type of update operation
      */
-    public final TableField<AppUpdatesRecord, AppOperation> OPERATION = createField(DSL.name("operation"), org.jooq.impl.SQLDataType.VARCHAR.nullable(false).asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.OperationType.class), this, "Type of update operation", new org.jooq.impl.EnumConverter<edu.utexas.tacc.tapis.apps.gen.jooq.enums.OperationType, edu.utexas.tacc.tapis.apps.model.App.AppOperation>(edu.utexas.tacc.tapis.apps.gen.jooq.enums.OperationType.class, edu.utexas.tacc.tapis.apps.model.App.AppOperation.class));
+    public final TableField<AppUpdatesRecord, AppOperation> OPERATION = createField(DSL.name("operation"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Type of update operation", new org.jooq.impl.EnumConverter<java.lang.String, edu.utexas.tacc.tapis.apps.model.App.AppOperation>(java.lang.String.class, edu.utexas.tacc.tapis.apps.model.App.AppOperation.class));
 
     /**
      * The column <code>tapis_app.app_updates.upd_json</code>. JSON representing the update - with secrets scrubbed

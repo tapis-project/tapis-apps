@@ -36,7 +36,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Apps extends TableImpl<AppsRecord> {
 
-    private static final long serialVersionUID = 1387722693;
+    private static final long serialVersionUID = -1799220003;
 
     /**
      * The reference instance of <code>tapis_app.apps</code>
@@ -74,7 +74,7 @@ public class Apps extends TableImpl<AppsRecord> {
     /**
      * The column <code>tapis_app.apps.app_type</code>. Type of application
      */
-    public final TableField<AppsRecord, AppType> APP_TYPE = createField(DSL.name("app_type"), org.jooq.impl.SQLDataType.VARCHAR.asEnumDataType(edu.utexas.tacc.tapis.apps.gen.jooq.enums.AppTypeType.class), this, "Type of application", new org.jooq.impl.EnumConverter<edu.utexas.tacc.tapis.apps.gen.jooq.enums.AppTypeType, edu.utexas.tacc.tapis.apps.model.App.AppType>(edu.utexas.tacc.tapis.apps.gen.jooq.enums.AppTypeType.class, edu.utexas.tacc.tapis.apps.model.App.AppType.class));
+    public final TableField<AppsRecord, AppType> APP_TYPE = createField(DSL.name("app_type"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Type of application", new org.jooq.impl.EnumConverter<java.lang.String, edu.utexas.tacc.tapis.apps.model.App.AppType>(java.lang.String.class, edu.utexas.tacc.tapis.apps.model.App.AppType.class));
 
     /**
      * The column <code>tapis_app.apps.owner</code>. User name of application owner
