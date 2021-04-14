@@ -21,6 +21,7 @@ import java.util.Set;
 
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
+import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
 import static edu.utexas.tacc.tapis.apps.IntegrationUtils.*;
 
@@ -91,6 +92,15 @@ public class AppsDaoTest
     Assert.assertEquals(tmpApp.isEnabled(), app0.isEnabled());
     Assert.assertEquals(tmpApp.getRuntime().name(), app0.getRuntime().name());
     Assert.assertEquals(tmpApp.getRuntimeVersion(), app0.getRuntimeVersion());
+    // Verify runtimeOptions
+    List<RuntimeOption> rtOps = tmpApp.getRuntimeOptions();
+    Assert.assertNotNull(rtOps);
+    List<RuntimeOption> sys0RTOptions = app0.getRuntimeOptions();
+    Assert.assertNotNull(sys0RTOptions);
+    for (RuntimeOption rtOption : sys0RTOptions)
+    {
+      Assert.assertTrue(rtOps.contains(rtOption), "List of runtime options did not contain: " + rtOption.name());
+    }
     Assert.assertEquals(tmpApp.getContainerImage(), app0.getContainerImage());
     Assert.assertEquals(tmpApp.getMaxJobs(), app0.getMaxJobs());
     Assert.assertEquals(tmpApp.getMaxJobsPerUser(), app0.getMaxJobsPerUser());
