@@ -920,9 +920,9 @@ public class AppsServiceTest
     // Verify runtimeOptions
     List<RuntimeOption> rtOps = tmpApp.getRuntimeOptions();
     Assert.assertNotNull(rtOps);
-    List<RuntimeOption> sys0RTOptions = app0.getRuntimeOptions();
-    Assert.assertNotNull(sys0RTOptions);
-    for (RuntimeOption rtOption : sys0RTOptions)
+    List<RuntimeOption> app0RTOptions = app0.getRuntimeOptions();
+    Assert.assertNotNull(app0RTOptions);
+    for (RuntimeOption rtOption : app0RTOptions)
     {
       Assert.assertTrue(rtOps.contains(rtOption), "List of runtime options did not contain: " + rtOption.name());
     }
