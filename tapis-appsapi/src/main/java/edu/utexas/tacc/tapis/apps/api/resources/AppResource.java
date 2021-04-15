@@ -31,6 +31,7 @@ import com.google.gson.JsonSyntaxException;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.shared.threadlocal.SearchParameters;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultBoolean;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +44,7 @@ import edu.utexas.tacc.tapis.apps.api.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqCreateApp;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqUpdateApp;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApp;
-import edu.utexas.tacc.tapis.apps.api.responses.RespAppsArray;
+import edu.utexas.tacc.tapis.apps.api.responses.RespApps;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
@@ -586,7 +587,7 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     if (apps == null) apps = Collections.emptyList();
     int cnt = apps.size();
-    RespAppsArray resp1 = new RespAppsArray(apps);
+    RespApps resp1 = new RespApps(apps, SearchParameters.DEFAULT_LIMIT, null, SearchParameters.DEFAULT_SKIP, null, cnt);
     return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
   }
 
@@ -645,7 +646,7 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     if (apps == null) apps = Collections.emptyList();
     int cnt = apps.size();
-    RespAppsArray resp1 = new RespAppsArray(apps);
+    RespApps resp1 = new RespApps(apps, SearchParameters.DEFAULT_LIMIT, null, SearchParameters.DEFAULT_SKIP, null, cnt);
     return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
   }
 
@@ -727,7 +728,7 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     if (apps == null) apps = Collections.emptyList();
     int cnt = apps.size();
-    RespAppsArray resp1 = new RespAppsArray(apps);
+    RespApps resp1 = new RespApps(apps, SearchParameters.DEFAULT_LIMIT, null, SearchParameters.DEFAULT_SKIP, null, cnt);
     return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
   }
 

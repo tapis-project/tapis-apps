@@ -45,9 +45,6 @@ public final class ResultApp
   public Instant created;
   public Instant updated;
 
-  // Zero arg constructor needed to use jersey's SelectableEntityFilteringFeature
-  public ResultApp() { }
-
   public ResultApp(App a)
   {
     seqId = a.getSeqId();
