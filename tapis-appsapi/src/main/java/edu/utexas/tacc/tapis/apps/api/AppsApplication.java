@@ -24,7 +24,6 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.internal.inject.InjectionManager;
-import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ApplicationHandler;
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -83,7 +82,7 @@ public class AppsApplication extends ResourceConfig
     // Use jackson as opposed to Moxy.
     // Initially there were problems with notes and authnCredential but with a custom objectmapper
     // and custom jsonobject serializer the problems were resolved.
-    register(JacksonFeature.class);
+//    register(JacksonFeature.class);
 
     // Needed for properly returning timestamps
     // Also allows for setting a breakpoint when response is being constructed.

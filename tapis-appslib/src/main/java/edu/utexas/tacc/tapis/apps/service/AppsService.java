@@ -2,6 +2,7 @@ package edu.utexas.tacc.tapis.apps.service;
 
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
+import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.model.App;
@@ -47,10 +48,15 @@ public interface AppsService
   App getApp(AuthenticatedUser authenticatedUser, String appId, String appVersion, boolean requireExecPerm)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  List<App> getApps(AuthenticatedUser authenticatedUser, List<String> searchList)
+  int getAppsTotalCount(AuthenticatedUser authenticatedUser, List<String> searchList, List<OrderBy> orderByList,
+                        String startAfter) throws TapisException, TapisClientException;
+
+  List<App> getApps(AuthenticatedUser authenticatedUser, List<String> searchList, int limit,
+                    List<OrderBy> orderByList, int skip, String startAfter)
           throws TapisException, TapisClientException;
 
-  List<App> getAppsUsingSqlSearchStr(AuthenticatedUser authenticatedUser, String searchStr)
+  List<App> getAppsUsingSqlSearchStr(AuthenticatedUser authenticatedUser, String searchStr, int limit,
+                                     List<OrderBy> orderByList, int skip, String startAfter)
           throws TapisException, TapisClientException;
 
   Set<String> getAppIDs(AuthenticatedUser authenticatedUser)

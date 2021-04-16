@@ -6,10 +6,6 @@ import edu.utexas.tacc.tapis.apps.model.App.AppType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
-import edu.utexas.tacc.tapis.shared.utils.JsonObjectSerializer;
-
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -37,8 +33,6 @@ public final class ResultApp
   public boolean strictFileInputs;
   public JobAttributes jobAttributes;
   public String[] tags;
-  // Json objects require special serializer for Jackson to handle properly in outgoing response.
-  @JsonSerialize(using = JsonObjectSerializer.class)
   public Object notes;
   public UUID uuid;
   public boolean deleted;

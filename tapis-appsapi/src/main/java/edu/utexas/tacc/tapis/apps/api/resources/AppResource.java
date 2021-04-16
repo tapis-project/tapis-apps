@@ -2,6 +2,7 @@ package edu.utexas.tacc.tapis.apps.api.resources;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.inject.Inject;
@@ -31,6 +32,8 @@ import com.google.gson.JsonSyntaxException;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.shared.TapisConstants;
+import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.shared.threadlocal.SearchParameters;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultBoolean;
 import org.apache.commons.io.IOUtils;
@@ -50,7 +53,6 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
 import edu.utexas.tacc.tapis.search.SearchUtils;
-import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.sharedapi.responses.RespAbstract;
 import edu.utexas.tacc.tapis.sharedapi.responses.RespBoolean;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
@@ -62,11 +64,15 @@ import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadLocal;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
-import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils.RESPONSE_STATUS;
 import edu.utexas.tacc.tapis.sharedapi.responses.RespChangeCount;
 import edu.utexas.tacc.tapis.sharedapi.responses.RespResourceUrl;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultChangeCount;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultResourceUrl;
+
+import static edu.utexas.tacc.tapis.apps.model.App.APP_TYPE_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.ID_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.OWNER_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.VERSION_FIELD;
 
 /*
  * JAX-RS REST resource for a Tapis App (edu.utexas.tacc.tapis.apps.model.App)
@@ -82,19 +88,41 @@ public class AppResource
   // Local logger.
   private static final Logger _log = LoggerFactory.getLogger(AppResource.class);
 
+  private static final String APPLICATIONS_SVC = StringUtils.capitalize(TapisConstants.SERVICE_NAME_APPS);
+
   // Json schema resource files.
   private static final String FILE_APP_CREATE_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppCreateRequest.json";
   private static final String FILE_APP_UPDATE_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppUpdateRequest.json";
   private static final String FILE_APP_SEARCH_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppSearchRequest.json";
 
-  // Always return a nicely formatted response
-  private static final boolean PRETTY = true;
+  // Message keys
+  private static final String INVALID_JSON_INPUT = "NET_INVALID_JSON_INPUT";
+  private static final String JSON_VALIDATION_ERR = "TAPIS_JSON_VALIDATION_ERROR";
+  private static final String UPDATE_ERR = "APPAPI_UPDATE_ERROR";
+  private static final String CREATE_ERR = "APPAPI_CREATE_ERROR";
+  private static final String SELECT_ERR = "APPAPI_SELECT_ERROR";
+  private static final String LIB_UNAUTH = "APPLIB_UNAUTH";
+  private static final String API_UNAUTH = "APPAPI_APP_UNAUTH";
+  private static final String TAPIS_FOUND = "TAPIS_FOUND";
+  private static final String NOT_FOUND = "APPAPI_NOT_FOUND";
+  private static final String UPDATED = "APPAPI_UPDATED";
+
+  // Format strings
+  private static final String APPS_CNT_STR = "%d applications";
 
   // Operation names
   private static final String OP_ENABLE = "enableApp";
   private static final String OP_DISABLE = "disableApp";
   private static final String OP_CHANGEOWNER = "changeAppOwner";
   private static final String OP_DELETE = "deleteApp";
+
+  // Always return a nicely formatted response
+  private static final boolean PRETTY = true;
+
+  // Top level summary attributes to be included by default in some cases.
+  public static final List<String> SUMMARY_ATTRS =
+          new ArrayList<>(List.of(ID_FIELD, VERSION_FIELD, APP_TYPE_FIELD, OWNER_FIELD));
+
 
   // ************************************************************************
   // *********************** Fields *****************************************
@@ -157,7 +185,7 @@ public class AppResource
     try { rawJson = IOUtils.toString(payloadStream, StandardCharsets.UTF_8); }
     catch (Exception e)
     {
-      msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName , e.getMessage());
+      msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName , e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -166,7 +194,7 @@ public class AppResource
     try { JsonValidator.validate(spec); }
     catch (TapisJSONException e)
     {
-      msg = MsgUtils.getMsg("TAPIS_JSON_VALIDATION_ERROR", e.getMessage());
+      msg = MsgUtils.getMsg(JSON_VALIDATION_ERR, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -176,7 +204,7 @@ public class AppResource
     try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqCreateApp.class); }
     catch (JsonSyntaxException e)
     {
-      msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName, e.getMessage());
+      msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -184,7 +212,7 @@ public class AppResource
     // If req is null that is an unrecoverable error
     if (req == null)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, "ReqCreateApp == null");
+      msg = ApiUtils.getMsgAuth(CREATE_ERR, authenticatedUser, "ReqCreateApp == null");
       _log.error(msg);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -217,17 +245,17 @@ public class AppResource
         _log.warn(msg);
         return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
-      else if (e.getMessage().contains("APPLIB_UNAUTH"))
+      else if (e.getMessage().contains(LIB_UNAUTH))
       {
         // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
-        msg = ApiUtils.getMsgAuth("APPAPI_APP_UNAUTH", authenticatedUser, appId, opName);
+        msg = ApiUtils.getMsgAuth(API_UNAUTH, authenticatedUser, appId, opName);
         _log.warn(msg);
         return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
       else
       {
         // IllegalStateException indicates an Invalid App was passed in
-        msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, appId, e.getMessage());
+        msg = ApiUtils.getMsgAuth(CREATE_ERR, authenticatedUser, appId, e.getMessage());
         _log.error(msg);
         return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
@@ -235,13 +263,13 @@ public class AppResource
     catch (IllegalArgumentException e)
     {
       // IllegalArgumentException indicates somehow a bad argument made it this far
-      msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, appId, e.getMessage());
+      msg = ApiUtils.getMsgAuth(CREATE_ERR, authenticatedUser, appId, e.getMessage());
       _log.error(msg);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_CREATE_ERROR", authenticatedUser, appId, e.getMessage());
+      msg = ApiUtils.getMsgAuth(CREATE_ERR, authenticatedUser, appId, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -251,8 +279,7 @@ public class AppResource
     ResultResourceUrl respUrl = new ResultResourceUrl();
     respUrl.url = _request.getRequestURL().toString() + "/" + appId;
     RespResourceUrl resp1 = new RespResourceUrl(respUrl);
-    return Response.status(Status.CREATED).entity(TapisRestUtils.createSuccessResponse(
-      ApiUtils.getMsgAuth("APPAPI_CREATED", authenticatedUser, appId), PRETTY, resp1)).build();
+    return createSuccessResponse(Status.CREATED, ApiUtils.getMsgAuth("APPAPI_CREATED", authenticatedUser, appId), resp1);
   }
 
   /**
@@ -292,7 +319,7 @@ public class AppResource
     try { rawJson = IOUtils.toString(payloadStream, StandardCharsets.UTF_8); }
     catch (Exception e)
     {
-      msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName , e.getMessage());
+      msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName , e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -301,7 +328,7 @@ public class AppResource
     try { JsonValidator.validate(spec); }
     catch (TapisJSONException e)
     {
-      msg = MsgUtils.getMsg("TAPIS_JSON_VALIDATION_ERROR", e.getMessage());
+      msg = MsgUtils.getMsg(JSON_VALIDATION_ERR, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -311,7 +338,7 @@ public class AppResource
     try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqUpdateApp.class); }
     catch (JsonSyntaxException e)
     {
-      msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName, e.getMessage());
+      msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -327,23 +354,23 @@ public class AppResource
     }
     catch (NotFoundException e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appId);
+      msg = ApiUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId);
       _log.warn(msg);
       return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (IllegalStateException e)
     {
-      if (e.getMessage().contains("APPLIB_UNAUTH"))
+      if (e.getMessage().contains(LIB_UNAUTH))
       {
         // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
-        msg = ApiUtils.getMsgAuth("APPAPI_APP_UNAUTH", authenticatedUser, appId, opName);
+        msg = ApiUtils.getMsgAuth(API_UNAUTH, authenticatedUser, appId, opName);
         _log.warn(msg);
         return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
       else
       {
         // IllegalStateException indicates an Invalid PatchApp was passed in
-        msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, opName, e.getMessage());
+        msg = ApiUtils.getMsgAuth(UPDATE_ERR, authenticatedUser, appId, opName, e.getMessage());
         _log.error(msg);
         return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
@@ -351,13 +378,13 @@ public class AppResource
     catch (IllegalArgumentException e)
     {
       // IllegalArgumentException indicates somehow a bad argument made it this far
-      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, opName, e.getMessage());
+      msg = ApiUtils.getMsgAuth(UPDATE_ERR, authenticatedUser, appId, opName, e.getMessage());
       _log.error(msg);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, opName, e.getMessage());
+      msg = ApiUtils.getMsgAuth(UPDATE_ERR, authenticatedUser, appId, opName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -367,8 +394,7 @@ public class AppResource
     ResultResourceUrl respUrl = new ResultResourceUrl();
     respUrl.url = _request.getRequestURL().toString();
     RespResourceUrl resp1 = new RespResourceUrl(respUrl);
-    return Response.status(Status.OK).entity(TapisRestUtils.createSuccessResponse(
-            ApiUtils.getMsgAuth("APPAPI_UPDATED", authenticatedUser, appId, opName), PRETTY, resp1)).build();
+    return createSuccessResponse(Status.OK, ApiUtils.getMsgAuth(UPDATED, authenticatedUser, appId, opName), resp1);
   }
 
   /**
@@ -464,7 +490,7 @@ public class AppResource
     // Resource was not found.
     if (app == null)
     {
-      String msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appId);
+      String msg = ApiUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId);
       _log.warn(msg);
       return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -472,7 +498,7 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     // Success means we retrieved the app information.
     RespApp resp1 = new RespApp(app);
-    return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
   }
 
   /**
@@ -520,7 +546,7 @@ public class AppResource
     // Resource was not found.
     if (app == null)
     {
-      String msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appId);
+      String msg = ApiUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId);
       _log.warn(msg);
       return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -528,7 +554,7 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     // Success means we retrieved the app information.
     RespApp resp1 = new RespApp(app);
-    return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
   }
 
   /**
@@ -576,10 +602,11 @@ public class AppResource
 
     // ------------------------- Retrieve all records -----------------------------
     List<App> apps;
-    try { apps = appsService.getApps(authenticatedUser, searchList); }
+    // TODO: Refactor to use getSearchResponse
+    try { apps = appsService.getApps(authenticatedUser, searchList, -1, null, -1, null); }
     catch (Exception e)
     {
-      String msg = ApiUtils.getMsgAuth("APPAPI_SELECT_ERROR", authenticatedUser, e.getMessage());
+      String msg = ApiUtils.getMsgAuth(SELECT_ERR, authenticatedUser, e.getMessage());
       _log.error(msg, e);
       return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -587,8 +614,8 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     if (apps == null) apps = Collections.emptyList();
     int cnt = apps.size();
-    RespApps resp1 = new RespApps(apps, SearchParameters.DEFAULT_LIMIT, null, SearchParameters.DEFAULT_SKIP, null, cnt);
-    return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
+    RespApps resp1 = new RespApps(apps, SearchParameters.DEFAULT_LIMIT, null, SearchParameters.DEFAULT_SKIP, null, cnt, null);
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
   }
 
   /**
@@ -635,10 +662,11 @@ public class AppResource
 
     // ------------------------- Retrieve all records -----------------------------
     List<App> apps;
-    try { apps = appsService.getApps(authenticatedUser, searchList); }
+    // TODO: Refactor to use getSearchResponse
+    try { apps = appsService.getApps(authenticatedUser, searchList, -1, null, -1, null); }
     catch (Exception e)
     {
-      String msg = ApiUtils.getMsgAuth("APPAPI_SELECT_ERROR", authenticatedUser, e.getMessage());
+      String msg = ApiUtils.getMsgAuth(SELECT_ERR, authenticatedUser, e.getMessage());
       _log.error(msg, e);
       return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -646,8 +674,8 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     if (apps == null) apps = Collections.emptyList();
     int cnt = apps.size();
-    RespApps resp1 = new RespApps(apps, SearchParameters.DEFAULT_LIMIT, null, SearchParameters.DEFAULT_SKIP, null, cnt);
-    return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
+    RespApps resp1 = new RespApps(apps, SearchParameters.DEFAULT_LIMIT, null, SearchParameters.DEFAULT_SKIP, null, cnt, null);
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
   }
 
   /**
@@ -685,7 +713,7 @@ public class AppResource
     try { rawJson = IOUtils.toString(payloadStream, StandardCharsets.UTF_8); }
     catch (Exception e)
     {
-      msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName , e.getMessage());
+      msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName , e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -694,7 +722,7 @@ public class AppResource
     try { JsonValidator.validate(spec); }
     catch (TapisJSONException e)
     {
-      msg = MsgUtils.getMsg("TAPIS_JSON_VALIDATION_ERROR", e.getMessage());
+      msg = MsgUtils.getMsg(JSON_VALIDATION_ERR, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -709,7 +737,7 @@ public class AppResource
     }
     catch (JsonSyntaxException e)
     {
-      msg = MsgUtils.getMsg("NET_INVALID_JSON_INPUT", opName, e.getMessage());
+      msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -717,10 +745,11 @@ public class AppResource
 
     // ------------------------- Retrieve all records -----------------------------
     List<App> apps;
-    try { apps = appsService.getAppsUsingSqlSearchStr(authenticatedUser, searchStr); }
+    // TODO: Refactor to use getSearchResponse
+    try { apps = appsService.getAppsUsingSqlSearchStr(authenticatedUser, searchStr, -1, null, -1, null); }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_SELECT_ERROR", authenticatedUser, e.getMessage());
+      msg = ApiUtils.getMsgAuth(SELECT_ERR, authenticatedUser, e.getMessage());
       _log.error(msg, e);
       return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -728,8 +757,8 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     if (apps == null) apps = Collections.emptyList();
     int cnt = apps.size();
-    RespApps resp1 = new RespApps(apps, SearchParameters.DEFAULT_LIMIT, null, SearchParameters.DEFAULT_SKIP, null, cnt);
-    return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
+    RespApps resp1 = new RespApps(apps, SearchParameters.DEFAULT_LIMIT, null, SearchParameters.DEFAULT_SKIP, null, cnt, null);
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
   }
 
   /**
@@ -793,7 +822,7 @@ public class AppResource
     ResultBoolean respResult = new ResultBoolean();
     respResult.aBool = isEnabled;
     RespBoolean resp1 = new RespBoolean(respResult);
-    return createSuccessResponse(MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
   }
 
   /* **************************************************************************** */
@@ -850,23 +879,23 @@ public class AppResource
     }
     catch (NotFoundException e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_NOT_FOUND", authenticatedUser, appId);
+      msg = ApiUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId);
       _log.warn(msg);
       return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (IllegalStateException e)
     {
-      if (e.getMessage().contains("APPLIB_UNAUTH"))
+      if (e.getMessage().contains(LIB_UNAUTH))
       {
         // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
-        msg = ApiUtils.getMsgAuth("APPAPI_APP_UNAUTH", authenticatedUser, appId, opName);
+        msg = ApiUtils.getMsgAuth(API_UNAUTH, authenticatedUser, appId, opName);
         _log.warn(msg);
         return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
       else
       {
         // IllegalStateException indicates an Invalid PatchApp was passed in
-        msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, opName, e.getMessage());
+        msg = ApiUtils.getMsgAuth(UPDATE_ERR, authenticatedUser, appId, opName, e.getMessage());
         _log.error(msg);
         return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
@@ -874,13 +903,13 @@ public class AppResource
     catch (IllegalArgumentException e)
     {
       // IllegalArgumentException indicates somehow a bad argument made it this far
-      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, opName, e.getMessage());
+      msg = ApiUtils.getMsgAuth(UPDATE_ERR, authenticatedUser, appId, opName, e.getMessage());
       _log.error(msg);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", authenticatedUser, appId, opName, e.getMessage());
+      msg = ApiUtils.getMsgAuth(UPDATE_ERR, authenticatedUser, appId, opName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -891,8 +920,7 @@ public class AppResource
     ResultChangeCount count = new ResultChangeCount();
     count.changes = changeCount;
     RespChangeCount resp1 = new RespChangeCount(count);
-    return Response.status(Status.OK).entity(TapisRestUtils.createSuccessResponse(
-            ApiUtils.getMsgAuth("APPAPI_UPDATED", authenticatedUser, appId, opName), PRETTY, resp1)).build();
+    return createSuccessResponse(Status.OK, ApiUtils.getMsgAuth(UPDATED, authenticatedUser, appId, opName), resp1);
   }
 
   /**
@@ -1055,16 +1083,62 @@ public class AppResource
   }
 
   /**
+   *  Common method to return a list of applications given a search list and search parameters.
+   *  srchParms must be non-null
+   *  One of srchParms.searchList or sqlSearchStr must be non-null
+   */
+  private Response getSearchResponse(AuthenticatedUser authenticatedUser, String sqlSearchStr, SearchParameters srchParms)
+          throws Exception
+  {
+    RespAbstract resp1;
+    List<App> apps = null;
+    int totalCount = -1;
+    String itemCountStr;
+
+    List<String> searchList = srchParms.getSearchList();
+    List<String> selectList = srchParms.getSelectList();
+    if (selectList == null || selectList.isEmpty()) selectList = SUMMARY_ATTRS;
+
+    if (searchList != null && !searchList.isEmpty()) _log.debug("Using searchList. First condition in list = " + searchList.get(0));
+    if (!selectList.isEmpty()) _log.debug("Using selectList. First item in list = " + selectList.get(0));
+
+    // If limit was not specified then use the default
+    int limit = (srchParms.getLimit() == null) ? SearchParameters.DEFAULT_LIMIT : srchParms.getLimit();
+    // Set some variables to make code easier to read
+    int skip = srchParms.getSkip();
+    String startAfter = srchParms.getStartAfter();
+    boolean computeTotal = srchParms.getComputeTotal();
+    String orderBy = srchParms.getOrderBy();
+    List<OrderBy> orderByList = srchParms.getOrderByList();
+
+    if (StringUtils.isBlank(sqlSearchStr))
+      apps = appsService.getApps(authenticatedUser, searchList, limit, orderByList, skip, startAfter);
+    else
+      apps = appsService.getAppsUsingSqlSearchStr(authenticatedUser, sqlSearchStr, limit, orderByList, skip, startAfter);
+    if (apps == null) apps = Collections.emptyList();
+    itemCountStr = String.format(APPS_CNT_STR, apps.size());
+    if (computeTotal && limit <= 0) totalCount = apps.size();
+
+    // If we need the count and there was a limit then we need to make a call
+    if (computeTotal && limit > 0)
+    {
+      totalCount = appsService.getAppsTotalCount(authenticatedUser, searchList, orderByList, startAfter);
+    }
+
+    // ---------------------------- Success -------------------------------
+    resp1 = new RespApps(apps, limit, orderBy, skip, startAfter, totalCount, selectList);
+
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, APPLICATIONS_SVC, itemCountStr), resp1);
+  }
+
+  /**
    * Create an OK response given message and base response to put in result
    * @param msg - message for resp.message
    * @param resp - base response (the result)
    * @return - Final response to return to client
    */
-  private static Response createSuccessResponse(String msg, RespAbstract resp)
+  private static Response createSuccessResponse(Status status, String msg, RespAbstract resp)
   {
-    resp.message = msg;
-    resp.status = RESPONSE_STATUS.success.name();
-    resp.version = TapisUtils.getTapisVersion();
-    return Response.ok(resp).build();
+    return Response.status(status).entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp)).build();
   }
 }

@@ -61,7 +61,7 @@ public final class App
   // Attribute names, also used as field names in Json
   public static final String ID_FIELD = "id";
   public static final String VERSION_FIELD = "version";
-  public static final String APPTYPE_FIELD = "appType";
+  public static final String APP_TYPE_FIELD = "appType";
   public static final String DESCRIPTION_FIELD = "description";
   public static final String OWNER_FIELD = "owner";
   public static final String RUNTIMEVER_FIELD = "runtimeVersion";
@@ -372,7 +372,7 @@ public final class App
   {
     if (StringUtils.isBlank(id)) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, ID_FIELD));
     if (StringUtils.isBlank(version)) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, VERSION_FIELD));
-    if (appType == null) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, APPTYPE_FIELD));
+    if (appType == null) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, APP_TYPE_FIELD));
   }
 
   /**

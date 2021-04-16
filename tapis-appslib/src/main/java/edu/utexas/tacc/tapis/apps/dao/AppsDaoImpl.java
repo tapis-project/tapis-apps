@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import org.apache.commons.lang3.StringUtils;
 import org.flywaydb.core.Flyway;
 import org.jooq.Condition;
@@ -788,6 +789,113 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       LibUtils.finalCloseDB(conn);
     }
     return app;
+  }
+
+  /**
+   * getAppsCount
+   * Count all Apps matching various search and sort criteria.
+   *     Search conditions given as a list of strings or an abstract syntax tree (AST).
+   * Conditions in searchList must be processed by SearchUtils.validateAndExtractSearchCondition(cond)
+   *   prior to this call for proper validation and treatment of special characters.
+   * WARNING: If both searchList and searchAST provided only searchList is used.
+   * @param tenant - tenant name
+   * @param searchList - optional list of conditions used for searching
+   * @param searchAST - AST containing search conditions
+   * @param setOfIDs - list of IDs to consider. null indicates no restriction.
+   * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
+   * @param startAfter - where to start when sorting, e.g. orderBy=id(asc)&startAfter=101 (may not be used with skip)
+   * @return - count of objects
+   * @throws TapisException - on error
+   */
+  @Override
+  public int getAppsCount(String tenant, List<String> searchList, ASTNode searchAST, Set<String> setOfIDs,
+                          List<OrderBy> orderByList, String startAfter)
+          throws TapisException
+  {
+    // TODO - for now just use the major (i.e. first in list) orderBy item.
+    String majorOrderBy = null;
+    String majorSortDirection = "ASC";
+    if (orderByList != null && !orderByList.isEmpty())
+    {
+      majorOrderBy = orderByList.get(0).getOrderByAttr();
+      majorSortDirection = orderByList.get(0).getOrderByDir().name();
+    }
+
+    // NOTE: Sort matters for the count even though we will not actually need to sort.
+    boolean sortAsc = true;
+    if (OrderBy.OrderByDir.DESC.name().equalsIgnoreCase(majorSortDirection)) sortAsc = false;
+
+    // If startAfter is given then orderBy is required
+    if (!StringUtils.isBlank(startAfter) && StringUtils.isBlank(majorOrderBy))
+    {
+      String msg = LibUtils.getMsg("APPLIB_DB_INVALID_SORT_START", APPS.getName());
+      throw new TapisException(msg);
+    }
+
+    // If no IDs in list then we are done.
+    if (setOfIDs != null && setOfIDs.isEmpty()) return 0;
+
+    // Determine and check orderBy column
+    Field<?> colOrderBy = APPS.field(DSL.name(SearchUtils.camelCaseToSnakeCase(majorOrderBy)));
+    if (!StringUtils.isBlank(majorOrderBy) && colOrderBy == null)
+    {
+      String msg = LibUtils.getMsg("SYSLIB_DB_NO_COLUMN_SORT", APPS.getName(), DSL.name(majorOrderBy));
+      throw new TapisException(msg);
+    }
+
+    // Begin where condition for the query
+    Condition whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
+
+    // Add searchList or searchAST to where condition
+    if (searchList != null)
+    {
+      whereCondition = addSearchListToWhere(whereCondition, searchList);
+    }
+    else if (searchAST != null)
+    {
+      Condition astCondition = createConditionFromAst(searchAST);
+      if (astCondition != null) whereCondition = whereCondition.and(astCondition);
+    }
+
+    // Add startAfter.
+    if (!StringUtils.isBlank(startAfter))
+    {
+      // Build search string so we can re-use code for checking and adding a condition
+      String searchStr;
+      if (sortAsc) searchStr = majorOrderBy + ".gt." + startAfter;
+      else searchStr = majorOrderBy + ".lt." + startAfter;
+      whereCondition = addSearchCondStrToWhere(whereCondition, searchStr, "AND");
+    }
+
+    // Add IN condition for list of IDs
+    if (setOfIDs != null && !setOfIDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(setOfIDs));
+
+    // ------------------------- Build and execute SQL ----------------------------
+    int count = 0;
+    Connection conn = null;
+    try
+    {
+      // Get a database connection.
+      conn = getConnection();
+      DSLContext db = DSL.using(conn);
+
+      // Execute the select including orderByAttrList, startAfter
+      count = db.selectCount().from(APPS).where(whereCondition).fetchOne(0,int.class);
+
+      // Close out and commit
+      LibUtils.closeAndCommitDB(conn, null, null);
+    }
+    catch (Exception e)
+    {
+      // Rollback transaction and throw an exception
+      LibUtils.rollbackDB(conn, e,"DB_QUERY_ERROR", "apps", e.getMessage());
+    }
+    finally
+    {
+      // Always return the connection back to the connection pool.
+      LibUtils.finalCloseDB(conn);
+    }
+    return count;
   }
 
   /**

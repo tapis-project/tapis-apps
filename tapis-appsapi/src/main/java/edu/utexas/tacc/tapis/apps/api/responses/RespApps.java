@@ -1,10 +1,6 @@
 package edu.utexas.tacc.tapis.apps.api.responses;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.gson.JsonArray;
 import edu.utexas.tacc.tapis.apps.api.responses.results.ResultApp;
-import edu.utexas.tacc.tapis.shared.utils.JsonArraySerializer;
-import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.sharedapi.responses.RespAbstract;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultListMetadata;
 
@@ -19,12 +15,11 @@ import java.util.List;
 public final class RespApps extends RespAbstract
 {
   // TODO Switch to JsonArray once DTO is implemented for select support
-//  // Json objects require special serializer for Jackson to handle properly in outgoing response.
-//  @JsonSerialize(using = JsonArraySerializer.class)
 //  public JsonArray result;
   public List<ResultApp> result;
 
-  public RespApps(List<App> appList, int limit, String orderBy, int skip, String startAfter, int totalCount)
+  public RespApps(List<App> appList, int limit, String orderBy, int skip, String startAfter, int totalCount,
+                  List<String> selectList)
   {
 //    result = new JsonArray();
 //    for (App app : appList)

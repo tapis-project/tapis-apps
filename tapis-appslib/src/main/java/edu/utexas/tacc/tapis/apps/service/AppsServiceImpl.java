@@ -11,6 +11,7 @@ import javax.ws.rs.NotFoundException;
 
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
+import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import org.apache.commons.lang3.StringUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -565,6 +566,60 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
+   * Get count of all apps matching certain criteria and for which user has READ permission
+   * @param authenticatedUser - principal user containing tenant and user info
+   * @param searchList - optional list of conditions used for searching
+   * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
+   * @param startAfter - where to start when sorting, e.g. orderBy=id(asc)&startAfter=101 (may not be used with skip)
+   * @return Count of App objects
+   * @throws TapisException - for Tapis related exceptions
+   */
+  @Override
+  public int getAppsTotalCount(AuthenticatedUser authenticatedUser, List<String> searchList,
+                               List<OrderBy> orderByList, String startAfter)
+          throws TapisException, TapisClientException
+  {
+    if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+    // Determine tenant scope for user
+    String appTenantName = authenticatedUser.getTenantId();
+    // For service request use oboTenant for tenant associated with the user
+    if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()))
+      appTenantName = authenticatedUser.getOboTenantId();
+
+    // Build verified list of search conditions
+    var verifiedSearchList = new ArrayList<String>();
+    if (searchList != null && !searchList.isEmpty())
+    {
+      try
+      {
+        for (String cond : searchList)
+        {
+          // Use SearchUtils to validate condition
+          String verifiedCondStr = SearchUtils.validateAndProcessSearchCondition(cond);
+          verifiedSearchList.add(verifiedCondStr);
+        }
+      }
+      catch (Exception e)
+      {
+        String msg = LibUtils.getMsgAuth("APPLIB_SEARCH_ERROR", authenticatedUser, e.getMessage());
+        _log.error(msg, e);
+        throw new IllegalArgumentException(msg);
+      }
+    }
+
+    // Get list of IDs for which requester has view permission.
+    // This is either all (null) or a list of IDs.
+    Set<String> allowedAppIDs = getAllowedAppIDs(authenticatedUser, appTenantName);
+
+    // If none are allowed we know count is 0
+    if (allowedAppIDs != null && allowedAppIDs.isEmpty()) return 0;
+
+    // Count all allowed systems matching the search conditions
+    return dao.getAppsCount(authenticatedUser.getTenantId(), verifiedSearchList, null, allowedAppIDs,
+            orderByList, startAfter);
+  }
+
+  /**
    * Get all apps for which user has READ permission
    * @param authenticatedUser - principal user containing tenant and user info
    * @param searchList - optional list of conditions used for searching
@@ -572,7 +627,8 @@ public class AppsServiceImpl implements AppsService
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
-  public List<App> getApps(AuthenticatedUser authenticatedUser, List<String> searchList)
+  public List<App> getApps(AuthenticatedUser authenticatedUser, List<String> searchList, int limit,
+                           List<OrderBy> orderByList, int skip, String startAfter)
           throws TapisException, TapisClientException
   {
     AppOperation op = AppOperation.read;
@@ -622,11 +678,12 @@ public class AppsServiceImpl implements AppsService
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
-  public List<App> getAppsUsingSqlSearchStr(AuthenticatedUser authenticatedUser, String sqlSearchStr)
+  public List<App> getAppsUsingSqlSearchStr(AuthenticatedUser authenticatedUser, String sqlSearchStr, int limit,
+                                            List<OrderBy> orderByList, int skip, String startAfter)
           throws TapisException, TapisClientException
   {
     // If search string is empty delegate to getApps()
-    if (StringUtils.isBlank(sqlSearchStr)) return getApps(authenticatedUser, null);
+    if (StringUtils.isBlank(sqlSearchStr)) return getApps(authenticatedUser, null, limit, orderByList, skip, startAfter);
 
     AppOperation op = AppOperation.read;
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
