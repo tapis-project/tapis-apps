@@ -16,6 +16,7 @@ import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
+
 /*
  * Tapis Application
  * Each app is associated with a specific tenant.
@@ -82,20 +83,23 @@ public final class App
 
   // Validation patterns
   //ID Must start alphabetic and contain only alphanumeric and 4 special characters: - . _ ~
-  private final String PATTERN_VALID_ID = "^[a-zA-Z]([a-zA-Z0-9]|[-\\._~])*";
+  private static final String PATTERN_VALID_ID = "^[a-zA-Z]([a-zA-Z0-9]|[-\\._~])*";
+
+  private static final String SING_OPT_LIST = String.format("%s,%s", RuntimeOption.SINGULARITY_RUN,
+                                                                     RuntimeOption.SINGULARITY_START);
 
   // Validation constants
-  private final Integer MAX_ID_LEN = 80;
-  private final Integer MAX_VERSION_LEN = 64;
-  private final Integer MAX_DESCRIPTION_LEN = 2048;
-  private final Integer MAX_PATH_LEN = 4096;
-  private final Integer MAX_USERNAME_LEN = 60;
-  private final Integer MAX_RUNTIME_VER_LEN = 128;
-  private final Integer MAX_CONTAINER_IMAGE_LEN = 128;
-  private final Integer MAX_SCHEDULERNAME_LEN = 64;
-  private final Integer MAX_QUEUENAME_LEN = 128;
-  private final Integer MAX_HPCQUEUENAME_LEN = 128;
-  private final Integer MAX_TAG_LEN = 128;
+  private static final Integer MAX_ID_LEN = 80;
+  private static final Integer MAX_VERSION_LEN = 64;
+  private static final Integer MAX_DESCRIPTION_LEN = 2048;
+  private static final Integer MAX_PATH_LEN = 4096;
+  private static final Integer MAX_USERNAME_LEN = 60;
+  private static final Integer MAX_RUNTIME_VER_LEN = 128;
+  private static final Integer MAX_CONTAINER_IMAGE_LEN = 128;
+  private static final Integer MAX_SCHEDULERNAME_LEN = 64;
+  private static final Integer MAX_QUEUENAME_LEN = 128;
+  private static final Integer MAX_HPCQUEUENAME_LEN = 128;
+  private static final Integer MAX_TAG_LEN = 128;
 
   // ************************************************************************
   // *********************** Enums ******************************************
@@ -461,6 +465,7 @@ public final class App
   /**
    * Check misc attribute restrictions
    *  If containerized is true then containerImage must be set
+   *  If containerized and SINGULARITY then RuntimeOptions must include one of SINGULARITY_START or SINGULARITY_RUN
    *  If dynamicExecSystem then execSystemConstraints must be given
    *  If not dynamicExecSystem then execSystemId must be given
    *  If archiveSystem given then archive dir must be given
@@ -471,6 +476,19 @@ public final class App
     if (containerized && StringUtils.isBlank(containerImage))
     {
       errMessages.add(LibUtils.getMsg("APPLIB_CONTAINERIZED_NOIMAGE"));
+    }
+
+    // If containerized and SINGULARITY then RuntimeOptions must be include one and only one of
+    //   SINGULARITY_START and SINGULARITY_RUN
+    if (containerized && Runtime.SINGULARITY.equals(runtime))
+    {
+      // If options list contains both or neither of START and RUN then reject.
+      if ((runtimeOptions.contains(RuntimeOption.SINGULARITY_RUN) && runtimeOptions.contains(RuntimeOption.SINGULARITY_START))
+           ||
+           !(runtimeOptions.contains(RuntimeOption.SINGULARITY_RUN) || runtimeOptions.contains(RuntimeOption.SINGULARITY_START)))
+      {
+        errMessages.add(LibUtils.getMsg("APPLIB_CONTAINERIZED_SING_OPT", SING_OPT_LIST));
+      }
     }
 
     // If dynamicExecSystem then execSystemConstraints must be given

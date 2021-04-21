@@ -26,6 +26,7 @@ import org.testng.annotations.Test;
 
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
+import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
 import javax.ws.rs.NotAuthorizedException;
@@ -77,7 +78,7 @@ public class AppsServiceTest
   private static final Set<Permission> testPermsMODIFY = new HashSet<>(Set.of(Permission.MODIFY));
 
   // Create test app definitions in memory
-  int numApps = 25;
+  int numApps = 26;
   App[] apps = IntegrationUtils.makeApps(numApps, "Svc");
 
   @BeforeSuite
@@ -360,7 +361,6 @@ public class AppsServiceTest
       Assert.assertTrue(userPerms.contains(perm));
     }
     // Original owner should no longer have the modify permission
-    // TODO/TBD: what about EXECUTE?
     userPerms = svc.getUserPermissions(newOwnerAuth, app0.getId(), origOwnerName);
     Assert.assertFalse(userPerms.contains(Permission.MODIFY));
     // Original owner should not be able to modify app
@@ -538,6 +538,94 @@ public class AppsServiceTest
         Assert.assertTrue(e.getMessage().contains("APPLIB_CREATE_RESERVED"));
       }
     }
+  }
+
+  // Test that attempting to create an app with invalid attribute combinations fails
+  // Note that these checks are in addition to other similar tests: testReservedNames, testCheckSystemsInvalid
+  // - If containerized is true then containerImage must be set
+  // - If containerized and SINGULARITY then RuntimeOptions must include one of SINGULARITY_START or SINGULARITY_RUN
+  // - If dynamicExecSystem then execSystemConstraints must be given
+  // - If not dynamicExecSystem then execSystemId must be given
+  // - If archiveSystem given then archive dir must be given
+  @Test
+  public void testCreateInvalidMiscFail() throws Exception
+  {
+    App app0 = apps[25];
+    // If containerized is true then containerImage must be set
+    app0.setContainerImage(null);
+    boolean pass = false;
+    try { svc.createApp(authenticatedTestUser2, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_CONTAINERIZED_NOIMAGE"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    app0.setExecSystemId(execSystemId1);
+    app0.setContainerImage(containerImage1);
+
+    // If containerized and SINGULARITY then RuntimeOptions must include one of SINGULARITY_START or SINGULARITY_RUN
+    app0.setRuntime(Runtime.SINGULARITY);
+    app0.setRuntimeOptions(runtimeOptionsSingNeither);
+    pass = false;
+    try { svc.createApp(authenticatedTestUser2, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_CONTAINERIZED_SING_OPT"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    app0.setRuntimeOptions(runtimeOptionsSingBoth);
+    pass = false;
+    try { svc.createApp(authenticatedTestUser2, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_CONTAINERIZED_SING_OPT"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    app0.setRuntimeOptions(runtimeOptions1);
+    app0.setRuntime(runtime1);
+
+    // If dynamicExecSystem then execSystemConstraints must be given
+    app0.setExecSystemConstraints(null);
+    pass = false;
+    try { svc.createApp(authenticatedTestUser2, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_DYNAMIC_NOCONSTRAINTS"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    app0.setExecSystemConstraints(execSystemConstraints1);
+
+    // If not dynamicExecSystem then execSystemId must be given
+    app0.setDynamicExecSystem(false);
+    app0.setExecSystemId(null);
+    pass = false;
+    try { svc.createApp(authenticatedTestUser2, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_NOTDYNAMIC_NOSYSTEMID"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    app0.setExecSystemId(execSystemId1);
+    app0.setDynamicExecSystem(true);
+
+    // If archiveSystem given then archive dir must be given
+    // Note we save dir name because it varies with each test app.
+    String tmpArchiveSystemDir = app0.getArchiveSystemDir();
+    app0.setArchiveSystemDir(null);
+    pass = false;
+    try { svc.createApp(authenticatedTestUser2, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_ARCHIVE_NODIR"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    app0.setArchiveSystemDir(tmpArchiveSystemDir);
   }
 
   // Test creating, reading and deleting user permissions for an app

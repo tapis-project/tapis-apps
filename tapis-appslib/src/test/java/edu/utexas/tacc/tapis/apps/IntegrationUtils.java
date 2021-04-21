@@ -53,6 +53,8 @@ public final class IntegrationUtils
   public static final Runtime runtimeNull = null;
   public static final List<RuntimeOption> runtimeOptions1 = new ArrayList<>(List.of(RuntimeOption.SINGULARITY_RUN));
   public static final List<RuntimeOption> runtimeOptions2 = new ArrayList<>(List.of(RuntimeOption.SINGULARITY_START));
+  public static final List<RuntimeOption> runtimeOptionsSingBoth = new ArrayList<>(List.of(RuntimeOption.SINGULARITY_START, RuntimeOption.SINGULARITY_RUN));
+  public static final List<RuntimeOption> runtimeOptionsSingNeither = new ArrayList<>();
   public static final List<RuntimeOption> runtimeOptionsNull = null;
   public static final String runtimeVersion1 = "0.0.1";
   public static final String runtimeVersion2 = "0.0.2";
