@@ -62,8 +62,7 @@ public class AppsServiceTest
           authenticatedAdminUser, authenticatedFilesSvc;
   // Test data
   private static final String filesSvcName = "files";
-  private static final String adminUser = "testuser9";
-//TODO  private static final String adminUser = "admin";
+  private static final String adminUser = "testadmin";
   private static final String siteId = "tacc";
   private static final String adminTenantName = "admin";
   private static final String testUser0 = "testuser0";

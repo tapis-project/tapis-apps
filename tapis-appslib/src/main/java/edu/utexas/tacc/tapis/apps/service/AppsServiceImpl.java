@@ -1440,8 +1440,6 @@ public class AppsServiceImpl implements AppsService
     // Use tenant and user from authenticatedUsr or optional provided values
     String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
-    // TODO: Remove this when admin access is available Jira cic-3964
-    if ("testuser9".equalsIgnoreCase(userName)) return true;
     var skClient = getSKClient();
     return skClient.isAdmin(tenantName, userName);
   }
