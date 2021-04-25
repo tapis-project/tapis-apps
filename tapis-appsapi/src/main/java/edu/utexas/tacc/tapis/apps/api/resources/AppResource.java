@@ -1017,6 +1017,7 @@ public class AppResource
     }
 
     // Update tenant, id and version
+    //   Note that these are for tracking and needed by the service call. They are not updated.
     patchApp.setTenant(tenantName);
     patchApp.setId(id);
     patchApp.setVersion(version);
