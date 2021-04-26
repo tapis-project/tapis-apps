@@ -184,7 +184,6 @@ public final class App
     id = id1;
     version = version1;
     appType = appType1;
-    uuid = UUID.randomUUID();
   }
 
   /**
@@ -263,7 +262,7 @@ public final class App
     jobTags = (jobTags1 == null) ? null : jobTags1.clone();
     tags = (tags1 == null) ? null : tags1.clone();
     notes = notes1;
-    uuid = (uuid == null) ? UUID.randomUUID() : uuid1;
+    uuid = uuid1;
     deleted = deleted1;
     created = created1;
     updated = updated1;

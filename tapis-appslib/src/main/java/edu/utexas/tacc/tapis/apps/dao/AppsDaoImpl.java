@@ -143,6 +143,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Generated sequence IDs
       int appSeqId = -1;
       int appVerSeqId = -1;
+      // Generate uuid for the new app version
+      app.setUuid(UUID.randomUUID());
       // If no top level app entry this is the first version. Create the initial top level record
       if (!checkIfAppExists(db, app.getTenant(), app.getId(), null, false))
       {

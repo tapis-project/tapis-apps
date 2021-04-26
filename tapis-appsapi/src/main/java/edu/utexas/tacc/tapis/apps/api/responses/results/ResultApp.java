@@ -15,7 +15,6 @@ import java.util.UUID;
  */
 public final class ResultApp
 {
-  public int seqId;
   public String tenant;
   public String id;
   public String version;
@@ -41,7 +40,6 @@ public final class ResultApp
 
   public ResultApp(App a)
   {
-    seqId = a.getSeqId();
     tenant = a.getTenant();
     id = a.getId();
     version = a.getVersion();
