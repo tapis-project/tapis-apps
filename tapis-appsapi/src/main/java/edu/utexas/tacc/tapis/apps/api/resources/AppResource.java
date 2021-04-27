@@ -475,6 +475,9 @@ public class AppResource
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
     AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
 
+    List<String> selectList = threadContext.getSearchParameters().getSelectList();
+    if (selectList != null && !selectList.isEmpty()) _log.debug("Using selectList. First item in list = " + selectList.get(0));
+
     App app;
     try
     {
@@ -497,7 +500,7 @@ public class AppResource
 
     // ---------------------------- Success -------------------------------
     // Success means we retrieved the app information.
-    RespApp resp1 = new RespApp(app);
+    RespApp resp1 = new RespApp(app, selectList);
     return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
   }
 
@@ -531,6 +534,9 @@ public class AppResource
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
     AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
 
+    List<String> selectList = threadContext.getSearchParameters().getSelectList();
+    if (selectList != null && !selectList.isEmpty()) _log.debug("Using selectList. First item in list = " + selectList.get(0));
+
     App app;
     try
     {
@@ -553,7 +559,7 @@ public class AppResource
 
     // ---------------------------- Success -------------------------------
     // Success means we retrieved the app information.
-    RespApp resp1 = new RespApp(app);
+    RespApp resp1 = new RespApp(app, selectList);
     return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
   }
 
@@ -561,15 +567,13 @@ public class AppResource
    * getApps
    * Retrieve all apps accessible by requester and matching any search conditions provided as a single
    * search query parameter.
-   * @param searchStr -  List of strings indicating search conditions to use when retrieving results
    * @param securityContext - user identity
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @GET
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getApps(@QueryParam("search") String searchStr,
-                          @Context SecurityContext securityContext)
+  public Response getApps(@Context SecurityContext securityContext)
   {
     String opName = "getApps";
     // Trace this request.
@@ -584,26 +588,17 @@ public class AppResource
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
     AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
 
+    // ThreadContext designed to never return null for SearchParameters
+    SearchParameters srchParms = threadContext.getSearchParameters();
+
     List<String> searchList;
+
+    // ------------------------- Retrieve records -----------------------------
+    Response successResponse;
     try
     {
-      // Extract the search conditions and validate their form. Back end will handle translating LIKE wildcard
-      //   characters (* and !) and dealing with special characters in values.
-      searchList = SearchUtils.extractAndValidateSearchList(searchStr);
+      successResponse = getSearchResponse(authenticatedUser, null, srchParms);
     }
-    catch (Exception e)
-    {
-      String msg = ApiUtils.getMsgAuth("APPAPI_SEARCH_ERROR", authenticatedUser, e.getMessage());
-      _log.error(msg, e);
-      return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-    }
-
-    if (searchList != null && !searchList.isEmpty()) _log.debug("Using searchList. First value = " + searchList.get(0));
-
-    // ------------------------- Retrieve all records -----------------------------
-    List<App> apps;
-    // TODO: Refactor to use getSearchResponse
-    try { apps = appsService.getApps(authenticatedUser, searchList, -1, null, -1, null); }
     catch (Exception e)
     {
       String msg = ApiUtils.getMsgAuth(SELECT_ERR, authenticatedUser, e.getMessage());
@@ -611,11 +606,7 @@ public class AppResource
       return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
-    // ---------------------------- Success -------------------------------
-    if (apps == null) apps = Collections.emptyList();
-    int cnt = apps.size();
-    RespApps resp1 = new RespApps(apps, SearchParameters.DEFAULT_LIMIT, null, SearchParameters.DEFAULT_SKIP, null, cnt, null);
-    return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
+    return successResponse;
   }
 
   /**
@@ -660,10 +651,15 @@ public class AppResource
 
     if (searchList != null && !searchList.isEmpty()) _log.debug("Using searchList. First value = " + searchList.get(0));
 
+    // ThreadContext designed to never return null for SearchParameters
+    SearchParameters srchParms = threadContext.getSearchParameters();
+
     // ------------------------- Retrieve all records -----------------------------
-    List<App> apps;
-    // TODO: Refactor to use getSearchResponse
-    try { apps = appsService.getApps(authenticatedUser, searchList, -1, null, -1, null); }
+    Response successResponse;
+    try
+    {
+      successResponse = getSearchResponse(authenticatedUser, null, srchParms);
+    }
     catch (Exception e)
     {
       String msg = ApiUtils.getMsgAuth(SELECT_ERR, authenticatedUser, e.getMessage());
@@ -672,10 +668,7 @@ public class AppResource
     }
 
     // ---------------------------- Success -------------------------------
-    if (apps == null) apps = Collections.emptyList();
-    int cnt = apps.size();
-    RespApps resp1 = new RespApps(apps, SearchParameters.DEFAULT_LIMIT, null, SearchParameters.DEFAULT_SKIP, null, cnt, null);
-    return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
+    return successResponse;
   }
 
   /**
@@ -692,7 +685,7 @@ public class AppResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response searchAppsRequestBody(InputStream payloadStream,
-                                           @Context SecurityContext securityContext)
+                                        @Context SecurityContext securityContext)
   {
     String opName = "searchAppsPost";
     // Trace this request.
@@ -730,10 +723,10 @@ public class AppResource
     // Construct final SQL-like search string using the json
     // When put together full string must be a valid SQL-like where clause. This will be validated in the service call.
     // Not all SQL syntax is supported. See SqlParser.jj in tapis-shared-searchlib.
-    String searchStr;
+    String sqlSearchStr;
     try
     {
-      searchStr = SearchUtils.getSearchFromRequestJson(rawJson);
+      sqlSearchStr = SearchUtils.getSearchFromRequestJson(rawJson);
     }
     catch (JsonSyntaxException e)
     {
@@ -741,12 +734,16 @@ public class AppResource
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
-    _log.debug("Using search string: " + searchStr);
+    _log.debug(String.format("Using search string: %s", sqlSearchStr));
+
+    // ThreadContext designed to never return null for SearchParameters
+    SearchParameters srchParms = threadContext.getSearchParameters();
 
     // ------------------------- Retrieve all records -----------------------------
-    List<App> apps;
-    // TODO: Refactor to use getSearchResponse
-    try { apps = appsService.getAppsUsingSqlSearchStr(authenticatedUser, searchStr, -1, null, -1, null); }
+    Response successResponse;
+    try
+    {
+      successResponse = getSearchResponse(authenticatedUser, sqlSearchStr,srchParms); }
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth(SELECT_ERR, authenticatedUser, e.getMessage());
@@ -755,10 +752,7 @@ public class AppResource
     }
 
     // ---------------------------- Success -------------------------------
-    if (apps == null) apps = Collections.emptyList();
-    int cnt = apps.size();
-    RespApps resp1 = new RespApps(apps, SearchParameters.DEFAULT_LIMIT, null, SearchParameters.DEFAULT_SKIP, null, cnt, null);
-    return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "Apps", cnt + " items"), resp1);
+    return successResponse;
   }
 
   /**

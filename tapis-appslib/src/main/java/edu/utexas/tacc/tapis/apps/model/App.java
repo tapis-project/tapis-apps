@@ -60,13 +60,22 @@ public final class App
   public static final int DEFAULT_MAX_MINUTES = 10;
 
   // Attribute names, also used as field names in Json
+  public static final String TENANT_FIELD = "tenant";
   public static final String ID_FIELD = "id";
   public static final String VERSION_FIELD = "version";
   public static final String APP_TYPE_FIELD = "appType";
   public static final String DESCRIPTION_FIELD = "description";
   public static final String OWNER_FIELD = "owner";
+  public static final String ENABLED_FIELD = "enabled";
+  public static final String CONTAINERIZED_FIELD = "containerized";
+  public static final String RUNTIME_FIELD = "runtime";
   public static final String RUNTIMEVER_FIELD = "runtimeVersion";
+  public static final String RUNTIMEOPTS_FIELD = "runtimeOptions";
   public static final String CONTAINERIMG_FIELD = "containerImage";
+  public static final String MAX_JOBS_FIELD = "maxJobs";
+  public static final String MAX_JOBS_PER_USER_FIELD = "maxJobsPerUser";
+  public static final String STRICT_FILE_INPUTS_FIELD = "strictFileInputs";
+  public static final String JOB_ATTRS_FIELD = "jobAttributes";
   public static final String JOB_FIELD_PREFIX = "Job-";
   public static final String EXECSYSID_FIELD = "execSystemId";
   public static final String EXECSYSEXECDIR_FIELD = "execSystemExecDir";
@@ -74,7 +83,11 @@ public final class App
   public static final String EXECSYSOUTDIR_FIELD = "execSystemOutputDir";
   public static final String ARCHIVESYSID_FIELD = "archiveSystemId";
   public static final String ARCHIVESYSDIR_FIELD = "archiveSystemDir";
+  public static final String TAGS_FIELD = "tags";
   public static final String NOTES_FIELD = "notes";
+  public static final String UUID_FIELD = "uuid";
+  public static final String CREATED_FIELD = "created";
+  public static final String UPDATED_FIELD = "updated";
 
   // Message keys
   private static final String CREATE_MISSING_ATTR = "APPLIB_CREATE_MISSING_ATTR";
