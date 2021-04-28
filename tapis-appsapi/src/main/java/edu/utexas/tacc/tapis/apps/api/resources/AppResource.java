@@ -476,7 +476,6 @@ public class AppResource
     AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
 
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
-    if (selectList != null && !selectList.isEmpty()) _log.debug("Using selectList. First item in list = " + selectList.get(0));
 
     App app;
     try
@@ -535,7 +534,6 @@ public class AppResource
     AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
 
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
-    if (selectList != null && !selectList.isEmpty()) _log.debug("Using selectList. First item in list = " + selectList.get(0));
 
     App app;
     try
@@ -565,8 +563,9 @@ public class AppResource
 
   /**
    * getApps
-   * Retrieve all apps accessible by requester and matching any search conditions provided as a single
-   * search query parameter.
+   * Retrieve all apps accessible by requester and matching any search conditions provided.
+   * NOTE: The query parameters search, limit, orderBy, skip, startAfter are all handled in the filter
+   *       QueryParametersRequestFilter. No need to use @QueryParam here.
    * @param securityContext - user identity
    * @return - list of apps accessible by requester and matching search conditions.
    */
@@ -590,8 +589,6 @@ public class AppResource
 
     // ThreadContext designed to never return null for SearchParameters
     SearchParameters srchParms = threadContext.getSearchParameters();
-
-    List<String> searchList;
 
     // ------------------------- Retrieve records -----------------------------
     Response successResponse;
@@ -649,10 +646,9 @@ public class AppResource
       return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
-    if (searchList != null && !searchList.isEmpty()) _log.debug("Using searchList. First value = " + searchList.get(0));
-
     // ThreadContext designed to never return null for SearchParameters
     SearchParameters srchParms = threadContext.getSearchParameters();
+    srchParms.setSearchList(searchList);
 
     // ------------------------- Retrieve all records -----------------------------
     Response successResponse;
@@ -681,7 +677,6 @@ public class AppResource
    */
   @POST
   @Path("search")
-//  @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response searchAppsRequestBody(InputStream payloadStream,
@@ -734,7 +729,6 @@ public class AppResource
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
-    _log.debug(String.format("Using search string: %s", sqlSearchStr));
 
     // ThreadContext designed to never return null for SearchParameters
     SearchParameters srchParms = threadContext.getSearchParameters();
@@ -743,7 +737,7 @@ public class AppResource
     Response successResponse;
     try
     {
-      successResponse = getSearchResponse(authenticatedUser, sqlSearchStr,srchParms); }
+      successResponse = getSearchResponse(authenticatedUser, sqlSearchStr, srchParms); }
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth(SELECT_ERR, authenticatedUser, e.getMessage());
@@ -1093,9 +1087,6 @@ public class AppResource
     List<String> searchList = srchParms.getSearchList();
     List<String> selectList = srchParms.getSelectList();
     if (selectList == null || selectList.isEmpty()) selectList = SUMMARY_ATTRS;
-
-    if (searchList != null && !searchList.isEmpty()) _log.debug("Using searchList. First condition in list = " + searchList.get(0));
-    if (!selectList.isEmpty()) _log.debug("Using selectList. First item in list = " + selectList.get(0));
 
     // If limit was not specified then use the default
     int limit = (srchParms.getLimit() == null) ? SearchParameters.DEFAULT_LIMIT : srchParms.getLimit();

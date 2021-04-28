@@ -841,7 +841,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     Field<?> colOrderBy = APPS.field(DSL.name(SearchUtils.camelCaseToSnakeCase(majorOrderBy)));
     if (!StringUtils.isBlank(majorOrderBy) && colOrderBy == null)
     {
-      String msg = LibUtils.getMsg("SYSLIB_DB_NO_COLUMN_SORT", APPS.getName(), DSL.name(majorOrderBy));
+      String msg = LibUtils.getMsg("APPLIB_DB_NO_COLUMN_SORT", APPS.getName(), DSL.name(majorOrderBy));
       throw new TapisException(msg);
     }
 
@@ -902,27 +902,99 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
   /**
    * getApps
-   * TODO Support search
+   * Retrieve all Apps matching various search and sort criteria.
+   *     Search conditions given as a list of strings or an abstract syntax tree (AST).
    * Conditions in searchList must be processed by SearchUtils.validateAndExtractSearchCondition(cond)
    *   prior to this call for proper validation and treatment of special characters.
+   * WARNING: If both searchList and searchAST provided only searchList is used.
    * @param tenant - tenant name
    * @param searchList - optional list of conditions used for searching
+   * @param searchAST - AST containing search conditions
    * @param appIDs - list of app seqIDs to consider. null indicates no restriction.
+   * @param limit - indicates maximum number of results to be included, -1 for unlimited
+   * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
+   * @param skip - number of results to skip (may not be used with startAfter)
+   * @param startAfter - where to start when sorting, e.g. limit=10&orderBy=id(asc)&startAfter=101 (may not be used with skip)
    * @return - list of App objects
    * @throws TapisException - on error
    */
   @Override
-  public List<App> getApps(String tenant, List<String> searchList, Set<String> appIDs) throws TapisException
+  public List<App> getApps(String tenant, List<String> searchList, ASTNode searchAST, Set<String> appIDs, int limit,
+                           List<OrderBy> orderByList, int skip, String startAfter) throws TapisException
   {
+    // TODO - for now just use the major (i.e. first in list) orderBy item.
+    String majorOrderBy = null;
+    String majorSortDirection = "ASC";
+    if (orderByList != null && !orderByList.isEmpty())
+    {
+      majorOrderBy = orderByList.get(0).getOrderByAttr();
+      majorSortDirection = orderByList.get(0).getOrderByDir().name();
+    }
+
     // The result list should always be non-null.
     var retList = new ArrayList<App>();
+
+    // Negative skip indicates no skip
+    if (skip < 0) skip = 0;
+
+    boolean sortAsc = true;
+    if (OrderBy.OrderByDir.DESC.name().equalsIgnoreCase(majorSortDirection)) sortAsc = false;
+
+    // If startAfter is given then orderBy is required
+    if (!StringUtils.isBlank(startAfter) && StringUtils.isBlank(majorOrderBy))
+    {
+      String msg = LibUtils.getMsg("APPLIB_DB_INVALID_SORT_START", APPS.getName());
+      throw new TapisException(msg);
+    }
+
+    // Determine and check orderBy column
+    Field<?> colOrderBy = APPS.field(DSL.name(SearchUtils.camelCaseToSnakeCase(majorOrderBy)));
+    if (!StringUtils.isBlank(majorOrderBy) && colOrderBy == null)
+    {
+      String msg = LibUtils.getMsg("APPLIB_DB_NO_COLUMN_SORT", APPS.getName(), DSL.name(majorOrderBy));
+      throw new TapisException(msg);
+    }
 
     // If no seqIDs in list then we are done.
     if (appIDs != null && appIDs.isEmpty()) return retList;
 
+    // TODO ??????????????????????????????????????????????????????
     // TODO: Support search
     //       If attempt made to search return empty list
-    if (searchList != null && !searchList.isEmpty()) return retList;
+//    if (searchList != null && !searchList.isEmpty()) return retList;
+
+    // TODO ??????????????????????????????????????????????????????
+    // Collect attributes that apply to top level main table
+
+    // TODO ??????????????????????????????????????????????????????
+
+    // Begin where condition for this query
+    Condition whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
+
+    // Add searchList or searchAST to where condition
+    if (searchList != null)
+    {
+      // TODO currently only uses main table
+      whereCondition = addSearchListToWhere(whereCondition, searchList);
+    }
+    else if (searchAST != null)
+    {
+      Condition astCondition = createConditionFromAst(searchAST);
+      if (astCondition != null) whereCondition = whereCondition.and(astCondition);
+    }
+
+    // Add startAfter
+    if (!StringUtils.isBlank(startAfter))
+    {
+      // Build search string so we can re-use code for checking and adding a condition
+      String searchStr;
+      if (sortAsc) searchStr = majorOrderBy + ".gt." + startAfter;
+      else searchStr = majorOrderBy + ".lt." + startAfter;
+      whereCondition = addSearchCondStrToWhere(whereCondition, searchStr, "AND");
+    }
+
+    // Add IN condition for list of IDs
+    if (appIDs != null && !appIDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(appIDs));
 
     // TODO/TBD: Search for either a specific version or most recently created version
     // TODO: Determine if search contains version or if we just get the latest version
@@ -937,110 +1009,42 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
 
-      // Begin where condition for this query
-      Condition whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
+      // Execute the select including limit, orderByAttrList, skip and startAfter
+      // NOTE: LIMIT + OFFSET is not standard among DBs and often very difficult to get right.
+      //       Jooq claims to handle it well.
+      Result<AppsRecord> results;
+      org.jooq.SelectConditionStep<AppsRecord> condStep = db.selectFrom(APPS).where(whereCondition);
+      if (!StringUtils.isBlank(majorOrderBy) &&  limit >= 0)
+      {
+        // We are ordering and limiting
+        if (sortAsc) results = condStep.orderBy(colOrderBy.asc()).limit(limit).offset(skip).fetch();
+        else results = condStep.orderBy(colOrderBy.desc()).limit(limit).offset(skip).fetch();
+      }
+      else if (!StringUtils.isBlank(majorOrderBy))
+      {
+        // We are ordering but not limiting
+        if (sortAsc) results = condStep.orderBy(colOrderBy.asc()).fetch();
+        else results = condStep.orderBy(colOrderBy.desc()).fetch();
+      }
+      else if (limit >= 0)
+      {
+        // We are limiting but not ordering
+        results = condStep.limit(limit).offset(skip).fetch();
+      }
+      else
+      {
+        // We are not limiting and not ordering
+        results = condStep.fetch();
+      }
 
-//      // DEBUG
-//      // Iterate over all columns and show the type
-//      Field<?>[] cols = APPS.fields();
-//      for (Field<?> col : cols)
-//      {
-//        var dataType = col.getDataType();
-//        int sqlType = dataType.getSQLType();
-//        String sqlTypeName = dataType.getTypeName();
-//        _log.error("Column name: " + col.getName() + " type: " + sqlTypeName);
-//      }
-//      // DEBUG
-
-      // Add searchList to where condition
-      // TODO: Support search. Currently searchList will be null or empty
-      whereCondition = addSearchListToWhere(whereCondition, searchList);
-
-      // Add IN condition for list of seqIDs
-      if (appIDs != null && !appIDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(appIDs));
-
-      // Execute the select
-      Result<AppsRecord> appsRecords;
-      appsRecords = db.selectFrom(APPS).where(whereCondition).fetch();
-      if (appsRecords == null || appsRecords.isEmpty()) return retList;
+      if (results == null || results.isEmpty()) return retList;
 
       // For each top level app record found create an App object.
-      for (AppsRecord appRecord : appsRecords)
+      for (AppsRecord appRecord : results)
       {
         // Create App from appRecord using appVersion=null to use the latest app version
         App a = getAppFromAppRecord(db, appRecord, null);
         retList.add(a);
-      }
-
-      // Close out and commit
-      LibUtils.closeAndCommitDB(conn, null, null);
-    }
-    catch (Exception e)
-    {
-      // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_QUERY_ERROR", "apps", e.getMessage());
-    }
-    finally
-    {
-      // Always return the connection back to the connection pool.
-      LibUtils.finalCloseDB(conn);
-    }
-    return retList;
-  }
-
-  /**
-   * getAppsUsingSearchAST
-   * TODO This method and getApps almost identical. Might be a way to combine. Construct AST from searchStr?
-   * Search for apps using an abstract syntax tree (AST).
-   * @param tenant - tenant name
-   * @param searchAST - AST containing search conditions
-   * @param appIDs - list of app seqIDs to consider. null indicates no restriction.
-   * @return - list of App objects
-   * @throws TapisException - on error
-   */
-  @Override
-  public List<App> getAppsUsingSearchAST(String tenant, ASTNode searchAST, Set<String> appIDs) throws TapisException
-  {
-    // If searchAST null or empty delegate to getApps
-    if (searchAST == null) return getApps(tenant, null, appIDs);
-    // The result list should always be non-null.
-    var retList = new ArrayList<App>();
-
-    // If no seqIDs in list then we are done.
-    if (appIDs != null && appIDs.isEmpty()) return retList;
-
-    // ------------------------- Call SQL ----------------------------
-    Connection conn = null;
-    try
-    {
-      // Get a database connection.
-      conn = getConnection();
-      DSLContext db = DSL.using(conn);
-
-      // Begin where condition for this query
-      Condition whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
-
-      // Add searchAST to where condition
-      Condition astCondition = createConditionFromAst(searchAST);
-      if (astCondition != null) whereCondition = whereCondition.and(astCondition);
-
-      // Add IN condition for list of seqIDs
-      if (appIDs != null && !appIDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(appIDs));
-
-      // Execute the select
-      Result<AppsRecord> results = db.selectFrom(APPS).where(whereCondition).fetch();
-      if (results == null || results.isEmpty()) return retList;
-
-      // Fill in data from aux tables
-      for (AppsRecord r : results)
-      {
-        App app = r.into(App.class);
-        app.setFileInputs(retrieveFileInputs(db, app.getSeqId()));
-        app.setAppArgs(retrieveAppArgs(db, app.getSeqId()));
-        app.setContainerArgs(retrieveContainerArgs(db, app.getSeqId()));
-        app.setSchedulerOptions(retrieveSchedulerOptions(db, app.getSeqId()));
-        app.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, app.getSeqId()));
-        retList.add(app);
       }
 
       // Close out and commit

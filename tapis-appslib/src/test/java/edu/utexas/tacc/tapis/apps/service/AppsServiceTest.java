@@ -111,7 +111,7 @@ public class AppsServiceTest
     authenticatedAdminUser = new AuthenticatedUser(adminUser, tenantName, TapisThreadContext.AccountType.user.name(),
                                                     null, adminUser, tenantName, null, null, null);
     authenticatedFilesSvc = new AuthenticatedUser(filesSvcName, adminTenantName, TapisThreadContext.AccountType.service.name(),
-                                                  null, ownerUser2, tenantName, null, null, null);
+                                                  null, owner2, tenantName, null, null, null);
     authenticatedTestUser0 = new AuthenticatedUser(testUser0, tenantName, TapisThreadContext.AccountType.user.name(),
                                                    null, testUser0, tenantName, null, null, null);
     authenticatedTestUser1 = new AuthenticatedUser(testUser1, tenantName, TapisThreadContext.AccountType.user.name(),
@@ -880,7 +880,7 @@ public class AppsServiceTest
 
     // GET_PERMS - deny user not owner/admin and no READ or MODIFY access (testuser0)
     pass = false;
-    try { svc.getUserPermissions(authenticatedTestUser0, app0.getId(), ownerUser2); }
+    try { svc.getUserPermissions(authenticatedTestUser0, app0.getId(), owner2); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));

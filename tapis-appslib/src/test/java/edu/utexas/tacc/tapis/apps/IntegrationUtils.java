@@ -8,6 +8,7 @@ import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
 import edu.utexas.tacc.tapis.apps.model.NotifMechanism.NotifMechanismType;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
+import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
@@ -16,6 +17,7 @@ import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +29,8 @@ public final class IntegrationUtils
   public static final Gson gson =  TapisGsonUtils.getGson();
   // Test data
   public static final String tenantName = "dev";
-  public static final String ownerUser2 = "testuser2";
+  public static final String owner1 = "testuser1";
+  public static final String owner2 = "testuser2";
   public static final String apiUser = "testuser2";
   public static final String appIdPrefix = "TestApp";
   public static final String appVersion = "0.0.1";
@@ -239,6 +242,11 @@ public final class IntegrationUtils
   public static final List<AppArg> schedulerOptionList2 = new ArrayList<>(List.of(schedulerOption2A, schedulerOption2B));
   public static final List<AppArg> schedulerOptionListNull = null;
 
+  public static final List<OrderBy> orderByListNull = null;
+  public static final List<OrderBy> orderByListAsc = Collections.singletonList(OrderBy.fromString("id(asc)"));
+  public static final List<OrderBy> orderByListDesc = Collections.singletonList(OrderBy.fromString("id(desc)"));
+  public static final String startAfterNull = null;
+
   /**
    * Create an array of App objects in memory
    * Names will be of format TestApp_K_NNN where K is the key and NNN runs from 000 to 999
@@ -256,7 +264,7 @@ public final class IntegrationUtils
       String suffix = key + "_" + String.format("%03d", i+1);
       String appId = appIdPrefix + "_" + suffix;
       // Constructor initializes all attributes except for JobCapabilities
-      apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, description1 + suffix, AppType.BATCH, ownerUser2,
+      apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, description1 + suffix, AppType.BATCH, owner1,
                  enabledTrue, containerizedTrue, runtime1, runtimeVersion1 +suffix, runtimeOptions1,
                  containerImage1 +suffix, maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
                  jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,

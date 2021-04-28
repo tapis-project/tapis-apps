@@ -24,6 +24,8 @@ import edu.utexas.tacc.tapis.apps.model.App.AppType;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
 import static edu.utexas.tacc.tapis.apps.IntegrationUtils.*;
+import static edu.utexas.tacc.tapis.shared.threadlocal.SearchParameters.DEFAULT_LIMIT;
+import static edu.utexas.tacc.tapis.shared.threadlocal.SearchParameters.DEFAULT_SKIP;
 
 /**
  * Test the AppsDao class against a DB running locally
@@ -286,7 +288,7 @@ public class AppsDaoTest
     boolean appCreated = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
-    List<App> apps = dao.getApps(tenantName, null, null);
+    List<App> apps = dao.getApps(tenantName, null, null, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull);
     for (App app : apps)
     {
       System.out.println("Found item with appId: " + app.getId() + " appVer: " + app.getVersion());
@@ -309,7 +311,7 @@ public class AppsDaoTest
     System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
     appIdList.add(app0.getId());
     // Get all apps in list of IDs
-    List<App> apps = dao.getApps(tenantName, null, appIdList);
+    List<App> apps = dao.getApps(tenantName, null, null, appIdList, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull);
     for (App app : apps)
     {
       System.out.println("Found item with appId: " + app.getId() + " and appVer: " + app.getVersion());
@@ -444,7 +446,7 @@ public class AppsDaoTest
     patchApp.setTenant(tenantName);
     patchApp.setId(fakeAppId);
     patchApp.setVersion(fakeAppVersion);
-    App patchedApp = new App(1, 1, tenantName, fakeAppId, fakeAppVersion, "description", AppType.BATCH, ownerUser2, enabledTrue,
+    App patchedApp = new App(1, 1, tenantName, fakeAppId, fakeAppVersion, "description", AppType.BATCH, owner2, enabledTrue,
             containerizedTrue, runtime1, runtimeVersion1, runtimeOptions1, containerImage1,
             maxJobs1, maxJobsPerUser1, strictFileInputsFalse, IntegrationUtils.jobDescription1, dynamicExecSystemTrue,
             execSystemConstraints1, execSystemId1, execSystemExecDir1, execSystemInputDir1, execSystemOutputDir1,

@@ -615,14 +615,17 @@ public class AppsServiceImpl implements AppsService
     if (allowedAppIDs != null && allowedAppIDs.isEmpty()) return 0;
 
     // Count all allowed systems matching the search conditions
-    return dao.getAppsCount(authenticatedUser.getTenantId(), verifiedSearchList, null, allowedAppIDs,
-            orderByList, startAfter);
+    return dao.getAppsCount(appTenantName, verifiedSearchList, null, allowedAppIDs, orderByList, startAfter);
   }
 
   /**
    * Get all apps for which user has READ permission
    * @param authenticatedUser - principal user containing tenant and user info
    * @param searchList - optional list of conditions used for searching
+   * @param limit - indicates maximum number of results to be included, -1 for unlimited
+   * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
+   * @param skip - number of results to skip (may not be used with startAfter)
+   * @param startAfter - where to start when sorting, e.g. limit=10&orderBy=id(asc)&startAfter=101 (may not be used with skip)
    * @return List of App objects
    * @throws TapisException - for Tapis related exceptions
    */
@@ -631,7 +634,6 @@ public class AppsServiceImpl implements AppsService
                            List<OrderBy> orderByList, int skip, String startAfter)
           throws TapisException, TapisClientException
   {
-    AppOperation op = AppOperation.read;
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     // Determine tenant scope for user
     String appTenantName = authenticatedUser.getTenantId();
@@ -665,7 +667,8 @@ public class AppsServiceImpl implements AppsService
     Set<String> allowedAppIDs = getAllowedAppIDs(authenticatedUser, appTenantName);
 
     // Get all allowed apps matching the search conditions
-    List<App> apps = dao.getApps(authenticatedUser.getTenantId(), verifiedSearchList, allowedAppIDs);
+    List<App> apps = dao.getApps(appTenantName, verifiedSearchList, null, allowedAppIDs, limit, orderByList, skip,
+                                 startAfter);
     return apps;
   }
 
@@ -685,7 +688,6 @@ public class AppsServiceImpl implements AppsService
     // If search string is empty delegate to getApps()
     if (StringUtils.isBlank(sqlSearchStr)) return getApps(authenticatedUser, null, limit, orderByList, skip, startAfter);
 
-    AppOperation op = AppOperation.read;
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     // Determine tenant scope for user
     String appTenantName = authenticatedUser.getTenantId();
@@ -718,7 +720,7 @@ public class AppsServiceImpl implements AppsService
     Set<String> allowedAppIDs = getAllowedAppIDs(authenticatedUser, appTenantName);
 
     // Get all allowed apps matching the search conditions
-    List<App> apps = dao.getAppsUsingSearchAST(authenticatedUser.getTenantId(), searchAST, allowedAppIDs);
+    List<App> apps = dao.getApps(appTenantName, null, searchAST, allowedAppIDs, limit, orderByList, skip, startAfter);
     return apps;
   }
 
@@ -774,7 +776,7 @@ public class AppsServiceImpl implements AppsService
     // ------------------------- Check service level authorization -------------------------
     checkAuth(authenticatedUser, op, appId, null, null, null);
 
-    return dao.getAppOwner(authenticatedUser.getTenantId(), appId);
+    return dao.getAppOwner(appTenantName, appId);
   }
 
   // -----------------------------------------------------------------------

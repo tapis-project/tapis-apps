@@ -50,9 +50,8 @@ public interface AppsDao
   int getAppsCount(String tenant, List<String> searchList, ASTNode searchAST, Set<String> setOfIDs,
                    List<OrderBy> orderByList, String startAfter) throws TapisException;
 
-  List<App> getApps(String tenant, List<String> searchList, Set<String> appIDs) throws TapisException;
-
-  List<App> getAppsUsingSearchAST(String tenant, ASTNode searchAST, Set<String> appIDs) throws TapisException;
+  List<App> getApps(String tenant, List<String> searchList, ASTNode searchAST, Set<String> appIDs, int limit,
+                    List<OrderBy> orderByList, int skip, String startAfter) throws TapisException;
 
   Set<String> getAppIDs(String tenant) throws TapisException;
 
