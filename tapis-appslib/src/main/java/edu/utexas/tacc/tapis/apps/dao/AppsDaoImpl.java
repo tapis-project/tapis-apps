@@ -27,7 +27,6 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsVersionsRecord;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
@@ -44,8 +43,6 @@ import edu.utexas.tacc.tapis.search.parser.ASTUnaryExpression;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 
-
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsRecord;
 import static edu.utexas.tacc.tapis.apps.gen.jooq.Tables.*;
 import static edu.utexas.tacc.tapis.apps.gen.jooq.Tables.APPS;
 
@@ -74,6 +71,15 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   private static final String VERS_ANY = "%";
   private static final String EMPTY_JSON = "{}";
   private static final String[] EMPTY_STR_ARRAY = {};
+
+  // Create a static Set of column names for tables APPS and APPS_VERSIONS
+  private static final Set<String> APPS_FIELDS = new HashSet<>();
+  private static final Set<String> APPS_VERSIONS_FIELDS = new HashSet<>();
+  static
+  {
+    for (Field<?> field : APPS.fields()) { APPS_FIELDS.add(field.getName()); }
+    for (Field<?> field : APPS_VERSIONS.fields()) { APPS_VERSIONS_FIELDS.add(field.getName()); }
+  }
 
   /* ********************************************************************** */
   /*                             Public Methods                             */
@@ -158,7 +164,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
                 .set(APPS.CONTAINERIZED, app.isContainerized())
                 .returningResult(APPS.SEQ_ID)
                 .fetchOne();
-        appSeqId = record.getValue(APPS.SEQ_ID);
+        if (record != null) appSeqId = record.getValue(APPS.SEQ_ID);
       }
       else
       {
@@ -202,7 +208,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.UUID, app.getUuid())
               .returningResult(APPS_VERSIONS.SEQ_ID)
               .fetchOne();
-      appVerSeqId = record.getValue(APPS_VERSIONS.SEQ_ID);
+      if (record != null) appVerSeqId = record.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Persist data to aux tables
       persistFileInputs(db, app, appVerSeqId);
@@ -296,7 +302,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (patchedApp.getTags() != null) tagsStrArray = patchedApp.getTags();
 
       int appSeqId = getAppSeqIdUsingDb(db, tenant, appId);
-      int appVerSeqId = db.update(APPS_VERSIONS)
+      int appVerSeqId = -1;
+      var result = db.update(APPS_VERSIONS)
               .set(APPS_VERSIONS.DESCRIPTION, patchedApp.getDescription())
               .set(APPS_VERSIONS.RUNTIME, runtime)
               .set(APPS_VERSIONS.RUNTIME_VERSION, patchedApp.getRuntimeVersion())
@@ -330,7 +337,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.UPDATED, TapisUtils.getUTCTimeNow())
               .where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId),APPS_VERSIONS.VERSION.eq(appVersion))
               .returningResult(APPS_VERSIONS.SEQ_ID)
-              .fetchOne().getValue(APPS_VERSIONS.SEQ_ID);
+              .fetchOne();
+      if (result != null) appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Persist data to aux tables as needed
       if (patchedApp.getFileInputs() != null)
@@ -599,7 +607,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   {
     Flyway flyway = Flyway.configure().dataSource(getDataSource()).load();
     // TODO remove workaround if possible. Figure out how to deploy X.Y.Z-SNAPSHOT repeatedly.
-    // Workaround to avoid checksum error during develop/deploy of SNAPSHOT versions when it is not a true migration.
+    // Use repair() as workaround to avoid checksum error during develop/deploy of SNAPSHOT versions when it is not a true migration.
     flyway.repair();
     flyway.migrate();
   }
@@ -697,9 +705,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
       // Run the sql
-      result = db.selectFrom(APPS)
+      Boolean b = db.selectFrom(APPS)
               .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false))
               .fetchOne(APPS.ENABLED);
+      if (b != null) result = b;
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
@@ -756,6 +765,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   {
     // Initialize result.
     App app = null;
+    String fetchVersion = appVersion;
+
+    // Begin where condition for the query
+    Condition whereCondition = APPS.TENANT.eq(tenant).and(APPS.ID.eq(appId));
+    if (!includeDeleted) whereCondition = whereCondition.and(APPS.DELETED.eq(false));
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -765,17 +779,25 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
 
-      // Fetch top level App record.
-      AppsRecord appRecord;
-      if (includeDeleted)
-        appRecord = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).fetchOne();
+      // Use either provided version or latest version
+      if (!StringUtils.isBlank(appVersion))
+      {
+        whereCondition = whereCondition.and(APPS_VERSIONS.VERSION.eq(fetchVersion));
+      }
       else
-        appRecord = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false)).fetchOne();
+      {
+        fetchVersion = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).fetchOne(APPS.LATEST_VERSION);
+        whereCondition = whereCondition.and(APPS_VERSIONS.VERSION.eq(fetchVersion));
+      }
 
+      // Fetch all attributes by joining APPS and APPS_VERSIONS tables
+      Record appRecord;
+      appRecord = db.selectFrom(APPS.join(APPS_VERSIONS).on(APPS_VERSIONS.APP_SEQ_ID.eq(APPS.SEQ_ID)))
+                         .where(whereCondition).fetchOne();
       if (appRecord == null) return null;
 
       // Create an App object using the appRecord
-      app = getAppFromAppRecord(db, appRecord, appVersion);
+      app = getAppFromJoinRecord(db, appRecord);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -823,6 +845,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       majorSortDirection = orderByList.get(0).getOrderByDir().name();
     }
 
+    // Convert orderBy column to snake case for checking against column names
+    String majorOrderBySC = SearchUtils.camelCaseToSnakeCase(majorOrderBy);
+
     // NOTE: Sort matters for the count even though we will not actually need to sort.
     boolean sortAsc = true;
     if (OrderBy.OrderByDir.DESC.name().equalsIgnoreCase(majorSortDirection)) sortAsc = false;
@@ -834,16 +859,16 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       throw new TapisException(msg);
     }
 
-    // If no IDs in list then we are done.
-    if (setOfIDs != null && setOfIDs.isEmpty()) return 0;
-
-    // Determine and check orderBy column
-    Field<?> colOrderBy = APPS.field(DSL.name(SearchUtils.camelCaseToSnakeCase(majorOrderBy)));
-    if (!StringUtils.isBlank(majorOrderBy) && colOrderBy == null)
+    // If orderBy column not found then it is an error
+    if (!StringUtils.isBlank(majorOrderBy) &&
+            !APPS_FIELDS.contains(majorOrderBySC) && !APPS_VERSIONS_FIELDS.contains(majorOrderBySC))
     {
-      String msg = LibUtils.getMsg("APPLIB_DB_NO_COLUMN_SORT", APPS.getName(), DSL.name(majorOrderBy));
+      String msg = LibUtils.getMsg("APPLIB_DB_NO_COLUMN_SORT", DSL.name(majorOrderBy));
       throw new TapisException(msg);
     }
+
+    // If no IDs in list then we are done.
+    if (setOfIDs != null && setOfIDs.isEmpty()) return 0;
 
     // Begin where condition for the query
     Condition whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
@@ -882,7 +907,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       DSLContext db = DSL.using(conn);
 
       // Execute the select including orderByAttrList, startAfter
-      count = db.selectCount().from(APPS).where(whereCondition).fetchOne(0,int.class);
+      Integer c = db.selectCount().from(APPS).where(whereCondition).fetchOne(0,int.class);
+      if (c != null) count = c;
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -931,6 +957,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       majorSortDirection = orderByList.get(0).getOrderByDir().name();
     }
 
+    // Convert orderBy column to snake case for checking against column names
+    String majorOrderBySC = SearchUtils.camelCaseToSnakeCase(majorOrderBy);
+
     // The result list should always be non-null.
     var retList = new ArrayList<App>();
 
@@ -948,25 +977,23 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     }
 
     // Determine and check orderBy column
-    Field<?> colOrderBy = APPS.field(DSL.name(SearchUtils.camelCaseToSnakeCase(majorOrderBy)));
-    if (!StringUtils.isBlank(majorOrderBy) && colOrderBy == null)
+    Field<?> colOrderBy = null;
+    if (APPS_FIELDS.contains(majorOrderBySC))
     {
-      String msg = LibUtils.getMsg("APPLIB_DB_NO_COLUMN_SORT", APPS.getName(), DSL.name(majorOrderBy));
+      colOrderBy = APPS.field(DSL.name(majorOrderBySC));
+    }
+    else if (APPS_VERSIONS_FIELDS.contains(majorOrderBySC))
+    {
+      colOrderBy = APPS_VERSIONS.field(DSL.name(majorOrderBySC));
+    }
+    else if (!StringUtils.isBlank(majorOrderBy))
+    {
+      String msg = LibUtils.getMsg("APPLIB_DB_NO_COLUMN_SORT", DSL.name(majorOrderBy));
       throw new TapisException(msg);
     }
 
     // If no seqIDs in list then we are done.
     if (appIDs != null && appIDs.isEmpty()) return retList;
-
-    // TODO ??????????????????????????????????????????????????????
-    // TODO: Support search
-    //       If attempt made to search return empty list
-//    if (searchList != null && !searchList.isEmpty()) return retList;
-
-    // TODO ??????????????????????????????????????????????????????
-    // Collect attributes that apply to top level main table
-
-    // TODO ??????????????????????????????????????????????????????
 
     // Begin where condition for this query
     Condition whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
@@ -974,7 +1001,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // Add searchList or searchAST to where condition
     if (searchList != null)
     {
-      // TODO currently only uses main table
       whereCondition = addSearchListToWhere(whereCondition, searchList);
     }
     else if (searchAST != null)
@@ -996,11 +1022,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // Add IN condition for list of IDs
     if (appIDs != null && !appIDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(appIDs));
 
-    // TODO/TBD: Search for either a specific version or most recently created version
-    // TODO: Determine if search contains version or if we just get the latest version
-    boolean findLatest = true;
-//    boolean findLatest = (StringUtils.isBlank(appVersion) ? true : false);
-
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
     try
@@ -1012,9 +1033,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Execute the select including limit, orderByAttrList, skip and startAfter
       // NOTE: LIMIT + OFFSET is not standard among DBs and often very difficult to get right.
       //       Jooq claims to handle it well.
-      Result<AppsRecord> results;
-      org.jooq.SelectConditionStep<AppsRecord> condStep = db.selectFrom(APPS).where(whereCondition);
-      if (!StringUtils.isBlank(majorOrderBy) &&  limit >= 0)
+      // TODO/TBD Currently this gets all versions. Do we want to get just latest? Allow for version in the search list?
+      //   OR     Get latest if version is in the search list else get all matching versions?
+      // Join tables APPS and APPS_VERSIONS to get all fields
+      Result<Record> results;
+      org.jooq.SelectConditionStep<Record> condStep =
+              db.selectFrom(APPS.join(APPS_VERSIONS).on(APPS_VERSIONS.APP_SEQ_ID.eq(APPS.SEQ_ID))).where(whereCondition);
+      if (!StringUtils.isBlank(majorOrderBy) && limit >= 0)
       {
         // We are ordering and limiting
         if (sortAsc) results = condStep.orderBy(colOrderBy.asc()).limit(limit).offset(skip).fetch();
@@ -1039,11 +1064,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
       if (results == null || results.isEmpty()) return retList;
 
-      // For each top level app record found create an App object.
-      for (AppsRecord appRecord : results)
+      // For each record found create an App object.
+      for (Record appRecord : results)
       {
         // Create App from appRecord using appVersion=null to use the latest app version
-        App a = getAppFromAppRecord(db, appRecord, null);
+        App a = getAppFromJoinRecord(db, appRecord);
         retList.add(a);
       }
 
@@ -1278,71 +1303,49 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    */
   private static int getAppSeqIdUsingDb(DSLContext db, String tenant, String appId)
   {
-    return db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false))
-             .fetchOne(APPS.SEQ_ID);
+    Integer sid = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false))
+                      .fetchOne(APPS.SEQ_ID);
+    if (sid == null) return 0;
+    else return sid;
   }
 
   /**
-   * Given an sql connection and an appRecord create an App object
+   * Given an sql connection and an appRecord from a JOIN, create an App object
    *
    */
-  private static App getAppFromAppRecord(DSLContext db, AppsRecord appRecord, String appVersion)
+  private static App getAppFromJoinRecord(DSLContext db, Record r)
   {
-    App app = null;
-    int appSeqId = appRecord.getSeqId();
-    // Use either specified version or most recently created version
-    boolean findLatest = StringUtils.isBlank(appVersion);
-
-    // Fetch specific or latest app version.
-    AppsVersionsRecord appVerRecord;
-    if (!findLatest)
-    {
-      // Search for a specific version
-      appVerRecord =
-              db.selectFrom(APPS_VERSIONS)
-                      .where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId),APPS_VERSIONS.VERSION.eq(appVersion))
-                      .fetchOne();
-    }
-    else
-    {
-      // Search for most recently created version
-      appVerRecord =
-              db.selectFrom(APPS_VERSIONS)
-                      .where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId))
-                      .orderBy(APPS_VERSIONS.CREATED.desc())
-                      .fetchAny();
-    }
-
-    if (appVerRecord == null) return null;
-
-    int appVerSeqId = appVerRecord.getSeqId();
+    App app;
+    int appSeqId = r.get(APPS.SEQ_ID);
+    int appVerSeqId = r.get(APPS_VERSIONS.SEQ_ID);
 
     // Put together full App model object
-    // Convert LocalDateTime to Instant. Note that although "Local" is in the type timestamps from the DB are in UTC.
-    Instant created = appVerRecord.getCreated().toInstant(ZoneOffset.UTC);
-    Instant updated = appVerRecord.getUpdated().toInstant(ZoneOffset.UTC);
+    // Convert LocalDateTime to Instant. Note that although "Local" is in the type, timestamps from the DB are in UTC.
+    Instant created = r.get(APPS_VERSIONS.CREATED).toInstant(ZoneOffset.UTC);
+    Instant updated = r.get(APPS_VERSIONS.UPDATED).toInstant(ZoneOffset.UTC);
 
     // Convert runtimeOption strings to enums
-    String[] runtimeOptionsStrArray = appVerRecord.getRuntimeOptions();
+    String[] runtimeOptionsStrArray = r.get(APPS_VERSIONS.RUNTIME_OPTIONS);
     List<RuntimeOption> runtimeOptions =
             Arrays.stream(runtimeOptionsStrArray).map(RuntimeOption::valueOf).collect(Collectors.toList());
 
-    app = new App(appSeqId, appVerSeqId, appRecord.getTenant(), appRecord.getId(), appVerRecord.getVersion(),
-            appVerRecord.getDescription(), appRecord.getAppType(), appRecord.getOwner(), appRecord.getEnabled(),
-            appRecord.getContainerized(), appVerRecord.getRuntime(), appVerRecord.getRuntimeVersion(),
+    app = new App(appSeqId, appVerSeqId, r.get(APPS.TENANT), r.get(APPS.ID), r.get(APPS_VERSIONS.VERSION),
+            r.get(APPS_VERSIONS.DESCRIPTION), r.get(APPS.APP_TYPE), r.get(APPS.OWNER), r.get(APPS.ENABLED),
+            r.get(APPS.CONTAINERIZED), r.get(APPS_VERSIONS.RUNTIME), r.get(APPS_VERSIONS.RUNTIME_VERSION),
             runtimeOptions,
-            appVerRecord.getContainerImage(), appVerRecord.getMaxJobs(), appVerRecord.getMaxJobsPerUser(),
-            appVerRecord.getStrictFileInputs(), appVerRecord.getJobDescription(),
-            appVerRecord.getDynamicExecSystem(), appVerRecord.getExecSystemConstraints(),
-            appVerRecord.getExecSystemId(), appVerRecord.getExecSystemExecDir(),
-            appVerRecord.getExecSystemInputDir(), appVerRecord.getExecSystemOutputDir(),
-            appVerRecord.getExecSystemLogicalQueue(), appVerRecord.getArchiveSystemId(),
-            appVerRecord.getArchiveSystemDir(), appVerRecord.getArchiveOnAppError(), appVerRecord.getEnvVariables(),
-            appVerRecord.getArchiveIncludes(), appVerRecord.getArchiveExcludes(), appVerRecord.getArchiveIncludeLaunchFiles(),
-            appVerRecord.getNodeCount(), appVerRecord.getCoresPerNode(), appVerRecord.getMemoryMb(),
-            appVerRecord.getMaxMinutes(), appVerRecord.getJobTags(),
-            appVerRecord.getTags(), appVerRecord.getNotes(), appVerRecord.getUuid(),
-            appRecord.getDeleted(), created, updated);
+            r.get(APPS_VERSIONS.CONTAINER_IMAGE), r.get(APPS_VERSIONS.MAX_JOBS), r.get(APPS_VERSIONS.MAX_JOBS_PER_USER),
+            r.get(APPS_VERSIONS.STRICT_FILE_INPUTS), r.get(APPS_VERSIONS.JOB_DESCRIPTION),
+            r.get(APPS_VERSIONS.DYNAMIC_EXEC_SYSTEM), r.get(APPS_VERSIONS.EXEC_SYSTEM_CONSTRAINTS),
+            r.get(APPS_VERSIONS.EXEC_SYSTEM_ID), r.get(APPS_VERSIONS.EXEC_SYSTEM_EXEC_DIR),
+            r.get(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR), r.get(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR),
+            r.get(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE), r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_ID),
+            r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR), r.get(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR),
+            r.get(APPS_VERSIONS.ENV_VARIABLES), r.get(APPS_VERSIONS.ARCHIVE_INCLUDES), r.get(APPS_VERSIONS.ARCHIVE_EXCLUDES),
+            r.get(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES),
+            r.get(APPS_VERSIONS.NODE_COUNT), r.get(APPS_VERSIONS.CORES_PER_NODE), r.get(APPS_VERSIONS.MEMORY_MB),
+            r.get(APPS_VERSIONS.MAX_MINUTES), r.get(APPS_VERSIONS.JOB_TAGS),
+            r.get(APPS_VERSIONS.TAGS), r.get(APPS_VERSIONS.NOTES), r.get(APPS_VERSIONS.UUID),
+            r.get(APPS.DELETED), created, updated);
     // Fill in data from aux tables
     app.setFileInputs(retrieveFileInputs(db, appVerSeqId));
     app.setAppArgs(retrieveAppArgs(db, appVerSeqId));
@@ -1739,6 +1742,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (StringUtils.isBlank(searchStr)) return whereCondition;
     // If we are given a condition but no indication of how to join new condition to it then return what we were given
     if (whereCondition != null && StringUtils.isBlank(joinOp)) return whereCondition;
+    // NOTE: The "joinOp != null" appears to be necessary even though the IDE might mark it as redundant.
     if (whereCondition != null && joinOp != null && !joinOp.equalsIgnoreCase("AND") && !joinOp.equalsIgnoreCase("OR"))
     {
       return whereCondition;
@@ -1749,18 +1753,27 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     String[] parsedStrArray = searchStr.split("\\.", 3);
     // Validate column name
     String column = parsedStrArray[0];
-    Field<?> col = APPS.field(DSL.name(column));
-    // Check for column name passed in as camelcase
-    if (col == null)
+
+    // Column must be in either APPS table or APPS_VERSIONS table
+    Field<?> col = null; //APPS.field(DSL.name(column));
+    // Convert column name to camel case.
+    String colNameSC = SearchUtils.camelCaseToSnakeCase(column);
+    // Determine and check orderBy column
+    if (APPS_FIELDS.contains(colNameSC))
     {
-      col = APPS.field(DSL.name(SearchUtils.camelCaseToSnakeCase(column)));
+      col = APPS.field(DSL.name(colNameSC));
     }
-    // If column not found then it is an error
+    else if (APPS_VERSIONS_FIELDS.contains(colNameSC))
+    {
+      col = APPS_VERSIONS.field(DSL.name(colNameSC));
+    }
+
     if (col == null)
     {
-      String msg = LibUtils.getMsg("APPLIB_DB_NO_COLUMN", APPS.getName(), DSL.name(column));
+      String msg = LibUtils.getMsg("APPLIB_DB_NO_COLUMN", DSL.name(column));
       throw new TapisException(msg);
     }
+
     // Validate and convert operator string
     String opStr = parsedStrArray[1].toUpperCase();
     SearchOperator op = SearchUtils.getSearchOperator(opStr);

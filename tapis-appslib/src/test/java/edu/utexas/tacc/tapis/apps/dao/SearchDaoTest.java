@@ -144,21 +144,21 @@ public class SearchDaoTest
     // Test basic types and operators
     // TODO test other than main table columns
     validCaseInputs.put( 1,new CaseData(1, Arrays.asList("id.eq." + app0Id))); // 1 has specific id
-//    validCaseInputs.put( 2,new CaseData(1, Arrays.asList("version.eq." + app0.getVersion())));
-//    validCaseInputs.put( 3,new CaseData(1, Arrays.asList("description.eq." + app0.getDescription())));
-//    validCaseInputs.put( 4,new CaseData(1, Arrays.asList("runtime_version.eq." + app0.getRuntimeVersion())));
-//    validCaseInputs.put( 5,new CaseData(1, Arrays.asList("container_image.eq." + app0.getContainerImage())));
-//    validCaseInputs.put( 6,new CaseData(1, Arrays.asList("job_description.eq." + app0.getJobDescription())));
-//    validCaseInputs.put( 7,new CaseData(1, Arrays.asList("exec_system_id.eq." + app0.getExecSystemId())));
-//    validCaseInputs.put( 8,new CaseData(1, Arrays.asList("exec_system_exec_dir.eq." + app0.getExecSystemExecDir())));
-//    validCaseInputs.put( 9,new CaseData(1, Arrays.asList("exec_system_input_dir.eq." + app0.getExecSystemInputDir())));
+    validCaseInputs.put( 2,new CaseData(1, Arrays.asList("version.eq." + app0.getVersion())));
+    validCaseInputs.put( 3,new CaseData(1, Arrays.asList("description.eq." + app0.getDescription())));
+    validCaseInputs.put( 4,new CaseData(1, Arrays.asList("runtime_version.eq." + app0.getRuntimeVersion())));
+    validCaseInputs.put( 5,new CaseData(1, Arrays.asList("container_image.eq." + app0.getContainerImage())));
+    validCaseInputs.put( 6,new CaseData(1, Arrays.asList("job_description.eq." + app0.getJobDescription())));
+    validCaseInputs.put( 7,new CaseData(numApps, Arrays.asList(appIdLikeAll, "exec_system_id.eq." + app0.getExecSystemId())));
+    validCaseInputs.put( 8,new CaseData(1, Arrays.asList("exec_system_exec_dir.eq." + app0.getExecSystemExecDir())));
+    validCaseInputs.put( 9,new CaseData(1, Arrays.asList("exec_system_input_dir.eq." + app0.getExecSystemInputDir())));
     validCaseInputs.put(10,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "owner.eq." + owner1)));  // Half owned by one user
     validCaseInputs.put(11,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "owner.eq." + owner2))); // and half owned by another
     validCaseInputs.put(12,new CaseData(numApps, Arrays.asList(appIdLikeAll, "enabled.eq.true")));  // All are enabled
     validCaseInputs.put(13,new CaseData(numApps, Arrays.asList(appIdLikeAll, "deleted.eq.false"))); // none are deleted
     validCaseInputs.put(14,new CaseData(numApps, Arrays.asList(appIdLikeAll, "deleted.neq.true"))); // none are deleted
     validCaseInputs.put(15,new CaseData(0, Arrays.asList(appIdLikeAll, "deleted.eq.true")));           // none are deleted
-//    validCaseInputs.put(16,new CaseData(1, Arrays.asList(app0Id)));
+// TODO? check systems    validCaseInputs.put(16,new CaseData(1, Arrays.asList(app0Id)));
     validCaseInputs.put(17,new CaseData(0, Arrays.asList("id.like.NOSUCHAPPxFM2c29bc8RpKWeE2sht7aZrJzQf3s")));
     validCaseInputs.put(18,new CaseData(numApps, Arrays.asList(appIdLikeAll)));
     validCaseInputs.put(19,new CaseData(numApps-1, Arrays.asList(appIdLikeAll, "id.nlike." + app0Id)));
@@ -167,18 +167,18 @@ public class SearchDaoTest
     validCaseInputs.put(22,new CaseData(numApps, Arrays.asList(appIdLikeAll, "app_type.eq.BATCH")));
     validCaseInputs.put(23,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "app_type.eq.BATCH","owner.neq." + owner2)));
     // Test numeric relational
-//    validCaseInputs.put(40,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "max_jobs.between.1," + numApps/2)));
-//    validCaseInputs.put(41,new CaseData(numApps/2-1, Arrays.asList(appIdLikeAll, "max_jobs.between.2," + numApps/2)));
-//    validCaseInputs.put(42,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "max_jobs.nbetween.1," + numApps/2)));
-//    validCaseInputs.put(43,new CaseData(13, Arrays.asList(appIdLikeAll, "enabled.eq.true","max_jobs.lte.13")));
-//    validCaseInputs.put(44,new CaseData(5, Arrays.asList(appIdLikeAll,"enabled.eq.true","max_jobs.gt.1","max_jobs.lt.7")));
-//    // Test char relational
-//    validCaseInputs.put(50,new CaseData(1, Arrays.asList(appIdLikeAll,"container_image.lte."+containerImageName1)));
-//    validCaseInputs.put(51,new CaseData(numApps-7, Arrays.asList(appIdLikeAll,"enabled.eq.true","container_image.gt."+containerImageName7)));
-//    validCaseInputs.put(52,new CaseData(5, Arrays.asList(appIdLikeAll,"container_image.gt."+containerImageName1,"container_image.lt."+containerImageName7)));
-//    validCaseInputs.put(53,new CaseData(0, Arrays.asList(appIdLikeAll,"container_image.lte."+containerImageName1,"container_image.gt."+containerImageName7)));
-//    validCaseInputs.put(54,new CaseData(7, Arrays.asList(appIdLikeAll,"container_image.between."+containerImageName1+","+containerImageName7)));
-//    validCaseInputs.put(55,new CaseData(numApps-7, Arrays.asList(appIdLikeAll,"container_image.nbetween."+containerImageName1+","+containerImageName7)));
+    validCaseInputs.put(40,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "max_jobs.between.1," + numApps/2)));
+    validCaseInputs.put(41,new CaseData(numApps/2-1, Arrays.asList(appIdLikeAll, "max_jobs.between.2," + numApps/2)));
+    validCaseInputs.put(42,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "max_jobs.nbetween.1," + numApps/2)));
+    validCaseInputs.put(43,new CaseData(13, Arrays.asList(appIdLikeAll, "enabled.eq.true","max_jobs.lte.13")));
+    validCaseInputs.put(44,new CaseData(5, Arrays.asList(appIdLikeAll,"enabled.eq.true","max_jobs.gt.1","max_jobs.lt.7")));
+    // Test char relational
+    validCaseInputs.put(50,new CaseData(1, Arrays.asList(appIdLikeAll,"container_image.lte."+containerImageName1)));
+    validCaseInputs.put(51,new CaseData(numApps-7, Arrays.asList(appIdLikeAll,"enabled.eq.true","container_image.gt."+containerImageName7)));
+    validCaseInputs.put(52,new CaseData(5, Arrays.asList(appIdLikeAll,"container_image.gt."+containerImageName1,"container_image.lt."+containerImageName7)));
+    validCaseInputs.put(53,new CaseData(0, Arrays.asList(appIdLikeAll,"container_image.lte."+containerImageName1,"container_image.gt."+containerImageName7)));
+    validCaseInputs.put(54,new CaseData(7, Arrays.asList(appIdLikeAll,"container_image.between."+containerImageName1+","+containerImageName7)));
+    validCaseInputs.put(55,new CaseData(numApps-7, Arrays.asList(appIdLikeAll,"container_image.nbetween."+containerImageName1+","+containerImageName7)));
     // Test timestamp relational
     validCaseInputs.put(60,new CaseData(numApps, Arrays.asList(appIdLikeAll, "created.gt." + longPast1)));
     validCaseInputs.put(61,new CaseData(numApps, Arrays.asList(appIdLikeAll, "created.lt." + farFuture1)));
@@ -201,7 +201,7 @@ public class SearchDaoTest
     validCaseInputs.put(77,new CaseData(numApps, Arrays.asList(appIdLikeAll, "created.lt." + farFuture13)));
     validCaseInputs.put(78,new CaseData(numApps, Arrays.asList(appIdLikeAll, "created.lt." + farFuture14)));
     validCaseInputs.put(79,new CaseData(numApps, Arrays.asList(appIdLikeAll, "created.lt." + farFuture15)));
-//    // Test wildcards
+//TODO    // Test wildcards
 //    validCaseInputs.put(80,new CaseData(numApps, Arrays.asList("enabled.eq.true","container_image.like.containerImage" + testKey + "*")));
 //    validCaseInputs.put(81,new CaseData(0, Arrays.asList(appIdLikeAll, "enabled.eq.true","container_image.nlike.containerImage" + testKey + "*")));
 //    validCaseInputs.put(82,new CaseData(9, Arrays.asList(appIdLikeAll, "enabled.eq.true","container_image.like.containerImage" + testKey + "_00!")));

@@ -1419,9 +1419,11 @@ public class AppsServiceImpl implements AppsService
     {
       if (StringUtils.isBlank(userPerm)) continue;
       // Split based on :, permSpec has the format app:<tenant>:<perms>:<system_name>
+      // NOTE: This assumes value in last field is always an id and never a wildcard.
+      // TODO compile regex
       String[] permFields = userPerm.split(":");
       if (permFields.length < 4) continue;
-      if (permFields[0].equalsIgnoreCase(PERM_SPEC_PREFIX) &&
+      if (permFields[0].equals(PERM_SPEC_PREFIX) &&
            (permFields[2].contains(Permission.READ.name()) ||
             permFields[2].contains(Permission.MODIFY.name()) ||
             permFields[2].contains(App.PERMISSION_WILDCARD)))
