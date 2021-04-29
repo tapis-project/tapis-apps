@@ -11,11 +11,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import org.apache.commons.lang3.StringUtils;
 import org.flywaydb.core.Flyway;
 import org.jooq.Condition;
@@ -42,6 +42,10 @@ import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.search.parser.ASTUnaryExpression;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
+import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
+import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy.OrderByDir;
+
+import static edu.utexas.tacc.tapis.shared.threadlocal.OrderBy.DEFAULT_ORDERBY_DIRECTION;
 
 import static edu.utexas.tacc.tapis.apps.gen.jooq.Tables.*;
 import static edu.utexas.tacc.tapis.apps.gen.jooq.Tables.APPS;
@@ -80,6 +84,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     for (Field<?> field : APPS.fields()) { APPS_FIELDS.add(field.getName()); }
     for (Field<?> field : APPS_VERSIONS.fields()) { APPS_VERSIONS_FIELDS.add(field.getName()); }
   }
+
+  // Compiled regex for splitting around "\."
+  private static final Pattern DOT_SPLIT = Pattern.compile("\\.");
+
+  // AND and OR operators
+  private static final String AND = "AND";
+  private static final String OR = "OR";
 
   /* ********************************************************************** */
   /*                             Public Methods                             */
@@ -838,11 +849,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   {
     // TODO - for now just use the major (i.e. first in list) orderBy item.
     String majorOrderBy = null;
-    String majorSortDirection = "ASC";
+    OrderByDir majorSortDirection = DEFAULT_ORDERBY_DIRECTION;
     if (orderByList != null && !orderByList.isEmpty())
     {
       majorOrderBy = orderByList.get(0).getOrderByAttr();
-      majorSortDirection = orderByList.get(0).getOrderByDir().name();
+      majorSortDirection = orderByList.get(0).getOrderByDir();
     }
 
     // Convert orderBy column to snake case for checking against column names
@@ -850,7 +861,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     // NOTE: Sort matters for the count even though we will not actually need to sort.
     boolean sortAsc = true;
-    if (OrderBy.OrderByDir.DESC.name().equalsIgnoreCase(majorSortDirection)) sortAsc = false;
+    if (majorSortDirection == OrderBy.OrderByDir.DESC) sortAsc = false;
 
     // If startAfter is given then orderBy is required
     if (!StringUtils.isBlank(startAfter) && StringUtils.isBlank(majorOrderBy))
@@ -860,6 +871,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     }
 
     // If orderBy column not found then it is an error
+    // For count we do not need the actual column so we just check that the column exists.
+    //   Down below in getApps() we need the actual column
     if (!StringUtils.isBlank(majorOrderBy) &&
             !APPS_FIELDS.contains(majorOrderBySC) && !APPS_VERSIONS_FIELDS.contains(majorOrderBySC))
     {
@@ -869,6 +882,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     // If no IDs in list then we are done.
     if (setOfIDs != null && setOfIDs.isEmpty()) return 0;
+
+    // Boolean used to determine if we are to get just latest version or all versions specified by a search condition
+    // If searchList and searchAST are both provided then only searchList is checked.
+    // TODO/TBD: Could it be more efficient to do this in ServiceImpl where other validation is happening?
+    boolean versionNotSpecified = !checkForVersion(searchList, searchAST);
 
     // Begin where condition for the query
     Condition whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
@@ -891,8 +909,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       String searchStr;
       if (sortAsc) searchStr = majorOrderBy + ".gt." + startAfter;
       else searchStr = majorOrderBy + ".lt." + startAfter;
-      whereCondition = addSearchCondStrToWhere(whereCondition, searchStr, "AND");
+      whereCondition = addSearchCondStrToWhere(whereCondition, searchStr, AND);
     }
+
+    // If version was not specified then add condition to select only latest version
+    if (versionNotSpecified) whereCondition = whereCondition.and(APPS_VERSIONS.VERSION.eq(APPS.LATEST_VERSION));
 
     // Add IN condition for list of IDs
     if (setOfIDs != null && !setOfIDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(setOfIDs));
@@ -905,9 +926,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-
       // Execute the select including orderByAttrList, startAfter
-      Integer c = db.selectCount().from(APPS).where(whereCondition).fetchOne(0,int.class);
+      Integer c = db.selectCount().from(APPS.join(APPS_VERSIONS).on(APPS_VERSIONS.APP_SEQ_ID.eq(APPS.SEQ_ID)))
+                                  .where(whereCondition).fetchOne(0,int.class);
       if (c != null) count = c;
 
       // Close out and commit
@@ -950,11 +971,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   {
     // TODO - for now just use the major (i.e. first in list) orderBy item.
     String majorOrderBy = null;
-    String majorSortDirection = "ASC";
+    OrderByDir majorSortDirection = DEFAULT_ORDERBY_DIRECTION;
     if (orderByList != null && !orderByList.isEmpty())
     {
       majorOrderBy = orderByList.get(0).getOrderByAttr();
-      majorSortDirection = orderByList.get(0).getOrderByDir().name();
+      majorSortDirection = orderByList.get(0).getOrderByDir();
     }
 
     // Convert orderBy column to snake case for checking against column names
@@ -967,7 +988,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (skip < 0) skip = 0;
 
     boolean sortAsc = true;
-    if (OrderBy.OrderByDir.DESC.name().equalsIgnoreCase(majorSortDirection)) sortAsc = false;
+    if (majorSortDirection == OrderBy.OrderByDir.DESC) sortAsc = false;
 
     // If startAfter is given then orderBy is required
     if (!StringUtils.isBlank(startAfter) && StringUtils.isBlank(majorOrderBy))
@@ -995,6 +1016,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // If no seqIDs in list then we are done.
     if (appIDs != null && appIDs.isEmpty()) return retList;
 
+    // Boolean used to determine if we are to get just latest version or all versions specified by a search condition
+    // If searchList and searchAST are both provided then only searchList is checked.
+    // TODO/TBD: Could it be more efficient to do this in ServiceImpl where other validation is happening?
+    boolean versionNotSpecified = !checkForVersion(searchList, searchAST);
+
     // Begin where condition for this query
     Condition whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
 
@@ -1016,8 +1042,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       String searchStr;
       if (sortAsc) searchStr = majorOrderBy + ".gt." + startAfter;
       else searchStr = majorOrderBy + ".lt." + startAfter;
-      whereCondition = addSearchCondStrToWhere(whereCondition, searchStr, "AND");
+      whereCondition = addSearchCondStrToWhere(whereCondition, searchStr, AND);
     }
+
+    // If version was not specified then add condition to select only latest version of each app
+    if (versionNotSpecified) whereCondition = whereCondition.and(APPS_VERSIONS.VERSION.eq(APPS.LATEST_VERSION));
 
     // Add IN condition for list of IDs
     if (appIDs != null && !appIDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(appIDs));
@@ -1033,8 +1062,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Execute the select including limit, orderByAttrList, skip and startAfter
       // NOTE: LIMIT + OFFSET is not standard among DBs and often very difficult to get right.
       //       Jooq claims to handle it well.
-      // TODO/TBD Currently this gets all versions. Do we want to get just latest? Allow for version in the search list?
-      //   OR     Get latest if version is in the search list else get all matching versions?
       // Join tables APPS and APPS_VERSIONS to get all fields
       Result<Record> results;
       org.jooq.SelectConditionStep<Record> condStep =
@@ -1590,6 +1617,140 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
+   * Determine if a searchList or searchAST contains a condition on the version column of the APPS_VERSIONS table.
+   * If searchList and searchAST are both provided then only searchList is checked.
+   * @param searchList List of conditions to add to the base condition
+   * @return true if one of the search conditions references version else false
+   * @throws TapisException on error
+   */
+  private static boolean checkForVersion(List<String> searchList, ASTNode searchAST) throws TapisException
+  {
+    boolean versionSpecified = false;
+    if (searchList != null)
+    {
+      for (String condStr : searchList)
+      {
+        if (checkCondForVersion(condStr)) return true;
+      }
+    }
+    else if (searchAST != null)
+    {
+      return checkASTNodeForVersion(searchAST);
+    }
+    return versionSpecified;
+  }
+
+  /**
+   * Check to see if a search condition references the column APPS_VERSIONS.VERSION
+   * @param condStr Single search condition in the form column_name.op.value
+   * @return true if condition references version else false
+   */
+  private static boolean checkCondForVersion(String condStr)
+  {
+    if (StringUtils.isBlank(condStr)) return false;
+    // Parse search value into column name, operator and value
+    // Format must be column_name.op.value
+    String[] parsedStrArray = DOT_SPLIT.split(condStr, 3);
+    if (parsedStrArray.length < 1) return false;
+    else return parsedStrArray[0].equalsIgnoreCase(APPS_VERSIONS.VERSION.getName());
+  }
+
+  /**
+   * Check to see if any conditions in an ASTNode reference the column APPS_VERSIONS.VERSION
+   * @param astNode Node to check
+   * @return true if condition references version else false
+   * @throws  TapisException on error
+   */
+  private static boolean checkASTNodeForVersion(ASTNode astNode) throws TapisException
+  {
+    if (astNode == null || astNode instanceof ASTLeaf)
+    {
+      // A leaf node is a column name or value. Nothing to process since we only process a complete condition
+      //   having the form column_name.op.value. We should never make it to here
+      String msg = LibUtils.getMsg("APPLIB_DB_INVALID_SEARCH_AST1", (astNode == null ? "null" : astNode.toString()));
+      throw new TapisException(msg);
+    }
+    else if (astNode instanceof ASTUnaryExpression)
+    {
+      // A unary node should have no operator and contain a binary node with two leaf nodes.
+      // NOTE: Currently unary operators not supported. If support is provided for unary operators (such as NOT) then
+      //   changes will be needed here.
+      ASTUnaryExpression unaryNode = (ASTUnaryExpression) astNode;
+      if (!StringUtils.isBlank(unaryNode.getOp()))
+      {
+        String msg = LibUtils.getMsg("APPLIB_DB_INVALID_SEARCH_UNARY_OP", unaryNode.getOp(), unaryNode.toString());
+        throw new TapisException(msg);
+      }
+      // Recursive call
+      return checkASTNodeForVersion(unaryNode.getNode());
+    }
+    else if (astNode instanceof ASTBinaryExpression)
+    {
+      // It is a binary node
+      ASTBinaryExpression binaryNode = (ASTBinaryExpression) astNode;
+      // Recursive call
+      return checkForVersionInBinaryExpression(binaryNode);
+    }
+    return false;
+  }
+
+  /**
+   * Check to see if any conditions in a binary ASTNode reference the column APPS_VERSIONS.VERSION
+   * @param binaryNode node to check
+   * @return true if condition references version else false
+   * @throws  TapisException on error
+   */
+  private static boolean checkForVersionInBinaryExpression(ASTBinaryExpression binaryNode) throws TapisException
+  {
+    // If we are given a null then something went very wrong.
+    if (binaryNode == null)
+    {
+      String msg = LibUtils.getMsg("APPLIB_DB_INVALID_SEARCH_AST2");
+      throw new TapisException(msg);
+    }
+    // If operator is AND or OR then two sides to check. Treat AND/OR the same since all we care about
+    //   is if condition contains version.
+    // For other operators build the condition left.op.right and check it
+    String op = binaryNode.getOp();
+    ASTNode leftNode = binaryNode.getLeft();
+    ASTNode rightNode = binaryNode.getRight();
+    if (StringUtils.isBlank(op))
+    {
+      String msg = LibUtils.getMsg("APPLIB_DB_INVALID_SEARCH_AST3", binaryNode.toString());
+      throw new TapisException(msg);
+    }
+    else if (op.equalsIgnoreCase(AND) || op.equalsIgnoreCase(OR))
+    {
+      // Recursive calls
+      return checkASTNodeForVersion(leftNode) || checkASTNodeForVersion(rightNode);
+    }
+    else
+    {
+      // End of recursion. Check the single condition
+      // Since operator is not an AND or an OR we should have 2 unary nodes or a unary and leaf node
+      String lValue;
+      String rValue;
+      if (leftNode instanceof ASTLeaf) lValue = ((ASTLeaf) leftNode).getValue();
+      else if (leftNode instanceof ASTUnaryExpression) lValue =  ((ASTLeaf) ((ASTUnaryExpression) leftNode).getNode()).getValue();
+      else
+      {
+        String msg = LibUtils.getMsg("APPLIB_DB_INVALID_SEARCH_AST5", binaryNode.toString());
+        throw new TapisException(msg);
+      }
+      if (rightNode instanceof ASTLeaf) rValue = ((ASTLeaf) rightNode).getValue();
+      else if (rightNode instanceof ASTUnaryExpression) rValue =  ((ASTLeaf) ((ASTUnaryExpression) rightNode).getNode()).getValue();
+      else
+      {
+        String msg = LibUtils.getMsg("APPLIB_DB_INVALID_SEARCH_AST6", binaryNode.toString());
+        throw new TapisException(msg);
+      }
+      // Build the string for the search condition, left.op.right
+      String condStr = String.format("%s.%s.%s", lValue, binaryNode.getOp(), rValue);
+      return checkCondForVersion(condStr);
+    }
+  }
+
+  /**
    * Add searchList to where condition. All conditions are joined using AND
    * Validate column name, search comparison operator
    *   and compatibility of column type + search operator + column value
@@ -1605,7 +1766,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // Parse searchList and add conditions to the WHERE clause
     for (String condStr : searchList)
     {
-      whereCondition = addSearchCondStrToWhere(whereCondition, condStr, "AND");
+      whereCondition = addSearchCondStrToWhere(whereCondition, condStr, AND);
     }
     return whereCondition;
   }
@@ -1673,7 +1834,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       String msg = LibUtils.getMsg("APPLIB_DB_INVALID_SEARCH_AST3", binaryNode.toString());
       throw new TapisException(msg);
     }
-    else if (op.equalsIgnoreCase("AND"))
+    else if (op.equalsIgnoreCase(AND))
     {
       // Recursive calls
       Condition cond1 = createConditionFromAst(leftNode);
@@ -1686,7 +1847,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       return cond1.and(cond2);
 
     }
-    else if (op.equalsIgnoreCase("OR"))
+    else if (op.equalsIgnoreCase(OR))
     {
       // Recursive calls
       Condition cond1 = createConditionFromAst(leftNode);
@@ -1720,7 +1881,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
         throw new TapisException(msg);
       }
       // Build the string for the search condition, left.op.right
-      String condStr = lValue + "." + binaryNode.getOp() + "." + rValue;
+      String condStr = String.format("%s.%s.%s", lValue, binaryNode.getOp(), rValue);
       // Validate and create a condition from the string
       return addSearchCondStrToWhere(null, condStr, null);
     }
@@ -1730,27 +1891,27 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Take a string containing a single condition and create a new condition or join it to an existing condition.
    * Validate column name, search comparison operator and compatibility of column type + search operator + column value
    * @param whereCondition existing condition. If null a new condition is returned.
-   * @param searchStr Single search condition in the form column_name.op.value
+   * @param condStr Single search condition in the form column_name.op.value
    * @param joinOp If whereCondition is not null use AND or OR to join the condition with the whereCondition
    * @return resulting where condition
    * @throws TapisException on error
    */
-  private static Condition addSearchCondStrToWhere(Condition whereCondition, String searchStr, String joinOp)
+  private static Condition addSearchCondStrToWhere(Condition whereCondition, String condStr, String joinOp)
           throws TapisException
   {
     // If we have no search string then return what we were given
-    if (StringUtils.isBlank(searchStr)) return whereCondition;
+    if (StringUtils.isBlank(condStr)) return whereCondition;
     // If we are given a condition but no indication of how to join new condition to it then return what we were given
     if (whereCondition != null && StringUtils.isBlank(joinOp)) return whereCondition;
     // NOTE: The "joinOp != null" appears to be necessary even though the IDE might mark it as redundant.
-    if (whereCondition != null && joinOp != null && !joinOp.equalsIgnoreCase("AND") && !joinOp.equalsIgnoreCase("OR"))
+    if (whereCondition != null && joinOp != null && !joinOp.equalsIgnoreCase(AND) && !joinOp.equalsIgnoreCase(OR))
     {
       return whereCondition;
     }
 
     // Parse search value into column name, operator and value
     // Format must be column_name.op.value
-    String[] parsedStrArray = searchStr.split("\\.", 3);
+    String[] parsedStrArray = DOT_SPLIT.split(condStr, 3);
     // Validate column name
     String column = parsedStrArray[0];
 
@@ -1798,8 +1959,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     Condition newCondition = createCondition(col, op, val);
     // If specified add the condition to the WHERE clause
     if (StringUtils.isBlank(joinOp) || whereCondition == null) return newCondition;
-    else if (joinOp.equalsIgnoreCase("AND")) return whereCondition.and(newCondition);
-    else if (joinOp.equalsIgnoreCase("OR")) return whereCondition.or(newCondition);
+    else if (joinOp.equals(AND)) return whereCondition.and(newCondition);
+    else if (joinOp.equals(OR)) return whereCondition.or(newCondition);
     return newCondition;
   }
 
