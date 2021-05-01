@@ -64,26 +64,6 @@ public class AppsApplication extends ResourceConfig
     // Output version information on startup
     System.out.println("**** Starting tapis-apps. Version: " + TapisUtils.getTapisFullVersion() + " ****");
 
-    // TODO clean up comments once filtering is implemented.
-    // Setup and register Jersey's dynamic filtering
-    // This allows for returning selected attributes in a return result
-    //   using the query parameter select, e.g.
-    //   /v3/apps?select=result.id,result.name,result.host,result.enabled
-//    property(SelectableEntityFilteringFeature.QUERY_PARAM_NAME, "select");
-//    register(SelectableEntityFilteringFeature.class);
-    // Register either Jackson or Moxy for SelectableEntityFiltering
-    // NOTE: Using shaded jar and Moxy works when running from Intellij IDE but breaks things when running in docker.
-    // NOTE: Using Jackson results in following App attributes not being returned: notes, created, updated.
-    // NOTE: Using unshaded jar and Moxy appears to resolve all issues.
-//    register(new MoxyJsonConfig().resolver());
-// NOTE on Selectable feature: gave up on this (for now) as too cumbersome and limited. Awkward to specify attributes
-//      and could not get it to work when list of systems nested in results->search.
-
-    // Use jackson as opposed to Moxy.
-    // Initially there were problems with notes and authnCredential but with a custom objectmapper
-    // and custom jsonobject serializer the problems were resolved.
-//    register(JacksonFeature.class);
-
     // Needed for properly returning timestamps
     // Also allows for setting a breakpoint when response is being constructed.
     register(ObjectMapperContextResolver.class);

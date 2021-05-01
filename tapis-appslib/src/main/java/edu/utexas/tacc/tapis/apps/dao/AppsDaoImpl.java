@@ -2014,32 +2014,21 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   {
     List<String> valList = Collections.emptyList();
     if (SearchUtils.listOpSet.contains(op)) valList = SearchUtils.getValueList(val);
+    Condition c = null;
     switch (op) {
-      case EQ:
-        return col.eq(val);
-      case NEQ:
-        return col.ne(val);
-      case LT:
-        return col.lt(val);
-      case LTE:
-        return col.le(val);
-      case GT:
-        return col.gt(val);
-      case GTE:
-        return col.ge(val);
-      case LIKE:
-        return col.like(val);
-      case NLIKE:
-        return col.notLike(val);
-      case IN:
-        return col.in(valList);
-      case NIN:
-        return col.notIn(valList);
-      case BETWEEN:
-        return col.between(valList.get(0), valList.get(1));
-      case NBETWEEN:
-        return col.notBetween(valList.get(0), valList.get(1));
+      case EQ -> c =col.eq(val);
+      case NEQ -> c = col.ne(val);
+      case LT -> c = col.lt(val);
+      case LTE -> c = col.le(val);
+      case GT -> c =  col.gt(val);
+      case GTE -> c = col.ge(val);
+      case LIKE -> c = col.like(val);
+      case NLIKE -> c = col.notLike(val);
+      case IN -> c = col.in(valList);
+      case NIN -> c = col.notIn(valList);
+      case BETWEEN -> c = col.between(valList.get(0), valList.get(1));
+      case NBETWEEN -> c = col.notBetween(valList.get(0), valList.get(1));
     }
-    return null;
+    return c;
   }
 }
