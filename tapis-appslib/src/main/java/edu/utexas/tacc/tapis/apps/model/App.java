@@ -118,7 +118,7 @@ public final class App
   // *********************** Enums ******************************************
   // ************************************************************************
   public enum AppType {BATCH, FORK}
-  public enum AppOperation {create, read, modify, execute, softDelete, hardDelete, changeOwner,
+  public enum AppOperation {create, read, modify, execute, delete, undelete, hardDelete, changeOwner,
                             enable, disable, getPerms, grantPerms, revokePerms}
   public enum Permission {READ, MODIFY, EXECUTE}
   public enum Runtime {DOCKER, SINGULARITY}

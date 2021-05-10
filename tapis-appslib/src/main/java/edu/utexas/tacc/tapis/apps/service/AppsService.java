@@ -33,13 +33,19 @@ public interface AppsService
   int disableApp(AuthenticatedUser authenticatedUser, String appId)
           throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
 
+  int deleteApp(AuthenticatedUser authenticatedUser, String appId)
+          throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
+
+  int undeleteApp(AuthenticatedUser authenticatedUser, String appId)
+          throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
+
   int changeAppOwner(AuthenticatedUser authenticatedUser, String appId, String newOwnerName)
           throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
 
-  int softDeleteApp(AuthenticatedUser authenticatedUser, String appId)
+  boolean checkForApp(AuthenticatedUser authenticatedUser, String appId)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
-  boolean checkForApp(AuthenticatedUser authenticatedUser, String appId)
+  boolean checkForApp(AuthenticatedUser authenticatedUser, String appId, boolean includeDeleted)
           throws TapisException, NotAuthorizedException, TapisClientException;
 
   boolean isEnabled(AuthenticatedUser authenticatedUser, String appId)
@@ -66,7 +72,7 @@ public interface AppsService
           throws TapisException, NotAuthorizedException, TapisClientException;
 
   void grantUserPermissions(AuthenticatedUser authenticatedUser, String appId, String userName, Set<Permission> permissions, String updateText)
-          throws TapisException, NotAuthorizedException, TapisClientException;
+          throws NotFoundException, NotAuthorizedException, TapisException, TapisClientException;
 
   int revokeUserPermissions(AuthenticatedUser authenticatedUser, String appId, String userName, Set<Permission> permissions, String updateText)
           throws TapisException, NotAuthorizedException, TapisClientException;

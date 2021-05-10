@@ -320,9 +320,9 @@ public class AppsDaoTest
     Assert.assertEquals(apps.size(), appIdList.size());
   }
 
-  // Test enable/disable
+  // Test enable/disable/delete/undelete
   @Test
-  public void testEnableDisable() throws Exception {
+  public void testEnableDisableDeleteUndelete() throws Exception {
     App app0 = apps[12];
     boolean appCreated = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
@@ -337,6 +337,16 @@ public class AppsDaoTest
     dao.updateEnabled(authenticatedUser, app0.getId(), true);
     tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion());
     Assert.assertTrue(tmpApp.isEnabled());
+
+    // Deleted should start off false, then become true and finally false again.
+    tmpApp = dao.getApp(app0.getTenant(), app0.getId());
+    Assert.assertFalse(app0.isDeleted());
+    dao.updateDeleted(authenticatedUser, app0.getId(), true);
+    tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion(), true);
+    Assert.assertTrue(tmpApp.isDeleted());
+    dao.updateDeleted(authenticatedUser, app0.getId(), false);
+    tmpApp = dao.getApp(app0.getTenant(), app0.getId());
+    Assert.assertFalse(tmpApp.isDeleted());
   }
 
   // Test change app owner
@@ -349,21 +359,6 @@ public class AppsDaoTest
     dao.updateAppOwner(authenticatedUser, app0.getId(), "newOwner");
     App tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion());
     Assert.assertEquals(tmpApp.getOwner(), "newOwner");
-  }
-
-  // Test soft deleting a single item
-  @Test
-  public void testSoftDelete() throws Exception {
-    App app0 = apps[8];
-    boolean appCreated = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
-    Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
-    System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
-
-    int numDeleted = dao.softDeleteApp(authenticatedUser, app0.getId());
-    Assert.assertEquals(numDeleted, 1);
-    numDeleted = dao.softDeleteApp(authenticatedUser, app0.getId());
-    Assert.assertEquals(numDeleted, 0);
-    Assert.assertFalse(dao.checkForApp(app0.getTenant(), app0.getId(), false ), "App not deleted. Id: " + app0.getId());
   }
 
   // Test hard deleting a single item

@@ -101,7 +101,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *
    * @return true if created
    * @throws TapisException - on error
-   * @throws IllegalStateException - if app id+version already exists or app has been deleted
+   * @throws IllegalStateException - if app id+version already exists or app has been marked deleted
    */
   @Override
   public boolean createApp(AuthenticatedUser authenticatedUser, App app, String createJsonStr, String scrubbedText)
@@ -123,7 +123,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
 
-      // If app has been soft deleted then throw IllegalStateException
+      // Check to see if app exists (even if deleted). If yes then throw IllegalStateException
       if (isDeleted(db, app.getTenant(), app.getId()))
         throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_DELETED", authenticatedUser, app.getId()));
 
@@ -284,7 +284,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
 
-      // Check to see if app exists and has not been soft deleted. If no then throw IllegalStateException
+      // Check to see if app exists and has not been marked as deleted. If no then throw IllegalStateException
       boolean doesExist = checkIfAppExists(db, tenant, appId, appVersion, false);
       if (!doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", authenticatedUser, appId));
 
@@ -443,6 +443,51 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
+   * Update attribute deleted for an app given app Id and value
+   */
+  @Override
+  public void updateDeleted(AuthenticatedUser authenticatedUser, String appId, boolean deleted) throws TapisException
+  {
+    String opName = "updateDeleted";
+    // ------------------------- Check Input -------------------------
+    if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
+
+    String tenant = authenticatedUser.getOboTenantId();
+
+    // AppOperation needed for recording the update
+    AppOperation appOp = deleted ? AppOperation.delete : AppOperation.undelete;
+
+    // ------------------------- Call SQL ----------------------------
+    Connection conn = null;
+    try
+    {
+      // Get a database connection.
+      conn = getConnection();
+      DSLContext db = DSL.using(conn);
+      db.update(APPS)
+              .set(APPS.DELETED, deleted)
+              .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
+              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
+      // Persist update record
+      String updateJsonStr = "{\"deleted\":" +  deleted + "}";
+      addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+              appOp, updateJsonStr , null, INVALID_UUID);
+      // Close out and commit
+      LibUtils.closeAndCommitDB(conn, null, null);
+    }
+    catch (Exception e)
+    {
+      // Rollback transaction and throw an exception
+      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps", appId);
+    }
+    finally
+    {
+      // Always return the connection back to the connection pool.
+      LibUtils.finalCloseDB(conn);
+    }
+  }
+
+  /**
    * Update owner of an app given app Id and new owner name
    *
    */
@@ -484,57 +529,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Always return the connection back to the connection pool.
       LibUtils.finalCloseDB(conn);
     }
-  }
-
-  /**
-   * Soft delete an app record given the app id.
-   */
-  @Override
-  public int softDeleteApp(AuthenticatedUser authenticatedUser, String appId) throws TapisException
-  {
-    String opName = "softDeleteApp";
-    int rows = -1;
-    // ------------------------- Check Input -------------------------
-    if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
-
-    String tenant = authenticatedUser.getOboTenantId();
-
-    // ------------------------- Call SQL ----------------------------
-    Connection conn = null;
-    try
-    {
-      // Get a database connection.
-      conn = getConnection();
-      DSLContext db = DSL.using(conn);
-      // If app does not exist or has been soft deleted return 0
-      if (!db.fetchExists(APPS,APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false)))
-      {
-        return 0;
-      }
-      rows = db.update(APPS)
-              .set(APPS.DELETED, true)
-              .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
-              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
-
-      // Persist update record
-      String updateJsonStr = "{\"deleted\": true}";
-      addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
-                AppOperation.softDelete, updateJsonStr, null, INVALID_UUID);
-
-      // Close out and commit
-      LibUtils.closeAndCommitDB(conn, null, null);
-    }
-    catch (Exception e)
-    {
-      // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps", appId);
-    }
-    finally
-    {
-      // Always return the connection back to the connection pool.
-      LibUtils.finalCloseDB(conn);
-    }
-    return rows;
   }
 
   /**
@@ -626,7 +620,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * checkForApp - check that app with specified Id (any version) exists
    * @param appId - app name
-   * @param includeDeleted - whether or not to include soft deleted items
+   * @param includeDeleted - whether or not to include deleted items
    * @return true if found else false
    * @throws TapisException - on error
    */
@@ -664,7 +658,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * checkForApp - check that the App with specified Id and version exists
    * @param appId - app name
    * @param appVersion - app version
-   * @param includeDeleted - whether or not to include soft deleted items
+   * @param includeDeleted - whether or not to include deleted items
    * @return true if found else false
    * @throws TapisException - on error
    */
@@ -767,7 +761,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Retrieve specified or most recently created version of an application.
    * @param appId - app name
    * @param appVersion - app version, null for most recently created version
-   * @param includeDeleted - whether or not to include soft deleted items
+   * @param includeDeleted - whether or not to include deleted items
    * @return App object if found, null if not found
    * @throws TapisException - on error
    */
@@ -1275,12 +1269,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * Given an sql connection check to see if specified app exists. Inclusion of soft deletes determined by flag.
+   * Given an sql connection check to see if specified app exists. Inclusion of deleted items determined by flag.
    * @param db - jooq context
    * @param tenant - name of tenant
    * @param appId - Id of app
    * @param appVersion - version of app, null if check is for any version
-   * @param includeDeleted - whether or not to include soft deleted items
+   * @param includeDeleted - whether or not to include deleted items
    * @return - true if app exists according to given conditions, else false
    */
   private static boolean checkIfAppExists(DSLContext db, String tenant, String appId, String appVersion,
@@ -1310,7 +1304,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * Given an sql connection check to see if specified app has been soft deleted.
+   * Given an sql connection check to see if specified app has been marked as deleted.
    * @param db - jooq context
    * @param tenant - name of tenant
    * @param appId - Id of app

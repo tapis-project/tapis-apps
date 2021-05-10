@@ -115,6 +115,7 @@ public class AppResource
   private static final String OP_DISABLE = "disableApp";
   private static final String OP_CHANGEOWNER = "changeAppOwner";
   private static final String OP_DELETE = "deleteApp";
+  private static final String OP_UNDELETE = "undeleteApp";
 
   // Always return a nicely formatted response
   private static final boolean PRETTY = true;
@@ -410,7 +411,7 @@ public class AppResource
   public Response enableApp(@PathParam("appId") String appId,
                             @Context SecurityContext securityContext)
   {
-    return postAppSingleUpdate(OP_ENABLE, appId, null, false, securityContext);
+    return postAppSingleUpdate(OP_ENABLE, appId, null, securityContext);
   }
 
   /**
@@ -426,7 +427,39 @@ public class AppResource
   public Response disableApp(@PathParam("appId") String appId,
                              @Context SecurityContext securityContext)
   {
-    return postAppSingleUpdate(OP_DISABLE, appId, null, false, securityContext);
+    return postAppSingleUpdate(OP_DISABLE, appId, null, securityContext);
+  }
+
+  /**
+   * Delete an app
+   * @param appId - name of the app
+   * @param securityContext - user identity
+   * @return - response with change count as the result
+   */
+  @POST
+  @Path("{appId}/delete")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response deleteApp(@PathParam("appId") String appId,
+                            @Context SecurityContext securityContext)
+  {
+    return postAppSingleUpdate(OP_DELETE, appId, null, securityContext);
+  }
+
+  /**
+   * Undelete an app
+   * @param appId - name of the app
+   * @param securityContext - user identity
+   * @return - response with change count as the result
+   */
+  @POST
+  @Path("{appId}/undelete")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response undeleteApp(@PathParam("appId") String appId,
+                              @Context SecurityContext securityContext)
+  {
+    return postAppSingleUpdate(OP_UNDELETE, appId, null, securityContext);
   }
 
   /**
@@ -444,7 +477,7 @@ public class AppResource
                                  @PathParam("userName") String userName,
                                  @Context SecurityContext securityContext)
   {
-    return postAppSingleUpdate(OP_CHANGEOWNER, appId, userName, false, securityContext);
+    return postAppSingleUpdate(OP_CHANGEOWNER, appId, userName, securityContext);
   }
 
   /**
@@ -764,7 +797,7 @@ public class AppResource
                             @QueryParam("confirm") @DefaultValue("false") boolean confirmDelete,
                             @Context SecurityContext securityContext)
   {
-    return postAppSingleUpdate(OP_DELETE, appId, null, confirmDelete, securityContext);
+    return postAppSingleUpdate(OP_DELETE, appId, null, securityContext);
   }
 
   /**
@@ -818,17 +851,15 @@ public class AppResource
   /* **************************************************************************** */
 
   /**
-   * changeOwner, enable, disable and delete  follow same pattern
-   * Note that userName only used for changeOwner and confirmDelete only used for delete
+   * changeOwner, enable, disable, delete and undelete follow same pattern
+   * Note that userName only used for changeOwner
    * @param opName Name of operation.
    * @param appId Id of app to update
    * @param userName new owner name for op changeOwner
-   * @param confirmDelete confirmation flag for op delete
    * @param securityContext Security context from client call
    * @return Response to be returned to the client.
    */
-  private Response postAppSingleUpdate(String opName, String appId, String userName, boolean confirmDelete,
-                                       SecurityContext securityContext)
+  private Response postAppSingleUpdate(String opName, String appId, String userName, SecurityContext securityContext)
   {
     // Trace this request.
     if (_log.isTraceEnabled()) logRequest(opName);
@@ -843,14 +874,6 @@ public class AppResource
     // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
     AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
 
-    // If operation is delete and confirmDelete is false then return error response
-    if (OP_DELETE.equals(opName) && !confirmDelete)
-    {
-      String msg = ApiUtils.getMsgAuth("APPAPI_DELETE_NOCONFIRM", authenticatedUser, appId);
-      _log.warn(msg);
-      return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-    }
-
     // ---------------------------- Make service call to update the app -------------------------------
     int changeCount;
     String msg;
@@ -861,7 +884,9 @@ public class AppResource
       else if (OP_DISABLE.equals(opName))
         changeCount = appsService.disableApp(authenticatedUser, appId);
       else if (OP_DELETE.equals(opName))
-        changeCount = appsService.softDeleteApp(authenticatedUser, appId);
+        changeCount = appsService.deleteApp(authenticatedUser, appId);
+      else if (OP_UNDELETE.equals(opName))
+        changeCount = appsService.undeleteApp(authenticatedUser, appId);
       else
         changeCount = appsService.changeAppOwner(authenticatedUser, appId, userName);
     }

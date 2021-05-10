@@ -246,7 +246,7 @@ public class AppsServiceImpl implements AppsService
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", authenticatedUser, appId));
     }
 
-    // App must already exist and not be soft deleted
+    // App must already exist and not be deleted
     if (!dao.checkForApp(appTenantName, appId, false))
     {
       throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId));
@@ -310,6 +310,44 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
+   * Update deleted to true for an app
+   * @param authenticatedUser - principal user containing tenant and user info
+   * @param appId - name of app
+   * @return Number of items updated
+   *
+   * @throws TapisException - for Tapis related exceptions
+   * @throws IllegalStateException - Resulting App would be in an invalid state
+   * @throws IllegalArgumentException - invalid parameter passed in
+   * @throws NotAuthorizedException - unauthorized
+   * @throws NotFoundException - App not found
+   */
+  @Override
+  public int deleteApp(AuthenticatedUser authenticatedUser, String appId)
+          throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
+  {
+    return updateDeleted(authenticatedUser, appId, AppOperation.delete);
+  }
+
+  /**
+   * Update deleted to false for an app
+   * @param authenticatedUser - principal user containing tenant and user info
+   * @param appId - name of app
+   * @return Number of items updated
+   *
+   * @throws TapisException - for Tapis related exceptions
+   * @throws IllegalStateException - Resulting App would be in an invalid state
+   * @throws IllegalArgumentException - invalid parameter passed in
+   * @throws NotAuthorizedException - unauthorized
+   * @throws NotFoundException - App not found
+   */
+  @Override
+  public int undeleteApp(AuthenticatedUser authenticatedUser, String appId)
+          throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
+  {
+    return updateDeleted(authenticatedUser, appId, AppOperation.undelete);
+  }
+
+  /**
    * Change owner of an app
    * @param authenticatedUser - principal user containing tenant and user info
    * @param appId - name of app
@@ -341,7 +379,7 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(tenantName) || StringUtils.isBlank(apiUserId))
          throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", authenticatedUser, appId));
 
-    // App must already exist and not be soft deleted
+    // App must already exist and not be deleted
     if (!dao.checkForApp(appTenantName, appId, false))
          throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId));
 
@@ -379,38 +417,6 @@ public class AppsServiceImpl implements AppsService
       throw e0;
     }
     return 1;
-  }
-
-  /**
-   * Soft delete an app record given the app name.
-   *
-   * @param authenticatedUser - principal user containing tenant and user info
-   * @param appId - name of app
-   * @return Number of items deleted
-   * @throws TapisException - for Tapis related exceptions
-   * @throws NotAuthorizedException - unauthorized
-   */
-  @Override
-  public int softDeleteApp(AuthenticatedUser authenticatedUser, String appId) throws TapisException, NotAuthorizedException, TapisClientException
-  {
-    AppOperation op = AppOperation.softDelete;
-    if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
-    if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", authenticatedUser));
-    // For service request use oboTenant for tenant associated with the app
-    String appTenantName = authenticatedUser.getTenantId();
-    if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
-
-    // If app does not exist or has already been soft deleted then 0 changes
-    if (!dao.checkForApp(appTenantName, appId, false)) return 0;
-
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(authenticatedUser, op, appId, null, null, null);
-
-    // Remove SK artifacts
-    removeSKArtifacts(authenticatedUser, appId, op);
-
-    // Delete the app.
-    return dao.softDeleteApp(authenticatedUser, appId);
   }
 
   /**
@@ -475,12 +481,28 @@ public class AppsServiceImpl implements AppsService
    * checkForApp
    * @param authenticatedUser - principal user containing tenant and user info
    * @param appId - Name of the app
-   * @return true if app exists and has not been soft deleted, false otherwise
+   * @return true if app exists and has not been deleted, false otherwise
    * @throws TapisException - for Tapis related exceptions
    * @throws NotAuthorizedException - unauthorized
    */
   @Override
   public boolean checkForApp(AuthenticatedUser authenticatedUser, String appId) throws TapisException, NotAuthorizedException, TapisClientException
+  {
+    return checkForApp(authenticatedUser, appId, false);
+  }
+
+  /**
+   * checkForApp
+   * @param authenticatedUser - principal user containing tenant and user info
+   * @param appId - Name of the app
+   * @param includeDeleted - indicates if check should include resources marked as deleted
+   * @return true if app exists and has not been deleted, false otherwise
+   * @throws TapisException - for Tapis related exceptions
+   * @throws NotAuthorizedException - unauthorized
+   */
+  @Override
+  public boolean checkForApp(AuthenticatedUser authenticatedUser, String appId, boolean includeDeleted)
+          throws TapisException, NotAuthorizedException, TapisClientException
   {
     AppOperation op = AppOperation.read;
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -490,7 +512,7 @@ public class AppsServiceImpl implements AppsService
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
 
     // We need owner to check auth and if app not there cannot find owner, so cannot do auth check if no app
-    if (dao.checkForApp(appTenantName, appId, false)) {
+    if (dao.checkForApp(appTenantName, appId, includeDeleted)) {
       // ------------------------- Check service level authorization -------------------------
       checkAuth(authenticatedUser, op, appId, null, null, null);
       return true;
@@ -802,7 +824,7 @@ public class AppsServiceImpl implements AppsService
   @Override
   public void grantUserPermissions(AuthenticatedUser authenticatedUser, String appId, String userName,
                                    Set<Permission> permissions, String updateText)
-          throws TapisException, NotAuthorizedException, TapisClientException
+          throws NotFoundException, NotAuthorizedException, TapisException, TapisClientException
   {
     AppOperation op = AppOperation.grantPerms;
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -815,9 +837,9 @@ public class AppsServiceImpl implements AppsService
       appTenantName = authenticatedUser.getOboTenantId();
     }
 
-    // If system does not exist or has been soft deleted then throw an exception
+    // If system does not exist or has been deleted then throw an exception
     if (!dao.checkForApp(appTenantName, appId, false))
-      throw new TapisException(LibUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId));
+      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId));
 
     // Check to see if owner is trying to update permissions for themselves.
     // If so throw an exception because this would be confusing since owner always has full permissions.
@@ -903,7 +925,7 @@ public class AppsServiceImpl implements AppsService
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
 
     // We need owner to check auth and if app not there cannot find owner, so
-    // if app does not exist or has been soft deleted then return 0 changes
+    // if app does not exist or has been deleted then return 0 changes
     if (!dao.checkForApp(appTenantName, appId, false)) return 0;
 
     // Check to see if owner is trying to update permissions for themselves.
@@ -984,7 +1006,7 @@ public class AppsServiceImpl implements AppsService
     // For service request use oboTenant for tenant associated with the app
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
 
-    // If app does not exist or has been soft deleted then return null
+    // If app does not exist or has been deleted then return null
     if (!dao.checkForApp(appTenantName, appId, false)) return null;
 
     // ------------------------- Check service level authorization -------------------------
@@ -1029,7 +1051,7 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(tenantName) || StringUtils.isBlank(apiUserId))
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", authenticatedUser, appId));
 
-    // App must already exist and not be soft deleted
+    // App must already exist and not be deleted
     if (!dao.checkForApp(appTenantName, appId, false))
       throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId));
 
@@ -1041,6 +1063,51 @@ public class AppsServiceImpl implements AppsService
       dao.updateEnabled(authenticatedUser, appId, true);
     else
       dao.updateEnabled(authenticatedUser, appId, false);
+    return 1;
+  }
+
+  /**
+   * Update deleted attribute for an app
+   * @param authenticatedUser - principal user containing tenant and user info
+   * @param appId - name of app
+   * @param appOp - operation, delete or undelete
+   * @return Number of items updated
+   *
+   * @throws TapisException - for Tapis related exceptions
+   * @throws IllegalStateException - Resulting App would be in an invalid state
+   * @throws IllegalArgumentException - invalid parameter passed in
+   * @throws NotAuthorizedException - unauthorized
+   * @throws NotFoundException - App not found
+   */
+  private int updateDeleted(AuthenticatedUser authenticatedUser, String appId, AppOperation appOp)
+          throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
+  {
+    if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+    if (StringUtils.isBlank(appId))
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", authenticatedUser));
+    // Extract various names for convenience
+    String tenantName = authenticatedUser.getTenantId();
+    String apiUserId = authenticatedUser.getName();
+    String appTenantName = tenantName;
+    // For service request use oboTenant for tenant associated with the app
+    if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
+
+    // ---------------------------- Check inputs ------------------------------------
+    if (StringUtils.isBlank(tenantName) || StringUtils.isBlank(apiUserId))
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", authenticatedUser, appId));
+
+    // App must exist
+    if (!dao.checkForApp(appTenantName, appId, true))
+      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId));
+
+    // ------------------------- Check service level authorization -------------------------
+    checkAuth(authenticatedUser, appOp, appId, null, null, null);
+
+    // ----------------- Make update --------------------
+    if (appOp == AppOperation.delete)
+      dao.updateDeleted(authenticatedUser, appId, true);
+    else
+      dao.updateDeleted(authenticatedUser, appId, false);
     return 1;
   }
 
@@ -1367,9 +1434,10 @@ public class AppsServiceImpl implements AppsService
     }
     switch(op) {
       case create:
-      case softDelete:
       case enable:
       case disable:
+      case delete:
+      case undelete:
       case changeOwner:
       case grantPerms:
         if (owner.equals(userName) || hasAdminRole(authenticatedUser, tenantName, userName))

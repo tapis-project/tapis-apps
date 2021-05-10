@@ -30,6 +30,7 @@ import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
 import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -365,7 +366,7 @@ public class AppsServiceTest
     Assert.assertFalse(userPerms.contains(Permission.MODIFY));
     // Original owner should not be able to modify app
     try {
-      svc.softDeleteApp(origOwnerAuth, app0.getId());
+      svc.deleteApp(origOwnerAuth, app0.getId());
       Assert.fail("Original owner should not have permission to update app after change of ownership. App name: " + app0.getId() +
               " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
     } catch (Exception e) {
@@ -464,7 +465,7 @@ public class AppsServiceTest
   }
 
   @Test
-  public void testEnableDisable() throws Exception
+  public void testEnableDisableDeleteUndelete() throws Exception
   {
     // Create the app
     App app0 = apps[20];
@@ -480,20 +481,18 @@ public class AppsServiceTest
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
     tmpApp = svc.getApp(authUser1, app0.getId(), app0.getVersion(), false);
     Assert.assertTrue(tmpApp.isEnabled());
-  }
 
-  @Test
-  public void testSoftDelete() throws Exception
-  {
-    // Create the app
-    App app0 = apps[5];
-    svc.createApp(authUser1, app0, scrubbedJson);
-
-    // Soft delete the app
-    int changeCount = svc.softDeleteApp(authUser1, app0.getId());
-    Assert.assertEquals(changeCount, 1, "Change count incorrect when deleting an app.");
-    App tmpApp2 = svc.getApp(authUser1, app0.getId(), app0.getVersion(), false);
-    Assert.assertNull(tmpApp2, "App not deleted. App name: " + app0.getId());
+    // Deleted should start off false, then become true and finally false again.
+    tmpApp = svc.getApp(authUser1, app0.getId(), app0.getVersion(), false);
+    Assert.assertFalse(tmpApp.isDeleted());
+    changeCount = svc.deleteApp(authUser1, app0.getId());
+    Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
+    tmpApp = svc.getApp(authUser1, app0.getId(), app0.getVersion(), false);
+    Assert.assertNull(tmpApp);
+    changeCount = svc.undeleteApp(authUser1, app0.getId());
+    Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
+    tmpApp = svc.getApp(authUser1, app0.getId(), app0.getVersion(), false);
+    Assert.assertFalse(tmpApp.isDeleted());
   }
 
   @Test
@@ -682,16 +681,23 @@ public class AppsServiceTest
     String fakeAppName = "AMissingAppName";
     String fakeAppVersion = "AMissingAppVersion";
     String fakeUserName = "AMissingUserName";
+    int changeCount;
+    boolean pass;
     // Make sure app does not exist
-    Assert.assertFalse(svc.checkForApp(authUser1, fakeAppName));
+    Assert.assertFalse(svc.checkForApp(authUser1, fakeAppName, true));
 
     // Get App with no app should return null
     App tmpApp = svc.getApp(authUser1, fakeAppName, fakeAppVersion, false);
     Assert.assertNull(tmpApp, "App not null for non-existent app");
 
-    // Delete app with no app should return 0 changes
-    int changeCount = svc.softDeleteApp(authUser1, fakeAppName);
-    Assert.assertEquals(changeCount, 0, "Change count incorrect when deleting non-existent app.");
+    // Delete app with no app should throw NotFound exception
+    pass = false;
+    try { svc.deleteApp(authUser1, fakeAppName); }
+    catch (NotFoundException nfe)
+    {
+      pass = true;
+    }
+    Assert.assertTrue(pass);
 
     // Get owner with no app should return null
     String owner = svc.getAppOwner(authUser1, fakeAppName);
@@ -706,11 +712,10 @@ public class AppsServiceTest
     Assert.assertEquals(changeCount, 0, "Change count incorrect when revoking perms for non-existent app.");
 
     // Grant perm with no app should throw an exception
-    boolean pass = false;
+    pass = false;
     try { svc.grantUserPermissions(authUser1, fakeAppName, fakeUserName, testPermsREADMODIFY, scrubbedJson); }
-    catch (TapisException tce)
+    catch (NotFoundException nfe)
     {
-      Assert.assertTrue(tce.getMessage().startsWith("APPLIB_NOT_FOUND"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -845,7 +850,7 @@ public class AppsServiceTest
 
     // DELETE - deny user not owner/admin (testuser3), deny service
     pass = false;
-    try { svc.softDeleteApp(authUser3, app0.getId()); }
+    try { svc.deleteApp(authUser3, app0.getId()); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -853,7 +858,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.softDeleteApp(authFilesSvc, app0.getId()); }
+    try { svc.deleteApp(authFilesSvc, app0.getId()); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));

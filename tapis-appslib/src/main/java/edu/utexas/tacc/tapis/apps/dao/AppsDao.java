@@ -22,9 +22,9 @@ public interface AppsDao
 
   void updateEnabled(AuthenticatedUser authenticatedUser, String id, boolean enabled) throws TapisException;
 
-  void updateAppOwner(AuthenticatedUser authenticatedUser, String id, String newOwnerName) throws TapisException;
+  void updateDeleted(AuthenticatedUser authenticatedUser, String id, boolean deleted) throws TapisException;
 
-  int softDeleteApp(AuthenticatedUser authenticatedUser, String id) throws TapisException;
+  void updateAppOwner(AuthenticatedUser authenticatedUser, String id, String newOwnerName) throws TapisException;
 
   void addUpdateRecord(AuthenticatedUser authenticatedUser, String tenant, String id, String version,
                        AppOperation op, String upd_json, String upd_text) throws TapisException;
