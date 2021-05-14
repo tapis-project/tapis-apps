@@ -15,6 +15,7 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -288,7 +289,8 @@ public class AppsDaoTest
     boolean appCreated = dao.createApp(authenticatedUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
-    List<App> apps = dao.getApps(tenantName, null, null, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull);
+    List<App> apps = dao.getApps(tenantName, null, null, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
+                                 startAfterNull, versionSpecifiedNull);
     for (App app : apps)
     {
       System.out.println("Found item with appId: " + app.getId() + " appVer: " + app.getVersion());
@@ -311,7 +313,8 @@ public class AppsDaoTest
     System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
     appIdList.add(app0.getId());
     // Get all apps in list of IDs
-    List<App> apps = dao.getApps(tenantName, null, null, appIdList, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull);
+    List<App> apps = dao.getApps(tenantName, null, null, appIdList, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
+                                 startAfterNull, versionSpecifiedNull);
     for (App app : apps)
     {
       System.out.println("Found item with appId: " + app.getId() + " and appVer: " + app.getVersion());
@@ -417,15 +420,25 @@ public class AppsDaoTest
     System.out.println("Found item: " + app2.getId() + " version: " + app2.getVersion());
     Assert.assertEquals(tmpApp.getVersion(), appVersion2);
 
-    // TODO
-//    // Use search to pick out an app and make sure we get back all versions
-//    var searchList = Collections.singletonList("id.eq." + app1.getId());
-//    List<App> apps = dao.getApps(tenantName, searchList, null);
-//    for (App app : apps) {
-//      System.out.println("Found item with Id: " + app.getId() + " Version: " + app.getVersion());
-//      Assert.assertTrue(appIdList.contains(app.getId()));
-//    }
-//    Assert.assertEquals(apps.size(), 2);
+    // Use search to pick out an app and make sure we get just the latest version
+    var searchList = Collections.singletonList("id.eq." + app1.getId());
+    List<App> apps = dao.getApps(tenantName, searchList, null, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
+                                 startAfterNull, versionSpecifiedNull);
+    Assert.assertEquals(apps.size(), 1);
+    tmpApp = apps.get(0);
+    System.out.println("Found item with Id: " + tmpApp.getId() + " Version: " + tmpApp.getVersion());
+    Assert.assertEquals(tmpApp.getId(), app1.getId());
+    Assert.assertEquals(tmpApp.getVersion(), appVersion2);
+
+    // Now add version to the searchList and confirm we get back all versions
+    searchList = Arrays.asList("id.eq." + app1.getId(), "version.like.%");
+    apps = dao.getApps(tenantName, searchList, null, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
+                       startAfterNull, versionSpecifiedNull);
+    Assert.assertEquals(apps.size(), 2);
+    for (App app : apps) {
+      System.out.println("Found item with Id: " + app.getId() + " Version: " + app.getVersion());
+      Assert.assertEquals(app.getId(), app1.getId());
+    }
   }
 
   // Test behavior when app is missing, especially for cases where service layer depends on the behavior.

@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
+import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
@@ -613,7 +614,8 @@ public class AppsServiceImpl implements AppsService
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()))
       appTenantName = authenticatedUser.getOboTenantId();
 
-    // Build verified list of search conditions
+    // Build verified list of search conditions and check if any search conditions involve the version attribute
+    boolean versionSpecified = false;
     var verifiedSearchList = new ArrayList<String>();
     if (searchList != null && !searchList.isEmpty())
     {
@@ -621,6 +623,7 @@ public class AppsServiceImpl implements AppsService
       {
         for (String cond : searchList)
         {
+          if (AppsDaoImpl.checkCondForVersion(cond)) versionSpecified = true;
           // Use SearchUtils to validate condition
           String verifiedCondStr = SearchUtils.validateAndProcessSearchCondition(cond);
           verifiedSearchList.add(verifiedCondStr);
@@ -642,7 +645,7 @@ public class AppsServiceImpl implements AppsService
     if (allowedAppIDs != null && allowedAppIDs.isEmpty()) return 0;
 
     // Count all allowed systems matching the search conditions
-    return dao.getAppsCount(appTenantName, verifiedSearchList, null, allowedAppIDs, orderByList, startAfter);
+    return dao.getAppsCount(appTenantName, verifiedSearchList, null, allowedAppIDs, orderByList, startAfter, versionSpecified);
   }
 
   /**
@@ -668,7 +671,8 @@ public class AppsServiceImpl implements AppsService
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()))
       appTenantName = authenticatedUser.getOboTenantId();
 
-    // Build verified list of search conditions
+    // Build verified list of search conditions and check if any search conditions involve the version attribute
+    boolean versionSpecified = false;
     var verifiedSearchList = new ArrayList<String>();
     if (searchList != null && !searchList.isEmpty())
     {
@@ -676,6 +680,7 @@ public class AppsServiceImpl implements AppsService
       {
         for (String cond : searchList)
         {
+          if (AppsDaoImpl.checkCondForVersion(cond)) versionSpecified = true;
           // Use SearchUtils to validate condition
           String verifiedCondStr = SearchUtils.validateAndProcessSearchCondition(cond);
           verifiedSearchList.add(verifiedCondStr);
@@ -695,7 +700,7 @@ public class AppsServiceImpl implements AppsService
 
     // Get all allowed apps matching the search conditions
     List<App> apps = dao.getApps(appTenantName, verifiedSearchList, null, allowedAppIDs, limit, orderByList, skip,
-                                 startAfter);
+                                 startAfter, versionSpecified);
     return apps;
   }
 
@@ -746,8 +751,12 @@ public class AppsServiceImpl implements AppsService
     // This is either all apps (null) or a list of IDs.
     Set<String> allowedAppIDs = getAllowedAppIDs(authenticatedUser, appTenantName);
 
+    // Pass in null for versionSpecified since the Dao makes the same call we would make so no time saved doing it here.
+    Boolean versionSpecified = null;
+
     // Get all allowed apps matching the search conditions
-    List<App> apps = dao.getApps(appTenantName, null, searchAST, allowedAppIDs, limit, orderByList, skip, startAfter);
+    List<App> apps = dao.getApps(appTenantName, null, searchAST, allowedAppIDs, limit, orderByList, skip, startAfter,
+                                 versionSpecified);
     return apps;
   }
 

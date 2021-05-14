@@ -827,18 +827,22 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Conditions in searchList must be processed by SearchUtils.validateAndExtractSearchCondition(cond)
    *   prior to this call for proper validation and treatment of special characters.
    * WARNING: If both searchList and searchAST provided only searchList is used.
+   * NOTE: Use versionSpecified = null to indicate this method should determine if a search condition specifies
+   *       which versions to retrieve.
    * @param tenant - tenant name
    * @param searchList - optional list of conditions used for searching
    * @param searchAST - AST containing search conditions
    * @param setOfIDs - list of IDs to consider. null indicates no restriction.
    * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
    * @param startAfter - where to start when sorting, e.g. orderBy=id(asc)&startAfter=101 (may not be used with skip)
+   * @param versionSpecified - indicates (if known) if we are to get just latest version or all versions specified
+   *                     by a search condition. Use null to indicate not known and this method should determine.
    * @return - count of objects
    * @throws TapisException - on error
    */
   @Override
   public int getAppsCount(String tenant, List<String> searchList, ASTNode searchAST, Set<String> setOfIDs,
-                          List<OrderBy> orderByList, String startAfter)
+                          List<OrderBy> orderByList, String startAfter, Boolean versionSpecified)
           throws TapisException
   {
     // TODO - for now just use the major (i.e. first in list) orderBy item.
@@ -879,8 +883,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     // Boolean used to determine if we are to get just latest version or all versions specified by a search condition
     // If searchList and searchAST are both provided then only searchList is checked.
-    // TODO/TBD: Could it be more efficient to do this in ServiceImpl where other validation is happening?
-    boolean versionNotSpecified = !checkForVersion(searchList, searchAST);
+    if (versionSpecified == null) versionSpecified = checkForVersion(searchList, searchAST);
 
     // Begin where condition for the query
     Condition whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
@@ -907,7 +910,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     }
 
     // If version was not specified then add condition to select only latest version
-    if (versionNotSpecified) whereCondition = whereCondition.and(APPS_VERSIONS.VERSION.eq(APPS.LATEST_VERSION));
+    if (!versionSpecified) whereCondition = whereCondition.and(APPS_VERSIONS.VERSION.eq(APPS.LATEST_VERSION));
 
     // Add IN condition for list of IDs
     if (setOfIDs != null && !setOfIDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(setOfIDs));
@@ -956,12 +959,17 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
    * @param skip - number of results to skip (may not be used with startAfter)
    * @param startAfter - where to start when sorting, e.g. limit=10&orderBy=id(asc)&startAfter=101 (may not be used with skip)
+   * @param versionSpecified - indicates (if known) if we are to get just latest version or all versions specified
+   *                     by a search condition. Use null to indicate not known and this method should determine.
+   * NOTE: Use versionSpecified = null to indicate this method should determine if a search condition specifies
+   *       which versions to retrieve.
    * @return - list of App objects
    * @throws TapisException - on error
    */
   @Override
   public List<App> getApps(String tenant, List<String> searchList, ASTNode searchAST, Set<String> appIDs, int limit,
-                           List<OrderBy> orderByList, int skip, String startAfter) throws TapisException
+                           List<OrderBy> orderByList, int skip, String startAfter, Boolean versionSpecified)
+          throws TapisException
   {
     // TODO - for now just use the major (i.e. first in list) orderBy item.
     String majorOrderBy = null;
@@ -1012,8 +1020,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     // Boolean used to determine if we are to get just latest version or all versions specified by a search condition
     // If searchList and searchAST are both provided then only searchList is checked.
-    // TODO/TBD: Could it be more efficient to do this in ServiceImpl where other validation is happening?
-    boolean versionNotSpecified = !checkForVersion(searchList, searchAST);
+    if (versionSpecified == null) versionSpecified = checkForVersion(searchList, searchAST);
 
     // Begin where condition for this query
     Condition whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
@@ -1040,7 +1047,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     }
 
     // If version was not specified then add condition to select only latest version of each app
-    if (versionNotSpecified) whereCondition = whereCondition.and(APPS_VERSIONS.VERSION.eq(APPS.LATEST_VERSION));
+    if (!versionSpecified) whereCondition = whereCondition.and(APPS_VERSIONS.VERSION.eq(APPS.LATEST_VERSION));
 
     // Add IN condition for list of IDs
     if (appIDs != null && !appIDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(appIDs));
@@ -1639,7 +1646,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @param condStr Single search condition in the form column_name.op.value
    * @return true if condition references version else false
    */
-  private static boolean checkCondForVersion(String condStr)
+  public static boolean checkCondForVersion(String condStr)
   {
     if (StringUtils.isBlank(condStr)) return false;
     // Parse search value into column name, operator and value

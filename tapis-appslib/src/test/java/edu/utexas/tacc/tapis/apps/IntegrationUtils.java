@@ -247,6 +247,8 @@ public final class IntegrationUtils
   public static final List<OrderBy> orderByListDesc = Collections.singletonList(OrderBy.fromString("id(desc)"));
   public static final String startAfterNull = null;
 
+  public static final Boolean versionSpecifiedNull = null;
+
   /**
    * Create an array of App objects in memory
    * Names will be of format TestApp_K_NNN where K is the key and NNN runs from 000 to 999
