@@ -217,6 +217,7 @@ public class AppResource
       _log.error(msg);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
+
     // Create an app from the request
     App app = createAppFromRequest(req, rawJson);
 
@@ -1105,7 +1106,7 @@ public class AppResource
           throws Exception
   {
     RespAbstract resp1;
-    List<App> apps = null;
+    List<App> apps;
     int totalCount = -1;
     String itemCountStr;
 

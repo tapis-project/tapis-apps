@@ -13,6 +13,7 @@ import javax.ws.rs.NotFoundException;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
+import edu.utexas.tacc.tapis.systems.client.gen.model.LogicalQueue;
 import org.apache.commons.lang3.StringUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -1191,6 +1192,7 @@ public class AppsServiceImpl implements AppsService
    * Check constraints on App attributes.
    * Check that system referenced by execSystemId exists with canExec = true.
    * Check that system referenced by archiveSystemId exists.
+   * Check LogicalQueue max/min constraints.
    * Collect and report as many errors as possible so they can all be fixed before next attempt
    * @param app - the App to check
    * @throws IllegalStateException - if any constraints are violated
@@ -1199,52 +1201,76 @@ public class AppsServiceImpl implements AppsService
           throws TapisException, IllegalStateException
   {
     String msg;
+    // Make api level checks, i.e. checks that do not involve a dao or service call.
     List<String> errMessages = app.checkAttributeRestrictions();
     var systemsClient = getSystemsClient(authenticatedUser);
 
     // If execSystemId is set verify that it exists with canExec = true
-    if (!StringUtils.isBlank(app.getExecSystemId()))
+    // and if app specifies a LogicalQueue make sure the constraints for the queue are not violated.
+    String execSystemId = app.getExecSystemId();
+    if (!StringUtils.isBlank(execSystemId))
     {
       TapisSystem execSystem = null;
       try
       {
-        execSystem = systemsClient.getSystem(app.getExecSystemId());
+        execSystem = systemsClient.getSystem(execSystemId);
       }
       catch (TapisClientException e)
       {
-        msg = LibUtils.getMsg("APPLIB_EXECSYS_CHECK_ERROR", app.getExecSystemId(), e.getMessage());
+        msg = LibUtils.getMsg("APPLIB_EXECSYS_CHECK_ERROR", execSystemId, e.getMessage());
         _log.error(msg, e);
         errMessages.add(msg);
       }
       if (execSystem == null)
       {
-        msg = LibUtils.getMsg("APPLIB_EXECSYS_NO_SYSTEM", app.getExecSystemId());
+        msg = LibUtils.getMsg("APPLIB_EXECSYS_NO_SYSTEM", execSystemId);
         errMessages.add(msg);
       }
-      else if (!execSystem.getCanExec())
+      else if (execSystem.getCanExec() == null || !execSystem.getCanExec())
       {
-        msg = LibUtils.getMsg("APPLIB_EXECSYS_NOT_EXEC", app.getExecSystemId());
+        msg = LibUtils.getMsg("APPLIB_EXECSYS_NOT_EXEC", execSystemId);
         errMessages.add(msg);
+      }
+
+      // If app specifies a LogicalQueue make sure the constraints for the queue are not violated.
+      //     Max/Min constraints to check: nodeCount, coresPerNode, memoryMB, runMinutes
+      String execQName = app.getExecSystemLogicalQueue();
+      if (!StringUtils.isBlank(execQName))
+      {
+        List<LogicalQueue> batchQueues = (execSystem == null ? null : execSystem.getBatchLogicalQueues());
+        // Make sure the queue is defined for the system
+        LogicalQueue execQ = getLogicalQ(batchQueues, execQName);
+        if (batchQueues == null || batchQueues.isEmpty() || execQ == null)
+        {
+          msg = LibUtils.getMsg("APPLIB_EXECQ_NOT_FOUND", execQName, execSystemId);
+          errMessages.add(msg);
+        }
+        // Check constraints
+        if (execQ != null)
+        {
+          ????
+        }
       }
     }
 
     // If archiveSystemId is set verify that it exists
-    if (!StringUtils.isBlank(app.getArchiveSystemId()))
+    String archiveSystemId = app.getArchiveSystemId();
+    if (!StringUtils.isBlank(archiveSystemId))
     {
       TapisSystem archiveSystem = null;
       try
       {
-        archiveSystem = systemsClient.getSystem(app.getArchiveSystemId());
+        archiveSystem = systemsClient.getSystem(archiveSystemId);
       }
       catch (TapisClientException e)
       {
-        msg = LibUtils.getMsg("APPLIB_ARCHSYS_CHECK_ERROR", app.getArchiveSystemId(), e.getMessage());
+        msg = LibUtils.getMsg("APPLIB_ARCHSYS_CHECK_ERROR", archiveSystemId, e.getMessage());
         _log.error(msg, e);
         errMessages.add(msg);
       }
       if (archiveSystem == null)
       {
-        msg = LibUtils.getMsg("APPLIB_ARCHSYS_NO_SYSTEM", app.getArchiveSystemId());
+        msg = LibUtils.getMsg("APPLIB_ARCHSYS_NO_SYSTEM", archiveSystemId);
         errMessages.add(msg);
       }
     }
@@ -1662,5 +1688,18 @@ public class AppsServiceImpl implements AppsService
     if (p.getTags() != null) app1.setTags(p.getTags());
     if (p.getNotes() != null) app1.setNotes(p.getNotes());
     return app1;
+  }
+
+  /**
+   * Find and return a LogicalQueue given list of queues and a queue name
+   * Return null if not found
+   */
+  private static LogicalQueue getLogicalQ(List<LogicalQueue> qList, String qName)
+  {
+    // If no list or no name then return null
+    if (qList == null || qList.isEmpty() || StringUtils.isBlank(qName)) return null;
+    // Search the list of the queue with the requested name.
+    for (LogicalQueue q : qList) { if (qName.equals(q.getName())) return q; }
+    return null;
   }
 }
