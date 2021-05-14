@@ -1248,7 +1248,64 @@ public class AppsServiceImpl implements AppsService
         // Check constraints
         if (execQ != null)
         {
-          ????
+          Integer maxNodeCount = execQ.getMaxNodeCount();
+          Integer minNodeCount = execQ.getMinNodeCount();
+          Integer maxCoresPerNode = execQ.getMaxCoresPerNode();
+          Integer minCoresPerNode = execQ.getMinCoresPerNode();
+          Integer maxMemoryMB = execQ.getMaxMemoryMB();
+          Integer minMemoryMB = execQ.getMinMemoryMB();
+          Integer maxMinutes = execQ.getMaxMinutes();
+          Integer minMinutes = execQ.getMinMinutes();
+          int appNodeCount = app.getNodeCount();
+          int appCoresPerNode = app.getCoresPerNode();
+          int appMemoryMb = app.getMemoryMb();
+          int appMaxMinutes = app.getMaxMinutes();
+
+          // If queue defines limit and app specifies limit and app limit out of range then add error
+          // NodeCount
+          if (maxNodeCount != null && maxNodeCount > 0 && appNodeCount > 0 && appNodeCount > maxNodeCount)
+          {
+            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_HIGH", "NodeCount", appNodeCount, maxNodeCount, execQName, execSystemId);
+            errMessages.add(msg);
+          }
+          if (minNodeCount != null && minNodeCount > 0 && appNodeCount > 0 && appNodeCount < minNodeCount)
+          {
+            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_LOW", "NodeCount", appNodeCount, minNodeCount, execQName, execSystemId);
+            errMessages.add(msg);
+          }
+          // CoresPerNode
+          if (maxCoresPerNode != null && maxCoresPerNode > 0 && appCoresPerNode > 0 && appCoresPerNode > maxCoresPerNode)
+          {
+            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_HIGH", "CoresPerNode", appCoresPerNode, maxCoresPerNode, execQName, execSystemId);
+            errMessages.add(msg);
+          }
+          if (minCoresPerNode != null && minCoresPerNode > 0 && appCoresPerNode > 0 && appCoresPerNode < minCoresPerNode)
+          {
+            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_LOW", "CoresPerNode", appCoresPerNode, minCoresPerNode, execQName, execSystemId);
+            errMessages.add(msg);
+          }
+          // MemoryMB
+          if (maxMemoryMB != null && maxMemoryMB > 0 && appMemoryMb > 0 && appMemoryMb > maxMemoryMB)
+          {
+            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_HIGH", "MemoryMB", appMemoryMb, maxMemoryMB, execQName, execSystemId);
+            errMessages.add(msg);
+          }
+          if (minMemoryMB != null && minMemoryMB > 0 && appMemoryMb > 0 && appMemoryMb < minMemoryMB)
+          {
+            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_LOW", "MemoryMB", appMemoryMb, minMemoryMB, execQName, execSystemId);
+            errMessages.add(msg);
+          }
+          // Minutes
+          if (maxMinutes != null && maxMinutes > 0 && appMaxMinutes > 0 && appMaxMinutes > maxMinutes)
+          {
+            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_HIGH", "MaxMinutes", appMaxMinutes, maxMinutes, execQName, execSystemId);
+            errMessages.add(msg);
+          }
+          if (minMinutes != null && minMinutes > 0 && appMaxMinutes > 0 && appMaxMinutes < minMinutes)
+          {
+            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_LOW", "MaxMinutes", appMaxMinutes, minMinutes, execQName, execSystemId);
+            errMessages.add(msg);
+          }
         }
       }
     }

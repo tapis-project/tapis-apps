@@ -87,7 +87,6 @@ public final class RuntimeParameters
 
 	// Service config
 	private String servicePassword;
-	private String serviceAdminTenant;
 
     // Site on which we are running
     private String siteId;
@@ -207,9 +206,6 @@ public final class RuntimeParameters
 		parm = inputProperties.getProperty(EnvVar.TAPIS_SERVICE_PASSWORD.getEnvName());
 		if (!StringUtils.isBlank(parm)) setServicePassword(parm);
 
-		parm = inputProperties.getProperty(EnvVar2.TAPIS_SVC_ADMIN_TENANT.getEnvName());
-		if (!StringUtils.isBlank(parm)) setServiceAdminTenant(parm);
-
       // --------------------- Site on which we are running ----------------------------
       // Site is required. Throw runtime exception if not found.
       parm = inputProperties.getProperty(EnvVar.TAPIS_SITE_ID.getEnvName());
@@ -230,11 +226,6 @@ public final class RuntimeParameters
 			throw new TapisRuntimeException(msg);
 		}
 		setTenantsSvcURL(parm);
-
-		parm = inputProperties.getProperty(EnvVar2.TAPIS_SVC_URL_SK.getEnvName());
-		if (!StringUtils.isBlank(parm)) setSkSvcURL(parm);
-
-
 
 	// --------------------- DB Parameters ----------------------------
     // User does not have to provide a pool size.
@@ -646,9 +637,6 @@ public final class RuntimeParameters
 		this.jdbcURL = jdbcURL;
 	}
 
-	public String getServiceAdminTenant() { return serviceAdminTenant; }
-	private void setServiceAdminTenant(String t) { serviceAdminTenant = t; }
-
 	public String getServicePassword() { return servicePassword; }
 	private void setServicePassword(String p) {servicePassword = p; }
 
@@ -657,9 +645,6 @@ public final class RuntimeParameters
 
     public String getTenantsSvcURL() { return tenantsSvcURL; }
 	private void setTenantsSvcURL(String url) {tenantsSvcURL = url; }
-
-	public String getSkSvcURL() { return skSvcURL; }
-	private void setSkSvcURL(String url) {skSvcURL = url; }
 
 	public String getInstanceName() {
 	    return instanceName;
@@ -784,22 +769,4 @@ public final class RuntimeParameters
     public void setLogFile(String logFile) {
         this.logFile = logFile;
     }
-
-
-    // TODO/TBD move this to shared TapisEnv?
-    // TODO/TBD Remove sk url. Always look up from tenants svc
-	private enum EnvVar2 {
-		TAPIS_SVC_URL_SK("tapis.svc.url.sk"),
-		TAPIS_SVC_ADMIN_TENANT("tapis.svc.admin.tenant");
-
-		private final String _envName;
-
-		EnvVar2(String envName) {
-			_envName = envName;
-		}
-
-		public String getEnvName() {
-			return this._envName;
-		}
-	}
 }

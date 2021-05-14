@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
-import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
@@ -546,8 +545,9 @@ public class AppsServiceTest
   // - If dynamicExecSystem then execSystemConstraints must be given
   // - If not dynamicExecSystem then execSystemId must be given
   // - If archiveSystem given then archive dir must be given
+  // - Validation of queue limits: NodeCount, CoresPerNode, MemoryMB, MaxMinutes
   @Test
-  public void testCreateInvalidMiscFail() throws Exception
+  public void testCreateInvalidMiscFail()
   {
     App app0 = apps[25];
     // If containerized is true then containerImage must be set
@@ -560,7 +560,7 @@ public class AppsServiceTest
       pass = true;
     }
     Assert.assertTrue(pass);
-    app0.setExecSystemId(execSystemId1);
+    // Reset in prep for continued checking
     app0.setContainerImage(containerImage1);
 
     // If containerized and SINGULARITY then RuntimeOptions must include one of SINGULARITY_START or SINGULARITY_RUN
@@ -583,6 +583,7 @@ public class AppsServiceTest
       pass = true;
     }
     Assert.assertTrue(pass);
+    // Reset in prep for continued checking
     app0.setRuntimeOptions(runtimeOptions1);
     app0.setRuntime(runtime1);
 
@@ -596,6 +597,7 @@ public class AppsServiceTest
       pass = true;
     }
     Assert.assertTrue(pass);
+    // Reset in prep for continued checking
     app0.setExecSystemConstraints(execSystemConstraints1);
 
     // If not dynamicExecSystem then execSystemId must be given
@@ -609,6 +611,7 @@ public class AppsServiceTest
       pass = true;
     }
     Assert.assertTrue(pass);
+    // Reset in prep for continued checking
     app0.setExecSystemId(execSystemId1);
     app0.setDynamicExecSystem(true);
 
@@ -624,7 +627,135 @@ public class AppsServiceTest
       pass = true;
     }
     Assert.assertTrue(pass);
+    // Reset in prep for continued checking
     app0.setArchiveSystemDir(tmpArchiveSystemDir);
+
+    // Various LogicalQueue related attributes must be in range defined for ExecSystemsLogicalQueue
+    // Start with maxNodeCount.
+    //   Each subsequent value that is out of range should be cumulative in the list of error messages.
+    // Save original values from app0 so we can reset and re-use app0 later.
+    String tmpExecSystemLogicalQueue = app0.getExecSystemLogicalQueue();
+    int tmpNodeCount =  app0.getNodeCount();
+    int tmpCoresPerNode =  app0.getCoresPerNode();
+    int tmpMemoryMB =  app0.getMemoryMb();
+    int tmpMaxMinutes =  app0.getMaxMinutes();
+    // Update logical queue
+    app0.setExecSystemLogicalQueue(execSystemLogicalQueue1); // queue defined on execSystemId (id: tapisv3-exec3, queue dsnormal)
+
+    // Check Max limits: nodeCount, coresPerNode, memoryMB, maxMinutes
+    app0.setNodeCount(nodeCount2 + 1);
+    pass = false;
+    try { svc.createApp(authUser1, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: NodeCount"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
+    app0.setCoresPerNode(coresPerNode2 + 1);
+    pass = false;
+    try { svc.createApp(authUser1, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: NodeCount"));
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: CoresPerNode"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
+    app0.setMemoryMb(memoryMb2 + 1);
+    pass = false;
+    try { svc.createApp(authUser1, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: NodeCount"));
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: CoresPerNode"));
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: MemoryMB"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
+    app0.setMaxMinutes(maxMinutes2 + 1);
+    pass = false;
+    try { svc.createApp(authUser1, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: NodeCount"));
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: CoresPerNode"));
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: MemoryMB"));
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: MaxMinutes"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
+    // Reset in prep for continued checking
+    app0.setNodeCount(tmpNodeCount);
+    app0.setCoresPerNode(tmpCoresPerNode);
+    app0.setMemoryMb(tmpMemoryMB);
+    app0.setMaxMinutes(tmpMaxMinutes);
+
+    // Check Min limits: nodeCount, coresPerNode, memoryMB, maxMinutes
+    app0.setNodeCount(nodeCount1 - 1);
+    pass = false;
+    try { svc.createApp(authUser1, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: NodeCount"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
+    app0.setCoresPerNode(coresPerNode1 - 1);
+    pass = false;
+    try { svc.createApp(authUser1, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: NodeCount"));
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: CoresPerNode"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
+    app0.setMemoryMb(memoryMb1 - 1);
+    pass = false;
+    try { svc.createApp(authUser1, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: NodeCount"));
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: CoresPerNode"));
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: MemoryMB"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
+    app0.setMaxMinutes(maxMinutes1 - 1);
+    pass = false;
+    try { svc.createApp(authUser1, app0, scrubbedJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: NodeCount"));
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: CoresPerNode"));
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: MemoryMB"));
+      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: MaxMinutes"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
+    // Reset in prep for continued checking
+    app0.setNodeCount(tmpNodeCount);
+    app0.setCoresPerNode(tmpCoresPerNode);
+    app0.setMemoryMb(tmpMemoryMB);
+    app0.setMaxMinutes(tmpMaxMinutes);
+
+    // Reset in prep for continued checking
+    // NOTE: Below resets not necessary but if we add to this method they should be done.
+    // Reset app attribute values
+    app0.setNodeCount(tmpNodeCount);
+    app0.setCoresPerNode(tmpCoresPerNode);
+    app0.setMemoryMb(tmpMemoryMB);
+    app0.setMaxMinutes(tmpMaxMinutes);
+    app0.setExecSystemLogicalQueue(tmpExecSystemLogicalQueue);
   }
 
   // Test creating, reading and deleting user permissions for an app

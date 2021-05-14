@@ -74,8 +74,8 @@ public final class IntegrationUtils
   public static final String[] execSystemConstraints1 = {"Constraint1a AND", "Constraint1b"};
   public static final String[] execSystemConstraints2 = {"Constraint2a AND", "Constraint2b"};
   public static final String[] execSystemConstraintsNull = null;
-  public static final String execSystemId1 = "tapisv3-exec";
-  public static final String execSystemId2 = "tapisv3-exec2";
+  public static final String execSystemId1 = "tapisv3-exec3"; // Exec system with most attributes populated, including LogicalQueues
+  public static final String execSystemId2 = "tapisv3-exec4"; // Exec system with most attributes populated, including LogicalQueues
   public static final String execSystemIdNull = null;
   public static final String execSystemExecDir1 = "execSystemExecDir1";
   public static final String execSystemExecDir2 = "execSystemExecDir2";
@@ -86,8 +86,8 @@ public final class IntegrationUtils
   public static final String execSystemOutputDir1 = "execSystemOutputDir1";
   public static final String execSystemOutputDir2 = "execSystemOutputDir2";
   public static final String execSystemOutputDirNull = null;
-  public static final String execSystemLogicalQueue1 = "execSystemLogicalQueue1";
-  public static final String execSystemLogicalQueue2 = "execSystemLogicalQueue2";
+  public static final String execSystemLogicalQueue1 = "dsnormal"; // A LogicalQueue defined for tapisv3-exec3
+  public static final String execSystemLogicalQueue2 = "dslarge";
   public static final String execSystemLogicalQueueNull = null;
   public static final String archiveSystemId1 = "tapisv3-storage";
   public static final String archiveSystemId2 = "tapisv3-storage-dev";
@@ -101,23 +101,23 @@ public final class IntegrationUtils
   public static final boolean archiveIncludeLaunchFilesTrue = true;
   public static final boolean archiveIncludeLaunchFilesFalse = false;
   public static final Boolean archiveIncludeLaunchFilesNull = null;
-  public static final int maxJobs1 = 1;
+  public static final int maxJobs1 = 5; // from tapisv3-exec3 dsnormal LogicalQueue maxJobs
   public static final int maxJobs2 = 2;
   public static final Integer maxJobsNull = null;
-  public static final int maxJobsPerUser1 = 1;
+  public static final int maxJobsPerUser1 = 2; // from tapisv3-exec3 dsnormal LogicalQueue maxJobsPerUser
   public static final int maxJobsPerUser2 = 2;
   public static final Integer maxJobsPerUserNull = null;
-  public static final int nodeCount1 = 1;
-  public static final int nodeCount2 = 2;
+  public static final int nodeCount1 = 10; // from tapisv3-exec3 dsnormal LogicalQueue minNodeCount
+  public static final int nodeCount2 = 20; // from tapisv3-exec3 dsnormal LogicalQueue maxNodeCount
   public static final Integer nodeCountNull = null;
-  public static final int coresPerNode1 = 1;
-  public static final int coresPerNode2 = 2;
+  public static final int coresPerNode1 = 10; // from tapisv3-exec3 dsnormal LogicalQueue minCoresPerNode
+  public static final int coresPerNode2 = 20; // from tapisv3-exec3 dsnormal LogicalQueue maxCoresPerNode
   public static final Integer coresPerNodeNull = null;
-  public static final int memoryMb1 = 1;
-  public static final int memoryMb2 = 2;
+  public static final int memoryMb1 = 32; // from tapisv3-exec3 dsnormal LogicalQueue minMemoryMB
+  public static final int memoryMb2 = 64; // from tapisv3-exec3 dsnormal LogicalQueue maxMemoryMB
   public static final Integer memoryMbNull = null;
-  public static final int maxMinutes1 = 1;
-  public static final int maxMinutes2 = 2;
+  public static final int maxMinutes1 = 10; // from tapisv3-exec3 dsnormal LogicalQueue minMinutes
+  public static final int maxMinutes2 = 20; // from tapisv3-exec3 dsnormal LogicalQueue maxMinutes
   public static final Integer maxMinutesNull = null;
   public static final boolean deletedFalse = false;
   public static final Instant createdNull = null;
@@ -269,7 +269,7 @@ public final class IntegrationUtils
                  containerImage1 +suffix, maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
                  jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
                  execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
-                 execSystemLogicalQueue1 +suffix, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
+                 execSystemLogicalQueue1, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
                  envVariables1, archiveIncludes1, archiveExcludes1, archiveIncludeLaunchFilesTrue,
                  nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
                  tags1, notes1, uuidNull, deletedFalse, createdNull, updatedNull);
@@ -304,7 +304,8 @@ public final class IntegrationUtils
 
   /**
    * Create a PatchApp in memory for use in testing.
-   * All attributes are to be updated.
+   * All attributes except execSystemLogicalQueue are to be updated.
+   * Unable to test update of LogicalQueue at this time since execSystemId2 has no LogicalQueues defined.
    */
   public static PatchApp makePatchAppFull()
   {
