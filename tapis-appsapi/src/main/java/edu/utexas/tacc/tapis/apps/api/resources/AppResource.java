@@ -806,7 +806,7 @@ public class AppResource
    * Check if application is enabled.
    * @param appId - name of the app
    * @param securityContext - user identity
-   * @return Response with app object as the result
+   * @return Response with boolean result
    */
   @GET
   @Path("{appId}/isEnabled")
@@ -831,6 +831,12 @@ public class AppResource
     try
     {
       isEnabled = appsService.isEnabled(authenticatedUser, appId);
+    }
+    catch (NotFoundException e)
+    {
+      String msg = ApiUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId);
+      _log.warn(msg);
+      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (Exception e)
     {

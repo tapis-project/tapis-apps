@@ -463,35 +463,52 @@ public class AppsServiceTest
     }
   }
 
+  // Check enable/disable/delete/undelete as well as isEnabled
+  // When resource deleted isEnabled should throw a NotFound exception
   @Test
   public void testEnableDisableDeleteUndelete() throws Exception
   {
     // Create the app
     App app0 = apps[20];
+    String appId = app0.getId();
+    String appVer = app0.getVersion();
     svc.createApp(authUser1, app0, scrubbedJson);
     // Enabled should start off true, then become false and finally true again.
-    App tmpApp = svc.getApp(authUser1, app0.getId(), app0.getVersion(), false);
+    App tmpApp = svc.getApp(authUser1, appId, appVer, false);
     Assert.assertTrue(tmpApp.isEnabled());
-    int changeCount = svc.disableApp(authUser1, app0.getId());
+    Assert.assertTrue(svc.isEnabled(authUser1, appId));
+    int changeCount = svc.disableApp(authUser1, appId);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
-    tmpApp = svc.getApp(authUser1, app0.getId(), app0.getVersion(), false);
+    tmpApp = svc.getApp(authUser1, appId, appVer, false);
     Assert.assertFalse(tmpApp.isEnabled());
-    changeCount = svc.enableApp(authUser1, app0.getId());
+    Assert.assertFalse(svc.isEnabled(authUser1, appId));
+    changeCount = svc.enableApp(authUser1, appId);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
-    tmpApp = svc.getApp(authUser1, app0.getId(), app0.getVersion(), false);
+    tmpApp = svc.getApp(authUser1, appId, appVer, false);
     Assert.assertTrue(tmpApp.isEnabled());
+    Assert.assertTrue(svc.isEnabled(authUser1, appId));
 
     // Deleted should start off false, then become true and finally false again.
-    tmpApp = svc.getApp(authUser1, app0.getId(), app0.getVersion(), false);
+    tmpApp = svc.getApp(authUser1, appId, appVer, false);
     Assert.assertFalse(tmpApp.isDeleted());
-    changeCount = svc.deleteApp(authUser1, app0.getId());
+    changeCount = svc.deleteApp(authUser1, appId);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
-    tmpApp = svc.getApp(authUser1, app0.getId(), app0.getVersion(), false);
+    tmpApp = svc.getApp(authUser1, appId, appVer, false);
     Assert.assertNull(tmpApp);
-    changeCount = svc.undeleteApp(authUser1, app0.getId());
+    changeCount = svc.undeleteApp(authUser1, appId);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
-    tmpApp = svc.getApp(authUser1, app0.getId(), app0.getVersion(), false);
+    tmpApp = svc.getApp(authUser1, appId, appVer, false);
     Assert.assertFalse(tmpApp.isDeleted());
+
+    // When deleted isEnabled should throw NotFound exception
+    svc.deleteApp(authUser1, appId);
+    boolean pass = false;
+    try { svc.isEnabled(authUser1, appId); }
+    catch (NotFoundException nfe)
+    {
+      pass = true;
+    }
+    Assert.assertTrue(pass);
   }
 
   @Test
@@ -802,6 +819,7 @@ public class AppsServiceTest
   }
 
   // Test various cases when app is missing
+  //  - isEnabled
   //  - get owner with no app
   //  - get perm with no app
   //  - grant perm with no app
@@ -824,6 +842,15 @@ public class AppsServiceTest
     // Delete app with no app should throw NotFound exception
     pass = false;
     try { svc.deleteApp(authUser1, fakeAppName); }
+    catch (NotFoundException nfe)
+    {
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
+    // isEnabled check with no resource should throw a NotFound exception
+    pass = false;
+    try { svc.isEnabled(authUser1, fakeAppName); }
     catch (NotFoundException nfe)
     {
       pass = true;

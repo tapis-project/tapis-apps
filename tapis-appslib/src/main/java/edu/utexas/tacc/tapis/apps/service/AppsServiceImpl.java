@@ -223,7 +223,7 @@ public class AppsServiceImpl implements AppsService
    * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
-   * @throws NotFoundException - App not found
+   * @throws NotFoundException - Resource not found
    */
   @Override
   public void updateApp(AuthenticatedUser authenticatedUser, PatchApp patchApp, String scrubbedText)
@@ -283,7 +283,7 @@ public class AppsServiceImpl implements AppsService
    * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
-   * @throws NotFoundException - App not found
+   * @throws NotFoundException - Resource not found
    */
   @Override
   public int enableApp(AuthenticatedUser authenticatedUser, String appId)
@@ -302,7 +302,7 @@ public class AppsServiceImpl implements AppsService
    * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
-   * @throws NotFoundException - App not found
+   * @throws NotFoundException - Resource not found
    */
   @Override
   public int disableApp(AuthenticatedUser authenticatedUser, String appId)
@@ -321,7 +321,7 @@ public class AppsServiceImpl implements AppsService
    * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
-   * @throws NotFoundException - App not found
+   * @throws NotFoundException - Resource not found
    */
   @Override
   public int deleteApp(AuthenticatedUser authenticatedUser, String appId)
@@ -340,7 +340,7 @@ public class AppsServiceImpl implements AppsService
    * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
-   * @throws NotFoundException - App not found
+   * @throws NotFoundException - Resource not found
    */
   @Override
   public int undeleteApp(AuthenticatedUser authenticatedUser, String appId)
@@ -360,7 +360,7 @@ public class AppsServiceImpl implements AppsService
    * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
-   * @throws NotFoundException - App not found
+   * @throws NotFoundException - Resource not found
    */
   @Override
   public int changeAppOwner(AuthenticatedUser authenticatedUser, String appId, String newOwnerName)
@@ -529,9 +529,11 @@ public class AppsServiceImpl implements AppsService
    * @return true if app is enabled, false otherwise
    * @throws TapisException - for Tapis related exceptions
    * @throws NotAuthorizedException - unauthorized
+   * @throws NotFoundException - Resource not found
    */
   @Override
-  public boolean isEnabled(AuthenticatedUser authenticatedUser, String appId) throws TapisException, NotAuthorizedException, TapisClientException
+  public boolean isEnabled(AuthenticatedUser authenticatedUser, String appId)
+          throws TapisException, NotFoundException, NotAuthorizedException, TapisClientException
   {
     AppOperation op = AppOperation.read;
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -540,14 +542,13 @@ public class AppsServiceImpl implements AppsService
     // For service request use oboTenant for tenant associated with the app
     if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType())) appTenantName = authenticatedUser.getOboTenantId();
 
-    // We need owner to check auth and if app not there cannot find owner, so cannot do auth check if no app
-    if (dao.checkForApp(appTenantName, appId, false)) {
-      // ------------------------- Check service level authorization -------------------------
-      checkAuth(authenticatedUser, op, appId, null, null, null);
-      return dao.isEnabled(appTenantName, appId);
-    }
-    // App has been deleted or is not present
-    return false;
+    // Resource must exist and not be deleted
+    if (!dao.checkForApp(appTenantName, appId, false))
+      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId));
+
+    // ------------------------- Check service level authorization -------------------------
+    checkAuth(authenticatedUser, op, appId, null, null, null);
+    return dao.isEnabled(appTenantName, appId);
   }
 
   /**
@@ -830,6 +831,7 @@ public class AppsServiceImpl implements AppsService
    * @param updateText - Client provided text used to create the permissions list. Saved in update record.
    * @throws TapisException - for Tapis related exceptions
    * @throws NotAuthorizedException - unauthorized
+   * @throws NotFoundException - Resource not found
    */
   @Override
   public void grantUserPermissions(AuthenticatedUser authenticatedUser, String appId, String userName,
@@ -1042,7 +1044,7 @@ public class AppsServiceImpl implements AppsService
    * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
-   * @throws NotFoundException - App not found
+   * @throws NotFoundException - Resource not found
    */
   private int updateEnabled(AuthenticatedUser authenticatedUser, String appId, AppOperation appOp)
           throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
@@ -1087,7 +1089,7 @@ public class AppsServiceImpl implements AppsService
    * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
-   * @throws NotFoundException - App not found
+   * @throws NotFoundException - Resource not found
    */
   private int updateDeleted(AuthenticatedUser authenticatedUser, String appId, AppOperation appOp)
           throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
