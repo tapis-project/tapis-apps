@@ -182,7 +182,7 @@ public class ApiUtils
     {
       msg = ApiUtils.getMsgAuth("APPAPI_NOAPP", authenticatedUser, appName, opName);
       _log.error(msg);
-      return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Response.Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
     return null;
   }
