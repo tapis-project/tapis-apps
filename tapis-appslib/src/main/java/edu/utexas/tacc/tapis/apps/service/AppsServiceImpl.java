@@ -600,12 +600,13 @@ public class AppsServiceImpl implements AppsService
    * @param searchList - optional list of conditions used for searching
    * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
    * @param startAfter - where to start when sorting, e.g. orderBy=id(asc)&startAfter=101 (may not be used with skip)
+   * @param showDeleted - whether or not to included resources that have been marked as deleted.
    * @return Count of App objects
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
   public int getAppsTotalCount(AuthenticatedUser authenticatedUser, List<String> searchList,
-                               List<OrderBy> orderByList, String startAfter)
+                               List<OrderBy> orderByList, String startAfter, boolean showDeleted)
           throws TapisException, TapisClientException
   {
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -646,7 +647,8 @@ public class AppsServiceImpl implements AppsService
     if (allowedAppIDs != null && allowedAppIDs.isEmpty()) return 0;
 
     // Count all allowed systems matching the search conditions
-    return dao.getAppsCount(appTenantName, verifiedSearchList, null, allowedAppIDs, orderByList, startAfter, versionSpecified);
+    return dao.getAppsCount(appTenantName, verifiedSearchList, null, allowedAppIDs, orderByList, startAfter,
+                            versionSpecified, showDeleted);
   }
 
   /**
@@ -657,12 +659,13 @@ public class AppsServiceImpl implements AppsService
    * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
    * @param skip - number of results to skip (may not be used with startAfter)
    * @param startAfter - where to start when sorting, e.g. limit=10&orderBy=id(asc)&startAfter=101 (may not be used with skip)
+   * @param showDeleted - whether or not to included resources that have been marked as deleted.
    * @return List of App objects
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
   public List<App> getApps(AuthenticatedUser authenticatedUser, List<String> searchList, int limit,
-                           List<OrderBy> orderByList, int skip, String startAfter)
+                           List<OrderBy> orderByList, int skip, String startAfter, boolean showDeleted)
           throws TapisException, TapisClientException
   {
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -701,7 +704,7 @@ public class AppsServiceImpl implements AppsService
 
     // Get all allowed apps matching the search conditions
     List<App> apps = dao.getApps(appTenantName, verifiedSearchList, null, allowedAppIDs, limit, orderByList, skip,
-                                 startAfter, versionSpecified);
+                                 startAfter, versionSpecified, showDeleted);
     return apps;
   }
 
@@ -710,16 +713,18 @@ public class AppsServiceImpl implements AppsService
    * Use provided string containing a valid SQL where clause for the search.
    * @param authenticatedUser - principal user containing tenant and user info
    * @param sqlSearchStr - string containing a valid SQL where clause
+   * @param showDeleted - whether or not to included resources that have been marked as deleted.
    * @return List of App objects
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
   public List<App> getAppsUsingSqlSearchStr(AuthenticatedUser authenticatedUser, String sqlSearchStr, int limit,
-                                            List<OrderBy> orderByList, int skip, String startAfter)
+                                            List<OrderBy> orderByList, int skip, String startAfter, boolean showDeleted)
           throws TapisException, TapisClientException
   {
     // If search string is empty delegate to getApps()
-    if (StringUtils.isBlank(sqlSearchStr)) return getApps(authenticatedUser, null, limit, orderByList, skip, startAfter);
+    if (StringUtils.isBlank(sqlSearchStr)) return getApps(authenticatedUser, null, limit, orderByList, skip,
+                                                          startAfter, showDeleted);
 
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     // Determine tenant scope for user
@@ -757,23 +762,24 @@ public class AppsServiceImpl implements AppsService
 
     // Get all allowed apps matching the search conditions
     List<App> apps = dao.getApps(appTenantName, null, searchAST, allowedAppIDs, limit, orderByList, skip, startAfter,
-                                 versionSpecified);
+                                 versionSpecified, showDeleted);
     return apps;
   }
 
   /**
-   * Get list of app names
+   * Get list of app IDs
    * @param authenticatedUser - principal user containing tenant and user info
+   * @param showDeleted - whether or not to included resources that have been marked as deleted.
    * @return - list of apps
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
-  public Set<String> getAppIDs(AuthenticatedUser authenticatedUser) throws TapisException
+  public Set<String> getAppIDs(AuthenticatedUser authenticatedUser, boolean showDeleted) throws TapisException
   {
     AppOperation op = AppOperation.read;
     if (authenticatedUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     // Get all app names
-    Set<String> appIds = dao.getAppIDs(authenticatedUser.getTenantId());
+    Set<String> appIds = dao.getAppIDs(authenticatedUser.getTenantId(), showDeleted);
     var allowedNames = new HashSet<String>();
     // Filter based on user authorization
     for (String name: appIds)

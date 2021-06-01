@@ -233,7 +233,7 @@ public class SearchDaoTest
       }
       System.out.println("  For case    # " + caseNum + " VerfiedInput: " + verifiedSearchList);
       List<App> searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, DEFAULT_LIMIT, orderByListNull,
-                                            DEFAULT_SKIP, startAfterNull, versionSpecifiedNull);
+                                            DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
       System.out.println("  Result size: " + searchResults.size());
       assertEquals(searchResults.size(), cd.count,  "SearchDaoTest.testValidCases: Incorrect result count for case number: " + caseNum);
     }

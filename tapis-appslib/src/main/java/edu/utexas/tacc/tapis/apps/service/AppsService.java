@@ -55,17 +55,17 @@ public interface AppsService
           throws TapisException, NotAuthorizedException, TapisClientException;
 
   int getAppsTotalCount(AuthenticatedUser authenticatedUser, List<String> searchList, List<OrderBy> orderByList,
-                        String startAfter) throws TapisException, TapisClientException;
+                        String startAfter, boolean showDeleted) throws TapisException, TapisClientException;
 
   List<App> getApps(AuthenticatedUser authenticatedUser, List<String> searchList, int limit,
-                    List<OrderBy> orderByList, int skip, String startAfter)
+                    List<OrderBy> orderByList, int skip, String startAfter, boolean showDeleted)
           throws TapisException, TapisClientException;
 
   List<App> getAppsUsingSqlSearchStr(AuthenticatedUser authenticatedUser, String searchStr, int limit,
-                                     List<OrderBy> orderByList, int skip, String startAfter)
+                                     List<OrderBy> orderByList, int skip, String startAfter, boolean showDeleted)
           throws TapisException, TapisClientException;
 
-  Set<String> getAppIDs(AuthenticatedUser authenticatedUser)
+  Set<String> getAppIDs(AuthenticatedUser authenticatedUser, boolean showDeleted)
           throws TapisException;
 
   String getAppOwner(AuthenticatedUser authenticatedUser, String appId)

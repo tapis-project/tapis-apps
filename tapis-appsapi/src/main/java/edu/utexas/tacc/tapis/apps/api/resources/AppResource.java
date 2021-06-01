@@ -8,7 +8,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -601,12 +600,14 @@ public class AppResource
    * NOTE: The query parameters search, limit, orderBy, skip, startAfter are all handled in the filter
    *       QueryParametersRequestFilter. No need to use @QueryParam here.
    * @param securityContext - user identity
+   * @param showDeleted - whether or not to included resources that have been marked as deleted.
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @GET
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getApps(@Context SecurityContext securityContext)
+  public Response getApps(@Context SecurityContext securityContext,
+                          @QueryParam("showDeleted") @DefaultValue("false") boolean showDeleted)
   {
     String opName = "getApps";
     // Trace this request.
@@ -628,7 +629,7 @@ public class AppResource
     Response successResponse;
     try
     {
-      successResponse = getSearchResponse(authenticatedUser, null, srchParms);
+      successResponse = getSearchResponse(authenticatedUser, null, srchParms, showDeleted);
     }
     catch (Exception e)
     {
@@ -644,13 +645,15 @@ public class AppResource
    * searchAppsQueryParameters
    * Dedicated search endpoint for App resource. Search conditions provided as query parameters.
    * @param securityContext - user identity
+   * @param showDeleted - whether or not to included resources that have been marked as deleted.
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @GET
   @Path("search")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response searchAppsQueryParameters(@Context SecurityContext securityContext)
+  public Response searchAppsQueryParameters(@Context SecurityContext securityContext,
+                                            @QueryParam("showDeleted") @DefaultValue("false") boolean showDeleted)
   {
     String opName = "searchAppsGet";
     // Trace this request.
@@ -688,7 +691,7 @@ public class AppResource
     Response successResponse;
     try
     {
-      successResponse = getSearchResponse(authenticatedUser, null, srchParms);
+      successResponse = getSearchResponse(authenticatedUser, null, srchParms, showDeleted);
     }
     catch (Exception e)
     {
@@ -707,6 +710,7 @@ public class AppResource
    * Request body contains an array of strings that are concatenated to form the full SQL-like search string.
    * @param payloadStream - request body
    * @param securityContext - user identity
+   * @param showDeleted - whether or not to included resources that have been marked as deleted.
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @POST
@@ -714,7 +718,8 @@ public class AppResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response searchAppsRequestBody(InputStream payloadStream,
-                                        @Context SecurityContext securityContext)
+                                        @Context SecurityContext securityContext,
+                                        @QueryParam("showDeleted") @DefaultValue("false") boolean showDeleted)
   {
     String opName = "searchAppsPost";
     // Trace this request.
@@ -771,7 +776,8 @@ public class AppResource
     Response successResponse;
     try
     {
-      successResponse = getSearchResponse(authenticatedUser, sqlSearchStr, srchParms); }
+      successResponse = getSearchResponse(authenticatedUser, sqlSearchStr, srchParms, showDeleted);
+    }
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth(SELECT_ERR, authenticatedUser, e.getMessage());
@@ -781,24 +787,6 @@ public class AppResource
 
     // ---------------------------- Success -------------------------------
     return successResponse;
-  }
-
-  /**
-   * deleteApp
-   * @param appId - name of the app to delete
-   * @param confirmDelete - confirm the action
-   * @param securityContext - user identity
-   * @return - response with change count as the result
-   */
-  @DELETE
-  @Path("{appId}")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response deleteApp(@PathParam("appId") String appId,
-                            @QueryParam("confirm") @DefaultValue("false") boolean confirmDelete,
-                            @Context SecurityContext securityContext)
-  {
-    return postAppSingleUpdate(OP_DELETE, appId, null, securityContext);
   }
 
   /**
@@ -1108,7 +1096,8 @@ public class AppResource
    *  srchParms must be non-null
    *  One of srchParms.searchList or sqlSearchStr must be non-null
    */
-  private Response getSearchResponse(AuthenticatedUser authenticatedUser, String sqlSearchStr, SearchParameters srchParms)
+  private Response getSearchResponse(AuthenticatedUser authenticatedUser, String sqlSearchStr,
+                                     SearchParameters srchParms, boolean showDeleted)
           throws Exception
   {
     RespAbstract resp1;
@@ -1130,9 +1119,10 @@ public class AppResource
     List<OrderBy> orderByList = srchParms.getOrderByList();
 
     if (StringUtils.isBlank(sqlSearchStr))
-      apps = appsService.getApps(authenticatedUser, searchList, limit, orderByList, skip, startAfter);
+      apps = appsService.getApps(authenticatedUser, searchList, limit, orderByList, skip, startAfter, showDeleted);
     else
-      apps = appsService.getAppsUsingSqlSearchStr(authenticatedUser, sqlSearchStr, limit, orderByList, skip, startAfter);
+      apps = appsService.getAppsUsingSqlSearchStr(authenticatedUser, sqlSearchStr, limit, orderByList, skip,
+                                                  startAfter, showDeleted);
     if (apps == null) apps = Collections.emptyList();
     itemCountStr = String.format(APPS_CNT_STR, apps.size());
     if (computeTotal && limit <= 0) totalCount = apps.size();
@@ -1140,7 +1130,7 @@ public class AppResource
     // If we need the count and there was a limit then we need to make a call
     if (computeTotal && limit > 0)
     {
-      totalCount = appsService.getAppsTotalCount(authenticatedUser, searchList, orderByList, startAfter);
+      totalCount = appsService.getAppsTotalCount(authenticatedUser, searchList, orderByList, startAfter, showDeleted);
     }
 
     // ---------------------------- Success -------------------------------

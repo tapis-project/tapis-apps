@@ -8,6 +8,7 @@ import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
 import edu.utexas.tacc.tapis.apps.model.NotifMechanism.NotifMechanismType;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
+import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
@@ -17,8 +18,10 @@ import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /*
@@ -249,6 +252,18 @@ public final class IntegrationUtils
 
   public static final Boolean versionSpecifiedNull = null;
 
+  // Search and sort
+  public static final List<String> searchListNull = null;
+  public static final ASTNode searchASTNull = null;
+  public static final Set<String> setOfIDsNull = null;
+  public static final int limitNone = -1;
+  public static final List<String> orderByAttrEmptyList = Arrays.asList("");
+  public static final List<String> orderByDirEmptyList = Arrays.asList("");
+  public static final int skipZero = 0;
+  public static final String startAferEmpty = "";
+  public static final boolean showDeletedFalse = false;
+  public static final boolean showDeletedTrue = true;
+
   /**
    * Create an array of App objects in memory
    * Names will be of format TestApp_K_NNN where K is the key and NNN runs from 000 to 999
@@ -368,5 +383,11 @@ public final class IntegrationUtils
             schedulerOptionListNull, envVariablesNull, archiveIncludesNull, archiveExcludesNull, archiveIncludeLaunchFilesNull,
             finListNull, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
             tagsNull, notesNull);
+  }
+
+  public static String getAppName(String key, int idx)
+  {
+    String suffix = key + "_" + String.format("%03d", idx);
+    return appIdPrefix + "_" + suffix;
   }
 }

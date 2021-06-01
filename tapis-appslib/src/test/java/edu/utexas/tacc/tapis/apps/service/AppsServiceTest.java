@@ -413,7 +413,7 @@ public class AppsServiceTest
     svc.createApp(authUser1, app0, scrubbedJson);
     app0 = apps[3];
     svc.createApp(authUser1, app0, scrubbedJson);
-    Set<String> appIDs = svc.getAppIDs(authUser1);
+    Set<String> appIDs = svc.getAppIDs(authUser1, showDeletedFalse);
     for (String name : appIDs)
     {
       System.out.println("Found item: " + name);
@@ -427,7 +427,7 @@ public class AppsServiceTest
   {
     App app0 = apps[4];
     svc.createApp(authUser1, app0, scrubbedJson);
-    List<App> apps = svc.getApps(authUser1, null, -1, null, -1, null);
+    List<App> apps = svc.getApps(authUser1, null, -1, null, -1, null, showDeletedFalse);
     for (App app : apps)
     {
       System.out.println("Found item with id: " + app.getId() + " and version: " + app.getVersion());
@@ -453,7 +453,7 @@ public class AppsServiceTest
     svc.createApp(authUser1, app0, scrubbedJson);
 
     // When retrieving apps as testUser5 only 2 should be returned
-    List<App> apps = svc.getApps(authUser5, null, -1, null, -1, null);
+    List<App> apps = svc.getApps(authUser5, searchListNull, -1, orderByListNull, -1, startAfterNull, showDeletedFalse);
     System.out.println("Total number of apps retrieved: " + apps.size());
     Assert.assertEquals(apps.size(), 2);
     for (App app : apps)

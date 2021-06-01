@@ -273,7 +273,7 @@ public class AppsDaoTest
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
     // Get all apps
-    Set<String> appNames = dao.getAppIDs(tenantName);
+    Set<String> appNames = dao.getAppIDs(tenantName, showDeletedFalse);
     for (String name : appNames)
     {
       System.out.println("Found item: " + name);
@@ -290,7 +290,7 @@ public class AppsDaoTest
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
     List<App> apps = dao.getApps(tenantName, null, null, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
-                                 startAfterNull, versionSpecifiedNull);
+                                 startAfterNull, versionSpecifiedNull, showDeletedFalse);
     for (App app : apps)
     {
       System.out.println("Found item with appId: " + app.getId() + " appVer: " + app.getVersion());
@@ -314,7 +314,7 @@ public class AppsDaoTest
     appIdList.add(app0.getId());
     // Get all apps in list of IDs
     List<App> apps = dao.getApps(tenantName, null, null, appIdList, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
-                                 startAfterNull, versionSpecifiedNull);
+                                 startAfterNull, versionSpecifiedNull, showDeletedFalse);
     for (App app : apps)
     {
       System.out.println("Found item with appId: " + app.getId() + " and appVer: " + app.getVersion());
@@ -423,7 +423,7 @@ public class AppsDaoTest
     // Use search to pick out an app and make sure we get just the latest version
     var searchList = Collections.singletonList("id.eq." + app1.getId());
     List<App> apps = dao.getApps(tenantName, searchList, null, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
-                                 startAfterNull, versionSpecifiedNull);
+                                 startAfterNull, versionSpecifiedNull, showDeletedFalse);
     Assert.assertEquals(apps.size(), 1);
     tmpApp = apps.get(0);
     System.out.println("Found item with Id: " + tmpApp.getId() + " Version: " + tmpApp.getVersion());
@@ -433,7 +433,7 @@ public class AppsDaoTest
     // Now add version to the searchList and confirm we get back all versions
     searchList = Arrays.asList("id.eq." + app1.getId(), "version.like.%");
     apps = dao.getApps(tenantName, searchList, null, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
-                       startAfterNull, versionSpecifiedNull);
+                       startAfterNull, versionSpecifiedNull, showDeletedFalse);
     Assert.assertEquals(apps.size(), 2);
     for (App app : apps) {
       System.out.println("Found item with Id: " + app.getId() + " Version: " + app.getVersion());

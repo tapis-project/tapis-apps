@@ -48,12 +48,14 @@ public interface AppsDao
   App getApp(String tenant, String id, String version, boolean includeDeleted) throws TapisException;
 
   int getAppsCount(String tenant, List<String> searchList, ASTNode searchAST, Set<String> setOfIDs,
-                   List<OrderBy> orderByList, String startAfter, Boolean versionSpecified) throws TapisException;
+                   List<OrderBy> orderByList, String startAfter, Boolean versionSpecified,
+                   boolean showDeleted) throws TapisException;
 
   List<App> getApps(String tenant, List<String> searchList, ASTNode searchAST, Set<String> appIDs, int limit,
-                    List<OrderBy> orderByList, int skip, String startAfter, Boolean versionSpecified) throws TapisException;
+                    List<OrderBy> orderByList, int skip, String startAfter, Boolean versionSpecified,
+                    boolean showDeleted) throws TapisException;
 
-  Set<String> getAppIDs(String tenant) throws TapisException;
+  Set<String> getAppIDs(String tenant, boolean showDeleted) throws TapisException;
 
   String getAppOwner(String tenant, String id) throws TapisException;
 }

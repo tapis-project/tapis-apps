@@ -837,12 +837,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @param startAfter - where to start when sorting, e.g. orderBy=id(asc)&startAfter=101 (may not be used with skip)
    * @param versionSpecified - indicates (if known) if we are to get just latest version or all versions specified
    *                     by a search condition. Use null to indicate not known and this method should determine.
+   * @param showDeleted - whether or not to included resources that have been marked as deleted.
    * @return - count of objects
    * @throws TapisException - on error
    */
   @Override
   public int getAppsCount(String tenant, List<String> searchList, ASTNode searchAST, Set<String> setOfIDs,
-                          List<OrderBy> orderByList, String startAfter, Boolean versionSpecified)
+                          List<OrderBy> orderByList, String startAfter, Boolean versionSpecified, boolean showDeleted)
           throws TapisException
   {
     // TODO - for now just use the major (i.e. first in list) orderBy item.
@@ -886,7 +887,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (versionSpecified == null) versionSpecified = checkForVersion(searchList, searchAST);
 
     // Begin where condition for the query
-    Condition whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
+    Condition whereCondition;
+    if (showDeleted) whereCondition = APPS.TENANT.eq(tenant);
+    else whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
 
     // Add searchList or searchAST to where condition
     if (searchList != null)
@@ -961,6 +964,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @param startAfter - where to start when sorting, e.g. limit=10&orderBy=id(asc)&startAfter=101 (may not be used with skip)
    * @param versionSpecified - indicates (if known) if we are to get just latest version or all versions specified
    *                     by a search condition. Use null to indicate not known and this method should determine.
+   * @param showDeleted - whether or not to included resources that have been marked as deleted.
    * NOTE: Use versionSpecified = null to indicate this method should determine if a search condition specifies
    *       which versions to retrieve.
    * @return - list of App objects
@@ -968,7 +972,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    */
   @Override
   public List<App> getApps(String tenant, List<String> searchList, ASTNode searchAST, Set<String> appIDs, int limit,
-                           List<OrderBy> orderByList, int skip, String startAfter, Boolean versionSpecified)
+                           List<OrderBy> orderByList, int skip, String startAfter, Boolean versionSpecified, boolean showDeleted)
           throws TapisException
   {
     // TODO - for now just use the major (i.e. first in list) orderBy item.
@@ -1023,7 +1027,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (versionSpecified == null) versionSpecified = checkForVersion(searchList, searchAST);
 
     // Begin where condition for this query
-    Condition whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
+    Condition whereCondition;
+    if (showDeleted) whereCondition = APPS.TENANT.eq(tenant);
+    else whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
 
     // Add searchList or searchAST to where condition
     if (searchList != null)
@@ -1119,14 +1125,19 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * getAppIDs
    * @param tenant - tenant name
+   * @param showDeleted - whether or not to included resources that have been marked as deleted.
    * @return - List of app names
    * @throws TapisException - on error
    */
   @Override
-  public Set<String> getAppIDs(String tenant) throws TapisException
+  public Set<String> getAppIDs(String tenant, boolean showDeleted) throws TapisException
   {
     // The result list is always non-null.
     var idList = new HashSet<String>();
+
+    Condition whereCondition;
+    if (showDeleted) whereCondition = APPS.TENANT.eq(tenant);
+    else whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
 
     Connection conn = null;
     try
@@ -1136,7 +1147,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // ------------------------- Call SQL ----------------------------
       // Use jOOQ to build query string
       DSLContext db = DSL.using(conn);
-      Result<?> result = db.select(APPS.ID).from(APPS).where(APPS.TENANT.eq(tenant)).fetch();
+      Result<?> result = db.select(APPS.ID).from(APPS).where(whereCondition).fetch();
       // Iterate over result
       for (Record r : result) { idList.add(r.get(APPS.ID)); }
     }
