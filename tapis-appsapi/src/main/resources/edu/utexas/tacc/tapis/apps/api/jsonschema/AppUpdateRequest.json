@@ -1,6 +1,6 @@
 {
   "$id": "http://tapis.tacc.utexas.edu/AppUpdateRequest",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Schema for a request to update an app",
   "additionalProperties": false,
 

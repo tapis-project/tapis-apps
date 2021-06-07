@@ -216,7 +216,7 @@ CREATE TABLE app_args
     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     arg_val TEXT NOT NULL DEFAULT '',
     meta_name TEXT NOT NULL DEFAULT '',
-    meta_description TEXT NOT NULL DEFAULT '',
+    meta_description TEXT,
     meta_required BOOLEAN NOT NULL DEFAULT true,
     meta_key_value_pairs TEXT[] NOT NULL
 );
@@ -232,7 +232,7 @@ CREATE TABLE container_args
     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     arg_val TEXT NOT NULL DEFAULT '',
     meta_name TEXT NOT NULL DEFAULT '',
-    meta_description TEXT NOT NULL DEFAULT '',
+    meta_description TEXT,
     meta_required BOOLEAN NOT NULL DEFAULT true,
     meta_key_value_pairs TEXT[] NOT NULL
 );
@@ -248,7 +248,7 @@ CREATE TABLE scheduler_options
     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     arg_val TEXT NOT NULL DEFAULT '',
     meta_name TEXT NOT NULL DEFAULT '',
-    meta_description TEXT NOT NULL DEFAULT '',
+    meta_description TEXT,
     meta_required BOOLEAN NOT NULL DEFAULT true,
     meta_key_value_pairs TEXT[] NOT NULL
 );
