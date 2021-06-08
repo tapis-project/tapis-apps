@@ -69,6 +69,7 @@ import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultChangeCount;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultResourceUrl;
 
 import static edu.utexas.tacc.tapis.apps.model.App.APP_TYPE_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_CONTAINERIZED;
 import static edu.utexas.tacc.tapis.apps.model.App.ID_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.OWNER_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.VERSION_FIELD;
@@ -946,7 +947,7 @@ public class AppResource
     Object notes = extractNotes(rawJson);
     // Create App
     var app = new App(-1, -1, null, req.id, req.version, req.description, req.appType, req.owner, req.enabled,
-          req.containerized,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
+          DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,

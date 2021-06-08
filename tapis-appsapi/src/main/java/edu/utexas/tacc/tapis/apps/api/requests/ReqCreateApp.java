@@ -8,7 +8,6 @@ import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 import java.util.List;
 
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_ENABLED;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_CONTAINERIZED;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NOTES;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_OWNER;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_RUNTIME;
@@ -26,7 +25,6 @@ public final class ReqCreateApp
   public AppType appType;
   public String owner = DEFAULT_OWNER;
   public boolean enabled = DEFAULT_ENABLED;
-  public boolean containerized = DEFAULT_CONTAINERIZED;
   public Runtime runtime = DEFAULT_RUNTIME;
   public String runtimeVersion;
   public List<RuntimeOption> runtimeOptions;

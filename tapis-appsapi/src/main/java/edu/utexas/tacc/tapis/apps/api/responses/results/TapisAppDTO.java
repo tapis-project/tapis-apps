@@ -51,7 +51,7 @@ public final class TapisAppDTO
   public AppType appType;
   public String owner;
   public boolean enabled;
-  public boolean containerized;
+//  public boolean containerized;
   public Runtime runtime;
   public String runtimeVersion;
   public List<RuntimeOption> runtimeOptions;
@@ -76,7 +76,7 @@ public final class TapisAppDTO
     appType = a.getAppType();
     owner = a.getOwner();
     enabled = a.isEnabled();
-    containerized = a.isContainerized();
+//    containerized = a.isContainerized();
     runtime = a.getRuntime();
     runtimeVersion = a.getRuntimeVersion();
     runtimeOptions = a.getRuntimeOptions();
@@ -166,7 +166,7 @@ public final class TapisAppDTO
       case APP_TYPE_FIELD -> jsonObject.addProperty(APP_TYPE_FIELD, appType.name());
       case OWNER_FIELD -> jsonObject.addProperty(OWNER_FIELD, owner);
       case ENABLED_FIELD -> jsonObject.addProperty(ENABLED_FIELD, Boolean.toString(enabled));
-      case CONTAINERIZED_FIELD -> jsonObject.addProperty(CONTAINERIZED_FIELD, Boolean.toString(containerized));
+//      case CONTAINERIZED_FIELD -> jsonObject.addProperty(CONTAINERIZED_FIELD, Boolean.toString(containerized));
       case RUNTIME_FIELD -> jsonObject.addProperty(RUNTIME_FIELD, runtime.name());
       case RUNTIMEVER_FIELD -> jsonObject.addProperty(RUNTIMEVER_FIELD, runtimeVersion);
       case RUNTIMEOPTS_FIELD -> jsonObject.add(RUNTIMEOPTS_FIELD, gson.toJsonTree(runtimeOptions));
