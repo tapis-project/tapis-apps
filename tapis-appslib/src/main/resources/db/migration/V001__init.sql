@@ -77,7 +77,7 @@ CREATE TABLE apps_versions
     description TEXT,
     runtime TEXT NOT NULL,
     runtime_version TEXT,
-    runtime_options TEXT[] NOT NULL,
+    runtime_options TEXT[],
     container_image TEXT,
     max_jobs INTEGER NOT NULL DEFAULT -1,
     max_jobs_per_user INTEGER NOT NULL DEFAULT -1,
@@ -85,7 +85,7 @@ CREATE TABLE apps_versions
 -- ==== Start jobAttributes ======================================
     job_description TEXT,
     dynamic_exec_system BOOLEAN NOT NULL DEFAULT false,
-    exec_system_constraints TEXT[] NOT NULL,
+    exec_system_constraints TEXT[],
     exec_system_id TEXT,
     exec_system_exec_dir TEXT,
     exec_system_input_dir TEXT,
@@ -96,9 +96,9 @@ CREATE TABLE apps_versions
     archive_on_app_error BOOLEAN NOT NULL DEFAULT true,
 --   parameterSet location in jobAttributes ===================
 --   parameterSet attributes flattened into this table ========
-    env_variables TEXT[] NOT NULL,
-    archive_includes TEXT[] NOT NULL,
-    archive_excludes TEXT[] NOT NULL,
+    env_variables TEXT[],
+    archive_includes TEXT[],
+    archive_excludes TEXT[],
     archive_include_launch_files BOOLEAN NOT NULL DEFAULT true,
 --   fileInputs location in jobAttributes =====================
     node_count INTEGER NOT NULL DEFAULT 1,
@@ -173,7 +173,7 @@ CREATE TABLE file_inputs
     meta_name TEXT NOT NULL DEFAULT '',
     meta_description TEXT,
     meta_required BOOLEAN NOT NULL DEFAULT false,
-    meta_key_value_pairs TEXT[] NOT NULL,
+    meta_key_value_pairs TEXT[],
     UNIQUE (app_ver_seq_id, source_url, target_path)
 );
 ALTER TABLE file_inputs OWNER TO tapis_app;
@@ -218,7 +218,7 @@ CREATE TABLE app_args
     meta_name TEXT NOT NULL DEFAULT '',
     meta_description TEXT,
     meta_required BOOLEAN NOT NULL DEFAULT true,
-    meta_key_value_pairs TEXT[] NOT NULL
+    meta_key_value_pairs TEXT[]
 );
 ALTER TABLE app_args OWNER TO tapis_app;
 COMMENT ON COLUMN app_args.seq_id IS 'Arg sequence id';
@@ -234,7 +234,7 @@ CREATE TABLE container_args
     meta_name TEXT NOT NULL DEFAULT '',
     meta_description TEXT,
     meta_required BOOLEAN NOT NULL DEFAULT true,
-    meta_key_value_pairs TEXT[] NOT NULL
+    meta_key_value_pairs TEXT[]
 );
 ALTER TABLE container_args OWNER TO tapis_app;
 COMMENT ON COLUMN container_args.seq_id IS 'Arg sequence id';
@@ -250,7 +250,7 @@ CREATE TABLE scheduler_options
     meta_name TEXT NOT NULL DEFAULT '',
     meta_description TEXT,
     meta_required BOOLEAN NOT NULL DEFAULT true,
-    meta_key_value_pairs TEXT[] NOT NULL
+    meta_key_value_pairs TEXT[]
 );
 ALTER TABLE scheduler_options OWNER TO tapis_app;
 COMMENT ON COLUMN scheduler_options.seq_id IS 'Arg sequence id';

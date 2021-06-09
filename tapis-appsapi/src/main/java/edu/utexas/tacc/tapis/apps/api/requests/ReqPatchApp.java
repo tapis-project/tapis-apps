@@ -11,7 +11,7 @@ import java.util.List;
  * Use classes for attribute types instead of primitives so that null can be use to indicate
  *   that the value has not been included in the update request.
  */
-public final class ReqUpdateApp
+public final class ReqPatchApp
 {
   public String description;
   public App.Runtime runtime;

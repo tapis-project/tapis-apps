@@ -122,7 +122,7 @@ public final class App
                             enable, disable, getPerms, grantPerms, revokePerms}
   public enum Permission {READ, MODIFY, EXECUTE}
   public enum Runtime {DOCKER, SINGULARITY}
-  public enum RuntimeOption {SINGULARITY_START, SINGULARITY_RUN}
+  public enum RuntimeOption {NONE, SINGULARITY_START, SINGULARITY_RUN}
 
   // ************************************************************************
   // *********************** Fields *****************************************

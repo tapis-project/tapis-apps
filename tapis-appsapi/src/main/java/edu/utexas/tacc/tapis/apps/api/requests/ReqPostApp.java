@@ -17,7 +17,7 @@ import static edu.utexas.tacc.tapis.apps.model.App.EMPTY_STR_ARRAY;
 /*
  * Class representing all app attributes that can be set in an incoming create request json body
  */
-public final class ReqCreateApp
+public final class ReqPostApp
 {
   public String id;
   public String version;

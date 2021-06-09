@@ -3,7 +3,6 @@ package edu.utexas.tacc.tapis.apps.api.model;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_CORES_PER_NODE;
@@ -40,9 +39,6 @@ public final class JobAttributes
   // Default constructor
   public JobAttributes()
   {
-    execSystemConstraints = EMPTY_STR_ARRAY;
-    fileInputDefinitions = new ArrayList<>();
-    subscriptions = new ArrayList<>();
     tags = EMPTY_STR_ARRAY;
   }
 

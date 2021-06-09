@@ -134,11 +134,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Make sure owner, runtime, notes, tags etc are set
       String owner = App.DEFAULT_OWNER;
       Runtime runtime = App.DEFAULT_RUNTIME;
-      String[] runtimeOptionsStrArray = App.EMPTY_STR_ARRAY;
-      String[] execSystemConstraintsStrArray = App.EMPTY_STR_ARRAY;
-      String[] envVariablesStrArray = App.EMPTY_STR_ARRAY;
-      String[] archiveIncludesStrArray = App.EMPTY_STR_ARRAY;
-      String[] archiveExcludesStrArray = App.EMPTY_STR_ARRAY;
+      String[] runtimeOptionsStrArray = null;
+      String[] execSystemConstraintsStrArray = null;
+      String[] envVariablesStrArray = null;
+      String[] archiveIncludesStrArray = null;
+      String[] archiveExcludesStrArray = null;
       String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
       String[] tagsStrArray = App.EMPTY_STR_ARRAY;
       JsonObject notesObj = App.DEFAULT_NOTES;
@@ -290,11 +290,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
       // Make sure runtime, string arrays and json objects are set
       Runtime runtime = App.DEFAULT_RUNTIME;
-      String[] runtimeOptionsStrArray = App.EMPTY_STR_ARRAY;
-      String[] execSystemConstraintsStrArray = App.EMPTY_STR_ARRAY;
-      String[] envVariablesStrArray = App.EMPTY_STR_ARRAY;
-      String[] archiveIncludesStrArray = App.EMPTY_STR_ARRAY;
-      String[] archiveExcludesStrArray = App.EMPTY_STR_ARRAY;
+      String[] runtimeOptionsStrArray = null;
+      String[] execSystemConstraintsStrArray = null;
+      String[] envVariablesStrArray = null;
+      String[] archiveIncludesStrArray = null;
+      String[] archiveExcludesStrArray = null;
       String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
       String[] tagsStrArray = App.EMPTY_STR_ARRAY;
       JsonObject notesObj = App.DEFAULT_NOTES;
@@ -1365,8 +1365,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     // Convert runtimeOption strings to enums
     String[] runtimeOptionsStrArray = r.get(APPS_VERSIONS.RUNTIME_OPTIONS);
-    List<RuntimeOption> runtimeOptions =
-            Arrays.stream(runtimeOptionsStrArray).map(RuntimeOption::valueOf).collect(Collectors.toList());
+    List<RuntimeOption> runtimeOptions = null;
+    if (runtimeOptionsStrArray != null && runtimeOptionsStrArray.length != 0)
+    {
+      runtimeOptions = Arrays.stream(runtimeOptionsStrArray).map(RuntimeOption::valueOf).collect(Collectors.toList());
+    }
 
     app = new App(appSeqId, appVerSeqId, r.get(APPS.TENANT), r.get(APPS.ID), r.get(APPS_VERSIONS.VERSION),
             r.get(APPS_VERSIONS.DESCRIPTION), r.get(APPS.APP_TYPE), r.get(APPS.OWNER), r.get(APPS.ENABLED),
@@ -1539,6 +1542,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   private static List<FileInput> retrieveFileInputs(DSLContext db, int appVerSeqId)
   {
     List<FileInput> fileInputs = db.selectFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(FileInput.class);
+    if (fileInputs == null || fileInputs.isEmpty()) return null;
     return fileInputs;
   }
 
@@ -1553,7 +1557,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     List<NotifSubscription> subscriptions =
             db.selectFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId))
                     .fetchInto(NotifSubscription.class);
-    if (subscriptions == null) return subscriptions;
+    if (subscriptions == null || subscriptions.isEmpty()) return null;
     for (NotifSubscription subscription : subscriptions)
     {
       subscription.setNotificationMechanisms(retrieveNotificationMechanisms(db, subscription.getSeqId()));
@@ -1585,6 +1589,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   {
     List<AppArg> appArgs =
             db.selectFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
+    if (appArgs == null || appArgs.isEmpty()) return null;
     return appArgs;
   }
 
@@ -1598,6 +1603,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   {
     List<AppArg> containerArgs =
             db.selectFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
+    if (containerArgs == null || containerArgs.isEmpty()) return null;
     return containerArgs;
   }
 
@@ -1612,6 +1618,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     List<AppArg> schedulerOptions =
             db.selectFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId))
                     .fetchInto(AppArg.class);
+    if (schedulerOptions == null || schedulerOptions.isEmpty()) return null;
     return schedulerOptions;
   }
 

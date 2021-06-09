@@ -43,8 +43,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.api.model.ParameterSet;
-import edu.utexas.tacc.tapis.apps.api.requests.ReqCreateApp;
-import edu.utexas.tacc.tapis.apps.api.requests.ReqUpdateApp;
+import edu.utexas.tacc.tapis.apps.api.requests.ReqPostApp;
+import edu.utexas.tacc.tapis.apps.api.requests.ReqPatchApp;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApp;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApps;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
@@ -91,8 +91,8 @@ public class AppResource
   private static final String APPLICATIONS_SVC = StringUtils.capitalize(TapisConstants.SERVICE_NAME_APPS);
 
   // Json schema resource files.
-  private static final String FILE_APP_CREATE_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppCreateRequest.json";
-  private static final String FILE_APP_UPDATE_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppUpdateRequest.json";
+  private static final String FILE_APP_CREATE_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppPostRequest.json";
+  private static final String FILE_APP_UPDATE_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppPatchRequest.json";
   private static final String FILE_APP_SEARCH_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppSearchRequest.json";
 
   // Message keys
@@ -200,20 +200,19 @@ public class AppResource
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
-    ReqCreateApp req;
+    ReqPostApp req;
     // ------------------------- Create an app from the json and validate constraints -------------------------
-    try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqCreateApp.class); }
+    try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqPostApp.class); }
     catch (JsonSyntaxException e)
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
-
     // If req is null that is an unrecoverable error
     if (req == null)
     {
-      msg = ApiUtils.getMsgAuth(CREATE_ERR, authenticatedUser, "ReqCreateApp == null");
+      msg = ApiUtils.getMsgAuth(CREATE_ERR, authenticatedUser, "ReqPostApp == null");
       _log.error(msg);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -336,8 +335,8 @@ public class AppResource
     }
 
     // ------------------------- Create a PatchApp from the json and validate constraints -------------------------
-    ReqUpdateApp req;
-    try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqUpdateApp.class); }
+    ReqPatchApp req;
+    try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqPatchApp.class); }
     catch (JsonSyntaxException e)
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
@@ -933,10 +932,10 @@ public class AppResource
   }
 
   /**
-   * Create an app from a ReqCreateApp
+   * Create an app from a ReqPostApp
    * Check for req == null should have already been done
    */
-  private static App createAppFromRequest(ReqCreateApp req, String rawJson)
+  private static App createAppFromRequest(ReqPostApp req, String rawJson)
   {
     var jobAttrs = req.jobAttributes;
     if (jobAttrs == null) jobAttrs = new JobAttributes();
@@ -965,10 +964,10 @@ public class AppResource
   }
 
   /**
-   * Create a PatchApp from a ReqUpdateApp
+   * Create a PatchApp from a ReqPatchApp
    * Note that tenant, id and version are for tracking and needed by the service call. They are not updated.
    */
-  private static PatchApp createPatchAppFromRequest(ReqUpdateApp req, String tenantName, String id, String version,
+  private static PatchApp createPatchAppFromRequest(ReqPatchApp req, String tenantName, String id, String version,
                                                     String rawJson)
   {
     PatchApp patchApp;

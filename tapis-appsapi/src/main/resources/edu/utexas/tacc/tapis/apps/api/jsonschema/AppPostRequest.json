@@ -1,0 +1,27 @@
+{
+  "$id": "https://tapis.tacc.utexas.edu/AppPostRequest",
+  "$schema": "https://json-schema.org/draft/draft-07/schema#",
+  "description": "Schema for a request to create an app",
+  "additionalProperties": false,
+
+  "type": "object",
+  "required": [ "id", "version", "appType" ],
+  "properties": {
+    "id": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/AppId" },
+    "version": { "type": "string", "maxLength": 64 },
+    "description": { "type": "string", "maxLength": 2048 },
+    "appType": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/AppTypeEnum" },
+    "owner": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/UserName" },
+    "enabled": { "type": "boolean", "default": true },
+    "runtime": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/RuntimeEnum" },
+    "runtimeVersion": { "type": ["string", "null"], "maxLength": 128 },
+    "runtimeOptions": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/RuntimeOptions" },
+    "containerImage": { "type": "string", "maxLength": 128 },
+    "maxJobs": { "type": "integer", "default": -1 },
+    "maxJobsPerUser": { "type": "integer", "default": -1 },
+    "strictFileInputs": { "type": "boolean", "default": false },
+    "jobAttributes": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/JobAttributes" },
+    "tags": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/TagsDefinition" },
+    "notes": { "type": "object" }
+  }
+}

@@ -1,6 +1,6 @@
 {
-  "$id": "http://tapis.tacc.utexas.edu/AppSearchRequest",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tapis.tacc.utexas.edu/AppSearchRequest",
+  "$schema": "https://json-schema.org/draft/draft-07/schema#",
   "description": "Schema for a request to search for apps",
   "additionalProperties": false,
 
