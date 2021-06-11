@@ -122,6 +122,9 @@ public final class App
                             enable, disable, getPerms, grantPerms, revokePerms}
   public enum Permission {READ, MODIFY, EXECUTE}
   public enum Runtime {DOCKER, SINGULARITY}
+  // NOTE: RuntimeOption starts with NONE due to a bug in client code generation.
+  //   Without an initial entry the prefix SINGULARITY_ gets stripped off the other 2 entries.
+  //   See also https://github.com/tapis-project/openapi-apps/blob/dev/AppsAPI.yaml
   public enum RuntimeOption {NONE, SINGULARITY_START, SINGULARITY_RUN}
 
   // ************************************************************************

@@ -1,13 +1,13 @@
 {
   "$id": "https://tapis.tacc.utexas.edu/Definitions",
-  "$schema": "https://json-schema.org/draft/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "description": "Common definitions for requests",
   "additionalProperties": false,
 
   "AppId": { "type": "string", "minLength": 1, "maxLength": 80 },
-  "SystemId": { "type": "string", "minLength": 1, "maxLength": 80 },
+  "SystemId": { "type": ["string", "null"], "minLength": 1, "maxLength": 80 },
   "UserName": { "type": "string", "minLength": 1, "maxLength": 60 },
-  "DirPath": { "type": "string", "minLength": 1, "maxLength": 4096 },
+  "DirPath": { "type": ["string", "null"], "minLength": 1, "maxLength": 4096 },
   "AppTypeEnum": { "type": "string", "enum": [ "BATCH", "FORK" ] },
   "RuntimeEnum": { "type": "string", "enum": [ "SINGULARITY", "DOCKER" ] },
   "RuntimeOptionEnum": { "type": "string", "enum": [ "NONE", "SINGULARITY_START", "SINGULARITY_RUN" ] },
@@ -26,9 +26,9 @@
     "items": { "type":  "string", "minLength": 1, "maxLength": 128 }
   },
   "JobAttributes": {
-    "type": ["object", "null"],
+    "type": ["object"],
     "properties": {
-      "description": { "type": "string", "maxLength": 2048 },
+      "description": { "type": ["string", "null"], "maxLength": 2048 },
       "dynamicExecSystem": { "type": "boolean", "default": false },
       "execSystemConstraints": {
         "type": ["array", "null"],
@@ -39,7 +39,7 @@
       "execSystemExecDir": { "$ref": "#/DirPath" },
       "execSystemInputDir": { "$ref": "#/DirPath" },
       "execSystemOutputDir": { "$ref": "#/DirPath" },
-      "execSystemLogicalQueue": { "type": "string", "minLength": 1, "maxLength": 128 },
+      "execSystemLogicalQueue": { "type": ["string", "null"], "minLength": 1, "maxLength": 128 },
       "archiveSystemId": { "$ref": "#/SystemId" },
       "archiveDir": { "$ref": "#/DirPath" },
       "archiveOnAppError": { "type": "boolean", "default": true },
