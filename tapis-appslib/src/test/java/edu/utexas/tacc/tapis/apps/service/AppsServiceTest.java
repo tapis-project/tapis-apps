@@ -816,6 +816,25 @@ public class AppsServiceTest
       pass = true;
     }
     Assert.assertTrue(pass, "Update of perms by owner for owner did not throw correct exception");
+
+    // Give testuser3 back some perms so we can test revokePerms auth when user is not the owner and is target user
+    svc.grantUserPermissions(authUser1, app0.getId(), testUser3, testPermsREADMODIFY, scrubbedJson);
+
+    // Have testuser3 remove their own perms. Should return a change count of 2
+    changeCount = svc.revokeUserPermissions(authUser3, app0.getId(), testUser3, testPermsREADMODIFY, scrubbedJson);
+    Assert.assertEquals(changeCount, 2, "Change count incorrect when revoking permissions as user - not owner.");
+    // Get the system perms for the user and make sure permissions are gone.
+    userPerms = svc.getUserPermissions(authUser1, app0.getId(), testUser3);
+    for (Permission perm: testPermsREADMODIFY) { if (userPerms.contains(perm)) Assert.fail("User perms should not contain permission: " + perm.name()); }
+
+    // Give testuser3 back some perms so we can test revokePerms auth when user is not the owner and is not target user
+    svc.grantUserPermissions(authUser1, app0.getId(), testUser3, testPermsREADMODIFY, scrubbedJson);
+    try {
+      svc.revokeUserPermissions(authUser2, app0.getId(), testUser3, testPermsREADMODIFY, scrubbedJson);
+      Assert.fail("Update of perms by non-owner user who is not target user should have thrown an exception");
+    } catch (Exception e) {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_UNAUTH"));
+    }
   }
 
   // Test various cases when app is missing

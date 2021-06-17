@@ -100,10 +100,10 @@ public class AppsServiceImpl implements AppsService
   // We must be running on a specific site and this will never change
   // These are initialized in method initService()
   private static String siteId;
-  public static String getSiteId() {return siteId;}
   private static String siteAdminTenantId;
-  public static String getSiteAdminTenantId() {return siteAdminTenantId;}
-
+  public static String getSiteId() {return siteId;}
+  public static String getServiceTenantId() {return siteAdminTenantId;}
+  public static String getServiceUserId() {return SERVICE_NAME;}
   // ************************************************************************
   // *********************** Public Methods *********************************
   // ************************************************************************
@@ -952,7 +952,7 @@ public class AppsServiceImpl implements AppsService
     String owner = checkForOwnerPermUpdate(authenticatedUser, appTenantName, appId, userName, op.name());
 
     // ------------------------- Check service level authorization -------------------------
-    checkAuth(authenticatedUser, op, appId, owner, null, null);
+    checkAuth(authenticatedUser, op, appId, owner, userName, permissions);
 
     // Check inputs. If anything null or empty throw an exception
     if (permissions == null || permissions.isEmpty())
@@ -1493,7 +1493,7 @@ public class AppsServiceImpl implements AppsService
   /**
    * User based authorization check.
    * Can be used for OBOUser type checks.
-   * By default use tenant and user from authenticatedUser, allow for optional tenant or user.
+   * By default use JWT tenant and user from authenticatedUser, allow for optional tenant or user.
    * A check should be made for app existence before calling this method.
    * If no owner is passed in and one cannot be found then an error is logged and
    *   authorization is denied.
@@ -1522,7 +1522,7 @@ public class AppsServiceImpl implements AppsService
                              String appId, String owner, String targetUser, Set<Permission> perms)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
-    // Use tenant and user from authenticatedUsr or optional provided values
+    // Use JWT tenant and user from authenticatedUsr or optional provided values
     String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
     // Requires owner. If no owner specified and owner cannot be determined then log an error and deny.
@@ -1607,12 +1607,12 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * Check to see if a user has the service admin role
-   * By default use tenant and user from authenticatedUser, allow for optional tenant or user.
+   * By default use authenticatedUser, allow for optional tenant or user.
    */
   private boolean hasAdminRole(AuthenticatedUser authenticatedUser, String tenantToCheck, String userToCheck)
           throws TapisException, TapisClientException
   {
-    // Use tenant and user from authenticatedUsr or optional provided values
+    // Use JWT tenant and user from authenticatedUsr or optional provided values
     String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
     var skClient = getSKClient();
@@ -1621,13 +1621,13 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * Check to see if a user has the specified permission
-   * By default use tenant and user from authenticatedUser, allow for optional tenant or user.
+   * By default use JWT tenant and user from authenticatedUser, allow for optional tenant or user.
    */
   private boolean isPermitted(AuthenticatedUser authenticatedUser, String tenantToCheck, String userToCheck,
                               String appId, Permission perm)
           throws TapisException, TapisClientException
   {
-    // Use tenant and user from authenticatedUsr or optional provided values
+    // Use JWT tenant and user from authenticatedUsr or optional provided values
     String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
     var skClient = getSKClient();
@@ -1637,13 +1637,13 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * Check to see if a user has any of the set of permissions
-   * By default use tenant and user from authenticatedUser, allow for optional tenant or user.
+   * By default use JWT tenant and user from authenticatedUser, allow for optional tenant or user.
    */
   private boolean isPermittedAny(AuthenticatedUser authenticatedUser, String tenantToCheck, String userToCheck,
                                  String appId, Set<Permission> perms)
           throws TapisException, TapisClientException
   {
-    // Use tenant and user from authenticatedUsr or optional provided values
+    // Use JWT tenant and user from authenticatedUsr or optional provided values
     String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
     var skClient = getSKClient();
@@ -1656,13 +1656,15 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * Check to see if a user who is not owner or admin is authorized to revoke permissions
-   * By default use tenant and user from authenticatedUser, allow for optional tenant or user.
+   * By default use JWT tenant and user from authenticatedUser, allow for optional tenant or user.
    */
   private boolean allowUserRevokePerm(AuthenticatedUser authenticatedUser, String tenantToCheck, String userToCheck,
                                       String appId, Set<Permission> perms)
           throws TapisException, TapisClientException
   {
-    // Use tenant and user from authenticatedUsr or optional provided values
+    // Perms should never be null. Fall back to deny as best security practice.
+    if (perms == null) return false;
+    // Use JWT tenant and user from authenticatedUsr or optional provided values
     String tenantName = (StringUtils.isBlank(tenantToCheck) ? authenticatedUser.getTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? authenticatedUser.getName() : userToCheck);
     if (perms.contains(Permission.MODIFY)) return isPermitted(authenticatedUser, tenantName, userName, appId, Permission.MODIFY);
