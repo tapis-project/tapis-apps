@@ -12,6 +12,7 @@ import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
@@ -60,14 +61,14 @@ public class ApiUtils
    * @param parms - Parameters for template variables in message
    * @return Resulting message
    */
-  public static String getMsgAuth(String key, AuthenticatedUser authUser, Object... parms)
+  public static String getMsgAuth(String key, ResourceRequestUser rUser, Object... parms)
   {
     // Construct new array of parms. This appears to be most straightforward approach to modify and pass on varargs.
     var newParms = new Object[4 + parms.length];
-    newParms[0] = authUser.getTenantId();
-    newParms[1] = authUser.getName();
-    newParms[2] = authUser.getOboTenantId();
-    newParms[3] = authUser.getOboUser();
+    newParms[0] = rUser.getJwtTenantId();
+    newParms[1] = rUser.getJwtUserId();
+    newParms[2] = rUser.getOboTenantId();
+    newParms[3] = rUser.getOboUserId();
     System.arraycopy(parms, 0, newParms, 4, parms.length);
     return getMsg(key, newParms);
   }
@@ -160,27 +161,27 @@ public class ApiUtils
 
   /**
    * Check that app exists
-   * @param authenticatedUser - principal user containing tenant and user info
-   * @param appName - name of the app to check
+   * @param rUser - principal user containing tenant and user info
+   * @param appId - name of the app to check
    * @param prettyPrint - print flag used to construct response
    * @param opName - operation name, for constructing response msg
    * @return - null if all checks OK else Response containing info
    */
-  public static Response checkAppExists(AppsService appsService, AuthenticatedUser authenticatedUser,
-                                           String appName, boolean prettyPrint, String opName)
+  public static Response checkAppExists(AppsService appsService, ResourceRequestUser rUser,
+                                           String appId, boolean prettyPrint, String opName)
   {
     String msg;
     boolean appExists;
-    try { appExists = appsService.checkForApp(authenticatedUser, appName); }
+    try { appExists = appsService.checkForApp(rUser, appId); }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_CHECK_ERROR", authenticatedUser, appName, opName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_CHECK_ERROR", rUser, appId, opName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }
     if (!appExists)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_NOAPP", authenticatedUser, appName, opName);
+      msg = ApiUtils.getMsgAuth("APPAPI_NOAPP", rUser, appId, opName);
       _log.error(msg);
       return Response.status(Response.Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
     }

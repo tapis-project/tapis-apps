@@ -13,6 +13,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -31,6 +32,7 @@ import com.google.gson.JsonSyntaxException;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.shared.threadlocal.SearchParameters;
@@ -44,6 +46,7 @@ import org.slf4j.LoggerFactory;
 import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.api.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqPostApp;
+import edu.utexas.tacc.tapis.apps.api.requests.ReqPutApp;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqPatchApp;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApp;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApps;
@@ -92,6 +95,7 @@ public class AppResource
 
   // Json schema resource files.
   private static final String FILE_APP_CREATE_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppPostRequest.json";
+  private static final String FILE_APP_PUT_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppPutRequest.json";
   private static final String FILE_APP_UPDATE_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppPatchRequest.json";
   private static final String FILE_APP_SEARCH_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppSearchRequest.json";
 
@@ -171,18 +175,19 @@ public class AppResource
     if (_log.isTraceEnabled()) logRequest(opName);
 
     // ------------------------- Retrieve and validate thread context -------------------------
-    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    // Check that we have all we need from the context, the tenant name and apiUserId
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
+    // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
-    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
-    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // ------------------------- Extract and validate payload -------------------------
     // Read the payload into a string.
-    String rawJson, msg;
+    String rawJson;
+    String msg;
     try { rawJson = IOUtils.toString(payloadStream, StandardCharsets.UTF_8); }
     catch (Exception e)
     {
@@ -212,51 +217,49 @@ public class AppResource
     // If req is null that is an unrecoverable error
     if (req == null)
     {
-      msg = ApiUtils.getMsgAuth(CREATE_ERR, authenticatedUser, "ReqPostApp == null");
+      msg = ApiUtils.getMsgAuth(CREATE_ERR, rUser, "N/A", "ReqPostApp == null");
       _log.error(msg);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // Create an app from the request
-    App app = createAppFromRequest(req, rawJson);
+    App app = createAppFromPostRequest(rUser.getApiTenantId(), req, rawJson);
 
     // So far no need to scrub out secrets, so scrubbed and raw are the same.
     String scrubbedJson = rawJson;
-    if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_CREATE_TRACE", authenticatedUser, scrubbedJson));
+    if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_CREATE_TRACE", rUser, scrubbedJson));
 
     // Fill in defaults and check constraints on App attributes
     app.setDefaults();
-    resp = validateApp(app, authenticatedUser);
+    resp = validateApp(app, rUser);
     if (resp != null) return resp;
 
     // ---------------------------- Make service call to create the app -------------------------------
-    // Update tenant name and pull out app name for convenience
-    app.setTenant(authenticatedUser.getTenantId());
     String appId = app.getId();
     try
     {
-      appsService.createApp(authenticatedUser, app, scrubbedJson);
+      appsService.createApp(rUser, app, scrubbedJson);
     }
     catch (IllegalStateException e)
     {
       if (e.getMessage().contains("APPLIB_APP_EXISTS"))
       {
         // IllegalStateException with msg containing APP_EXISTS indicates object exists - return 409 - Conflict
-        msg = ApiUtils.getMsgAuth("APPAPI_APP_EXISTS", authenticatedUser, appId, app.getVersion());
+        msg = ApiUtils.getMsgAuth("APPAPI_APP_EXISTS", rUser, appId, app.getVersion());
         _log.warn(msg);
         return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
       else if (e.getMessage().contains(LIB_UNAUTH))
       {
         // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
-        msg = ApiUtils.getMsgAuth(API_UNAUTH, authenticatedUser, appId, opName);
+        msg = ApiUtils.getMsgAuth(API_UNAUTH, rUser, appId, opName);
         _log.warn(msg);
         return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
       else
       {
         // IllegalStateException indicates an Invalid App was passed in
-        msg = ApiUtils.getMsgAuth(CREATE_ERR, authenticatedUser, appId, e.getMessage());
+        msg = ApiUtils.getMsgAuth(CREATE_ERR, rUser, appId, e.getMessage());
         _log.error(msg);
         return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
@@ -264,13 +267,13 @@ public class AppResource
     catch (IllegalArgumentException e)
     {
       // IllegalArgumentException indicates somehow a bad argument made it this far
-      msg = ApiUtils.getMsgAuth(CREATE_ERR, authenticatedUser, appId, e.getMessage());
+      msg = ApiUtils.getMsgAuth(CREATE_ERR, rUser, appId, e.getMessage());
       _log.error(msg);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth(CREATE_ERR, authenticatedUser, appId, e.getMessage());
+      msg = ApiUtils.getMsgAuth(CREATE_ERR, rUser, appId, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -280,11 +283,11 @@ public class AppResource
     ResultResourceUrl respUrl = new ResultResourceUrl();
     respUrl.url = _request.getRequestURL().toString() + "/" + appId;
     RespResourceUrl resp1 = new RespResourceUrl(respUrl);
-    return createSuccessResponse(Status.CREATED, ApiUtils.getMsgAuth("APPAPI_CREATED", authenticatedUser, appId), resp1);
+    return createSuccessResponse(Status.CREATED, ApiUtils.getMsgAuth("APPAPI_CREATED", rUser, appId), resp1);
   }
 
   /**
-   * Update existing version of an app
+   * Update selected attributes of an app
    * @param appId - id of the app
    * @param appVersion - version of the app
    * @param payloadStream - request body
@@ -305,18 +308,19 @@ public class AppResource
     if (_log.isTraceEnabled()) logRequest(opName);
 
     // ------------------------- Retrieve and validate thread context -------------------------
-    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    // Check that we have all we need from the context, the tenant name and apiUserId
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
+    // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
-    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
-    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // ------------------------- Extract and validate payload -------------------------
     // Read the payload into a string.
-    String rawJson, msg;
+    String rawJson;
+    String msg;
     try { rawJson = IOUtils.toString(payloadStream, StandardCharsets.UTF_8); }
     catch (Exception e)
     {
@@ -343,7 +347,16 @@ public class AppResource
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
-    PatchApp patchApp = createPatchAppFromRequest(req, authenticatedUser.getTenantId(), appId, appVersion, rawJson);
+    // If req is null that is an unrecoverable error
+    if (req == null)
+    {
+      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", rUser, appId, opName, "ReqPatchApp == null");
+      _log.error(msg);
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+    }
+
+    PatchApp patchApp = createPatchAppFromRequest(req, rUser.getApiTenantId(), appId, appVersion, rawJson);
+    if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_PATCH_TRACE", rUser, rawJson));
 
     // No attributes are required. Constraints validated and defaults filled in on server side.
     // No secrets in PatchApp so no need to scrub
@@ -351,11 +364,11 @@ public class AppResource
     // ---------------------------- Make service call to update the app -------------------------------
     try
     {
-      appsService.updateApp(authenticatedUser, patchApp, rawJson);
+      appsService.patchApp(rUser, patchApp, rawJson);
     }
     catch (NotFoundException e)
     {
-      msg = ApiUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId);
+      msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
       _log.warn(msg);
       return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -364,14 +377,14 @@ public class AppResource
       if (e.getMessage().contains(LIB_UNAUTH))
       {
         // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
-        msg = ApiUtils.getMsgAuth(API_UNAUTH, authenticatedUser, appId, opName);
+        msg = ApiUtils.getMsgAuth(API_UNAUTH, rUser, appId, opName);
         _log.warn(msg);
         return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
       else
       {
         // IllegalStateException indicates an Invalid PatchApp was passed in
-        msg = ApiUtils.getMsgAuth(UPDATE_ERR, authenticatedUser, appId, opName, e.getMessage());
+        msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
         _log.error(msg);
         return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
@@ -379,13 +392,13 @@ public class AppResource
     catch (IllegalArgumentException e)
     {
       // IllegalArgumentException indicates somehow a bad argument made it this far
-      msg = ApiUtils.getMsgAuth(UPDATE_ERR, authenticatedUser, appId, opName, e.getMessage());
+      msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
       _log.error(msg);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth(UPDATE_ERR, authenticatedUser, appId, opName, e.getMessage());
+      msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -395,7 +408,138 @@ public class AppResource
     ResultResourceUrl respUrl = new ResultResourceUrl();
     respUrl.url = _request.getRequestURL().toString();
     RespResourceUrl resp1 = new RespResourceUrl(respUrl);
-    return createSuccessResponse(Status.OK, ApiUtils.getMsgAuth(UPDATED, authenticatedUser, appId, opName), resp1);
+    return createSuccessResponse(Status.OK, ApiUtils.getMsgAuth(UPDATED, rUser, appId, opName), resp1);
+  }
+
+  /**
+   * Update all updatable attributes of an app
+   * @param appId - id of the app
+   * @param appVersion - version of the app
+   * @param payloadStream - request body
+   * @param securityContext - user identity
+   * @return response containing reference to updated object
+   */
+  @PUT
+  @Path("{appId}/{appVersion}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response putApp(@PathParam("appId") String appId,
+                         @PathParam("appVersion") String appVersion,
+                         InputStream payloadStream,
+                         @Context SecurityContext securityContext)
+  {
+    String opName = "putApp";
+    // Trace this request.
+    if (_log.isTraceEnabled()) logRequest(opName);
+
+    // ------------------------- Retrieve and validate thread context -------------------------
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
+    // Check that we have all we need from the context, the jwtTenantId and jwtUserId
+    // Utility method returns null if all OK and appropriate error response if there was a problem.
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    if (resp != null) return resp;
+
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
+
+    // ------------------------- Extract and validate payload -------------------------
+    // Read the payload into a string.
+    String rawJson;
+    String msg;
+    try { rawJson = IOUtils.toString(payloadStream, StandardCharsets.UTF_8); }
+    catch (Exception e)
+    {
+      msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName , e.getMessage());
+      _log.error(msg, e);
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+    }
+    // Create validator specification and validate the json against the schema
+    // NOTE that CREATE and PUT are very similar schemas.
+    // Only difference should be for PUT there are no required properties.
+    JsonValidatorSpec spec = new JsonValidatorSpec(rawJson, FILE_APP_PUT_REQUEST);
+    try { JsonValidator.validate(spec); }
+    catch (TapisJSONException e)
+    {
+      msg = MsgUtils.getMsg(JSON_VALIDATION_ERR, e.getMessage());
+      _log.error(msg, e);
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+    }
+
+    // ------------------------- Create an App from the json and validate constraints -------------------------
+    ReqPutApp req;
+    try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqPutApp.class); }
+    catch (JsonSyntaxException e)
+    {
+      msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
+      _log.error(msg, e);
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+    }
+    // If req is null that is an unrecoverable error
+    if (req == null)
+    {
+      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", rUser, appId, opName, "ReqPutApp == null");
+      _log.error(msg);
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+    }
+
+    // Create an App from the request
+    App putApp = createAppFromPutRequest(rUser.getApiTenantId(), appId, appVersion, req, rawJson);
+
+    if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_PUT_TRACE", rUser, rawJson));
+
+    // Fill in defaults and check constraints on App attributes
+    // NOTE: We do not have all the Tapis App attributes yet so we cannot validate it
+    putApp.setDefaults();
+
+    // ---------------------------- Make service call to update the app -------------------------------
+    try
+    {
+       appsService.putApp(rUser, putApp, rawJson);
+    }
+    catch (NotFoundException e)
+    {
+      msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
+      _log.warn(msg);
+      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+    }
+    catch (IllegalStateException e)
+    {
+      if (e.getMessage().contains(LIB_UNAUTH))
+      {
+        // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
+        msg = ApiUtils.getMsgAuth(API_UNAUTH, rUser, appId, opName);
+        _log.warn(msg);
+        return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      }
+      else
+      {
+// TODO still needed??? this is not patch
+        // IllegalStateException indicates an Invalid PatchApp was passed in
+        msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
+        _log.error(msg);
+        return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      }
+    }
+    catch (IllegalArgumentException e)
+    {
+      // IllegalArgumentException indicates somehow a bad argument made it this far
+      msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
+      _log.error(msg);
+      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+    }
+    catch (Exception e)
+    {
+      msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
+      _log.error(msg, e);
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+    }
+
+    // ---------------------------- Success -------------------------------
+    // Success means updates were applied
+    ResultResourceUrl respUrl = new ResultResourceUrl();
+    respUrl.url = _request.getRequestURL().toString();
+    RespResourceUrl resp1 = new RespResourceUrl(respUrl);
+    return createSuccessResponse(Status.OK, ApiUtils.getMsgAuth(UPDATED, rUser, appId, opName), resp1);
   }
 
   /**
@@ -499,25 +643,25 @@ public class AppResource
     String opName = "getAppLatestVersion";
     if (_log.isTraceEnabled()) logRequest(opName);
 
-    // Check that we have all we need from the context, the tenant name and apiUserId
+    // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
-    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
-    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
 
     App app;
     try
     {
-      app = appsService.getApp(authenticatedUser, appId, null, requireExecPerm);
+      app = appsService.getApp(rUser, appId, null, requireExecPerm);
     }
     catch (Exception e)
     {
-      String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", authenticatedUser, appId, e.getMessage());
+      String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", rUser, appId, e.getMessage());
       _log.error(msg, e);
       return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -525,15 +669,14 @@ public class AppResource
     // Resource was not found.
     if (app == null)
     {
-      String msg = ApiUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId);
-      _log.warn(msg);
+      String msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
       return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ---------------------------- Success -------------------------------
     // Success means we retrieved the app information.
     RespApp resp1 = new RespApp(app, selectList);
-    return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, "App", appId), resp1);
   }
 
   /**
@@ -557,25 +700,25 @@ public class AppResource
     String opName = "getApp";
     if (_log.isTraceEnabled()) logRequest(opName);
 
-    // Check that we have all we need from the context, the tenant name and apiUserId
+    // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
-    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
-    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
 
     App app;
     try
     {
-      app = appsService.getApp(authenticatedUser, appId, appVersion, requireExecPerm);
+      app = appsService.getApp(rUser, appId, appVersion, requireExecPerm);
     }
     catch (Exception e)
     {
-      String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", authenticatedUser, appId, e.getMessage());
+      String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", rUser, appId, e.getMessage());
       _log.error(msg, e);
       return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -583,7 +726,7 @@ public class AppResource
     // Resource was not found.
     if (app == null)
     {
-      String msg = ApiUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId);
+      String msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
       _log.warn(msg);
       return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -591,7 +734,7 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     // Success means we retrieved the app information.
     RespApp resp1 = new RespApp(app, selectList);
-    return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, "App", appId), resp1);
   }
 
   /**
@@ -613,14 +756,14 @@ public class AppResource
     // Trace this request.
     if (_log.isTraceEnabled()) logRequest(opName);
 
-    // Check that we have all we need from the context, the tenant name and apiUserId
+    // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
-    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
-    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // ThreadContext designed to never return null for SearchParameters
     SearchParameters srchParms = threadContext.getSearchParameters();
@@ -629,15 +772,14 @@ public class AppResource
     Response successResponse;
     try
     {
-      successResponse = getSearchResponse(authenticatedUser, null, srchParms, showDeleted);
+      successResponse = getSearchResponse(rUser, null, srchParms, showDeleted);
     }
     catch (Exception e)
     {
-      String msg = ApiUtils.getMsgAuth(SELECT_ERR, authenticatedUser, e.getMessage());
+      String msg = ApiUtils.getMsgAuth(SELECT_ERR, rUser, e.getMessage());
       _log.error(msg, e);
       return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
-
     return successResponse;
   }
 
@@ -659,14 +801,14 @@ public class AppResource
     // Trace this request.
     if (_log.isTraceEnabled()) logRequest(opName);
 
-    // Check that we have all we need from the context, the tenant name and apiUserId
+    // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
-    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
-    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Create search list based on query parameters
     // Note that some validation is done for each condition but the back end will handle translating LIKE wildcard
@@ -678,7 +820,7 @@ public class AppResource
     }
     catch (Exception e)
     {
-      String msg = ApiUtils.getMsgAuth("APPAPI_SEARCH_ERROR", authenticatedUser, e.getMessage());
+      String msg = ApiUtils.getMsgAuth("APPAPI_SEARCH_ERROR", rUser, e.getMessage());
       _log.error(msg, e);
       return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -691,11 +833,11 @@ public class AppResource
     Response successResponse;
     try
     {
-      successResponse = getSearchResponse(authenticatedUser, null, srchParms, showDeleted);
+      successResponse = getSearchResponse(rUser, null, srchParms, showDeleted);
     }
     catch (Exception e)
     {
-      String msg = ApiUtils.getMsgAuth(SELECT_ERR, authenticatedUser, e.getMessage());
+      String msg = ApiUtils.getMsgAuth(SELECT_ERR, rUser, e.getMessage());
       _log.error(msg, e);
       return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -725,18 +867,19 @@ public class AppResource
     // Trace this request.
     if (_log.isTraceEnabled()) logRequest(opName);
 
-    // Check that we have all we need from the context, the tenant name and apiUserId
+    // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
-    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
-    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // ------------------------- Extract and validate payload -------------------------
     // Read the payload into a string.
-    String rawJson, msg;
+    String rawJson;
+    String msg;
     try { rawJson = IOUtils.toString(payloadStream, StandardCharsets.UTF_8); }
     catch (Exception e)
     {
@@ -776,11 +919,11 @@ public class AppResource
     Response successResponse;
     try
     {
-      successResponse = getSearchResponse(authenticatedUser, sqlSearchStr, srchParms, showDeleted);
+      successResponse = getSearchResponse(rUser, sqlSearchStr, srchParms, showDeleted);
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth(SELECT_ERR, authenticatedUser, e.getMessage());
+      msg = ApiUtils.getMsgAuth(SELECT_ERR, rUser, e.getMessage());
       _log.error(msg, e);
       return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -806,29 +949,29 @@ public class AppResource
     String opName = "isEnabled";
     if (_log.isTraceEnabled()) logRequest(opName);
 
-    // Check that we have all we need from the context, the tenant name and apiUserId
+    // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
-    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
-    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     boolean isEnabled;
     try
     {
-      isEnabled = appsService.isEnabled(authenticatedUser, appId);
+      isEnabled = appsService.isEnabled(rUser, appId);
     }
     catch (NotFoundException e)
     {
-      String msg = ApiUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId);
+      String msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
       _log.warn(msg);
       return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (Exception e)
     {
-      String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", authenticatedUser, appId, e.getMessage());
+      String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", rUser, appId, e.getMessage());
       _log.error(msg, e);
       return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -838,7 +981,7 @@ public class AppResource
     ResultBoolean respResult = new ResultBoolean();
     respResult.aBool = isEnabled;
     RespBoolean resp1 = new RespBoolean(respResult);
-    return createSuccessResponse(Status.OK, MsgUtils.getMsg("TAPIS_FOUND", "App", appId), resp1);
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, "App", appId), resp1);
   }
 
   /* **************************************************************************** */
@@ -860,14 +1003,14 @@ public class AppResource
     if (_log.isTraceEnabled()) logRequest(opName);
 
     // ------------------------- Retrieve and validate thread context -------------------------
-    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    // Check that we have all we need from the context, the tenant name and apiUserId
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
+    // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
-    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
-    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // ---------------------------- Make service call to update the app -------------------------------
     int changeCount;
@@ -875,19 +1018,19 @@ public class AppResource
     try
     {
       if (OP_ENABLE.equals(opName))
-        changeCount = appsService.enableApp(authenticatedUser, appId);
+        changeCount = appsService.enableApp(rUser, appId);
       else if (OP_DISABLE.equals(opName))
-        changeCount = appsService.disableApp(authenticatedUser, appId);
+        changeCount = appsService.disableApp(rUser, appId);
       else if (OP_DELETE.equals(opName))
-        changeCount = appsService.deleteApp(authenticatedUser, appId);
+        changeCount = appsService.deleteApp(rUser, appId);
       else if (OP_UNDELETE.equals(opName))
-        changeCount = appsService.undeleteApp(authenticatedUser, appId);
+        changeCount = appsService.undeleteApp(rUser, appId);
       else
-        changeCount = appsService.changeAppOwner(authenticatedUser, appId, userName);
+        changeCount = appsService.changeAppOwner(rUser, appId, userName);
     }
     catch (NotFoundException e)
     {
-      msg = ApiUtils.getMsgAuth(NOT_FOUND, authenticatedUser, appId);
+      msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
       _log.warn(msg);
       return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -896,14 +1039,14 @@ public class AppResource
       if (e.getMessage().contains(LIB_UNAUTH))
       {
         // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
-        msg = ApiUtils.getMsgAuth(API_UNAUTH, authenticatedUser, appId, opName);
+        msg = ApiUtils.getMsgAuth(API_UNAUTH, rUser, appId, opName);
         _log.warn(msg);
         return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
       else
       {
         // IllegalStateException indicates an Invalid PatchApp was passed in
-        msg = ApiUtils.getMsgAuth(UPDATE_ERR, authenticatedUser, appId, opName, e.getMessage());
+        msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
         _log.error(msg);
         return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
@@ -911,13 +1054,13 @@ public class AppResource
     catch (IllegalArgumentException e)
     {
       // IllegalArgumentException indicates somehow a bad argument made it this far
-      msg = ApiUtils.getMsgAuth(UPDATE_ERR, authenticatedUser, appId, opName, e.getMessage());
+      msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
       _log.error(msg);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth(UPDATE_ERR, authenticatedUser, appId, opName, e.getMessage());
+      msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -928,14 +1071,14 @@ public class AppResource
     ResultChangeCount count = new ResultChangeCount();
     count.changes = changeCount;
     RespChangeCount resp1 = new RespChangeCount(count);
-    return createSuccessResponse(Status.OK, ApiUtils.getMsgAuth(UPDATED, authenticatedUser, appId, opName), resp1);
+    return createSuccessResponse(Status.OK, ApiUtils.getMsgAuth(UPDATED, rUser, appId, opName), resp1);
   }
 
   /**
    * Create an app from a ReqPostApp
    * Check for req == null should have already been done
    */
-  private static App createAppFromRequest(ReqPostApp req, String rawJson)
+  private static App createAppFromPostRequest(String tenantId, ReqPostApp req, String rawJson)
   {
     var jobAttrs = req.jobAttributes;
     if (jobAttrs == null) jobAttrs = new JobAttributes();
@@ -945,7 +1088,42 @@ public class AppResource
     // Extract Notes from the raw json.
     Object notes = extractNotes(rawJson);
     // Create App
-    var app = new App(-1, -1, null, req.id, req.version, req.description, req.appType, req.owner, req.enabled,
+    var app = new App(-1, -1, tenantId, req.id, req.version, req.description, req.appType, req.owner, req.enabled,
+          DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
+          req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
+          jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
+          jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
+          jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
+          envVariables, parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes, parmSet.archiveFilter.includeLaunchFiles,
+          jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.tags,
+          req.tags, notes, null, false, null, null);
+    // Data for aux tables
+    app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputDefinitions));
+    app.setNotificationSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
+    app.setAppArgs(ApiUtils.buildLibAppArgs(parmSet.appArgs));
+    app.setContainerArgs(ApiUtils.buildLibAppArgs(parmSet.containerArgs));
+    app.setSchedulerOptions(ApiUtils.buildLibAppArgs(parmSet.schedulerOptions));
+    return app;
+  }
+
+  /**
+   * Create an App from a ReqPutApp
+   */
+  private static App createAppFromPutRequest(String tenantId, String id, String version, ReqPutApp req, String rawJson)
+  {
+    var jobAttrs = req.jobAttributes;
+    if (jobAttrs == null) jobAttrs = new JobAttributes();
+    var parmSet = jobAttrs.parameterSet;
+    if (parmSet == null) parmSet = new ParameterSet();
+    String[] envVariables = ApiUtils.getKeyValuesAsArray(parmSet.envVariables);
+    // Extract Notes from the raw json.
+    Object notes = extractNotes(rawJson);
+
+    // NOTE: Following attributes are not updatable and must be filled in on service side.
+    App.AppType appType = null;
+    String owner = null;
+    boolean enabled = true;
+    var app = new App(-1, -1, tenantId, id, version, req.description, appType, owner, enabled,
           DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
@@ -967,7 +1145,7 @@ public class AppResource
    * Create a PatchApp from a ReqPatchApp
    * Note that tenant, id and version are for tracking and needed by the service call. They are not updated.
    */
-  private static PatchApp createPatchAppFromRequest(ReqPatchApp req, String tenantName, String id, String version,
+  private static PatchApp createPatchAppFromRequest(ReqPatchApp req, String tenantId, String id, String version,
                                                     String rawJson)
   {
     PatchApp patchApp;
@@ -1008,14 +1186,15 @@ public class AppResource
     // else potentially many more arguments are non-null
     if (jobAttrs == null)
     {
-      patchApp = new PatchApp(req.description, req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
-            req.maxJobs, req.maxJobsPerUser, req.strictFileInputs, null, null, null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, req.tags, notes);
+      patchApp = new PatchApp(tenantId, id, version, req.description, req.runtime, req.runtimeVersion,
+            req.runtimeOptions, req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
+            null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, req.tags, notes);
     }
     else
     {
-      patchApp = new PatchApp(req.description, req.runtime, req.runtimeVersion, req.runtimeOptions,
-              req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
+      patchApp = new PatchApp(tenantId, id, version, req.description, req.runtime, req.runtimeVersion,
+              req.runtimeOptions, req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
               jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
               jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
               jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
@@ -1024,11 +1203,6 @@ public class AppResource
               jobAttrs.maxMinutes, notifSubscriptions, jobAttrs.tags, req.tags, notes);
     }
 
-    // Update tenant, id and version
-    //   Note that these are for tracking and needed by the service call. They are not updated.
-    patchApp.setTenant(tenantName);
-    patchApp.setId(id);
-    patchApp.setVersion(version);
     return patchApp;
   }
 
@@ -1040,7 +1214,7 @@ public class AppResource
    *
    * @return null if OK or error Response
    */
-  private static Response validateApp(App app1, AuthenticatedUser authenticatedUser)
+  private static Response validateApp(App app1, ResourceRequestUser rUser)
   {
     // Make call for lib level validation
     List<String> errMessages = app1.checkAttributeRestrictions();
@@ -1052,7 +1226,7 @@ public class AppResource
     if (!errMessages.isEmpty())
     {
       // Construct message reporting all errors
-      String allErrors = getListOfErrors(errMessages, authenticatedUser, app1.getId());
+      String allErrors = getListOfErrors(errMessages, rUser, app1.getId());
       _log.error(allErrors);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(allErrors, PRETTY)).build();
     }
@@ -1077,9 +1251,9 @@ public class AppResource
   /**
    * Construct message containing list of errors
    */
-  private static String getListOfErrors(List<String> msgList, AuthenticatedUser authenticatedUser, Object... parms) {
+  private static String getListOfErrors(List<String> msgList, ResourceRequestUser rUser, Object... parms) {
     if (msgList == null || msgList.isEmpty()) return "";
-    var sb = new StringBuilder(ApiUtils.getMsgAuth("APPAPI_CREATE_INVALID_ERRORLIST", authenticatedUser, parms));
+    var sb = new StringBuilder(ApiUtils.getMsgAuth("APPAPI_CREATE_INVALID_ERRORLIST", rUser, parms));
     sb.append(System.lineSeparator());
     for (String msg : msgList) { sb.append("  ").append(msg).append(System.lineSeparator()); }
     return sb.toString();
@@ -1096,7 +1270,7 @@ public class AppResource
    *  srchParms must be non-null
    *  One of srchParms.searchList or sqlSearchStr must be non-null
    */
-  private Response getSearchResponse(AuthenticatedUser authenticatedUser, String sqlSearchStr,
+  private Response getSearchResponse(ResourceRequestUser rUser, String sqlSearchStr,
                                      SearchParameters srchParms, boolean showDeleted)
           throws Exception
   {
@@ -1119,9 +1293,9 @@ public class AppResource
     List<OrderBy> orderByList = srchParms.getOrderByList();
 
     if (StringUtils.isBlank(sqlSearchStr))
-      apps = appsService.getApps(authenticatedUser, searchList, limit, orderByList, skip, startAfter, showDeleted);
+      apps = appsService.getApps(rUser, searchList, limit, orderByList, skip, startAfter, showDeleted);
     else
-      apps = appsService.getAppsUsingSqlSearchStr(authenticatedUser, sqlSearchStr, limit, orderByList, skip,
+      apps = appsService.getAppsUsingSqlSearchStr(rUser, sqlSearchStr, limit, orderByList, skip,
                                                   startAfter, showDeleted);
     if (apps == null) apps = Collections.emptyList();
     itemCountStr = String.format(APPS_CNT_STR, apps.size());
@@ -1130,7 +1304,7 @@ public class AppResource
     // If we need the count and there was a limit then we need to make a call
     if (computeTotal && limit > 0)
     {
-      totalCount = appsService.getAppsTotalCount(authenticatedUser, searchList, orderByList, startAfter, showDeleted);
+      totalCount = appsService.getAppsTotalCount(rUser, searchList, orderByList, startAfter, showDeleted);
     }
 
     // ---------------------------- Success -------------------------------

@@ -2,7 +2,6 @@ package edu.utexas.tacc.tapis.apps.api.resources;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.apps.model.App;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -22,6 +21,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
+import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
+import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisJSONException;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.schema.JsonValidator;
@@ -32,7 +34,6 @@ import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.sharedapi.responses.RespBasic;
 import edu.utexas.tacc.tapis.sharedapi.responses.RespNameArray;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultNameArray;
-import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
@@ -66,29 +67,6 @@ public class PermsResource
   // ************************************************************************
   // *********************** Fields *****************************************
   // ************************************************************************
-  /* Jax-RS context dependency injection allows implementations of these abstract
-   * types to be injected (ch 9, jax-rs 2.0):
-   *
-   *      javax.ws.rs.container.ResourceContext
-   *      javax.ws.rs.core.Application
-   *      javax.ws.rs.core.HttpHeaders
-   *      javax.ws.rs.core.Request
-   *      javax.ws.rs.core.SecurityContext
-   *      javax.ws.rs.core.UriInfo
-   *      javax.ws.rs.core.Configuration
-   *      javax.ws.rs.ext.Providers
-   *
-   * In a servlet environment, Jersey context dependency injection can also
-   * initialize these concrete types (ch 3.6, jersey spec):
-   *
-   *      javax.servlet.HttpServletRequest
-   *      javax.servlet.HttpServletResponse
-   *      javax.servlet.ServletConfig
-   *      javax.servlet.ServletContext
-   *
-   * Inject takes place after constructor invocation, so fields initialized in this
-   * way can not be accessed in constructors.
-   */
   @Context
   private HttpHeaders _httpHeaders;
   @Context
@@ -140,12 +118,12 @@ public class PermsResource
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
-    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
-    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
-    resp = ApiUtils.checkAppExists(appsService, authenticatedUser, appId, PRETTY, "grantUserPerms");
+    resp = ApiUtils.checkAppExists(appsService, rUser, appId, PRETTY, "grantUserPerms");
     if (resp != null) return resp;
 
     // Read the payload into a string.
@@ -153,25 +131,25 @@ public class PermsResource
     try { json = IOUtils.toString(payloadStream, StandardCharsets.UTF_8); }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_JSON_ERROR", authenticatedUser, appId, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_JSON_ERROR", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ------------------------- Extract and validate payload -------------------------
     var permsList = new HashSet<Permission>();
-    resp = checkAndExtractPayload(authenticatedUser, appId, userName, json, permsList);
+    resp = checkAndExtractPayload(rUser, appId, userName, json, permsList);
     if (resp != null) return resp;
 
     // ------------------------- Perform the operation -------------------------
     // Make the service call to assign the permissions
     try
     {
-      appsService.grantUserPermissions(authenticatedUser, appId, userName, permsList, json);
+      appsService.grantUserPermissions(rUser, appId, userName, permsList, json);
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", authenticatedUser, appId, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -180,7 +158,7 @@ public class PermsResource
     String permsListStr = permsList.stream().map(Enum::name).collect(Collectors.joining(","));
     RespBasic resp1 = new RespBasic();
     return Response.status(Status.CREATED)
-      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("APPAPI_PERMS_GRANTED", authenticatedUser, appId,
+      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("APPAPI_PERMS_GRANTED", rUser, appId,
                                                                        userName, permsListStr),
                                                    PRETTY, resp1))
       .build();
@@ -214,21 +192,21 @@ public class PermsResource
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
-    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
-    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
-    resp = ApiUtils.checkAppExists(appsService, authenticatedUser, appId, PRETTY, "getUserPerms");
+    resp = ApiUtils.checkAppExists(appsService, rUser, appId, PRETTY, "getUserPerms");
     if (resp != null) return resp;
 
     // ------------------------- Perform the operation -------------------------
     // Make the service call to get the permissions
     Set<Permission> perms;
-    try { perms = appsService.getUserPermissions(authenticatedUser, appId, userName); }
+    try { perms = appsService.getUserPermissions(rUser, appId, userName); }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", authenticatedUser, appId, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -273,12 +251,12 @@ public class PermsResource
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
-    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
-    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
-    resp = ApiUtils.checkAppExists(appsService, authenticatedUser, appId, PRETTY, "revokeUserPerm");
+    resp = ApiUtils.checkAppExists(appsService, rUser, appId, PRETTY, "revokeUserPerm");
     if (resp != null) return resp;
 
     // ------------------------- Perform the operation -------------------------
@@ -288,17 +266,17 @@ public class PermsResource
     {
       Permission perm = Permission.valueOf(permissionStr);
       permsList.add(perm);
-      appsService.revokeUserPermissions(authenticatedUser, appId, userName, permsList, null);
+      appsService.revokeUserPermissions(rUser, appId, userName, permsList, null);
     }
     catch (IllegalArgumentException e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ENUM_ERROR", authenticatedUser, appId, userName, permissionStr, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ENUM_ERROR", rUser, appId, userName, permissionStr, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", authenticatedUser, appId, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -306,7 +284,7 @@ public class PermsResource
     // ---------------------------- Success -------------------------------
     RespBasic resp1 = new RespBasic();
     return Response.status(Status.CREATED)
-      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("APPAPI_PERMS_REVOKED", authenticatedUser, appId,
+      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("APPAPI_PERMS_REVOKED", rUser, appId,
                                                                        userName, permissionStr),
                                                    PRETTY, resp1))
       .build();
@@ -342,12 +320,12 @@ public class PermsResource
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
-    // Get AuthenticatedUser which contains jwtTenant, jwtUser, oboTenant, oboUser, etc.
-    AuthenticatedUser authenticatedUser = (AuthenticatedUser) securityContext.getUserPrincipal();
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
-    resp = ApiUtils.checkAppExists(appsService, authenticatedUser, appId, PRETTY, "revokeUserPerms");
+    resp = ApiUtils.checkAppExists(appsService, rUser, appId, PRETTY, "revokeUserPerms");
     if (resp != null) return resp;
 
     // Read the payload into a string.
@@ -355,25 +333,25 @@ public class PermsResource
     try { json = IOUtils.toString(payloadStream, StandardCharsets.UTF_8); }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_JSON_ERROR", authenticatedUser, appId, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_JSON_ERROR", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
     // ------------------------- Extract and validate payload -------------------------
     var permsList = new HashSet<Permission>();
-    resp = checkAndExtractPayload(authenticatedUser, appId, userName, json, permsList);
+    resp = checkAndExtractPayload(rUser, appId, userName, json, permsList);
     if (resp != null) return resp;
 
     // ------------------------- Perform the operation -------------------------
     // Make the service call to revoke the permissions
     try
     {
-      appsService.revokeUserPermissions(authenticatedUser, appId, userName, permsList, json);
+      appsService.revokeUserPermissions(rUser, appId, userName, permsList, json);
     }
     catch (Exception e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", authenticatedUser, appId, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -382,7 +360,7 @@ public class PermsResource
     String permsListStr = permsList.stream().map(Enum::name).collect(Collectors.joining(","));
     RespBasic resp1 = new RespBasic();
     return Response.status(Status.CREATED)
-      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("APPAPI_PERMS_REVOKED", authenticatedUser, appId,
+      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("APPAPI_PERMS_REVOKED", rUser, appId,
                                                                        userName, permsListStr),
                                                    PRETTY, resp1))
       .build();
@@ -401,7 +379,7 @@ public class PermsResource
    * @param permsList - List for resulting permissions extracted from payload
    * @return - null if all checks OK else Response containing info
    */
-  private Response checkAndExtractPayload(AuthenticatedUser authenticatedUser, String appId, String userName,
+  private Response checkAndExtractPayload(ResourceRequestUser rUser, String appId, String userName,
                                           String json, Set<Permission> permsList)
   {
     String msg;
@@ -410,7 +388,7 @@ public class PermsResource
     try { JsonValidator.validate(spec); }
     catch (TapisJSONException e)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_JSON_INVALID", authenticatedUser, appId, userName, e.getMessage());
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_JSON_INVALID", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
@@ -430,7 +408,7 @@ public class PermsResource
         try {permsList.add(Permission.valueOf(permStr)); }
         catch (IllegalArgumentException e)
         {
-          msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ENUM_ERROR", authenticatedUser, appId, userName, permStr, e.getMessage());
+          msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ENUM_ERROR", rUser, appId, userName, permStr, e.getMessage());
           _log.error(msg, e);
           return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
         }
@@ -441,7 +419,7 @@ public class PermsResource
     // Check values. We should have at least one permission
     if (perms == null || perms.size() <= 0)
     {
-      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_NOPERMS", authenticatedUser, appId, userName);
+      msg = ApiUtils.getMsgAuth("APPAPI_PERMS_NOPERMS", rUser, appId, userName);
     }
 
     // If validation failed log error message and return response

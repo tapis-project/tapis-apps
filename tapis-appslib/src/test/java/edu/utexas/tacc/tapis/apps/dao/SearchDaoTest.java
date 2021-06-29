@@ -1,5 +1,6 @@
 package edu.utexas.tacc.tapis.apps.dao;
 
+import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
 import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
@@ -35,7 +36,7 @@ import static org.testng.Assert.assertEquals;
 public class SearchDaoTest
 {
   private AppsDaoImpl dao;
-  private AuthenticatedUser authenticatedUser;
+  private ResourceRequestUser rUser;
 
   // Test data
   private static final String testKey = "SrchGet";
@@ -83,7 +84,8 @@ public class SearchDaoTest
     System.out.println("Executing BeforeSuite setup method: " + SearchDaoTest.class.getSimpleName());
     dao = new AppsDaoImpl();
     // Initialize authenticated user
-    authenticatedUser = new AuthenticatedUser(apiUser, tenantName, TapisThreadContext.AccountType.user.name(), null, apiUser, tenantName, null, null, null);
+    rUser = new ResourceRequestUser(new AuthenticatedUser(apiUser, tenantName, TapisThreadContext.AccountType.user.name(),
+                                                          null, apiUser, tenantName, null, null, null));
 
     // Cleanup anything leftover from previous failed run
     teardown();
@@ -103,7 +105,7 @@ public class SearchDaoTest
     Thread.sleep(500);
     for (App app : apps)
     {
-      boolean itemCreated = dao.createApp(authenticatedUser, app, gson.toJson(app), scrubbedJson);
+      boolean itemCreated = dao.createApp(rUser, app, gson.toJson(app), scrubbedJson);
       Assert.assertTrue(itemCreated, "Item not created, id: " + app.getId());
     }
     Thread.sleep(500);

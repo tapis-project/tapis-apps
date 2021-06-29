@@ -136,10 +136,10 @@ public final class App
   private int seqId;           // Unique database sequence number
   private int verSeqId;
   private String tenant;     // Name of the tenant for which the app is defined
-  private String id;       // Name of the app
-  private String version;    // Version of the app
+  private final String id;       // Name of the app
+  private final String version;    // Version of the app
   private String description; // Full description of the app
-  private AppType appType; // Type of app, e.g. BATCH, DIRECT
+  private final AppType appType; // Type of app, e.g. BATCH, DIRECT
   private String owner;      // User who owns the app and has full privileges
   private boolean enabled; // Indicates if app is currently enabled
   private boolean containerized;
@@ -217,6 +217,65 @@ public final class App
     enabled = enabled1;
     containerized = containerized1;
     deleted = deleted1;
+  }
+
+  /**
+   * Constructor using non-updatable attributes.
+   * Rather than exposing otherwise unnecessary setters we use a special constructor.
+   */
+  public App(App a, String tenant1, String id1, String version1, AppType appType1)
+  {
+    if (a==null || StringUtils.isBlank(tenant1) || StringUtils.isBlank(id1) || StringUtils.isBlank(version1)
+                || appType1 == null )
+      throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT"));
+    tenant = tenant1;
+    id = id1;
+    version = version1;
+    appType = appType1;
+
+    seqId = a.getSeqId();
+    created = a.getCreated();
+    updated = a.getUpdated();
+    description = a.getDescription();
+    owner = a.getOwner();
+    enabled = a.isEnabled();
+    containerized = a.isContainerized();
+    runtime = a.getRuntime();
+    runtimeVersion = a.getRuntimeVersion();
+    runtimeOptions = a.getRuntimeOptions();
+    containerImage = a.getContainerImage();
+    maxJobs = a.getMaxJobs();
+    maxJobsPerUser = a.getMaxJobsPerUser();
+    strictFileInputs = a.isStrictFileInputs();
+    jobDescription = a.getJobDescription();
+    dynamicExecSystem = a.isDynamicExecSystem();
+    execSystemConstraints = a.getExecSystemConstraints();
+    execSystemId = a.getExecSystemId();
+    execSystemExecDir = a.getExecSystemExecDir();
+    execSystemInputDir = a.getExecSystemInputDir();
+    execSystemOutputDir = a.getExecSystemOutputDir();
+    execSystemLogicalQueue = a.getExecSystemLogicalQueue();
+    archiveSystemId = a.getArchiveSystemId();
+    archiveSystemDir = a.getArchiveSystemDir();
+    archiveOnAppError = a.isArchiveOnAppError();
+    nodeCount = a.getNodeCount();
+    coresPerNode = a.getCoresPerNode();
+    memoryMb = a.getMemoryMb();
+    maxMinutes = a.getMaxMinutes();
+    envVariables = a.getEnvVariables();
+    archiveIncludes = a.getArchiveIncludes();
+    archiveExcludes = a.getArchiveExcludes();
+    archiveIncludeLaunchFiles = a.getArchiveIncludeLaunchFiles();
+    jobTags = a.getJobTags();
+    fileInputs = a.getFileInputs();
+    notificationSubscriptions = a.getNotificationSubscriptions();
+    appArgs = a.getAppArgs();
+    containerArgs = a.getContainerArgs();
+    schedulerOptions = a.getSchedulerOptions();
+    tags = (a.getTags() == null) ? EMPTY_STR_ARRAY : a.getTags().clone();
+    notes = a.getNotes();
+    uuid = a.getUuid();
+    deleted = a.isDeleted();
   }
 
   /**
@@ -561,18 +620,15 @@ public final class App
   public Instant getUpdated() { return updated; }
 
   public String getTenant() { return tenant; }
-  public App setTenant(String s) { tenant = s; return this; }
 
   public String getId() { return id; }
-  public App setId(String s) { id = s; return this; }
 
   public String getVersion() { return version; }
-  public App setVersion(String s) { version = s; return this; }
+
+  public AppType getAppType() { return appType; }
 
   public String getDescription() { return description; }
   public App setDescription(String d) { description = d; return this; }
-
-  public AppType getAppType() { return appType; }
 
   public String getOwner() { return owner; }
   public App setOwner(String s) { owner = s;  return this;}
@@ -598,7 +654,6 @@ public final class App
     runtimeOptions = (rol == null) ? null : new ArrayList<>(rol);
     return this;
   }
-
 
   public String getContainerImage() { return containerImage; }
   public App setContainerImage(String s) { containerImage = s; return this; }

@@ -1,9 +1,9 @@
 package edu.utexas.tacc.tapis.apps.service;
 
+import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
-import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
@@ -21,62 +21,65 @@ import java.util.Set;
 @Contract
 public interface AppsService
 {
-  void createApp(AuthenticatedUser authenticatedUser, App app, String scrubbedText)
-          throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, TapisClientException;
+  void createApp(ResourceRequestUser rUser, App app, String scrubbedText)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException;
 
-  void updateApp(AuthenticatedUser authenticatedUser, PatchApp patchApp, String scrubbedText)
+  void patchApp(ResourceRequestUser rUser, PatchApp patchApp, String scrubbedText)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
-  int enableApp(AuthenticatedUser authenticatedUser, String appId)
-          throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
+//  void putApp(ResourceRequestUser rUser, App putApp, String scrubbedText)
+//          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
-  int disableApp(AuthenticatedUser authenticatedUser, String appId)
-          throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
+  int enableApp(ResourceRequestUser rUser, String appId)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
-  int deleteApp(AuthenticatedUser authenticatedUser, String appId)
-          throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
+  int disableApp(ResourceRequestUser rUser, String appId)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
-  int undeleteApp(AuthenticatedUser authenticatedUser, String appId)
-          throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
+  int deleteApp(ResourceRequestUser rUser, String appId)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
-  int changeAppOwner(AuthenticatedUser authenticatedUser, String appId, String newOwnerName)
-          throws TapisException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException, TapisClientException;
+  int undeleteApp(ResourceRequestUser rUser, String appId)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
-  boolean checkForApp(AuthenticatedUser authenticatedUser, String appId)
-          throws TapisException, NotAuthorizedException, TapisClientException;
+  int changeAppOwner(ResourceRequestUser rUser, String appId, String newOwnerName)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
-  boolean checkForApp(AuthenticatedUser authenticatedUser, String appId, boolean includeDeleted)
-          throws TapisException, NotAuthorizedException, TapisClientException;
+  boolean checkForApp(ResourceRequestUser rUser, String appId)
+          throws TapisException, TapisClientException, NotAuthorizedException;
 
-  boolean isEnabled(AuthenticatedUser authenticatedUser, String appId)
-          throws TapisException, NotAuthorizedException, TapisClientException;
+  boolean checkForApp(ResourceRequestUser rUser, String appId, boolean includeDeleted)
+          throws TapisException, TapisClientException, NotAuthorizedException;
 
-  App getApp(AuthenticatedUser authenticatedUser, String appId, String appVersion, boolean requireExecPerm)
-          throws TapisException, NotAuthorizedException, TapisClientException;
+  boolean isEnabled(ResourceRequestUser rUser, String appId)
+          throws TapisException, TapisClientException, NotAuthorizedException;
 
-  int getAppsTotalCount(AuthenticatedUser authenticatedUser, List<String> searchList, List<OrderBy> orderByList,
+  App getApp(ResourceRequestUser rUser, String appId, String appVersion, boolean requireExecPerm)
+          throws TapisException, TapisClientException, NotAuthorizedException;
+
+  int getAppsTotalCount(ResourceRequestUser rUser, List<String> searchList, List<OrderBy> orderByList,
                         String startAfter, boolean showDeleted) throws TapisException, TapisClientException;
 
-  List<App> getApps(AuthenticatedUser authenticatedUser, List<String> searchList, int limit,
+  List<App> getApps(ResourceRequestUser rUser, List<String> searchList, int limit,
                     List<OrderBy> orderByList, int skip, String startAfter, boolean showDeleted)
           throws TapisException, TapisClientException;
 
-  List<App> getAppsUsingSqlSearchStr(AuthenticatedUser authenticatedUser, String searchStr, int limit,
+  List<App> getAppsUsingSqlSearchStr(ResourceRequestUser rUser, String searchStr, int limit,
                                      List<OrderBy> orderByList, int skip, String startAfter, boolean showDeleted)
           throws TapisException, TapisClientException;
 
-  Set<String> getAppIDs(AuthenticatedUser authenticatedUser, boolean showDeleted)
+  Set<String> getAppIDs(ResourceRequestUser rUser, boolean showDeleted)
           throws TapisException;
 
-  String getAppOwner(AuthenticatedUser authenticatedUser, String appId)
-          throws TapisException, NotAuthorizedException, TapisClientException;
+  String getAppOwner(ResourceRequestUser rUser, String appId)
+          throws TapisException, TapisClientException, NotAuthorizedException;
 
-  void grantUserPermissions(AuthenticatedUser authenticatedUser, String appId, String userName, Set<Permission> permissions, String updateText)
-          throws NotFoundException, NotAuthorizedException, TapisException, TapisClientException;
+  void grantUserPermissions(ResourceRequestUser rUser, String appId, String userName, Set<Permission> permissions, String updateText)
+          throws TapisException, TapisClientException, NotAuthorizedException;
 
-  int revokeUserPermissions(AuthenticatedUser authenticatedUser, String appId, String userName, Set<Permission> permissions, String updateText)
-          throws TapisException, NotAuthorizedException, TapisClientException;
+  int revokeUserPermissions(ResourceRequestUser rUser, String appId, String userName, Set<Permission> permissions, String updateText)
+          throws TapisException, TapisClientException, NotAuthorizedException;
 
-  Set<Permission> getUserPermissions(AuthenticatedUser authenticatedUser, String appId, String userName)
-          throws TapisException, NotAuthorizedException, TapisClientException;
+  Set<Permission> getUserPermissions(ResourceRequestUser rUser, String appId, String userName)
+          throws TapisException, TapisClientException, NotAuthorizedException;
 }

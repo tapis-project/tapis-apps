@@ -307,9 +307,9 @@ public final class IntegrationUtils
    *   dynamicExec==false -> execSystemId
    * NOTE: many args to constructor are primitives so cannot be set to null.
    */
-  public static App makeMinimalApp(App app)
+  public static App makeMinimalApp(App app, String id)
   {
-    return new App(-1, -1, tenantName, app.getId(), app.getVersion(), descriptionNull, appType, ownerNull, enabledTrue,
+    return new App(-1, -1, tenantName, id, app.getVersion(), descriptionNull, appType, ownerNull, enabledTrue,
             containerizedTrue, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage1, maxJobs1, maxJobsPerUser1,
             strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
             execSystemId1, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
@@ -324,9 +324,9 @@ public final class IntegrationUtils
    * All attributes except execSystemLogicalQueue are to be updated.
    * Unable to test update of LogicalQueue at this time since execSystemId2 has no LogicalQueues defined.
    */
-  public static PatchApp makePatchAppFull()
+  public static PatchApp makePatchAppFull(String id, String version)
   {
-     return new PatchApp(description2, runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
+     return new PatchApp(tenantName, id, version, description2, runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
              maxJobs2, maxJobsPerUser2, strictFileInputsTrue,
              jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
              execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
@@ -340,9 +340,9 @@ public final class IntegrationUtils
    * Create a PatchApp in memory for use in testing.
    * Some attributes are to be updated: description, containerImage, execSystemId
    */
-  public static PatchApp makePatchAppPartial1()
+  public static PatchApp makePatchAppPartial1(String id, String version)
   {
-    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
+    return new PatchApp(tenantName, id, version, description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
             jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
@@ -357,9 +357,9 @@ public final class IntegrationUtils
    * Some attributes are to be updated: description, containerImage, execSystemId,
    *   jobAttributes.fileInputDefinitions, jobAttributes.parameterSet.containerArgs
    */
-  public static PatchApp makePatchAppPartial2()
+  public static PatchApp makePatchAppPartial2(String id, String version)
   {
-    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
+    return new PatchApp(tenantName, id, version, description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
             jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
@@ -373,9 +373,9 @@ public final class IntegrationUtils
    * Create a PatchApp in memory for use in testing.
    * Some attributes are to be updated: jobAttributes.parameterSet.appArgs
    */
-  public static PatchApp makePatchAppPartial3()
+  public static PatchApp makePatchAppPartial3(String id, String version)
   {
-    return new PatchApp(descriptionNull, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImageNull,
+    return new PatchApp(tenantName, id, version, descriptionNull, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImageNull,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
             jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,

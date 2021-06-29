@@ -71,7 +71,7 @@ public final class PatchApp
    * Note that because PatchApp does not have a corresponding table in the DB we can pass in
    *   FileInputs, AppArgs, ContainerArgs, SchedulerOptions and Subscriptions.
    */
-  public PatchApp(String description1, Runtime runtime1, String runtimeVersion1, List<RuntimeOption> runtimeOptions1,
+  public PatchApp(String tenantId1, String id1, String version1, String description1, Runtime runtime1, String runtimeVersion1, List<RuntimeOption> runtimeOptions1,
                   String containerImage1, Integer maxJobs1, Integer maxJobsPerUser1, Boolean strictFileInputs1,
                   // == Start jobAttributes
                   String jobDescription1, Boolean dynamicExecSystem1, String[] execSystemConstraints1,
@@ -86,6 +86,9 @@ public final class PatchApp
                   // == End jobAttributes
                   String[] tags1, Object notes1)
   {
+    tenant = tenantId1;
+    id = id1;
+    version = version1;
     description = description1;
     runtime = runtime1;
     runtimeVersion = runtimeVersion1;
@@ -127,13 +130,8 @@ public final class PatchApp
   // *********************** Accessors **************************************
   // ************************************************************************
   public String getTenant() { return tenant; }
-  public void setTenant(String s) { tenant = s; }
-
   public String getId() { return id; }
-  public void setId(String s) { id = s; }
-
   public String getVersion() { return version; }
-  public void setVersion(String s) { version = s; }
 
   public String getDescription() { return description; }
   public Runtime getRuntime() { return runtime; }

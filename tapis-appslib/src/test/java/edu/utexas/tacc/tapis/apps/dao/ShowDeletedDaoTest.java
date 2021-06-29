@@ -1,5 +1,6 @@
 package edu.utexas.tacc.tapis.apps.dao;
 
+import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
 import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
@@ -12,7 +13,6 @@ import org.testng.annotations.Test;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static edu.utexas.tacc.tapis.apps.IntegrationUtils.versionSpecifiedNull;
 import static edu.utexas.tacc.tapis.shared.threadlocal.SearchParameters.DEFAULT_LIMIT;
@@ -36,7 +36,7 @@ import static org.testng.Assert.assertEquals;
 public class ShowDeletedDaoTest
 {
   private AppsDaoImpl dao;
-  private AuthenticatedUser authenticatedUser;
+  private ResourceRequestUser rUser;
 
   // Test data
   private static final String testKey = "SrchDel";
@@ -53,15 +53,15 @@ public class ShowDeletedDaoTest
     System.out.println("Executing BeforeSuite setup method: " + ShowDeletedDaoTest.class.getSimpleName());
     dao = new AppsDaoImpl();
     // Initialize authenticated user
-    authenticatedUser = new AuthenticatedUser(apiUser, tenantName, TapisThreadContext.AccountType.user.name(), null,
-                                              apiUser, tenantName, null, null, null);
+    rUser = new ResourceRequestUser(new AuthenticatedUser(apiUser, tenantName, TapisThreadContext.AccountType.user.name(),
+                                                          null, apiUser, tenantName, null, null, null));
 
     // Cleanup anything leftover from previous failed run
     teardown();
 
     for (App app : apps)
     {
-      boolean itemCreated = dao.createApp(authenticatedUser, app, gson.toJson(app), scrubbedJson);
+      boolean itemCreated = dao.createApp(rUser, app, gson.toJson(app), scrubbedJson);
       Assert.assertTrue(itemCreated, "Item not created, id: " + app.getId());
     }
   }
@@ -116,7 +116,7 @@ public class ShowDeletedDaoTest
 //    assertEquals(appIDs.size(), numApps, "Incorrect result count for getAppIDs/showDel=true before delete of app");
 
     // Now delete an app
-    dao.updateDeleted(authenticatedUser, app0Id, true);
+    dao.updateDeleted(rUser, tenantName, app0Id, true);
 
     // First check counts. showDeleted = false should return 1 less than total.
     count = dao.getAppsCount(tenantName, searchListAll, searchASTNull, setOfIDsNull, orderByListNull,

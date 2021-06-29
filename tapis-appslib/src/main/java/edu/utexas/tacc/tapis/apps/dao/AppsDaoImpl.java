@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
 import org.apache.commons.lang3.StringUtils;
 import org.flywaydb.core.Flyway;
 import org.jooq.Condition;
@@ -104,12 +105,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @throws IllegalStateException - if app id+version already exists or app has been marked deleted
    */
   @Override
-  public boolean createApp(AuthenticatedUser authenticatedUser, App app, String createJsonStr, String scrubbedText)
+  public boolean createApp(ResourceRequestUser rUser, App app, String createJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException {
     String opName = "createApp";
     // ------------------------- Check Input -------------------------
     if (app == null) LibUtils.logAndThrowNullParmException(opName, "app");
-    if (authenticatedUser == null) LibUtils.logAndThrowNullParmException(opName, "authenticatedUser");
+    if (rUser == null) LibUtils.logAndThrowNullParmException(opName, "resourceRequestUser");
     if (StringUtils.isBlank(createJsonStr)) LibUtils.logAndThrowNullParmException(opName, "createJson");
     if (StringUtils.isBlank(app.getTenant())) LibUtils.logAndThrowNullParmException(opName, "tenant");
     if (StringUtils.isBlank(app.getId())) LibUtils.logAndThrowNullParmException(opName, "appId");
@@ -125,11 +126,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
       // Check to see if app exists (even if deleted). If yes then throw IllegalStateException
       if (isDeleted(db, app.getTenant(), app.getId()))
-        throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_DELETED", authenticatedUser, app.getId()));
+        throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_DELETED", rUser, app.getId()));
 
       // If app (id+version) exists then throw IllegalStateException
       if (checkIfAppExists(db, app.getTenant(), app.getId(), app.getVersion(), false))
-        throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_EXISTS", authenticatedUser, app.getId(),
+        throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_EXISTS", rUser, app.getId(),
                                                             app.getVersion()));
       // Make sure owner, runtime, notes, tags etc are set
       String owner = App.DEFAULT_OWNER;
@@ -232,7 +233,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       db.update(APPS).set(APPS.LATEST_VERSION, app.getVersion()).where(APPS.ID.eq(app.getId())).execute();
 
       // Persist update record
-      addUpdate(db, authenticatedUser, app.getTenant(), app.getId(), app.getVersion(), appSeqId, appVerSeqId,
+      addUpdate(db, rUser, app.getTenant(), app.getId(), app.getVersion(), appSeqId, appVerSeqId,
                 AppOperation.create, createJsonStr, scrubbedText, app.getUuid());
 
       // Close out and commit
@@ -257,14 +258,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @throws IllegalStateException - if app already exists
    */
   @Override
-  public void updateApp(AuthenticatedUser authenticatedUser, App patchedApp, PatchApp patchApp,
-                        String updateJsonStr, String scrubbedText)
+  public void patchApp(ResourceRequestUser rUser, App patchedApp, PatchApp patchApp,
+                       String updateJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException {
     String opName = "updateApp";
     // ------------------------- Check Input -------------------------
     if (patchedApp == null) LibUtils.logAndThrowNullParmException(opName, "patchedApp");
     if (patchApp == null) LibUtils.logAndThrowNullParmException(opName, "patchApp");
-    if (authenticatedUser == null) LibUtils.logAndThrowNullParmException(opName, "authenticatedUser");
+    if (rUser == null) LibUtils.logAndThrowNullParmException(opName, "resourceRequestUser");
 
     // Pull out some values for convenience
     String tenant = patchedApp.getTenant();
@@ -286,7 +287,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
       // Check to see if app exists and has not been marked as deleted. If no then throw IllegalStateException
       boolean doesExist = checkIfAppExists(db, tenant, appId, appVersion, false);
-      if (!doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", authenticatedUser, appId));
+      if (!doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", rUser, appId));
 
       // Make sure runtime, string arrays and json objects are set
       Runtime runtime = App.DEFAULT_RUNTIME;
@@ -379,7 +380,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       }
 
       // Persist update record
-      addUpdate(db, authenticatedUser, tenant, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
+      addUpdate(db, rUser, tenant, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
                 updateJsonStr, scrubbedText, patchedApp.getUuid());
 
       // Close out and commit
@@ -401,13 +402,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Update attribute enabled for an app given app Id and value
    */
   @Override
-  public void updateEnabled(AuthenticatedUser authenticatedUser, String appId, boolean enabled) throws TapisException
+  public void updateEnabled(ResourceRequestUser rUser, String tenantId, String appId, boolean enabled) throws TapisException
   {
     String opName = "updateEnabled";
     // ------------------------- Check Input -------------------------
     if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
-
-    String tenant = authenticatedUser.getOboTenantId();
 
     // AppOperation needed for recording the update
     AppOperation appOp = enabled ? AppOperation.enable : AppOperation.disable;
@@ -422,10 +421,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       db.update(APPS)
               .set(APPS.ENABLED, enabled)
               .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
-              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
+              .where(APPS.TENANT.eq(tenantId),APPS.ID.eq(appId)).execute();
       // Persist update record
       String updateJsonStr = "{\"enabled\":" +  enabled + "}";
-      addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+      addUpdate(db, rUser, tenantId, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
                 appOp, updateJsonStr , null, INVALID_UUID);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -446,13 +445,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Update attribute deleted for an app given app Id and value
    */
   @Override
-  public void updateDeleted(AuthenticatedUser authenticatedUser, String appId, boolean deleted) throws TapisException
+  public void updateDeleted(ResourceRequestUser rUser, String tenantId, String appId, boolean deleted) throws TapisException
   {
     String opName = "updateDeleted";
     // ------------------------- Check Input -------------------------
     if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
-
-    String tenant = authenticatedUser.getOboTenantId();
 
     // AppOperation needed for recording the update
     AppOperation appOp = deleted ? AppOperation.delete : AppOperation.undelete;
@@ -467,10 +464,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       db.update(APPS)
               .set(APPS.DELETED, deleted)
               .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
-              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
+              .where(APPS.TENANT.eq(tenantId),APPS.ID.eq(appId)).execute();
       // Persist update record
       String updateJsonStr = "{\"deleted\":" +  deleted + "}";
-      addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+      addUpdate(db, rUser, tenantId, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
               appOp, updateJsonStr , null, INVALID_UUID);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -492,14 +489,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *
    */
   @Override
-  public void updateAppOwner(AuthenticatedUser authenticatedUser, String appId, String newOwnerName) throws TapisException
+  public void updateAppOwner(ResourceRequestUser rUser, String tenantId, String appId, String newOwnerName) throws TapisException
   {
     String opName = "changeOwner";
     // ------------------------- Check Input -------------------------
     if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
     if (StringUtils.isBlank(newOwnerName)) LibUtils.logAndThrowNullParmException(opName, "newOwnerName");
-
-    String tenant = authenticatedUser.getOboTenantId();
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -511,10 +506,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       db.update(APPS)
               .set(APPS.OWNER, newOwnerName)
               .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
-              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId)).execute();
+              .where(APPS.TENANT.eq(tenantId),APPS.ID.eq(appId)).execute();
       // Persist update record
       String updateJsonStr = "{\"owner\":\"" +  newOwnerName + "\"}";
-      addUpdate(db, authenticatedUser, tenant, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+      addUpdate(db, rUser, tenantId, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
                 AppOperation.changeOwner, updateJsonStr , null, INVALID_UUID);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -1204,7 +1199,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *
    */
   @Override
-  public void addUpdateRecord(AuthenticatedUser authenticatedUser, String tenant, String appId, String appVer,
+  public void addUpdateRecord(ResourceRequestUser rUser, String tenant, String appId, String appVer,
                               AppOperation op, String upd_json, String upd_text)
           throws TapisException
   {
@@ -1215,7 +1210,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      addUpdate(db, authenticatedUser, tenant, appId, appVer, INVALID_SEQ_ID, INVALID_SEQ_ID, op,
+      addUpdate(db, rUser, tenant, appId, appVer, INVALID_SEQ_ID, INVALID_SEQ_ID, op,
                 upd_json, upd_text, INVALID_UUID);
 
       // Close out and commit
@@ -1245,7 +1240,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *       the tenants may differ.
    *
    * @param db - Database connection
-   * @param authenticatedUser - User who requested the update
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param tenant - Tenant of the app being updated
    * @param id - Id of the app being updated
    * @param version - Version of the app being updated, may be null
@@ -1255,7 +1250,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @param upd_json - JSON representing the update - with secrets scrubbed
    * @param upd_text - Text data supplied by client - secrets should be scrubbed
    */
-  private static void addUpdate(DSLContext db, AuthenticatedUser authenticatedUser, String tenant, String id,
+  private static void addUpdate(DSLContext db, ResourceRequestUser rUser, String tenant, String id,
                                 String version, int appSeqId, int appVerSeqId, AppOperation op,
                                 String upd_json, String upd_text, UUID uuid)
   {
@@ -1277,8 +1272,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             .set(APP_UPDATES.APP_TENANT, tenant)
             .set(APP_UPDATES.APP_ID, id)
             .set(APP_UPDATES.APP_VERSION, version)
-            .set(APP_UPDATES.USER_TENANT, authenticatedUser.getOboTenantId())
-            .set(APP_UPDATES.USER_NAME, authenticatedUser.getOboUser())
+            .set(APP_UPDATES.USER_TENANT, rUser.getApiUserId())
+            .set(APP_UPDATES.USER_NAME, rUser.getApiUserId())
             .set(APP_UPDATES.OPERATION, op)
             .set(APP_UPDATES.UPD_JSON, TapisGsonUtils.getGson().fromJson(updJsonStr, JsonElement.class))
             .set(APP_UPDATES.UPD_TEXT, upd_text)
