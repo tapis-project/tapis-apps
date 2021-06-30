@@ -536,7 +536,7 @@ public class AppsServiceTest
       System.out.println("  - Created in-memory app object with ID: " + tmpApp.getId());
       try
       {
-        svc.createApp(rUser1, app0, scrubbedJson);
+        svc.createApp(rUser1, tmpApp, scrubbedJson);
         Assert.fail("App create call should have thrown an exception when using a reserved ID. Id: " + id);
       } catch (IllegalStateException e)
       {

@@ -27,8 +27,8 @@ public interface AppsService
   void patchApp(ResourceRequestUser rUser, PatchApp patchApp, String scrubbedText)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
-//  void putApp(ResourceRequestUser rUser, App putApp, String scrubbedText)
-//          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
+  void putApp(ResourceRequestUser rUser, App putApp, String scrubbedText)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
   int enableApp(ResourceRequestUser rUser, String appId)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;

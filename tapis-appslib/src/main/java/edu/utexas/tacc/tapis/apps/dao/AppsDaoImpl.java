@@ -253,7 +253,141 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * Update an existing specific version of an application.
+   * Update all updatable attributes of an existing specific version of an application.
+   * @throws TapisException - on error
+   * @throws IllegalStateException - if app already exists
+   */
+  @Override
+  public void putApp(ResourceRequestUser rUser, App putApp, String updateJsonStr, String scrubbedText)
+          throws TapisException, IllegalStateException {
+    String opName = "putApp";
+    // ------------------------- Check Input -------------------------
+    if (putApp == null) LibUtils.logAndThrowNullParmException(opName, "putApp");
+    if (rUser == null) LibUtils.logAndThrowNullParmException(opName, "resourceRequestUser");
+    // Pull out some values for convenience
+    String tenantId = putApp.getTenant();
+    String appId = putApp.getId();
+    String appVersion = putApp.getVersion();
+    // Check required attributes have been provided
+    if (StringUtils.isBlank(updateJsonStr)) LibUtils.logAndThrowNullParmException(opName, "updateJson");
+    if (StringUtils.isBlank(tenantId)) LibUtils.logAndThrowNullParmException(opName, "tenant");
+    if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
+    if (StringUtils.isBlank(appVersion)) LibUtils.logAndThrowNullParmException(opName, "appVersion");
+    if (putApp.getAppType() == null) LibUtils.logAndThrowNullParmException(opName, "appType");
+
+    // Make sure runtime, notes, tags, etc are all set
+    Runtime runtime = App.DEFAULT_RUNTIME;
+    String[] execSystemConstraintsStrArray = null;
+    String[] envVariablesStrArray = null;
+    String[] archiveIncludesStrArray = null;
+    String[] archiveExcludesStrArray = null;
+    String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
+    String[] tagsStrArray = App.EMPTY_STR_ARRAY;
+    JsonObject notesObj =  App.DEFAULT_NOTES;
+    if (putApp.getRuntime() != null) runtime = putApp.getRuntime();
+    String[] runtimeOptionsStrArray = null;
+    // Convert runtimeOptions array from enum to string
+    if (putApp.getRuntimeOptions() != null)
+    {
+      runtimeOptionsStrArray = putApp.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
+    }
+    if (putApp.getExecSystemConstraints() != null) execSystemConstraintsStrArray = putApp.getExecSystemConstraints();
+    if (putApp.getEnvVariables() != null) envVariablesStrArray = putApp.getEnvVariables();
+    if (putApp.getArchiveIncludes() != null) archiveIncludesStrArray = putApp.getArchiveIncludes();
+    if (putApp.getArchiveExcludes() != null) archiveExcludesStrArray = putApp.getArchiveExcludes();
+    if (putApp.getJobTags() != null) jobTagsStrArray = putApp.getJobTags();
+    if (putApp.getTags() != null) tagsStrArray = putApp.getTags();
+    if (putApp.getNotes() != null) notesObj = (JsonObject) putApp.getNotes();
+
+    // ------------------------- Call SQL ----------------------------
+    Connection conn = null;
+    try
+    {
+      // Get a database connection.
+      conn = getConnection();
+      DSLContext db = DSL.using(conn);
+
+      // Check to see if app exists and has not been marked as deleted. If no then throw IllegalStateException
+      boolean doesExist = checkIfAppExists(db, tenantId, appId, appVersion, false);
+      if (!doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", rUser, appId));
+
+      // Make sure UUID filled in, needed for update record. Pre-populated putApp may not have it.
+      UUID uuid = putApp.getUuid();
+      if (uuid == null) uuid = getUUIDUsingDb(db, tenantId, appId, appVersion);
+
+      int appSeqId = getAppSeqIdUsingDb(db, tenantId, appId);
+      int appVerSeqId = -1;
+// TODO
+//      var result = db.update(APPS_VERSIONS)
+//              .set(APPS_VERSIONS.DESCRIPTION, putApp.getDescription())
+//              .set(APPS_VERSIONS.RUNTIME, runtime)
+//              .set(APPS_VERSIONS.RUNTIME_VERSION, putApp.getRuntimeVersion())
+//              .set(APPS_VERSIONS.RUNTIME_OPTIONS, runtimeOptionsStrArray)
+//              .set(APPS_VERSIONS.CONTAINER_IMAGE, putApp.getContainerImage())
+//              .set(APPS_VERSIONS.MAX_JOBS, putApp.getMaxJobs())
+//              .set(APPS_VERSIONS.MAX_JOBS_PER_USER, putApp.getMaxJobsPerUser())
+//              .set(APPS_VERSIONS.STRICT_FILE_INPUTS, putApp.isStrictFileInputs())
+//              .set(APPS_VERSIONS.JOB_DESCRIPTION, putApp.getJobDescription())
+//              .set(APPS_VERSIONS.DYNAMIC_EXEC_SYSTEM, putApp.isDynamicExecSystem())
+//              .set(APPS_VERSIONS.EXEC_SYSTEM_CONSTRAINTS, execSystemConstraintsStrArray)
+//              .set(APPS_VERSIONS.EXEC_SYSTEM_ID, putApp.getExecSystemId())
+//              .set(APPS_VERSIONS.EXEC_SYSTEM_EXEC_DIR, putApp.getExecSystemExecDir())
+//              .set(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR, putApp.getExecSystemInputDir())
+//              .set(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR, putApp.getExecSystemOutputDir())
+//              .set(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE, putApp.getExecSystemLogicalQueue())
+//              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, putApp.getArchiveSystemId())
+//              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, putApp.getArchiveSystemDir())
+//              .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, putApp.isArchiveOnAppError())
+//              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
+//              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
+//              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
+//              .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, putApp.getArchiveIncludeLaunchFiles())
+//              .set(APPS_VERSIONS.NODE_COUNT, putApp.getNodeCount())
+//              .set(APPS_VERSIONS.CORES_PER_NODE, putApp.getCoresPerNode())
+//              .set(APPS_VERSIONS.MEMORY_MB, putApp.getMemoryMb())
+//              .set(APPS_VERSIONS.MAX_MINUTES, putApp.getMaxMinutes())
+//              .set(APPS_VERSIONS.JOB_TAGS, jobTagsStrArray)
+//              .set(APPS_VERSIONS.TAGS, tagsStrArray)
+//              .set(APPS_VERSIONS.NOTES, notesObj)
+//              .set(APPS_VERSIONS.UPDATED, TapisUtils.getUTCTimeNow())
+//              .where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId),APPS_VERSIONS.VERSION.eq(appVersion))
+//              .returningResult(APPS_VERSIONS.SEQ_ID)
+//              .fetchOne();
+//      if (result != null) appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
+//
+//      // Persist data to aux tables
+//      db.deleteFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+//      persistFileInputs(db, putApp, appVerSeqId);
+//      db.deleteFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+//      persistAppArgs(db, putApp, appVerSeqId);
+//      db.deleteFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+//      persistContainerArgs(db, putApp, appVerSeqId);
+//      db.deleteFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+//      persistSchedulerOptions(db, putApp, appVerSeqId);
+//      db.deleteFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+//      persistNotificationSubscriptions(db, putApp, appVerSeqId);
+//
+//      // Persist update record
+//      addUpdate(db, rUser, tenantId, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
+//                updateJsonStr, scrubbedText, uuid);
+
+      // Close out and commit
+      LibUtils.closeAndCommitDB(conn, null, null);
+    }
+    catch (Exception e)
+    {
+      // Rollback transaction and throw an exception
+      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps_versions", appVersion);
+    }
+    finally
+    {
+      // Always return the connection back to the connection pool.
+      LibUtils.finalCloseDB(conn);
+    }
+  }
+
+  /**
+   * Update selected attributes of an existing specific version of an application.
    * @throws TapisException - on error
    * @throws IllegalStateException - if app already exists
    */
@@ -381,7 +515,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
       // Persist update record
       addUpdate(db, rUser, tenant, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
-                updateJsonStr, scrubbedText, patchedApp.getUuid());
+              updateJsonStr, scrubbedText, patchedApp.getUuid());
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -1620,12 +1754,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Given an sql connection retrieve the app_ver uuid.
    * @param db - jooq context
-   * @param appSeqId - seqId of app
+   * @param id - Id of app
    * @param version - Version of app
    * @return - uuid
    */
-  private static UUID getUUIDUsingDb(DSLContext db, int appSeqId, String version)
+  private static UUID getUUIDUsingDb(DSLContext db, String tenantId, String id, String version)
   {
+    int appSeqId = getAppSeqIdUsingDb(db, tenantId, id);
     return db.selectFrom(APPS_VERSIONS).where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId),APPS_VERSIONS.VERSION.eq(version))
             .fetchOne(APPS_VERSIONS.UUID);
   }

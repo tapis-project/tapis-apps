@@ -264,6 +264,67 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
+   * Update all updatable attributes of an app given an App and the text used to create the App.
+   * Incoming App must contain the tenantId, appId and appVersion.
+   * Secrets in the text should be masked.
+   * Attributes that cannot be updated and so will be looked up and filled in:
+   *   tenant, id, version, appType, owner, enabled
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param putApp - Pre-populated App object (including tenantId, appId, appVersion)
+   * @param scrubbedText - Text used to create the App object - secrets should be scrubbed. Saved in update record.
+   *
+   * @throws TapisException - for Tapis related exceptions
+   * @throws IllegalStateException - Resulting App would be in an invalid state
+   * @throws IllegalArgumentException - invalid parameter passed in
+   * @throws NotAuthorizedException - unauthorized
+   * @throws NotFoundException - Resource not found
+   */
+  @Override
+  public void putApp(ResourceRequestUser rUser, App putApp, String scrubbedText)
+          throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException,
+          NotAuthorizedException, NotFoundException
+  {
+    AppOperation op = AppOperation.modify;
+    if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+    if (putApp == null) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
+    // Extract various names for convenience
+    String resourceTenantId = putApp.getTenant();
+    String resourceId = putApp.getId();
+    String resourceVersion = putApp.getVersion();
+
+    // ---------------------------- Check inputs ------------------------------------
+    if (StringUtils.isBlank(resourceTenantId) || StringUtils.isBlank(resourceId) ||
+        StringUtils.isBlank(resourceVersion) || StringUtils.isBlank(scrubbedText))
+    {
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", rUser, resourceId));
+    }
+
+    // App must already exist and not be deleted
+    if (!dao.checkForApp(resourceTenantId, resourceId, false))
+    {
+      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, resourceId));
+    }
+
+    // Retrieve the app being patched and create fully populated App with changes merged in
+    App origApp = dao.getApp(resourceTenantId, resourceId, resourceVersion);
+    App updatedApp = createUpdatedApp(origApp, putApp);
+
+    // ------------------------- Check service level authorization -------------------------
+    checkAuth(rUser, op, resourceId, origApp.getOwner(), null, null);
+
+    // ---------------- Check constraints on App attributes ------------------------
+    validateApp(rUser, updatedApp);
+
+    // Construct Json string representing the PatchApp about to be used to update the app
+    String updateJsonStr = TapisGsonUtils.getGson().toJson(putApp);
+
+    // ----------------- Create all artifacts --------------------
+    // No distributed transactions so no distributed rollback needed
+    // ------------------- Make Dao call to persist the app -----------------------------------
+    dao.putApp(rUser, updatedApp, updateJsonStr, scrubbedText);
+  }
+
+  /**
    * Update enabled to true for an app
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - name of app
@@ -432,7 +493,7 @@ public class AppsServiceImpl implements AppsService
     checkAuth(rUser, op, appId, null, null, null);
 
     // Remove SK artifacts
-    removeSKArtifacts(rUser, resourceTenantId, appId, op);
+    removeSKArtifacts(resourceTenantId, appId);
 
     // Delete the app
     return dao.hardDeleteApp(resourceTenantId, appId);
@@ -1403,7 +1464,7 @@ public class AppsServiceImpl implements AppsService
    * @throws NotAuthorizedException - apiUserId not authorized to perform operation
    */
   private void checkAuth(ResourceRequestUser rUser, AppOperation op, String appId,
-                         String owner, String targetUser, Set<Permission> perms)
+                         String owner, String userIdToCheck, Set<Permission> perms)
       throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
     // Check service and user requests separately to avoid confusing a service name with a user name
@@ -1415,7 +1476,7 @@ public class AppsServiceImpl implements AppsService
     else
     {
       // User check
-      checkAuthUser(rUser, op, null, null, appId, owner, targetUser, perms);
+      checkAuthUser(rUser, op, null, null, appId, owner, userIdToCheck, perms);
       return;
     }
     // Not authorized, throw an exception
@@ -1442,21 +1503,21 @@ public class AppsServiceImpl implements AppsService
    *
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param op - operation name
-   * @param tenantToCheck - optional name of the tenant to use. Default is to use authenticatedUser.
-   * @param userToCheck - optional name of the user to check. Default is to use authenticatedUser.
+   * @param tenantIdToCheck - optional name of the tenant to use. Default is to use authenticatedUser.
+   * @param userIdToCheck - optional name of the user to check. Default is to use authenticatedUser.
    * @param appId - name of the system
    * @param owner - system owner
    * @param perms - List of permissions for the revokePerm case
    * @throws NotAuthorizedException - apiUserId not authorized to perform operation
    */
   private void checkAuthUser(ResourceRequestUser rUser, AppOperation op,
-                             String tenantToCheck, String userToCheck,
+                             String tenantIdToCheck, String userIdToCheck,
                              String appId, String owner, String targetUser, Set<Permission> perms)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
     // Use JWT tenant and user from authenticatedUsr or optional provided values
-    String tenantName = (StringUtils.isBlank(tenantToCheck) ? rUser.getApiTenantId() : tenantToCheck);
-    String userName = (StringUtils.isBlank(userToCheck) ? rUser.getJwtUserId() : userToCheck);
+    String tenantName = (StringUtils.isBlank(tenantIdToCheck) ? rUser.getApiTenantId() : tenantIdToCheck);
+    String userName = (StringUtils.isBlank(userIdToCheck) ? rUser.getJwtUserId() : userIdToCheck);
 
     // Some checks do not require owner
     if (op == AppOperation.hardDelete)
@@ -1614,7 +1675,7 @@ public class AppsServiceImpl implements AppsService
    * Remove all SK artifacts associated with an App: user permissions, App role
    * No checks are done for incoming arguments and the app must exist
    */
-  private void removeSKArtifacts(ResourceRequestUser rUser, String resourceTenantId, String appId, AppOperation op)
+  private void removeSKArtifacts(String resourceTenantId, String appId)
           throws TapisException, TapisClientException
   {
     var skClient = getSKClient();
@@ -1646,6 +1707,20 @@ public class AppsServiceImpl implements AppsService
       skClient.revokeUserPermission(resourceTenantId, userName, permSpec);
     }
     return permSpecSet.size();
+  }
+
+  /**
+   * Create an updated App based on the app created from a PUT request.
+   * Attributes that cannot be updated and must be filled in from the original system:
+   *   tenant, id, appType, owner, enabled
+   */
+  private App createUpdatedApp(App origApp, App putApp)
+  {
+    // Rather than exposing otherwise unnecessary setters we use a special constructor.
+    App updatedApp = new App(putApp, origApp.getTenant(), origApp.getId(), origApp.getVersion(), origApp.getAppType());
+    updatedApp.setOwner(origApp.getOwner());
+    updatedApp.setEnabled(origApp.isEnabled());
+    return updatedApp;
   }
 
   /**

@@ -513,8 +513,7 @@ public class AppResource
       }
       else
       {
-// TODO still needed??? this is not patch
-        // IllegalStateException indicates an Invalid PatchApp was passed in
+        // IllegalStateException indicates an Invalid PutApp was passed in
         msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
         _log.error(msg);
         return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();

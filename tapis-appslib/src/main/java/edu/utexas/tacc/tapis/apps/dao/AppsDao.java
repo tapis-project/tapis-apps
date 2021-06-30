@@ -16,8 +16,10 @@ public interface AppsDao
   boolean createApp(ResourceRequestUser rUser, App app, String createJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException;
 
-  void patchApp(ResourceRequestUser rUser, App patchedApp, PatchApp patchApp,
-                String updateJsonStr, String scrubbedText)
+  void patchApp(ResourceRequestUser rUser, App patchedApp, PatchApp patchApp, String updateJsonStr, String scrubbedText)
+          throws TapisException, IllegalStateException;
+
+  void putApp(ResourceRequestUser rUser, App putApp, String updateJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException;
 
   void updateEnabled(ResourceRequestUser rUser, String tenantId, String id, boolean enabled) throws TapisException;
