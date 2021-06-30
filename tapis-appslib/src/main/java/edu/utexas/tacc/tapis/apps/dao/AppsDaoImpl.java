@@ -220,7 +220,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.UUID, app.getUuid())
               .returningResult(APPS_VERSIONS.SEQ_ID)
               .fetchOne();
-      if (record != null) appVerSeqId = record.getValue(APPS_VERSIONS.SEQ_ID);
+
+      // If record is null it is an error
+      if (record == null)
+      {
+        throw new TapisException(LibUtils.getMsgAuth("APPLIB_DB_NULL_RESULT", rUser, app.getId(), opName));
+      }
+
+      appVerSeqId = record.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Persist data to aux tables
       persistFileInputs(db, app, appVerSeqId);
@@ -317,59 +324,65 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
       int appSeqId = getAppSeqIdUsingDb(db, tenantId, appId);
       int appVerSeqId = -1;
-// TODO
-//      var result = db.update(APPS_VERSIONS)
-//              .set(APPS_VERSIONS.DESCRIPTION, putApp.getDescription())
-//              .set(APPS_VERSIONS.RUNTIME, runtime)
-//              .set(APPS_VERSIONS.RUNTIME_VERSION, putApp.getRuntimeVersion())
-//              .set(APPS_VERSIONS.RUNTIME_OPTIONS, runtimeOptionsStrArray)
-//              .set(APPS_VERSIONS.CONTAINER_IMAGE, putApp.getContainerImage())
-//              .set(APPS_VERSIONS.MAX_JOBS, putApp.getMaxJobs())
-//              .set(APPS_VERSIONS.MAX_JOBS_PER_USER, putApp.getMaxJobsPerUser())
-//              .set(APPS_VERSIONS.STRICT_FILE_INPUTS, putApp.isStrictFileInputs())
-//              .set(APPS_VERSIONS.JOB_DESCRIPTION, putApp.getJobDescription())
-//              .set(APPS_VERSIONS.DYNAMIC_EXEC_SYSTEM, putApp.isDynamicExecSystem())
-//              .set(APPS_VERSIONS.EXEC_SYSTEM_CONSTRAINTS, execSystemConstraintsStrArray)
-//              .set(APPS_VERSIONS.EXEC_SYSTEM_ID, putApp.getExecSystemId())
-//              .set(APPS_VERSIONS.EXEC_SYSTEM_EXEC_DIR, putApp.getExecSystemExecDir())
-//              .set(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR, putApp.getExecSystemInputDir())
-//              .set(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR, putApp.getExecSystemOutputDir())
-//              .set(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE, putApp.getExecSystemLogicalQueue())
-//              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, putApp.getArchiveSystemId())
-//              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, putApp.getArchiveSystemDir())
-//              .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, putApp.isArchiveOnAppError())
-//              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
-//              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
-//              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
-//              .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, putApp.getArchiveIncludeLaunchFiles())
-//              .set(APPS_VERSIONS.NODE_COUNT, putApp.getNodeCount())
-//              .set(APPS_VERSIONS.CORES_PER_NODE, putApp.getCoresPerNode())
-//              .set(APPS_VERSIONS.MEMORY_MB, putApp.getMemoryMb())
-//              .set(APPS_VERSIONS.MAX_MINUTES, putApp.getMaxMinutes())
-//              .set(APPS_VERSIONS.JOB_TAGS, jobTagsStrArray)
-//              .set(APPS_VERSIONS.TAGS, tagsStrArray)
-//              .set(APPS_VERSIONS.NOTES, notesObj)
-//              .set(APPS_VERSIONS.UPDATED, TapisUtils.getUTCTimeNow())
-//              .where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId),APPS_VERSIONS.VERSION.eq(appVersion))
-//              .returningResult(APPS_VERSIONS.SEQ_ID)
-//              .fetchOne();
-//      if (result != null) appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
-//
-//      // Persist data to aux tables
-//      db.deleteFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-//      persistFileInputs(db, putApp, appVerSeqId);
-//      db.deleteFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-//      persistAppArgs(db, putApp, appVerSeqId);
-//      db.deleteFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-//      persistContainerArgs(db, putApp, appVerSeqId);
-//      db.deleteFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-//      persistSchedulerOptions(db, putApp, appVerSeqId);
-//      db.deleteFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-//      persistNotificationSubscriptions(db, putApp, appVerSeqId);
-//
-//      // Persist update record
-//      addUpdate(db, rUser, tenantId, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
-//                updateJsonStr, scrubbedText, uuid);
+      var result = db.update(APPS_VERSIONS)
+              .set(APPS_VERSIONS.DESCRIPTION, putApp.getDescription())
+              .set(APPS_VERSIONS.RUNTIME, runtime)
+              .set(APPS_VERSIONS.RUNTIME_VERSION, putApp.getRuntimeVersion())
+              .set(APPS_VERSIONS.RUNTIME_OPTIONS, runtimeOptionsStrArray)
+              .set(APPS_VERSIONS.CONTAINER_IMAGE, putApp.getContainerImage())
+              .set(APPS_VERSIONS.MAX_JOBS, putApp.getMaxJobs())
+              .set(APPS_VERSIONS.MAX_JOBS_PER_USER, putApp.getMaxJobsPerUser())
+              .set(APPS_VERSIONS.STRICT_FILE_INPUTS, putApp.isStrictFileInputs())
+              .set(APPS_VERSIONS.JOB_DESCRIPTION, putApp.getJobDescription())
+              .set(APPS_VERSIONS.DYNAMIC_EXEC_SYSTEM, putApp.isDynamicExecSystem())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_CONSTRAINTS, execSystemConstraintsStrArray)
+              .set(APPS_VERSIONS.EXEC_SYSTEM_ID, putApp.getExecSystemId())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_EXEC_DIR, putApp.getExecSystemExecDir())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR, putApp.getExecSystemInputDir())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR, putApp.getExecSystemOutputDir())
+              .set(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE, putApp.getExecSystemLogicalQueue())
+              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, putApp.getArchiveSystemId())
+              .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, putApp.getArchiveSystemDir())
+              .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, putApp.isArchiveOnAppError())
+              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
+              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
+              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
+              .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, putApp.getArchiveIncludeLaunchFiles())
+              .set(APPS_VERSIONS.NODE_COUNT, putApp.getNodeCount())
+              .set(APPS_VERSIONS.CORES_PER_NODE, putApp.getCoresPerNode())
+              .set(APPS_VERSIONS.MEMORY_MB, putApp.getMemoryMb())
+              .set(APPS_VERSIONS.MAX_MINUTES, putApp.getMaxMinutes())
+              .set(APPS_VERSIONS.JOB_TAGS, jobTagsStrArray)
+              .set(APPS_VERSIONS.TAGS, tagsStrArray)
+              .set(APPS_VERSIONS.NOTES, notesObj)
+              .set(APPS_VERSIONS.UPDATED, TapisUtils.getUTCTimeNow())
+              .where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId),APPS_VERSIONS.VERSION.eq(appVersion))
+              .returningResult(APPS_VERSIONS.SEQ_ID)
+              .fetchOne();
+
+      // If result is null it is an error
+      if (result == null)
+      {
+        throw new TapisException(LibUtils.getMsgAuth("APPLIB_DB_NULL_RESULT", rUser, appId, opName));
+      }
+
+      appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
+
+      // Persist data to aux tables
+      db.deleteFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+      persistFileInputs(db, putApp, appVerSeqId);
+      db.deleteFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+      persistAppArgs(db, putApp, appVerSeqId);
+      db.deleteFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+      persistContainerArgs(db, putApp, appVerSeqId);
+      db.deleteFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+      persistSchedulerOptions(db, putApp, appVerSeqId);
+      db.deleteFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+      persistNotificationSubscriptions(db, putApp, appVerSeqId);
+
+      // Persist update record
+      addUpdate(db, rUser, tenantId, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
+                updateJsonStr, scrubbedText, uuid);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -484,7 +497,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .where(APPS_VERSIONS.APP_SEQ_ID.eq(appSeqId),APPS_VERSIONS.VERSION.eq(appVersion))
               .returningResult(APPS_VERSIONS.SEQ_ID)
               .fetchOne();
-      if (result != null) appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
+
+      // If result is null it is an error
+      if (result == null)
+      {
+        throw new TapisException(LibUtils.getMsgAuth("APPLIB_DB_NULL_RESULT", rUser, appId, opName));
+      }
+
+      appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Persist data to aux tables as needed
       if (patchedApp.getFileInputs() != null)

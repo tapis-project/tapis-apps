@@ -800,8 +800,8 @@ public final class App
   public String[] getJobTags() {
     return (jobTags == null) ? null : jobTags.clone();
   }
-  public App setJobTags(String[] t) {
-    tags = (t == null) ? null : t.clone();
+  public App setJobTags(String[] jt) {
+    jobTags = (jt == null) ? null : jt.clone();
     return this;
   }
 

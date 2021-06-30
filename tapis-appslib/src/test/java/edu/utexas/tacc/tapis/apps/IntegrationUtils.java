@@ -281,7 +281,7 @@ public final class IntegrationUtils
       String suffix = key + "_" + String.format("%03d", i+1);
       String appId = appIdPrefix + "_" + suffix;
       // Constructor initializes all attributes except for JobCapabilities
-      apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, description1 + suffix, AppType.BATCH, owner1,
+      apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, description1 + suffix, appType, owner1,
                  enabledTrue, containerizedTrue, runtime1, runtimeVersion1 +suffix, runtimeOptions1,
                  containerImage1 +suffix, maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
                  jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
@@ -320,9 +320,32 @@ public final class IntegrationUtils
   }
 
   /**
+   * Create an App in memory for use in testing the PUT operation.
+   * All updatable attributes are updated.
+   */
+  public static App makePutAppFull(App app)
+  {
+    App putApp = new App(-1, -1, tenantName, app.getId(), app.getVersion(), description2, app.getAppType(), app.getOwner(),
+            app.isEnabled(), app.isContainerized(), runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
+            maxJobs2, maxJobsPerUser2, strictFileInputsTrue,
+            jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
+            execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
+            archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse, envVariables2,
+            archiveIncludes2, archiveExcludes2, archiveIncludeLaunchFilesFalse,
+            nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, jobTags2,
+            tags2, notes2, uuidNull, deletedFalse, createdNull, updatedNull);
+    // Aux table data
+    putApp.setFileInputs(finList2);
+    putApp.setNotificationSubscriptions(notifList2);
+    putApp.setAppArgs(appArgList2);
+    putApp.setContainerArgs(containerArgList2);
+    putApp.setSchedulerOptions(schedulerOptionList2);
+    return putApp;
+  }
+
+  /**
    * Create a PatchApp in memory for use in testing.
-   * All attributes except execSystemLogicalQueue are to be updated.
-   * Unable to test update of LogicalQueue at this time since execSystemId2 has no LogicalQueues defined.
+   * All attributes are to be updated.
    */
   public static PatchApp makePatchAppFull(String id, String version)
   {

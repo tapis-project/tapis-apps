@@ -77,7 +77,7 @@ public class AppsServiceTest
   private static final Set<Permission> testPermsMODIFY = new HashSet<>(Set.of(Permission.MODIFY));
 
   // Create test app definitions in memory
-  int numApps = 26;
+  int numApps = 27;
   App[] apps = IntegrationUtils.makeApps(numApps, "Svc");
 
   @BeforeSuite
@@ -190,16 +190,87 @@ public class AppsServiceTest
     checkCommonAppAttrs(app0, tmpApp);
   }
 
-  // Test updating an app
+  // Test updating an app using put
   // Both update of all possible attributes and only some attributes
   @Test
-  public void testUpdateApp() throws Exception
+  public void testPutApp() throws Exception
+  {
+    App app0 = apps[26];
+    String appId = app0.getId();
+    String appVersion = app0.getVersion();
+    String createText = "{\"testPut\": \"0-create1\"}";
+    svc.createApp(rUser1, app0, createText);
+    App tmpApp = svc.getApp(rUser1, appId, appVersion, false);
+    // Get last updated timestamp
+    LocalDateTime updated = LocalDateTime.ofInstant(tmpApp.getUpdated(), ZoneOffset.UTC);
+    String updatedStr1 = TapisUtils.getSQLStringFromUTCTime(updated);
+    Thread.sleep(300);
+
+    // Create putApp where all updatable attributes are changed
+    String put1Text = "{\"testPut\": \"1-put1\"}";
+    App putApp = IntegrationUtils.makePutAppFull(tmpApp);
+
+    // Update using putApp
+    svc.putApp(rUser1, putApp, put1Text);
+    tmpApp = svc.getApp(rUser1, appId, appVersion, false);
+    // Get last updated timestamp
+    updated = LocalDateTime.ofInstant(tmpApp.getUpdated(), ZoneOffset.UTC);
+    String updatedStr2 = TapisUtils.getSQLStringFromUTCTime(updated);
+    // Make sure update timestamp has been modified
+    System.out.println("Updated timestamp before: " + updatedStr1 + " after: " + updatedStr2);
+    Assert.assertNotEquals(updatedStr1, updatedStr2, "Update timestamp was not updated. Both are: " + updatedStr1);
+
+    // Update original app definition with patched values so we can use the checkCommon method.
+    app0.setDescription(description2);
+    app0.setRuntime(runtime2);
+    app0.setRuntimeVersion(runtimeVersion2);
+    app0.setRuntimeOptions(runtimeOptions2);
+    app0.setContainerImage(containerImage2);
+    app0.setMaxJobs(maxJobs2);
+    app0.setMaxJobsPerUser(maxJobsPerUser2);
+    app0.setStrictFileInputs(strictFileInputsTrue);
+    app0.setJobDescription(jobDescription2);
+    app0.setDynamicExecSystem(dynamicExecSystemFalse);
+    app0.setExecSystemConstraints(execSystemConstraints2);
+    app0.setExecSystemId(execSystemId2);
+    app0.setExecSystemExecDir(execSystemExecDir2);
+    app0.setExecSystemInputDir(execSystemInputDir2);
+    app0.setExecSystemOutputDir(execSystemOutputDir2);
+    app0.setExecSystemLogicalQueue(execSystemLogicalQueue2);
+    app0.setArchiveSystemId(archiveSystemId2);
+    app0.setArchiveSystemDir(archiveSystemDir2);
+    app0.setArchiveOnAppError(archiveOnAppErrorFalse);
+    app0.setAppArgs(appArgList2);
+    app0.setContainerArgs(containerArgList2);
+    app0.setSchedulerOptions(schedulerOptionList2);
+    app0.setEnvVariables(envVariables2);
+    app0.setArchiveIncludes(archiveIncludes2);
+    app0.setArchiveExcludes(archiveExcludes2);
+    app0.setArchiveIncludeLaunchFiles(archiveIncludeLaunchFilesFalse);
+    app0.setFileInputs(finList2);
+    app0.setNodeCount(nodeCount2);
+    app0.setCoresPerNode(coresPerNode2);
+    app0.setMemoryMb(memoryMb2);
+    app0.setMaxMinutes(maxMinutes2);
+    app0.setNotificationSubscriptions(notifList2);
+    app0.setJobTags(jobTags2);
+    app0.setTags(tags2);
+    app0.setNotes(notes2);
+    //Check common app attributes:
+    checkCommonAppAttrs(app0, tmpApp);
+
+  }
+
+  // Test updating an app using patch
+  // Both update of all possible attributes and only some attributes
+  @Test
+  public void testPatchApp() throws Exception
   {
     // Test updating all attributes that can be updated.
     App app0 = apps[13];
     String appId = app0.getId();
     String appVersion = app0.getVersion();
-    String createText = "{\"testUpdate\": \"0-createFull\"}";
+    String createText = "{\"testPatch\": \"0-createFull\"}";
     svc.createApp(rUser1, app0, createText);
     App tmpApp = svc.getApp(rUser1, appId, appVersion, false);
     // Get last updated timestamp
@@ -207,7 +278,7 @@ public class AppsServiceTest
     String updatedStr1 = TapisUtils.getSQLStringFromUTCTime(updated);
     Thread.sleep(300);
     // Create patchApp where all updatable attributes are changed
-    String patchFullText = "{\"testUpdate\": \"1-patchFull\"}";
+    String patchFullText = "{\"testPatch\": \"1-patchFull\"}";
     PatchApp patchAppFull = IntegrationUtils.makePatchAppFull(appId, appVersion);
     // Update using updateApp
     svc.patchApp(rUser1, patchAppFull, patchFullText);
@@ -261,11 +332,11 @@ public class AppsServiceTest
     app0 = apps[22];
     appId = app0.getId();
     appVersion = app0.getVersion();
-    createText = "{\"testUpdate\": \"0-createPartial1\"}";
+    createText = "{\"testPatch\": \"0-createPartial1\"}";
     svc.createApp(rUser1, app0, createText);
     // Create patchApp where some attributes are changed
     //   * Some attributes are to be updated: description, containerImage, execSystemId,
-    String patchPartialText1 = "{\"testUpdate\": \"1-patchPartial1\"}";
+    String patchPartialText1 = "{\"testPatch\": \"1-patchPartial1\"}";
     PatchApp patchAppPartial1 = IntegrationUtils.makePatchAppPartial1(appId, appVersion);
     // Update using updateApp
     svc.patchApp(rUser1, patchAppPartial1, patchPartialText1);
@@ -283,10 +354,10 @@ public class AppsServiceTest
     app0 = apps[23];
     appId = app0.getId();
     appVersion = app0.getVersion();
-    createText = "{\"testUpdate\": \"0-createPartial2\"}";
+    createText = "{\"testPatch\": \"0-createPartial2\"}";
     svc.createApp(rUser1, app0, createText);
     // Create patchApp where some attributes are changed
-    String patchPartialText2 = "{\"testUpdate\": \"1-patchPartial2\"}";
+    String patchPartialText2 = "{\"testPatch\": \"1-patchPartial2\"}";
     PatchApp patchAppPartial2 = IntegrationUtils.makePatchAppPartial2(appId, appVersion);
     // Update using updateApp
     svc.patchApp(rUser1, patchAppPartial2, patchPartialText2);
@@ -305,10 +376,10 @@ public class AppsServiceTest
     app0 = apps[24];
     appId = app0.getId();
     appVersion = app0.getVersion();
-    createText = "{\"testUpdate\": \"0-createPartial3\"}";
+    createText = "{\"testPatch\": \"0-createPartial3\"}";
     svc.createApp(rUser1, app0, createText);
     // Create patchApp where some attributes are changed
-    String patchPartialText3 = "{\"testUpdate\": \"1-patchPartial3\"}";
+    String patchPartialText3 = "{\"testPatch\": \"1-patchPartial3\"}";
     PatchApp patchAppPartial3 = IntegrationUtils.makePatchAppPartial3(appId, appVersion);
     // Update using updateApp
     svc.patchApp(rUser1, patchAppPartial3, patchPartialText3);
