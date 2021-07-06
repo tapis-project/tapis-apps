@@ -60,6 +60,9 @@ public class AppsServiceTest
   private AppsServiceImpl svcImpl;
   private ResourceRequestUser rUser0, rUser1, rUser2, rUser3, rUser4, rUser5, rAdminUser, rFilesSvc;
   // Test data
+  private static final String testKey = "Svc";
+  // Special case IDs that have caused problems.
+  private static final String specialId1 = testKey + appIdPrefix + "-app";
   private static final String filesSvcName = "files";
   private static final String adminUser = "testadmin";
   private static final String siteId = "tacc";
@@ -78,7 +81,7 @@ public class AppsServiceTest
 
   // Create test app definitions in memory
   int numApps = 27;
-  App[] apps = IntegrationUtils.makeApps(numApps, "Svc");
+  App[] apps = IntegrationUtils.makeApps(numApps, testKey);
 
   @BeforeSuite
   public void setUp() throws Exception
@@ -155,6 +158,7 @@ public class AppsServiceTest
     {
       svcImpl.hardDeleteApp(rAdminUser, tenantName, apps[i].getId());
     }
+    svcImpl.hardDeleteApp(rAdminUser, tenantName, specialId1);
 
     App tmpApp = svc.getApp(rAdminUser, apps[0].getId(), apps[0].getVersion(), false);
     Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getId());
@@ -165,6 +169,9 @@ public class AppsServiceTest
   {
     App app0 = apps[0];
     svc.createApp(rUser1, app0, scrubbedJson);
+    App tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false);
+    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
+    System.out.println("Found item: " + app0.getId());
   }
 
   // Create an app using minimal attributes:
@@ -173,6 +180,15 @@ public class AppsServiceTest
   {
     App app0 = makeMinimalApp(apps[11], apps[11].getId());
     svc.createApp(rUser1, app0, scrubbedJson);
+    App tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false);
+    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
+    System.out.println("Found item: " + app0.getId());
+    // Make sure we can create and get an app ending with "-app"
+    app0 = IntegrationUtils.makeMinimalApp(app0, specialId1);
+    svc.createApp(rUser1, app0, scrubbedJson);
+    tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false);
+    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
+    System.out.println("Found item: " + app0.getId());
   }
 
   // Test retrieving an app.
