@@ -3,7 +3,7 @@ package edu.utexas.tacc.tapis.apps.api.model;
 /*
  * Class for a FileInput contained in an App definition contained in a request.
  */
-public final class FileInputDefinition
+public final class FileInput
 {
   public String sourceUrl;
   public String targetPath;

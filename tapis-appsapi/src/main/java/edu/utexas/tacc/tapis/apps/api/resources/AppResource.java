@@ -1097,7 +1097,7 @@ public class AppResource
           jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
     // Data for aux tables
-    app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputDefinitions));
+    app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputs));
     app.setNotificationSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
     app.setAppArgs(ApiUtils.buildLibAppArgs(parmSet.appArgs));
     app.setContainerArgs(ApiUtils.buildLibAppArgs(parmSet.containerArgs));
@@ -1132,7 +1132,7 @@ public class AppResource
           jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
     // Data for aux tables
-    app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputDefinitions));
+    app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputs));
     app.setNotificationSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
     app.setAppArgs(ApiUtils.buildLibAppArgs(parmSet.appArgs));
     app.setContainerArgs(ApiUtils.buildLibAppArgs(parmSet.containerArgs));
@@ -1164,7 +1164,7 @@ public class AppResource
     var jobAttrs = req.jobAttributes;
     if (jobAttrs != null)
     {
-      fileInputs = ApiUtils.buildLibFileInputs(jobAttrs.fileInputDefinitions);
+      fileInputs = ApiUtils.buildLibFileInputs(jobAttrs.fileInputs);
       notifSubscriptions = ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions);
       if (jobAttrs.parameterSet != null)
       {

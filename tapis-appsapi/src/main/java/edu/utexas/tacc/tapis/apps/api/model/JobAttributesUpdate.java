@@ -21,7 +21,7 @@ public final class JobAttributesUpdate
   public String archiveSystemDir;
   public Boolean archiveOnAppError;
   public ParameterSetUpdate parameterSet;
-  public List<FileInputDefinition> fileInputDefinitions;
+  public List<FileInput> fileInputs;
   public Integer nodeCount;
   public Integer coresPerNode;
   public Integer memoryMB;

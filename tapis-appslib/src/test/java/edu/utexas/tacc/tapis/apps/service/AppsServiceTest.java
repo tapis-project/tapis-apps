@@ -366,7 +366,7 @@ public class AppsServiceTest
 
     // Test updating a few more attributes including a collection in JobAttributes
     //   and a collection in JobAttributes.ParameterSet.
-    //   jobAttributes.fileInputDefinitions, jobAttributes.parameterSet.containerArgs
+    //   jobAttributes.fileInputs, jobAttributes.parameterSet.containerArgs
     app0 = apps[23];
     appId = app0.getId();
     appVersion = app0.getVersion();

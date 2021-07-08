@@ -10,6 +10,8 @@ import java.util.UUID;
 import com.google.gson.JsonObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.artifact.versioning.VersionRange;
 
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
@@ -455,11 +457,18 @@ public final class App
 
   /**
    * Check for invalid attributes
-   *   id
+   *   id, runtimeVersion
    */
   private void checkAttrValidity(List<String> errMessages)
   {
+    // Check that id is not empty and contains a valid pattern
     if (!StringUtils.isBlank(id) && !isValidId(id)) errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, ID_FIELD, id));
+//    // TODO Check that runtimeVersion is a single version, list of versions or range of versions
+//    if (!StringUtils.isBlank(runtimeVersion))
+//    {
+////      DefaultArtifactVersion ver = new DefaultArtifactVersion(runtimeVersion);
+////      VersionRange verRange = VersionRange.createFromVersionSpec(runtimeVersion);
+//    }
   }
 
   /**

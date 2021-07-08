@@ -378,7 +378,7 @@ public final class IntegrationUtils
   /**
    * Create a PatchApp in memory for use in testing.
    * Some attributes are to be updated: description, containerImage, execSystemId,
-   *   jobAttributes.fileInputDefinitions, jobAttributes.parameterSet.containerArgs
+   *   jobAttributes.fileInputs, jobAttributes.parameterSet.containerArgs
    */
   public static PatchApp makePatchAppPartial2(String id, String version)
   {

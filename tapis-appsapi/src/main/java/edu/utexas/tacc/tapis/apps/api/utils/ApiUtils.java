@@ -3,19 +3,17 @@ package edu.utexas.tacc.tapis.apps.api.utils;
 import com.google.gson.JsonElement;
 import edu.utexas.tacc.tapis.apps.api.model.ArgMetaSpec;
 import edu.utexas.tacc.tapis.apps.api.model.ArgSpec;
-import edu.utexas.tacc.tapis.apps.api.model.FileInputDefinition;
+import edu.utexas.tacc.tapis.apps.api.model.FileInput;
 import edu.utexas.tacc.tapis.apps.api.model.KeyValuePair;
 import edu.utexas.tacc.tapis.apps.api.model.NotificationMechanism;
 import edu.utexas.tacc.tapis.apps.api.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
-import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
 import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
-import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
 import org.slf4j.Logger;
@@ -210,17 +208,17 @@ public class ApiUtils
   /**
    * Build a list of lib model FileInput objects given the request objects
    */
-  public static List<FileInput> buildLibFileInputs(List<FileInputDefinition> fileInputDefinitions)
+  public static List<edu.utexas.tacc.tapis.apps.model.FileInput> buildLibFileInputs(List<FileInput> fileInputs)
   {
-    if (fileInputDefinitions == null) return null;
-    var retList = new ArrayList<FileInput>();
-    if (fileInputDefinitions.isEmpty()) return retList;
-    for (FileInputDefinition fid : fileInputDefinitions)
+    if (fileInputs == null) return null;
+    var retList = new ArrayList<edu.utexas.tacc.tapis.apps.model.FileInput>();
+    if (fileInputs.isEmpty()) return retList;
+    for (FileInput fid : fileInputs)
     {
       ArgMetaSpec meta = fid.meta;
       if (meta == null) meta = new ArgMetaSpec();
       String[] kvPairs = ApiUtils.getKeyValuesAsArray(meta.keyValuePairs);
-      FileInput fileInput = new FileInput(fid.sourceUrl, fid.targetPath, fid.inPlace,
+      edu.utexas.tacc.tapis.apps.model.FileInput fileInput = new edu.utexas.tacc.tapis.apps.model.FileInput(fid.sourceUrl, fid.targetPath, fid.inPlace,
                                           meta.name, meta.description, meta.required, kvPairs);
       retList.add(fileInput);
     }
@@ -253,18 +251,18 @@ public class ApiUtils
   }
 
   // Build a list of api model file inputs based on the lib model objects
-  public static List<FileInputDefinition> buildApiFileInputDefinitions(List<FileInput> libFileInputs)
+  public static List<FileInput> buildApiFileInputs(List<edu.utexas.tacc.tapis.apps.model.FileInput> libFileInputs)
   {
-    var retList = new ArrayList<FileInputDefinition>();
+    var retList = new ArrayList<FileInput>();
     if (libFileInputs == null || libFileInputs.isEmpty()) return retList;
-    for (FileInput libFileInput : libFileInputs)
+    for (edu.utexas.tacc.tapis.apps.model.FileInput libFileInput : libFileInputs)
     {
       ArgMetaSpec meta = new ArgMetaSpec();
       meta.name = libFileInput.getMetaName();
       meta.description = libFileInput.getMetaDescription();
       meta.required = libFileInput.isMetaRequired();
       meta.keyValuePairs = ApiUtils.getKeyValuesAsList(libFileInput.getMetaKeyValuePairs());
-      FileInputDefinition fid = new FileInputDefinition();
+      FileInput fid = new FileInput();
       fid.sourceUrl = libFileInput.getSourceUrl();
       fid.targetPath = libFileInput.getTargetPath();
       fid.inPlace = libFileInput.isInPlace();

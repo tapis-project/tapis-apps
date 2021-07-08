@@ -28,7 +28,7 @@ public final class JobAttributes
   public String archiveSystemDir;
   public boolean archiveOnAppError;
   public ParameterSet parameterSet;
-  public List<FileInputDefinition> fileInputDefinitions;
+  public List<FileInput> fileInputs;
   public int nodeCount = DEFAULT_NODE_COUNT;
   public int coresPerNode = DEFAULT_CORES_PER_NODE;
   public int memoryMB = DEFAULT_MEMORY_MB;
@@ -57,7 +57,7 @@ public final class JobAttributes
     archiveSystemDir = a.getArchiveSystemDir();
     archiveOnAppError = a.isArchiveOnAppError();
     parameterSet = new ParameterSet(a);
-    fileInputDefinitions = ApiUtils.buildApiFileInputDefinitions(a.getFileInputs());
+    fileInputs = ApiUtils.buildApiFileInputs(a.getFileInputs());
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
     memoryMB = a.getMemoryMb();
