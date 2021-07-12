@@ -463,11 +463,19 @@ public final class App
   {
     // Check that id is not empty and contains a valid pattern
     if (!StringUtils.isBlank(id) && !isValidId(id)) errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, ID_FIELD, id));
-//    // TODO Check that runtimeVersion is a single version, list of versions or range of versions
+
+// TODO // Check that runtimeVersion is a single version, list of versions or range of versions
 //    if (!StringUtils.isBlank(runtimeVersion))
 //    {
 ////      DefaultArtifactVersion ver = new DefaultArtifactVersion(runtimeVersion);
-////      VersionRange verRange = VersionRange.createFromVersionSpec(runtimeVersion);
+//      try
+//      {
+//        VersionRange verRange = VersionRange.createFromVersionSpec(runtimeVersion);
+//      }
+//      catch (Exception e)
+//      {
+//        errMessages.add(LibUtils.getMsg("APPLIB_INVALID_RUNTIME_VER_RNG", runtimeVersion, e.getMessage()));
+//      }
 //    }
   }
 
