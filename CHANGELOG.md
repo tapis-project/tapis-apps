@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## 1.0.0 - 2021-07-14
+## 1.0.0 - 2021-07-16
 
 Initial release supporting basic CRUD operations on Tapis Application resources.
 
