@@ -88,6 +88,7 @@ public final class App
   public static final String TAGS_FIELD = "tags";
   public static final String NOTES_FIELD = "notes";
   public static final String UUID_FIELD = "uuid";
+  public static final String DELETED_FIELD = "deleted";
   public static final String CREATED_FIELD = "created";
   public static final String UPDATED_FIELD = "updated";
 
