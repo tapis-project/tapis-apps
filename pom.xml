@@ -15,7 +15,7 @@
     </parent>
 
     <artifactId>tapis-apps</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>TACC Tapis Applications Parent POM</name>
