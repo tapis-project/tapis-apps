@@ -15,6 +15,7 @@ import org.testng.annotations.Test;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,7 +145,6 @@ public class SearchDaoTest
     }
     var validCaseInputs = new HashMap<Integer, CaseData>();
     // Test basic types and operators
-    // TODO test other than main table columns
     validCaseInputs.put( 1,new CaseData(1, Arrays.asList("id.eq." + app0Id))); // 1 has specific id
     validCaseInputs.put( 2,new CaseData(1, Arrays.asList("version.eq." + app0.getVersion())));
     validCaseInputs.put( 3,new CaseData(1, Arrays.asList("description.eq." + app0.getDescription())));
@@ -160,7 +160,7 @@ public class SearchDaoTest
     validCaseInputs.put(13,new CaseData(numApps, Arrays.asList(appIdLikeAll, "deleted.eq.false"))); // none are deleted
     validCaseInputs.put(14,new CaseData(numApps, Arrays.asList(appIdLikeAll, "deleted.neq.true"))); // none are deleted
     validCaseInputs.put(15,new CaseData(0, Arrays.asList(appIdLikeAll, "deleted.eq.true")));           // none are deleted
-// TODO? check systems    validCaseInputs.put(16,new CaseData(1, Arrays.asList(app0Id)));
+    validCaseInputs.put(16,new CaseData(1, Arrays.asList("id.like." + app0Id)));
     validCaseInputs.put(17,new CaseData(0, Arrays.asList("id.like.NOSUCHAPPxFM2c29bc8RpKWeE2sht7aZrJzQf3s")));
     validCaseInputs.put(18,new CaseData(numApps, Arrays.asList(appIdLikeAll)));
     validCaseInputs.put(19,new CaseData(numApps-1, Arrays.asList(appIdLikeAll, "id.nlike." + app0Id)));
@@ -238,6 +238,200 @@ public class SearchDaoTest
                                             DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
       System.out.println("  Result size: " + searchResults.size());
       assertEquals(searchResults.size(), cd.count,  "SearchDaoTest.testValidCases: Incorrect result count for case number: " + caseNum);
+    }
+  }
+
+  /*TODO
+   * Test pagination options: limit, skip
+   */
+  @Test(groups={"integration"})
+  public void testLimitSkip() throws Exception
+  {
+    String searchCond = appIdLikeAll;
+    String verifiedCondStr = SearchUtils.validateAndProcessSearchCondition(searchCond);
+    var verifiedSearchList = Collections.singletonList(verifiedCondStr);
+    System.out.println("VerfiedInput: " + verifiedSearchList);
+    List<App> searchResults;
+
+    int limit = -1;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), numApps, "Incorrect result count");
+    limit = 0;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), limit, "Incorrect result count");
+    limit = 1;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), limit, "Incorrect result count");
+    limit = 5;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), limit, "Incorrect result count");
+    limit = 19;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), limit, "Incorrect result count");
+    limit = 20;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), limit, "Incorrect result count");
+    limit = 200;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), numApps, "Incorrect result count");
+    // Test limit + skip combination that reduces result size
+    int resultSize = 3;
+    limit = numApps;
+    int skip = limit - resultSize;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListNull, skip, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), resultSize, "Incorrect result count");
+
+    // Check some corner cases
+    limit = 100;
+    skip = 0;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListNull, skip, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), numApps, "Incorrect result count");
+    limit = 0;
+    skip = 1;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListNull, skip, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), 0, "Incorrect result count");
+    limit = 10;
+    skip = 15;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListNull, skip, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), numApps - skip, "Incorrect result count");
+    limit = 10;
+    skip = 100;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListNull, skip, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), 0, "Incorrect result count");
+  }
+
+  /*TODO
+   * Test sorting: limit, orderBy, skip
+   */
+  @Test(groups={"integration"})
+  public void testSortingSkip() throws Exception
+  {
+    String searchCond = appIdLikeAll;
+    String verifiedCondStr = SearchUtils.validateAndProcessSearchCondition(searchCond);
+    var verifiedSearchList = Collections.singletonList(verifiedCondStr);
+    System.out.println("VerfiedInput: " + verifiedSearchList);
+    List<App> searchResults;
+
+    int limit;
+    int skip;
+    // Sort and check order with no limit or skip
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, DEFAULT_LIMIT, orderByListAsc, DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), numApps, "Incorrect result count");
+    checkOrder(searchResults, 1, numApps);
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, DEFAULT_LIMIT, orderByListDesc, DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), numApps, "Incorrect result count");
+    checkOrder(searchResults, numApps, 1);
+    // Sort and check order with limit and no skip
+    limit = 4;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListAsc, DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), limit, "Incorrect result count");
+    checkOrder(searchResults, 1, limit);
+    limit = 19;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListDesc, DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), limit, "Incorrect result count");
+    checkOrder(searchResults, numApps, numApps - (limit-1));
+    // Sort and check order with limit and skip
+    limit = 2;
+    skip = 5;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListAsc, skip, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), limit, "Incorrect result count");
+    // Should get systems named SrchGet_006 to SrchGet_007
+    checkOrder(searchResults, skip + 1, skip + limit);
+    limit = 4;
+    skip = 3;
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListDesc, skip, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), limit, "Incorrect result count");
+    // Should get systems named SrchGet_017 to SrchGet_014
+    checkOrder(searchResults, numApps - skip, numApps - limit);
+
+    // Sort and check multiple orderBy
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, DEFAULT_LIMIT, orderByList2Asc, DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), numApps, "Incorrect result count");
+    checkOrder(searchResults, 1, numApps);
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, DEFAULT_LIMIT, orderByList2Desc, DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), numApps, "Incorrect result count");
+    checkOrder(searchResults, numApps, 1);
+  }
+
+  /*TODO
+   * Test sorting: limit, orderBy, startAfter
+   */
+  @Test(groups={"integration"})
+  public void testSortingStartAfter() throws Exception
+  {
+    String searchCond = appIdLikeAll;
+    String verifiedCondStr = SearchUtils.validateAndProcessSearchCondition(searchCond);
+    var verifiedSearchList = Collections.singletonList(verifiedCondStr);
+    System.out.println("VerfiedInput: " + verifiedSearchList);
+    List<App> searchResults;
+
+    int limit;
+    int startAfterIdx;
+    String startAfter;
+    // Sort and check order with limit and startAfter
+    limit = 2;
+    startAfterIdx = 5;
+    startAfter = getAppName(testKey, startAfterIdx);
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListAsc, DEFAULT_SKIP, startAfter, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), limit, "Incorrect result count");
+    // Should get systems named SrchGet_006 to SrchGet_007
+    checkOrder(searchResults, startAfterIdx + 1, startAfterIdx + limit);
+    limit = 4;
+    startAfterIdx = 18;
+    int startWith = numApps - startAfterIdx + 1;
+    startAfter = getAppName(testKey, startAfterIdx);
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListDesc, DEFAULT_SKIP, startAfter, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), limit, "Incorrect result count");
+    // Should get systems named SrchGet_017 to SrchGet_014
+    checkOrder(searchResults, numApps - startWith, numApps - limit);
+
+//    // Sort and check multiple orderBy (second order orderBy column has no effect but at least we can check that
+//    //    having it does not break things for startAfter
+//    limit = 2;
+//    startAfterIdx = 5;
+//    startAfter = getAppName(testKey, startAfterIdx);
+//    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByList3Asc, DEFAULT_SKIP, startAfter, versionSpecifiedNull, showDeletedFalse);
+//    assertEquals(searchResults.size(), limit, "Incorrect result count");
+//    // Should get systems named SrchGet_006 to SrchGet_007
+//    checkOrder(searchResults, startAfterIdx + 1, startAfterIdx + limit);
+//    limit = 4;
+//    startAfterIdx = 18;
+//    startWith = numApps - startAfterIdx + 1;
+//    startAfter = getBucketName(testKey, startAfterIdx);
+//    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByList3Desc, DEFAULT_SKIP, startAfter, versionSpecifiedNull, showDeletedFalse);
+//    assertEquals(searchResults.size(), limit, "Incorrect result count");
+//    // Should get systems named SrchGet_017 to SrchGet_014
+//    checkOrder(searchResults, numApps - startWith, numApps - limit);
+  }
+
+  /* ********************************************************************** */
+  /*                             Private Methods                            */
+  /* ********************************************************************** */
+
+  /**
+   * Check that results were sorted in correct order when sorting on app id
+   */
+  private void checkOrder(List<App> searchResults, int start, int end)
+  {
+    int idx = 0; // Position in result
+    // Name should match for loop counter i
+    if (start < end)
+    {
+      for (int i = start; i <= end; i++)
+      {
+        String sysName = getAppName(testKey, i);
+        assertEquals(searchResults.get(idx).getId(), sysName, "Incorrect app Id at position: " + (idx+1));
+        idx++;
+      }
+    }
+    else
+    {
+      for (int i = start; i >= end; i--)
+      {
+        String sysName = getAppName(testKey, i);
+        assertEquals(searchResults.get(idx).getId(), sysName, "Incorrect app Id at position: " + (idx+1));
+        idx++;
+      }
     }
   }
 }
