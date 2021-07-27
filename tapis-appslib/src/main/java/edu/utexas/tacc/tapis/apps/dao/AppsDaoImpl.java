@@ -22,6 +22,7 @@ import org.flywaydb.core.Flyway;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.OrderField;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.impl.DSL;
@@ -995,41 +996,46 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
                           List<OrderBy> orderByList, String startAfter, Boolean versionSpecified, boolean showDeleted)
           throws TapisException
   {
-    // TODO - for now just use the major (i.e. first in list) orderBy item.
-    String majorOrderBy = null;
+    // If no IDs in list then we are done.
+    if (setOfIDs != null && setOfIDs.isEmpty()) return 0;
+
+    // Ensure we have a non-null orderByList
+    List<OrderBy> tmpOrderByList = new ArrayList<>();
+    if (orderByList != null) tmpOrderByList = orderByList;
+
+    // Determine the primary orderBy column (i.e. first in list). Used for startAfter
+    String majorOrderByStr = null;
     OrderByDir majorSortDirection = DEFAULT_ORDERBY_DIRECTION;
-    if (orderByList != null && !orderByList.isEmpty())
+    if (!tmpOrderByList.isEmpty())
     {
-      majorOrderBy = orderByList.get(0).getOrderByAttr();
-      majorSortDirection = orderByList.get(0).getOrderByDir();
+      majorOrderByStr = tmpOrderByList.get(0).getOrderByAttr();
+      majorSortDirection = tmpOrderByList.get(0).getOrderByDir();
     }
 
-    // Convert orderBy column to snake case for checking against column names
-    String majorOrderBySC = SearchUtils.camelCaseToSnakeCase(majorOrderBy);
-
-    // NOTE: Sort matters for the count even though we will not actually need to sort.
-    boolean sortAsc = true;
-    if (majorSortDirection == OrderBy.OrderByDir.DESC) sortAsc = false;
+    // Determine if we are doing an asc sort, important for startAfter
+    boolean sortAsc = majorSortDirection != OrderByDir.DESC;
 
     // If startAfter is given then orderBy is required
-    if (!StringUtils.isBlank(startAfter) && StringUtils.isBlank(majorOrderBy))
+    if (!StringUtils.isBlank(startAfter) && StringUtils.isBlank(majorOrderByStr))
     {
-      String msg = LibUtils.getMsg("APPLIB_DB_INVALID_SORT_START", APPS.getName());
-      throw new TapisException(msg);
+      throw new TapisException(LibUtils.getMsg("APPLIB_DB_INVALID_SORT_START", APPS.getName()));
     }
 
+    // Validate orderBy columns
     // If orderBy column not found then it is an error
     // For count we do not need the actual column so we just check that the column exists.
     //   Down below in getApps() we need the actual column
-    if (!StringUtils.isBlank(majorOrderBy) &&
-            !APPS_FIELDS.contains(majorOrderBySC) && !APPS_VERSIONS_FIELDS.contains(majorOrderBySC))
+    for (OrderBy orderBy : tmpOrderByList)
     {
-      String msg = LibUtils.getMsg("APPLIB_DB_NO_COLUMN_SORT", DSL.name(majorOrderBy));
-      throw new TapisException(msg);
+      String orderByStr = orderBy.getOrderByAttr();
+      if ((StringUtils.isBlank(orderByStr)) ||
+           (!APPS_FIELDS.contains(SearchUtils.camelCaseToSnakeCase(orderByStr))) &&
+           (!APPS_VERSIONS_FIELDS.contains(SearchUtils.camelCaseToSnakeCase(orderByStr))))
+      {
+        String msg = LibUtils.getMsg("APPLIB_DB_NO_COLUMN_SORT", DSL.name(orderByStr));
+        throw new TapisException(msg);
+      }
     }
-
-    // If no IDs in list then we are done.
-    if (setOfIDs != null && setOfIDs.isEmpty()) return 0;
 
     // Boolean used to determine if we are to get just latest version or all versions specified by a search condition
     // If searchList and searchAST are both provided then only searchList is checked.
@@ -1056,8 +1062,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     {
       // Build search string so we can re-use code for checking and adding a condition
       String searchStr;
-      if (sortAsc) searchStr = majorOrderBy + ".gt." + startAfter;
-      else searchStr = majorOrderBy + ".lt." + startAfter;
+      if (sortAsc) searchStr = majorOrderByStr + ".gt." + startAfter;
+      else searchStr = majorOrderByStr + ".lt." + startAfter;
       whereCondition = addSearchCondStrToWhere(whereCondition, searchStr, AND);
     }
 
@@ -1075,7 +1081,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      // Execute the select including orderByAttrList, startAfter
+      // Execute the select including startAfter
+      // NOTE: This is much simpler than the same section in getApps() because we are not ordering since
+      //       we only want the count and we are not limiting (we want a count of all records).
       Integer c = db.selectCount().from(APPS.join(APPS_VERSIONS).on(APPS_VERSIONS.APP_SEQ_ID.eq(APPS.SEQ_ID)))
                                   .where(whereCondition).fetchOne(0,int.class);
       if (c != null) count = c;
@@ -1124,52 +1132,62 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
                            List<OrderBy> orderByList, int skip, String startAfter, Boolean versionSpecified, boolean showDeleted)
           throws TapisException
   {
-    // TODO - for now just use the major (i.e. first in list) orderBy item.
-    String majorOrderBy = null;
-    OrderByDir majorSortDirection = DEFAULT_ORDERBY_DIRECTION;
-    if (orderByList != null && !orderByList.isEmpty())
-    {
-      majorOrderBy = orderByList.get(0).getOrderByAttr();
-      majorSortDirection = orderByList.get(0).getOrderByDir();
-    }
-
-    // Convert orderBy column to snake case for checking against column names
-    String majorOrderBySC = SearchUtils.camelCaseToSnakeCase(majorOrderBy);
-
     // The result list should always be non-null.
     var retList = new ArrayList<App>();
+
+    // If no seqIDs in list then we are done.
+    if (appIDs != null && appIDs.isEmpty()) return retList;
+
+    // Ensure we have a non-null orderByList
+    List<OrderBy> tmpOrderByList = new ArrayList<>();
+    if (orderByList != null) tmpOrderByList = orderByList;
+
+    // Determine the primary orderBy column (i.e. first in list). Used for startAfter
+    String majorOrderByStr = null;
+    OrderByDir majorSortDirection = DEFAULT_ORDERBY_DIRECTION;
+    if (!tmpOrderByList.isEmpty())
+    {
+      majorOrderByStr = tmpOrderByList.get(0).getOrderByAttr();
+      majorSortDirection = tmpOrderByList.get(0).getOrderByDir();
+    }
 
     // Negative skip indicates no skip
     if (skip < 0) skip = 0;
 
-    boolean sortAsc = true;
-    if (majorSortDirection == OrderBy.OrderByDir.DESC) sortAsc = false;
+    // Determine if we are doing an asc sort, important for startAfter
+    boolean sortAsc = majorSortDirection != OrderByDir.DESC;
 
     // If startAfter is given then orderBy is required
-    if (!StringUtils.isBlank(startAfter) && StringUtils.isBlank(majorOrderBy))
+    if (!StringUtils.isBlank(startAfter) && StringUtils.isBlank(majorOrderByStr))
     {
       String msg = LibUtils.getMsg("APPLIB_DB_INVALID_SORT_START", APPS.getName());
       throw new TapisException(msg);
     }
 
-    // Determine and check orderBy column
-    Field<?> colOrderBy = null;
-    if (APPS_FIELDS.contains(majorOrderBySC))
+    // Determine and check orderBy columns, build orderFieldList
+    // Each OrderField contains the column and direction
+    List<OrderField> orderFieldList = new ArrayList<>();
+    Field<?> colOrderBy;
+    for (OrderBy orderBy : tmpOrderByList)
     {
-      colOrderBy = APPS.field(DSL.name(majorOrderBySC));
+      String orderByStr = orderBy.getOrderByAttr();
+      String orderByStrSC = SearchUtils.camelCaseToSnakeCase(orderByStr);
+      if (APPS_FIELDS.contains(orderByStrSC))
+      {
+        colOrderBy = APPS.field(DSL.name(orderByStrSC));
+      }
+      else if (APPS_VERSIONS_FIELDS.contains(orderByStrSC))
+      {
+        colOrderBy = APPS_VERSIONS.field(DSL.name(orderByStrSC));
+      }
+      else
+      {
+        String msg = LibUtils.getMsg("APPLIB_DB_NO_COLUMN_SORT", DSL.name(orderByStr));
+        throw new TapisException(msg);
+      }
+      if (orderBy.getOrderByDir() == OrderBy.OrderByDir.ASC) orderFieldList.add(colOrderBy.asc());
+      else orderFieldList.add(colOrderBy.desc());
     }
-    else if (APPS_VERSIONS_FIELDS.contains(majorOrderBySC))
-    {
-      colOrderBy = APPS_VERSIONS.field(DSL.name(majorOrderBySC));
-    }
-    else if (!StringUtils.isBlank(majorOrderBy))
-    {
-      String msg = LibUtils.getMsg("APPLIB_DB_NO_COLUMN_SORT", DSL.name(majorOrderBy));
-      throw new TapisException(msg);
-    }
-
-    // If no seqIDs in list then we are done.
-    if (appIDs != null && appIDs.isEmpty()) return retList;
 
     // Boolean used to determine if we are to get just latest version or all versions specified by a search condition
     // If searchList and searchAST are both provided then only searchList is checked.
@@ -1196,8 +1214,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     {
       // Build search string so we can re-use code for checking and adding a condition
       String searchStr;
-      if (sortAsc) searchStr = majorOrderBy + ".gt." + startAfter;
-      else searchStr = majorOrderBy + ".lt." + startAfter;
+      if (sortAsc) searchStr = majorOrderByStr + ".gt." + startAfter;
+      else searchStr = majorOrderByStr + ".lt." + startAfter;
       whereCondition = addSearchCondStrToWhere(whereCondition, searchStr, AND);
     }
 
@@ -1220,19 +1238,17 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       //       Jooq claims to handle it well.
       // Join tables APPS and APPS_VERSIONS to get all fields
       Result<Record> results;
-      org.jooq.SelectConditionStep<Record> condStep =
+      org.jooq.SelectConditionStep condStep =
               db.selectFrom(APPS.join(APPS_VERSIONS).on(APPS_VERSIONS.APP_SEQ_ID.eq(APPS.SEQ_ID))).where(whereCondition);
-      if (!StringUtils.isBlank(majorOrderBy) && limit >= 0)
+      if (!StringUtils.isBlank(majorOrderByStr) && limit >= 0)
       {
         // We are ordering and limiting
-        if (sortAsc) results = condStep.orderBy(colOrderBy.asc()).limit(limit).offset(skip).fetch();
-        else results = condStep.orderBy(colOrderBy.desc()).limit(limit).offset(skip).fetch();
+        results = condStep.orderBy(orderFieldList).limit(limit).offset(skip).fetch();
       }
-      else if (!StringUtils.isBlank(majorOrderBy))
+      else if (!StringUtils.isBlank(majorOrderByStr))
       {
         // We are ordering but not limiting
-        if (sortAsc) results = condStep.orderBy(colOrderBy.asc()).fetch();
-        else results = condStep.orderBy(colOrderBy.desc()).fetch();
+        results = condStep.orderBy(orderFieldList).fetch();
       }
       else if (limit >= 0)
       {

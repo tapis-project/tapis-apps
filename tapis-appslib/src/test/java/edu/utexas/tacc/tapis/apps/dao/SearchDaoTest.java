@@ -12,6 +12,7 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +38,6 @@ import static org.testng.Assert.assertEquals;
 public class SearchDaoTest
 {
   private AppsDaoImpl dao;
-  private ResourceRequestUser rUser;
 
   // Test data
   private static final String testKey = "SrchGet";
@@ -76,17 +76,14 @@ public class SearchDaoTest
   int numApps = 20;
   App[] apps = IntegrationUtils.makeApps(numApps, testKey);
 
-  private LocalDateTime createBegin;
-  private LocalDateTime createEnd;
-
   @BeforeSuite
   public void setup() throws Exception
   {
     System.out.println("Executing BeforeSuite setup method: " + SearchDaoTest.class.getSimpleName());
     dao = new AppsDaoImpl();
     // Initialize authenticated user
-    rUser = new ResourceRequestUser(new AuthenticatedUser(apiUser, tenantName, TapisThreadContext.AccountType.user.name(),
-                                                          null, apiUser, tenantName, null, null, null));
+    ResourceRequestUser rUser = new ResourceRequestUser(new AuthenticatedUser(apiUser, tenantName,
+            TapisThreadContext.AccountType.user.name(), null, apiUser, tenantName, null, null, null));
 
     // Cleanup anything leftover from previous failed run
     teardown();
@@ -102,7 +99,7 @@ public class SearchDaoTest
     apps[numApps-1].setRuntimeVersion(escapedCommanInListValue);
 
     // Create all the apps in the dB using the in-memory objects, recording start and end times
-    createBegin = TapisUtils.getUTCTimeNow();
+    LocalDateTime createBegin = TapisUtils.getUTCTimeNow();
     Thread.sleep(500);
     for (App app : apps)
     {
@@ -110,7 +107,8 @@ public class SearchDaoTest
       Assert.assertTrue(itemCreated, "Item not created, id: " + app.getId());
     }
     Thread.sleep(500);
-    createEnd = TapisUtils.getUTCTimeNow();
+    LocalDateTime createEnd = TapisUtils.getUTCTimeNow();
+    System.out.println("Total time taken for BeforeSuite setup method: " + Duration.between(createBegin, createEnd));
   }
 
   @AfterSuite
@@ -145,24 +143,24 @@ public class SearchDaoTest
     }
     var validCaseInputs = new HashMap<Integer, CaseData>();
     // Test basic types and operators
-    validCaseInputs.put( 1,new CaseData(1, Arrays.asList("id.eq." + app0Id))); // 1 has specific id
-    validCaseInputs.put( 2,new CaseData(1, Arrays.asList("version.eq." + app0.getVersion())));
-    validCaseInputs.put( 3,new CaseData(1, Arrays.asList("description.eq." + app0.getDescription())));
-    validCaseInputs.put( 4,new CaseData(1, Arrays.asList("runtime_version.eq." + app0.getRuntimeVersion())));
-    validCaseInputs.put( 5,new CaseData(1, Arrays.asList("container_image.eq." + app0.getContainerImage())));
-    validCaseInputs.put( 6,new CaseData(1, Arrays.asList("job_description.eq." + app0.getJobDescription())));
+    validCaseInputs.put( 1,new CaseData(1, List.of("id.eq." + app0Id))); // 1 has specific id
+    validCaseInputs.put( 2,new CaseData(1, List.of("version.eq." + app0.getVersion())));
+    validCaseInputs.put( 3,new CaseData(1, List.of("description.eq." + app0.getDescription())));
+    validCaseInputs.put( 4,new CaseData(1, List.of("runtime_version.eq." + app0.getRuntimeVersion())));
+    validCaseInputs.put( 5,new CaseData(1, List.of("container_image.eq." + app0.getContainerImage())));
+    validCaseInputs.put( 6,new CaseData(1, List.of("job_description.eq." + app0.getJobDescription())));
     validCaseInputs.put( 7,new CaseData(numApps, Arrays.asList(appIdLikeAll, "exec_system_id.eq." + app0.getExecSystemId())));
-    validCaseInputs.put( 8,new CaseData(1, Arrays.asList("exec_system_exec_dir.eq." + app0.getExecSystemExecDir())));
-    validCaseInputs.put( 9,new CaseData(1, Arrays.asList("exec_system_input_dir.eq." + app0.getExecSystemInputDir())));
+    validCaseInputs.put( 8,new CaseData(1, List.of("exec_system_exec_dir.eq." + app0.getExecSystemExecDir())));
+    validCaseInputs.put( 9,new CaseData(1, List.of("exec_system_input_dir.eq." + app0.getExecSystemInputDir())));
     validCaseInputs.put(10,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "owner.eq." + owner1)));  // Half owned by one user
     validCaseInputs.put(11,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "owner.eq." + owner2))); // and half owned by another
     validCaseInputs.put(12,new CaseData(numApps, Arrays.asList(appIdLikeAll, "enabled.eq.true")));  // All are enabled
     validCaseInputs.put(13,new CaseData(numApps, Arrays.asList(appIdLikeAll, "deleted.eq.false"))); // none are deleted
     validCaseInputs.put(14,new CaseData(numApps, Arrays.asList(appIdLikeAll, "deleted.neq.true"))); // none are deleted
     validCaseInputs.put(15,new CaseData(0, Arrays.asList(appIdLikeAll, "deleted.eq.true")));           // none are deleted
-    validCaseInputs.put(16,new CaseData(1, Arrays.asList("id.like." + app0Id)));
-    validCaseInputs.put(17,new CaseData(0, Arrays.asList("id.like.NOSUCHAPPxFM2c29bc8RpKWeE2sht7aZrJzQf3s")));
-    validCaseInputs.put(18,new CaseData(numApps, Arrays.asList(appIdLikeAll)));
+    validCaseInputs.put(16,new CaseData(1, List.of("id.like." + app0Id)));
+    validCaseInputs.put(17,new CaseData(0, List.of("id.like.NOSUCHAPPxFM2c29bc8RpKWeE2sht7aZrJzQf3s")));
+    validCaseInputs.put(18,new CaseData(numApps, List.of(appIdLikeAll)));
     validCaseInputs.put(19,new CaseData(numApps-1, Arrays.asList(appIdLikeAll, "id.nlike." + app0Id)));
     validCaseInputs.put(20,new CaseData(1, Arrays.asList(appIdLikeAll, "id.in." + nameList)));
     validCaseInputs.put(21,new CaseData(numApps-1, Arrays.asList(appIdLikeAll, "id.nin." + nameList)));
@@ -203,21 +201,21 @@ public class SearchDaoTest
     validCaseInputs.put(77,new CaseData(numApps, Arrays.asList(appIdLikeAll, "created.lt." + farFuture13)));
     validCaseInputs.put(78,new CaseData(numApps, Arrays.asList(appIdLikeAll, "created.lt." + farFuture14)));
     validCaseInputs.put(79,new CaseData(numApps, Arrays.asList(appIdLikeAll, "created.lt." + farFuture15)));
-//TODO    // Test wildcards
-//    validCaseInputs.put(80,new CaseData(numApps, Arrays.asList("enabled.eq.true","container_image.like.containerImage" + testKey + "*")));
-//    validCaseInputs.put(81,new CaseData(0, Arrays.asList(appIdLikeAll, "enabled.eq.true","container_image.nlike.containerImage" + testKey + "*")));
-//    validCaseInputs.put(82,new CaseData(9, Arrays.asList(appIdLikeAll, "enabled.eq.true","container_image.like.containerImage" + testKey + "_00!")));
-//    validCaseInputs.put(83,new CaseData(11, Arrays.asList(appIdLikeAll, "enabled.eq.true","container_image.nlike.containerImage" + testKey + "_00!")));
-//    // Test that underscore and % get escaped as needed before being used as SQL
-//    validCaseInputs.put(90,new CaseData(0, Arrays.asList(appIdLikeAll, "container_image.like.containerImage" + testKey + "_00_")));
-//    validCaseInputs.put(91,new CaseData(0, Arrays.asList(appIdLikeAll, "container_image.like.containerImage" + testKey + "_00%")));
-//    // Check various special characters in description. 7 special chars in value: ,()~*!\
-//    validCaseInputs.put(101,new CaseData(1, Arrays.asList(appIdLikeAll, "description.like." + specialChar7LikeSearchStr)));
-//    validCaseInputs.put(102,new CaseData(numApps-1, Arrays.asList(appIdLikeAll, "description.nlike." + specialChar7LikeSearchStr)));
-//    validCaseInputs.put(103,new CaseData(1, Arrays.asList(appIdLikeAll, "description.eq." + specialChar7EqSearchStr)));
-//    validCaseInputs.put(104,new CaseData(numApps-1, Arrays.asList(appIdLikeAll, "description.neq." + specialChar7EqSearchStr)));
-//    // Escaped comma in a list of values
-//    validCaseInputs.put(110,new CaseData(1, Arrays.asList(appIdLikeAll, "runtime_version.in." + "noSuchDir," + escapedCommanInListValue)));
+    // Test wildcards
+    validCaseInputs.put(80,new CaseData(numApps, Arrays.asList("enabled.eq.true","container_image.like.containerImage" + testKey + "*")));
+    validCaseInputs.put(81,new CaseData(0, Arrays.asList(appIdLikeAll, "enabled.eq.true","container_image.nlike.containerImage" + testKey + "*")));
+    validCaseInputs.put(82,new CaseData(9, Arrays.asList(appIdLikeAll, "enabled.eq.true","container_image.like.containerImage" + testKey + "_00!")));
+    validCaseInputs.put(83,new CaseData(11, Arrays.asList(appIdLikeAll, "enabled.eq.true","container_image.nlike.containerImage" + testKey + "_00!")));
+    // Test that underscore and % get escaped as needed before being used as SQL
+    validCaseInputs.put(90,new CaseData(0, Arrays.asList(appIdLikeAll, "container_image.like.containerImage" + testKey + "_00_")));
+    validCaseInputs.put(91,new CaseData(0, Arrays.asList(appIdLikeAll, "container_image.like.containerImage" + testKey + "_00%")));
+    // Check various special characters in description. 7 special chars in value: ,()~*!\
+    validCaseInputs.put(101,new CaseData(1, Arrays.asList(appIdLikeAll, "description.like." + specialChar7LikeSearchStr)));
+    validCaseInputs.put(102,new CaseData(numApps-1, Arrays.asList(appIdLikeAll, "description.nlike." + specialChar7LikeSearchStr)));
+    validCaseInputs.put(103,new CaseData(1, Arrays.asList(appIdLikeAll, "description.eq." + specialChar7EqSearchStr)));
+    validCaseInputs.put(104,new CaseData(numApps-1, Arrays.asList(appIdLikeAll, "description.neq." + specialChar7EqSearchStr)));
+    // Escaped comma in a list of values
+    validCaseInputs.put(110,new CaseData(1, Arrays.asList(appIdLikeAll, "runtime_version.in." + "noSuchDir," + escapedCommanInListValue)));
 
     // Iterate over valid cases
     for (Map.Entry<Integer,CaseData> item : validCaseInputs.entrySet())
@@ -241,14 +239,13 @@ public class SearchDaoTest
     }
   }
 
-  /*TODO
+  /*
    * Test pagination options: limit, skip
    */
   @Test(groups={"integration"})
   public void testLimitSkip() throws Exception
   {
-    String searchCond = appIdLikeAll;
-    String verifiedCondStr = SearchUtils.validateAndProcessSearchCondition(searchCond);
+    String verifiedCondStr = SearchUtils.validateAndProcessSearchCondition(appIdLikeAll);
     var verifiedSearchList = Collections.singletonList(verifiedCondStr);
     System.out.println("VerfiedInput: " + verifiedSearchList);
     List<App> searchResults;
@@ -300,14 +297,13 @@ public class SearchDaoTest
     assertEquals(searchResults.size(), 0, "Incorrect result count");
   }
 
-  /*TODO
+  /*
    * Test sorting: limit, orderBy, skip
    */
   @Test(groups={"integration"})
   public void testSortingSkip() throws Exception
   {
-    String searchCond = appIdLikeAll;
-    String verifiedCondStr = SearchUtils.validateAndProcessSearchCondition(searchCond);
+    String verifiedCondStr = SearchUtils.validateAndProcessSearchCondition(appIdLikeAll);
     var verifiedSearchList = Collections.singletonList(verifiedCondStr);
     System.out.println("VerfiedInput: " + verifiedSearchList);
     List<App> searchResults;
@@ -353,14 +349,13 @@ public class SearchDaoTest
     checkOrder(searchResults, numApps, 1);
   }
 
-  /*TODO
+  /*
    * Test sorting: limit, orderBy, startAfter
    */
   @Test(groups={"integration"})
   public void testSortingStartAfter() throws Exception
   {
-    String searchCond = appIdLikeAll;
-    String verifiedCondStr = SearchUtils.validateAndProcessSearchCondition(searchCond);
+    String verifiedCondStr = SearchUtils.validateAndProcessSearchCondition(appIdLikeAll);
     var verifiedSearchList = Collections.singletonList(verifiedCondStr);
     System.out.println("VerfiedInput: " + verifiedSearchList);
     List<App> searchResults;
@@ -382,26 +377,26 @@ public class SearchDaoTest
     startAfter = getAppName(testKey, startAfterIdx);
     searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByListDesc, DEFAULT_SKIP, startAfter, versionSpecifiedNull, showDeletedFalse);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
-    // Should get systems named SrchGet_017 to SrchGet_014
+    // Should get apps named SrchGet_017 to SrchGet_014
     checkOrder(searchResults, numApps - startWith, numApps - limit);
 
-//    // Sort and check multiple orderBy (second order orderBy column has no effect but at least we can check that
-//    //    having it does not break things for startAfter
-//    limit = 2;
-//    startAfterIdx = 5;
-//    startAfter = getAppName(testKey, startAfterIdx);
-//    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByList3Asc, DEFAULT_SKIP, startAfter, versionSpecifiedNull, showDeletedFalse);
-//    assertEquals(searchResults.size(), limit, "Incorrect result count");
-//    // Should get systems named SrchGet_006 to SrchGet_007
-//    checkOrder(searchResults, startAfterIdx + 1, startAfterIdx + limit);
-//    limit = 4;
-//    startAfterIdx = 18;
-//    startWith = numApps - startAfterIdx + 1;
-//    startAfter = getBucketName(testKey, startAfterIdx);
-//    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByList3Desc, DEFAULT_SKIP, startAfter, versionSpecifiedNull, showDeletedFalse);
-//    assertEquals(searchResults.size(), limit, "Incorrect result count");
-//    // Should get systems named SrchGet_017 to SrchGet_014
-//    checkOrder(searchResults, numApps - startWith, numApps - limit);
+    // Sort and check multiple orderBy (second order orderBy column has no effect but at least we can check that
+    //    having it does not break things for startAfter
+    limit = 2;
+    startAfterIdx = 5;
+    startAfter = getAppName(testKey, startAfterIdx);
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByList3Asc, DEFAULT_SKIP, startAfter, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), limit, "Incorrect result count");
+    // Should get systems named SrchGet_006 to SrchGet_007
+    checkOrder(searchResults, startAfterIdx + 1, startAfterIdx + limit);
+    limit = 4;
+    startAfterIdx = 18;
+    startWith = numApps - startAfterIdx + 1;
+    startAfter = getContainerImage(testKey, startAfterIdx);
+    searchResults = dao.getApps(tenantName, verifiedSearchList, null, null, limit, orderByList3Desc, DEFAULT_SKIP, startAfter, versionSpecifiedNull, showDeletedFalse);
+    assertEquals(searchResults.size(), limit, "Incorrect result count");
+    // Should get systems named SrchGet_017 to SrchGet_014
+    checkOrder(searchResults, numApps - startWith, numApps - limit);
   }
 
   /* ********************************************************************** */
