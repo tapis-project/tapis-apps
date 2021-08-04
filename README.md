@@ -2,7 +2,7 @@
 
 Tapis Applications Service
 
-There are four branches: *local*, *dev*, *staging* and *prod*.
+There are three primary branches: *local*, *dev*, and *main*.
 
 All changes should first be made in the branch *local*.
 

@@ -1,7 +1,5 @@
 package edu.utexas.tacc.tapis.apps.api;
 
-import javax.ws.rs.ApplicationPath;
-
 import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
 import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
@@ -19,6 +17,7 @@ import edu.utexas.tacc.tapis.sharedapi.providers.ObjectMapperContextResolver;
 import edu.utexas.tacc.tapis.sharedapi.providers.TapisExceptionMapper;
 import edu.utexas.tacc.tapis.sharedapi.providers.ValidationExceptionMapper;
 
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -27,9 +26,8 @@ import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.server.ApplicationHandler;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import org.jooq.tools.StringUtils;
-
 import java.net.URI;
+import javax.ws.rs.ApplicationPath;
 
 /*
  * Main startup class for the web application. Uses Jersey and Grizzly frameworks.
@@ -62,7 +60,7 @@ public class AppsApplication extends ResourceConfig
   {
     // Log our existence.
     // Output version information on startup
-    System.out.println("**** Starting tapis-apps. Version: " + TapisUtils.getTapisFullVersion() + " ****");
+    System.out.println("**** Starting Applications Service. Version: " + TapisUtils.getTapisFullVersion() + " ****");
 
     // Needed for properly returning timestamps
     // Also allows for setting a breakpoint when response is being constructed.
@@ -91,7 +89,7 @@ public class AppsApplication extends ResourceConfig
       siteId = runParms.getSiteId();
 
       // Initialize security filter used when processing a request.
-      JWTValidateRequestFilter.setService(TapisConstants.SERVICE_NAME_SYSTEMS);
+      JWTValidateRequestFilter.setService(TapisConstants.SERVICE_NAME_APPS);
       JWTValidateRequestFilter.setSiteId(siteId);
 
       // Initialize tenant manager singleton. This can be used by all subsequent application code, including filters.

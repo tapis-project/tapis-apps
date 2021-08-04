@@ -12,7 +12,7 @@
   <artifactId>tapis-appslib</artifactId>
   
   <name>Tapis apps Library</name>
-  <description>Backend library for Tapis apps Service</description>
+  <description>Backend library for Tapis Applications Service</description>
 
   <!-- DB connect properties for jOOQ and Flyway -->
   <properties>
@@ -188,9 +188,7 @@
     <plugin>
       <groupId>org.jooq</groupId>
       <artifactId>jooq-codegen-maven</artifactId>
-
       <executions>
-
         <execution>
           <id>jooq-codegen</id>
           <phase>generate-sources</phase>
@@ -204,6 +202,8 @@
             </jdbc>
             <generator>
               <name>org.jooq.codegen.JavaGenerator</name>
+               <!-- Turn on gen of equals, hashcode for POJOs so we can put them in HashMaps -->
+<!--              <pojosEqualsAndHashCode>true</pojosEqualsAndHashCode>-->
               <generate>
                 <javaTimeTypes>true</javaTimeTypes>
               </generate>
@@ -218,6 +218,18 @@
                 <inputSchema>tapis_app</inputSchema>
                 <!-- Include everything from the schema -->
                 <includes>.*</includes>
+                <!-- All elements that are excluded from your schema
+                     (A Java regular expression. Use the pipe to separate several expressions).
+                     Excludes match before includes, i.e. excludes have a higher priority -->
+<!--                  <excludes></excludes>-->
+                  <!-- Register custom types -->
+<!--                  <customTypes>-->
+<!--                    <customType>-->
+<!--                      <name>MyType</name>-->
+<!--                      <type>edu.utexas.tacc.tapis.systems.model.TSystem.MyType[]</type>-->
+<!--                      <converter>edu.utexas.tacc.tapis.systems.dao.MyTypeArrayConverter</converter>-->
+<!--                    </customType>-->
+<!--                  </customTypes>-->
 
                   <!-- ****************************************** -->
                   <!-- Register custom bindings -->

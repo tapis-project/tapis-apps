@@ -501,7 +501,8 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * Initialize the service:
-   *   Check for Apps admin role. If not found create it
+   *   init service context
+   *   migrate DB
    */
   public void initService(String siteId1, String siteAdminTenantId1, String svcPassword) throws TapisException, TapisClientException
   {

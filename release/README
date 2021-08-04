@@ -2,13 +2,14 @@ tapis-apps/release directory
 ==========================================================================
 Files in active use:
 ==========================================================================
-Dockerfile - used for building the release candidate image when the jenkins
-       job Tais jobs -> DEV -> release-apps-image-build is run
+Dockerfile - used for building main API service docker image
 docker_build.sh - Build, tag and optionally push docker image for the service
 docker_run.sh - script to use the image to run the service locally
        NOTE: Env variables must be set. Please see script.
 run_integration_tests.sh - Use mvn to run the integration tests in the lib directory.
        NOTE: Env variables must be set. Please see script.
+release_update.sh - Build, tag and push docker images for the release cycle.
+rc.ver - File containing release candidate version as a single integer.
 
 ==========================================================================
 Other files kept mainly as examples. Developed while working on k8s deploy

@@ -52,7 +52,6 @@ import static edu.utexas.tacc.tapis.shared.threadlocal.OrderBy.DEFAULT_ORDERBY_D
 import static edu.utexas.tacc.tapis.apps.gen.jooq.Tables.*;
 import static edu.utexas.tacc.tapis.apps.gen.jooq.Tables.APPS;
 
-import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.search.SearchUtils.SearchOperator;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;

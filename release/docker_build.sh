@@ -1,6 +1,6 @@
 #!/bin/sh
 # Build and optionally push docker image for Applications service
-# This is the job run in Jenkins as part of job TapisJava->3_ManualBuildDeploy->systems
+# This is the job run in Jenkins as part of job TapisJava->3_ManualBuildDeploy->apps
 # Environment name must be passed in as first argument
 # Existing docker login is used for push
 # Docker image is created with a unique tag: tapis/<SVC_NAME>-<ENV>-<VER>-<COMMIT>-<YYYYmmddHHMM>

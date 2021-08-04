@@ -4,21 +4,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
-import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
-import org.glassfish.grizzly.http.server.Request;
-import org.jooq.tools.StringUtils;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,9 +32,9 @@ import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 
 
-/* Tapis Apps general resources including healthcheck and readycheck
+/* Tapis Apps general resource endpoints including healthcheck and readycheck
  *
- *  NOTE: For OpenAPI spec please see file located in repo tapis-client-java at apps-client/AppsAPI.yaml
+ *  NOTE: For OpenAPI spec please see file AppsApi.yaml located in repo openapi-apps.
  */
 @Path("/v3/apps")
 public class AppsResource
@@ -54,42 +48,6 @@ public class AppsResource
   /* **************************************************************************** */
   /*                                    Fields                                    */
   /* **************************************************************************** */
-  /* Jax-RS context dependency injection allows implementations of these abstract
-   * types to be injected (ch 9, jax-rs 2.0):
-   *
-   *      javax.ws.rs.container.ResourceContext
-   *      javax.ws.rs.core.Application
-   *      javax.ws.rs.core.HttpHeaders
-   *      javax.ws.rs.core.Request
-   *      javax.ws.rs.core.SecurityContext
-   *      javax.ws.rs.core.UriInfo
-   *      javax.ws.rs.core.Configuration
-   *      javax.ws.rs.ext.Providers
-   *
-   * In a servlet environment, Jersey context dependency injection can also
-   * initialize these concrete types (ch 3.6, jersey spec):
-   *
-   *      javax.servlet.HttpServletRequest
-   *      javax.servlet.HttpServletResponse
-   *      javax.servlet.ServletConfig
-   *      javax.servlet.ServletContext
-   *
-   * Inject takes place after constructor invocation, so fields initialized in this
-   * way can not be accessed in constructors.
-   */
-  @Context
-  private HttpHeaders _httpHeaders;
-  @Context
-  private Application _application;
-  @Context
-  private UriInfo _uriInfo;
-  @Context
-  private SecurityContext _securityContext;
-  @Context
-  private ServletContext _servletContext;
-  @Context
-  private Request _request;
-
   // Count the number of health check requests received.
   private static final AtomicLong _healthCheckCount = new AtomicLong();
 

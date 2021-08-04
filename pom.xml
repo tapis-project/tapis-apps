@@ -11,7 +11,7 @@
       <!-- Set empty relative path to avoid maven warning and-->
       <!--   ensure parent is found in local repository if that-->
       <!--   is the only place it exists.-->
-      <relativePath></relativePath>
+      <relativePath/>
     </parent>
 
     <artifactId>tapis-apps</artifactId>
