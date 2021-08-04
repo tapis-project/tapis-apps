@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
 import org.apache.commons.lang3.StringUtils;
 import org.flywaydb.core.Flyway;
 import org.jooq.Condition;
@@ -46,6 +45,7 @@ import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy.OrderByDir;
+import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 
 import static edu.utexas.tacc.tapis.shared.threadlocal.OrderBy.DEFAULT_ORDERBY_DIRECTION;
 
@@ -1441,8 +1441,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             .set(APP_UPDATES.APP_TENANT, tenant)
             .set(APP_UPDATES.APP_ID, id)
             .set(APP_UPDATES.APP_VERSION, version)
-            .set(APP_UPDATES.USER_TENANT, rUser.getApiUserId())
-            .set(APP_UPDATES.USER_NAME, rUser.getApiUserId())
+            .set(APP_UPDATES.USER_TENANT, rUser.getOboTenantId())
+            .set(APP_UPDATES.USER_NAME, rUser.getOboUserId())
             .set(APP_UPDATES.OPERATION, op)
             .set(APP_UPDATES.UPD_JSON, TapisGsonUtils.getGson().fromJson(updJsonStr, JsonElement.class))
             .set(APP_UPDATES.UPD_TEXT, upd_text)

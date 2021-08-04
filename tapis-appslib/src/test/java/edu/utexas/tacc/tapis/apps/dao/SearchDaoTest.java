@@ -1,10 +1,10 @@
 package edu.utexas.tacc.tapis.apps.dao;
 
-import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
 import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
+import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 import edu.utexas.tacc.tapis.apps.IntegrationUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
 import org.testng.Assert;

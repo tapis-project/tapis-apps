@@ -11,7 +11,6 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
 import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
-import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
@@ -35,7 +34,7 @@ import edu.utexas.tacc.tapis.security.client.SKClient;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
-import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
+import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.systems.client.SystemsClient;
 import edu.utexas.tacc.tapis.systems.client.gen.model.TapisSystem;
@@ -153,7 +152,7 @@ public class AppsServiceImpl implements AppsService
     app.setDefaults();
 
     // ----------------- Resolve variables for any attributes that might contain them --------------------
-    app.resolveVariables(rUser.getApiUserId());
+    app.resolveVariables(rUser.getOboUserId());
 
     // ------------------------- Check service level authorization -------------------------
     checkAuth(rUser, op, resourceId, app.getOwner(), null, null);
@@ -422,7 +421,7 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(appId) || StringUtils.isBlank(newOwnerName))
          throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
  
-    String resourceTenantId = rUser.getApiTenantId();
+    String resourceTenantId = rUser.getOboTenantId();
 
     // ---------------------------- Check inputs ------------------------------------
     if (StringUtils.isBlank(resourceTenantId))
@@ -553,7 +552,7 @@ public class AppsServiceImpl implements AppsService
     AppOperation op = AppOperation.read;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
-    String resourceTenantId = rUser.getApiTenantId();
+    String resourceTenantId = rUser.getOboTenantId();
  
     // We need owner to check auth and if app not there cannot find owner, so cannot do auth check if no app
     if (dao.checkForApp(resourceTenantId, appId, includeDeleted)) {
@@ -580,7 +579,7 @@ public class AppsServiceImpl implements AppsService
     AppOperation op = AppOperation.read;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
-    String resourceTenantId = rUser.getApiTenantId();
+    String resourceTenantId = rUser.getOboTenantId();
 
     // Resource must exist and not be deleted
     if (!dao.checkForApp(resourceTenantId, appId, false))
@@ -610,7 +609,7 @@ public class AppsServiceImpl implements AppsService
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
-    String resourceTenantId = rUser.getApiTenantId();
+    String resourceTenantId = rUser.getOboTenantId();
 
     // We need owner to check auth and if app not there cannot find owner, so
     // if app does not exist then return null
@@ -621,7 +620,7 @@ public class AppsServiceImpl implements AppsService
     // If flag is set to also require EXECUTE perm then make a special auth call
     if (requireExecPerm)
     {
-      checkAuthUser(rUser, AppOperation.execute, resourceTenantId, rUser.getApiUserId(),
+      checkAuthUser(rUser, AppOperation.execute, resourceTenantId, rUser.getOboUserId(),
                     appId, null, null, null);
     }
 
@@ -646,7 +645,7 @@ public class AppsServiceImpl implements AppsService
   {
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     // Determine tenant scope for user
-    String resourceTenantId = rUser.getApiTenantId();
+    String resourceTenantId = rUser.getOboTenantId();
 
     // Build verified list of search conditions and check if any search conditions involve the version attribute
     boolean versionSpecified = false;
@@ -730,7 +729,7 @@ public class AppsServiceImpl implements AppsService
     Set<String> allowedAppIDs = getAllowedAppIDs(rUser);
 
     // Get all allowed apps matching the search conditions
-    List<App> apps = dao.getApps(rUser.getApiTenantId(), verifiedSearchList, null, allowedAppIDs, limit, orderByList, skip,
+    List<App> apps = dao.getApps(rUser.getOboTenantId(), verifiedSearchList, null, allowedAppIDs, limit, orderByList, skip,
                                  startAfter, versionSpecified, showDeleted);
     return apps;
   }
@@ -783,7 +782,7 @@ public class AppsServiceImpl implements AppsService
     Boolean versionSpecified = null;
 
     // Get all allowed apps matching the search conditions
-    List<App> apps = dao.getApps(rUser.getApiTenantId(), null, searchAST, allowedAppIDs, limit, orderByList, skip, startAfter,
+    List<App> apps = dao.getApps(rUser.getOboTenantId(), null, searchAST, allowedAppIDs, limit, orderByList, skip, startAfter,
                                  versionSpecified, showDeleted);
     return apps;
   }
@@ -801,7 +800,7 @@ public class AppsServiceImpl implements AppsService
     AppOperation op = AppOperation.read;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     // Get all app names
-    Set<String> appIds = dao.getAppIDs(rUser.getApiTenantId(), showDeleted);
+    Set<String> appIds = dao.getAppIDs(rUser.getOboTenantId(), showDeleted);
     var allowedNames = new HashSet<String>();
     // Filter based on user authorization
     for (String name: appIds)
@@ -832,12 +831,12 @@ public class AppsServiceImpl implements AppsService
 
     // We need owner to check auth and if app not there cannot find owner, so
     // if app does not exist then return null
-    if (!dao.checkForApp(rUser.getApiTenantId(), appId, false)) return null;
+    if (!dao.checkForApp(rUser.getOboTenantId(), appId, false)) return null;
 
     // ------------------------- Check service level authorization -------------------------
     checkAuth(rUser, op, appId, null, null, null);
 
-    return dao.getAppOwner(rUser.getApiTenantId(), appId);
+    return dao.getAppOwner(rUser.getOboTenantId(), appId);
   }
 
   // -----------------------------------------------------------------------
@@ -867,7 +866,7 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(appId) || StringUtils.isBlank(userName))
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_SYSTEM", rUser));
 
-    String resourceTenantId = rUser.getApiTenantId();
+    String resourceTenantId = rUser.getOboTenantId();
 
     // If system does not exist or has been deleted then throw an exception
     if (!dao.checkForApp(resourceTenantId, appId, false))
@@ -953,7 +952,7 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(appId) || StringUtils.isBlank(userName))
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_SYSTEM", rUser));
 
-    String resourceTenantId = rUser.getApiTenantId();
+    String resourceTenantId = rUser.getOboTenantId();
 
     // We need owner to check auth and if app not there cannot find owner, so
     // if app does not exist or has been deleted then return 0 changes
@@ -1034,7 +1033,7 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(appId) || StringUtils.isBlank(userName))
          throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
-    String resourceTenantId = rUser.getApiTenantId();
+    String resourceTenantId = rUser.getOboTenantId();
 
     // If app does not exist or has been deleted then return null
     if (!dao.checkForApp(resourceTenantId, appId, false)) return null;
@@ -1071,7 +1070,7 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(appId))
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
-    String resourceTenantId = rUser.getApiTenantId();
+    String resourceTenantId = rUser.getOboTenantId();
 
     // App must already exist and not be deleted
     if (!dao.checkForApp(resourceTenantId, appId, false))
@@ -1108,7 +1107,7 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(appId))
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
-    String resourceTenantId = rUser.getApiTenantId();
+    String resourceTenantId = rUser.getOboTenantId();
 
     // App must exist
     if (!dao.checkForApp(resourceTenantId, appId, true))
@@ -1434,11 +1433,11 @@ public class AppsServiceImpl implements AppsService
           throws TapisException, NotAuthorizedException
   {
     // Look up owner. If not found then consider not authorized. Very unlikely at this point.
-    String owner = dao.getAppOwner(rUser.getApiTenantId(), id);
+    String owner = dao.getAppOwner(rUser.getOboTenantId(), id);
     if (StringUtils.isBlank(owner))
       throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, id, opStr), NO_CHALLENGE);
     // If owner making the request and owner is the target user for the perm update then reject.
-    if (owner.equals(rUser.getApiUserId()) && owner.equals(userName))
+    if (owner.equals(rUser.getOboUserId()) && owner.equals(userName))
     {
       // If it is a svc making request reject with no auth, if user making request reject with special message.
       // Need this check since svc not allowed to update perms but checkAuth happens after checkForOwnerPermUpdate.
@@ -1517,7 +1516,7 @@ public class AppsServiceImpl implements AppsService
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
     // Use JWT tenant and user from authenticatedUsr or optional provided values
-    String tenantName = (StringUtils.isBlank(tenantIdToCheck) ? rUser.getApiTenantId() : tenantIdToCheck);
+    String tenantName = (StringUtils.isBlank(tenantIdToCheck) ? rUser.getOboTenantId() : tenantIdToCheck);
     String userName = (StringUtils.isBlank(userIdToCheck) ? rUser.getJwtUserId() : userIdToCheck);
 
     // Some checks do not require owner
@@ -1586,7 +1585,7 @@ public class AppsServiceImpl implements AppsService
       return null;
     }
     var appIDs = new HashSet<String>();
-    var userPerms = getSKClient().getUserPerms(rUser.getApiTenantId(), rUser.getApiUserId());
+    var userPerms = getSKClient().getUserPerms(rUser.getOboTenantId(), rUser.getOboUserId());
     // Check each perm to see if it allows user READ access.
     for (String userPerm : userPerms)
     {
@@ -1614,7 +1613,7 @@ public class AppsServiceImpl implements AppsService
           throws TapisException, TapisClientException
   {
     // Use JWT tenant and user from authenticatedUsr or optional provided values
-    String tenantName = (StringUtils.isBlank(tenantToCheck) ? rUser.getApiTenantId() : tenantToCheck);
+    String tenantName = (StringUtils.isBlank(tenantToCheck) ? rUser.getOboTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? rUser.getJwtUserId() : userToCheck);
     return getSKClient().isAdmin(tenantName, userName);
   }
@@ -1628,7 +1627,7 @@ public class AppsServiceImpl implements AppsService
           throws TapisException, TapisClientException
   {
     // Use JWT tenant and user from authenticatedUsr or optional provided values
-    String tenantName = (StringUtils.isBlank(tenantToCheck) ? rUser.getApiTenantId() : tenantToCheck);
+    String tenantName = (StringUtils.isBlank(tenantToCheck) ? rUser.getOboTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? rUser.getJwtUserId() : userToCheck);
     var skClient = getSKClient();
     String permSpecStr = getPermSpecStr(tenantName, appId, perm);
@@ -1644,7 +1643,7 @@ public class AppsServiceImpl implements AppsService
           throws TapisException, TapisClientException
   {
     // Use JWT tenant and user from authenticatedUsr or optional provided values
-    String tenantName = (StringUtils.isBlank(tenantToCheck) ? rUser.getApiTenantId() : tenantToCheck);
+    String tenantName = (StringUtils.isBlank(tenantToCheck) ? rUser.getOboTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? rUser.getJwtUserId() : userToCheck);
     var skClient = getSKClient();
     var permSpecs = new ArrayList<String>();
@@ -1665,7 +1664,7 @@ public class AppsServiceImpl implements AppsService
     // Perms should never be null. Fall back to deny as best security practice.
     if (perms == null) return false;
     // Use JWT tenant and user from authenticatedUsr or optional provided values
-    String tenantName = (StringUtils.isBlank(tenantToCheck) ? rUser.getApiTenantId() : tenantToCheck);
+    String tenantName = (StringUtils.isBlank(tenantToCheck) ? rUser.getOboTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? rUser.getJwtUserId() : userToCheck);
     if (perms.contains(Permission.MODIFY)) return isPermitted(rUser, tenantName, userName, appId, Permission.MODIFY);
     if (perms.contains(Permission.READ)) return isPermittedAny(rUser, tenantName, userName, appId, READMODIFY_PERMS);

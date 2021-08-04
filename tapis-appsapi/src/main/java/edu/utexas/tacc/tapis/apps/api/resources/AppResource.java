@@ -26,22 +26,22 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import edu.utexas.tacc.tapis.apps.model.AppArg;
-import edu.utexas.tacc.tapis.apps.model.FileInput;
-import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
-import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
-import edu.utexas.tacc.tapis.shared.TapisConstants;
-import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
-import edu.utexas.tacc.tapis.shared.threadlocal.SearchParameters;
-import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultBoolean;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.http.server.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.utexas.tacc.tapis.apps.model.AppArg;
+import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.shared.TapisConstants;
+import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
+import edu.utexas.tacc.tapis.shared.threadlocal.SearchParameters;
+import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultBoolean;
+import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 
 import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.api.model.ParameterSet;
@@ -223,7 +223,7 @@ public class AppResource
     }
 
     // Create an app from the request
-    App app = createAppFromPostRequest(rUser.getApiTenantId(), req, rawJson);
+    App app = createAppFromPostRequest(rUser.getOboTenantId(), req, rawJson);
 
     // So far no need to scrub out secrets, so scrubbed and raw are the same.
     String scrubbedJson = rawJson;
@@ -355,7 +355,7 @@ public class AppResource
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
 
-    PatchApp patchApp = createPatchAppFromRequest(req, rUser.getApiTenantId(), appId, appVersion, rawJson);
+    PatchApp patchApp = createPatchAppFromRequest(req, rUser.getOboTenantId(), appId, appVersion, rawJson);
     if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_PATCH_TRACE", rUser, rawJson));
 
     // No attributes are required. Constraints validated and defaults filled in on server side.
@@ -483,7 +483,7 @@ public class AppResource
     }
 
     // Create an App from the request
-    App putApp = createAppFromPutRequest(rUser.getApiTenantId(), appId, appVersion, req, rawJson);
+    App putApp = createAppFromPutRequest(rUser.getOboTenantId(), appId, appVersion, req, rawJson);
 
     if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_PUT_TRACE", rUser, rawJson));
 

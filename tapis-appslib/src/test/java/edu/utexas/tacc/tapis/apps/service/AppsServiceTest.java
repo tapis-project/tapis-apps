@@ -4,13 +4,13 @@ import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
-import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
 import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
+import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 import edu.utexas.tacc.tapis.apps.IntegrationUtils;
 import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
 import edu.utexas.tacc.tapis.apps.dao.AppsDao;
@@ -517,12 +517,12 @@ public class AppsServiceTest
     // Create 3 apps, 2 of which are owned by testUser5.
     App app0 = apps[16];
     String app1Name = app0.getId();
-    app0.setOwner(rUser5.getApiUserId());
+    app0.setOwner(rUser5.getOboUserId());
     svc.createApp(rUser5, app0, scrubbedJson);
 
     app0 = apps[17];
     String app2Name = app0.getId();
-    app0.setOwner(rUser5.getApiUserId());
+    app0.setOwner(rUser5.getOboUserId());
     svc.createApp(rUser5, app0, scrubbedJson);
 
     app0 = apps[18];

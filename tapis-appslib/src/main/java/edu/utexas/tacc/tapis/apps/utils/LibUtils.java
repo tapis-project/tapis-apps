@@ -1,8 +1,8 @@
 package edu.utexas.tacc.tapis.apps.utils;
 
-import edu.utexas.tacc.tapis.apps.model.ResourceRequestUser;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
+import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
