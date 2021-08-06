@@ -19,8 +19,6 @@ import edu.utexas.tacc.tapis.shared.parameters.TapisInput;
 import edu.utexas.tacc.tapis.shared.providers.email.EmailClientParameters;
 import edu.utexas.tacc.tapis.shared.providers.email.enumeration.EmailProviderType;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
-import edu.utexas.tacc.tapis.shared.uuid.TapisUUID;
-import edu.utexas.tacc.tapis.shared.uuid.UUIDType;
 
 /** This class contains the complete and effective set of runtime parameters
  * for this service.  Each service has it own version of this file that
@@ -68,9 +66,6 @@ public final class RuntimeParameters
     /* ********************************************************************** */
     /*                                 Fields                                 */
     /* ********************************************************************** */
-    // Globally unique id that identifies this JVM instance.
-    private static final TapisUUID id = new TapisUUID(UUIDType.JOB); 
-  
     // Singleton instance.
     private static RuntimeParameters _instance = initInstance();
   
@@ -652,10 +647,6 @@ public final class RuntimeParameters
 
 	private void setInstanceName(String name) {
 	    this.instanceName = name;
-	}
-
-	public static TapisUUID getId() {
-	    return id;
 	}
 
 	public boolean isAllowTestHeaderParms() {
