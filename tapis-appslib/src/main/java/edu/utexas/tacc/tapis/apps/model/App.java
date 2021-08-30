@@ -454,6 +454,7 @@ public final class App
     if (StringUtils.isBlank(id)) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, ID_FIELD));
     if (StringUtils.isBlank(version)) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, VERSION_FIELD));
     if (appType == null) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, APP_TYPE_FIELD));
+    if (StringUtils.isBlank(containerImage)) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, CONTAINERIMG_FIELD));
   }
 
   /**
@@ -570,12 +571,13 @@ public final class App
       errMessages.add(LibUtils.getMsg("APPLIB_CONTAINERIZED_NOIMAGE"));
     }
 
-    // If containerized and SINGULARITY then RuntimeOptions must be include one and only one of
-    //   SINGULARITY_START and SINGULARITY_RUN
+    // If containerized and SINGULARITY then RuntimeOptions must be provided and include one and only one of
+    //   SINGULARITY_START, SINGULARITY_RUN
     if (containerized && Runtime.SINGULARITY.equals(runtime))
     {
       // If options list contains both or neither of START and RUN then reject.
-      if ((runtimeOptions.contains(RuntimeOption.SINGULARITY_RUN) && runtimeOptions.contains(RuntimeOption.SINGULARITY_START))
+      if ( runtimeOptions == null ||
+           (runtimeOptions.contains(RuntimeOption.SINGULARITY_RUN) && runtimeOptions.contains(RuntimeOption.SINGULARITY_START))
            ||
            !(runtimeOptions.contains(RuntimeOption.SINGULARITY_RUN) || runtimeOptions.contains(RuntimeOption.SINGULARITY_START)))
       {
