@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/tapis-apps.iml" filepath="$PROJECT_DIR$/tapis-apps.iml" />
       <module fileurl="file://$PROJECT_DIR$/tapis-appsapi/tapis-appsapi.iml" filepath="$PROJECT_DIR$/tapis-appsapi/tapis-appsapi.iml" />
       <module fileurl="file://$PROJECT_DIR$/tapis-appslib/tapis-appslib.iml" filepath="$PROJECT_DIR$/tapis-appslib/tapis-appslib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../tapis-shared-java/tapis-shared-api/tapis-shared-api.iml" filepath="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-api/tapis-shared-api.iml" />
     </modules>
   </component>
 </project>

@@ -4,11 +4,8 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/../tapis-shared-java/tapis-shared-api/pom.xml" />
       </list>
-    </option>
-    <option name="ignoredFiles">
-      <set>
-      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_15" project-jdk-name="15" project-jdk-type="JavaSDK" />

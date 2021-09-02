@@ -102,17 +102,8 @@ public class PermsResource
                                  InputStream payloadStream,
                                  @Context SecurityContext securityContext)
   {
-    String msg;
+    String opName = "grantUserPerms";
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-
-    // Trace this request.
-    if (_log.isTraceEnabled())
-    {
-      msg = MsgUtils.getMsg("TAPIS_TRACE_REQUEST", getClass().getSimpleName(), "grantUserPerms",
-                                   "  " + _request.getRequestURL());
-      _log.trace(msg);
-    }
-
     // Check that we have all we need from the context, tenant name and apiUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
@@ -121,6 +112,9 @@ public class PermsResource
     // Create a user that collects together tenant, user and request information needed by the service call
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
+    // Trace this request.
+    if (_log.isTraceEnabled()) logRequest(rUser, opName);
+
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
     resp = ApiUtils.checkAppExists(appsService, rUser, appId, PRETTY, "grantUserPerms");
@@ -128,6 +122,7 @@ public class PermsResource
 
     // Read the payload into a string.
     String json;
+    String msg;
     try { json = IOUtils.toString(payloadStream, StandardCharsets.UTF_8); }
     catch (Exception e)
     {
@@ -176,17 +171,8 @@ public class PermsResource
                                @PathParam("userName") String userName,
                                @Context SecurityContext securityContext)
   {
-    String msg;
+    String opName = "getUserPerms";
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-
-    // Trace this request.
-    if (_log.isTraceEnabled())
-    {
-      msg = MsgUtils.getMsg("TAPIS_TRACE_REQUEST", getClass().getSimpleName(), "getUserPerms",
-                                   "  " + _request.getRequestURL());
-      _log.trace(msg);
-    }
-
     // Check that we have all we need from the context, the tenant name and apiUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
@@ -194,6 +180,9 @@ public class PermsResource
 
     // Create a user that collects together tenant, user and request information needed by the service call
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
+
+    // Trace this request.
+    if (_log.isTraceEnabled()) logRequest(rUser, opName);
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
@@ -203,6 +192,7 @@ public class PermsResource
     // ------------------------- Perform the operation -------------------------
     // Make the service call to get the permissions
     Set<Permission> perms;
+    String msg;
     try { perms = appsService.getUserPermissions(rUser, appId, userName); }
     catch (Exception e)
     {
@@ -235,17 +225,8 @@ public class PermsResource
                                  @PathParam("permission") String permissionStr,
                                  @Context SecurityContext securityContext)
   {
-    String msg;
+    String opName = "revokeUserPerm";
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-
-    // Trace this request.
-    if (_log.isTraceEnabled())
-    {
-      msg = MsgUtils.getMsg("TAPIS_TRACE_REQUEST", getClass().getSimpleName(), "revokeUserPerm",
-                            "  " + _request.getRequestURL());
-      _log.trace(msg);
-    }
-
     // Check that we have all we need from the context, tenant name and apiUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
@@ -253,6 +234,9 @@ public class PermsResource
 
     // Create a user that collects together tenant, user and request information needed by the service call
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
+
+    // Trace this request.
+    if (_log.isTraceEnabled()) logRequest(rUser, opName);
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
@@ -262,6 +246,7 @@ public class PermsResource
     // ------------------------- Perform the operation -------------------------
     // Make the service call to revoke the permissions
     var permsList = new HashSet<Permission>();
+    String msg;
     try
     {
       Permission perm = Permission.valueOf(permissionStr);
@@ -304,15 +289,7 @@ public class PermsResource
                                   InputStream payloadStream,
                                   @Context SecurityContext securityContext)
   {
-    String msg;
-    // Trace this request.
-    if (_log.isTraceEnabled())
-    {
-      msg = MsgUtils.getMsg("TAPIS_TRACE_REQUEST", getClass().getSimpleName(), "revokeUserPerms",
-                            "  " + _request.getRequestURL());
-      _log.trace(msg);
-    }
-
+    String opName = "revokeUserPerms";
     // ------------------------- Retrieve and validate thread context -------------------------
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
     // Check that we have all we need from the context, tenant name and apiUserId
@@ -323,6 +300,9 @@ public class PermsResource
     // Create a user that collects together tenant, user and request information needed by the service call
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
+    // Trace this request.
+    if (_log.isTraceEnabled()) logRequest(rUser, opName);
+
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
     resp = ApiUtils.checkAppExists(appsService, rUser, appId, PRETTY, "revokeUserPerms");
@@ -330,6 +310,7 @@ public class PermsResource
 
     // Read the payload into a string.
     String json;
+    String msg;
     try { json = IOUtils.toString(payloadStream, StandardCharsets.UTF_8); }
     catch (Exception e)
     {
@@ -370,6 +351,17 @@ public class PermsResource
   // ************************************************************************
   // *********************** Private Methods ********************************
   // ************************************************************************
+
+  /**
+   * Trace the incoming request, include info about requesting user, op name and request URL
+   * @param rUser resource user
+   * @param opName name of operation
+   */
+  private void logRequest(ResourceRequestUser rUser, String opName)
+  {
+    String msg = ApiUtils.getMsgAuth("APPAPI_TRACE_REQUEST", rUser, getClass().getSimpleName(), opName, _request.getRequestURL());
+    _log.trace(msg);
+  }
 
   /**
    * Check json payload and extract permissions list.
