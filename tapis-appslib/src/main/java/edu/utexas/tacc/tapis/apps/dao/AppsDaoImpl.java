@@ -769,7 +769,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * checkForApp - check that app with specified Id (any version) exists
    * @param appId - app name
-   * @param includeDeleted - whether or not to include deleted items
+   * @param includeDeleted - whether to include deleted items
    * @return true if found else false
    * @throws TapisException - on error
    */
@@ -787,6 +787,45 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       DSLContext db = DSL.using(conn);
       // Run the sql
       result = checkIfAppExists(db, tenant, appId, null, includeDeleted);
+      // Close out and commit
+      LibUtils.closeAndCommitDB(conn, null, null);
+    }
+    catch (Exception e)
+    {
+      // Rollback transaction and throw an exception
+      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", tenant, appId, e.getMessage());
+    }
+    finally
+    {
+      // Always return the connection back to the connection pool.
+      LibUtils.finalCloseDB(conn);
+    }
+    return result;
+  }
+
+  /**
+   * checkForAppVersion - check that app with specified Id and version exists
+   * @param appId - app name
+   * @param appVersion - app version
+   * @param includeDeleted - whether to include deleted items
+   * @return true if found else false
+   * @throws TapisException - on error
+   */
+  @Override
+  public boolean checkForAppVersion(String tenant, String appId, String appVersion, boolean includeDeleted)
+          throws TapisException {
+    // Initialize result.
+    boolean result = false;
+
+    // ------------------------- Call SQL ----------------------------
+    Connection conn = null;
+    try
+    {
+      // Get a database connection.
+      conn = getConnection();
+      DSLContext db = DSL.using(conn);
+      // Run the sql
+      result = checkIfAppExists(db, tenant, appId, appVersion, includeDeleted);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }

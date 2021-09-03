@@ -39,6 +39,8 @@ public interface AppsDao
 
   boolean checkForApp(String tenant, String id, boolean includeDeleted) throws TapisException;
 
+  boolean checkForAppVersion(String tenant, String id, String version, boolean includeDeleted) throws TapisException;
+
   boolean checkForApp(String tenant, String id, String version, boolean includeDeleted) throws TapisException;
 
   boolean isEnabled(String tenant, String id) throws TapisException;

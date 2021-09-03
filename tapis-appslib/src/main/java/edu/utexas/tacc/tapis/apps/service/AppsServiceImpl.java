@@ -237,10 +237,10 @@ public class AppsServiceImpl implements AppsService
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", rUser, resourceId));
     }
 
-    // App must already exist and not be deleted
-    if (!dao.checkForApp(resourceTenantId, resourceId, false))
+    // App with given version must already exist and not be deleted
+    if (!dao.checkForAppVersion(resourceTenantId, resourceId, resourceVersion, false))
     {
-      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, resourceId));
+      throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, resourceId));
     }
 
     // Retrieve the app being patched and create fully populated App with changes merged in
@@ -298,10 +298,10 @@ public class AppsServiceImpl implements AppsService
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", rUser, resourceId));
     }
 
-    // App must already exist and not be deleted
-    if (!dao.checkForApp(resourceTenantId, resourceId, false))
+    // App version must already exist and not be deleted
+    if (!dao.checkForAppVersion(resourceTenantId, resourceId, resourceVersion, false))
     {
-      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, resourceId));
+      throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, resourceId, resourceVersion));
     }
 
     // Retrieve the app being patched and create fully populated App with changes merged in
