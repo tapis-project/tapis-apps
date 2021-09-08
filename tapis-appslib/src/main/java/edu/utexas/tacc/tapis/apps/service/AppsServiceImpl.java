@@ -10,7 +10,6 @@ import javax.inject.Inject;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
-import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
@@ -21,8 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.utexas.tacc.tapis.apps.dao.AppsDao;
+import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.App.AppType;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
@@ -1211,137 +1212,17 @@ public class AppsServiceImpl implements AppsService
   private void validateApp(ResourceRequestUser rUser, App app)
           throws TapisException, IllegalStateException
   {
-    String msg;
     // Make api level checks, i.e. checks that do not involve a dao or service call.
     List<String> errMessages = app.checkAttributeRestrictions();
     var systemsClient = getSystemsClient(rUser);
 
-    // If execSystemId is set verify that it exists with canExec = true
-    // and if app specifies a LogicalQueue make sure the constraints for the queue are not violated.
-    String execSystemId = app.getExecSystemId();
-    if (!StringUtils.isBlank(execSystemId))
-    {
-      TapisSystem execSystem = null;
-      try
-      {
-        execSystem = systemsClient.getSystem(execSystemId);
-      }
-      catch (TapisClientException e)
-      {
-        msg = LibUtils.getMsg("APPLIB_EXECSYS_CHECK_ERROR", execSystemId, e.getMessage());
-        _log.error(msg, e);
-        errMessages.add(msg);
-      }
-      if (execSystem == null)
-      {
-        msg = LibUtils.getMsg("APPLIB_EXECSYS_NO_SYSTEM", execSystemId);
-        errMessages.add(msg);
-      }
-      else if (execSystem.getCanExec() == null || !execSystem.getCanExec())
-      {
-        msg = LibUtils.getMsg("APPLIB_EXECSYS_NOT_EXEC", execSystemId);
-        errMessages.add(msg);
-      }
+    // Now make checks that do require a dao or service call.
 
-      // If app specifies a LogicalQueue make sure the constraints for the queue are not violated.
-      //     Max/Min constraints to check: nodeCount, coresPerNode, memoryMB, runMinutes
-      String execQName = app.getExecSystemLogicalQueue();
-      if (!StringUtils.isBlank(execQName))
-      {
-        List<LogicalQueue> batchQueues = (execSystem == null ? null : execSystem.getBatchLogicalQueues());
-        // Make sure the queue is defined for the system
-        LogicalQueue execQ = getLogicalQ(batchQueues, execQName);
-        if (batchQueues == null || batchQueues.isEmpty() || execQ == null)
-        {
-          msg = LibUtils.getMsg("APPLIB_EXECQ_NOT_FOUND", execQName, execSystemId);
-          errMessages.add(msg);
-        }
-        // Check constraints
-        if (execQ != null)
-        {
-          Integer maxNodeCount = execQ.getMaxNodeCount();
-          Integer minNodeCount = execQ.getMinNodeCount();
-          Integer maxCoresPerNode = execQ.getMaxCoresPerNode();
-          Integer minCoresPerNode = execQ.getMinCoresPerNode();
-          Integer maxMemoryMB = execQ.getMaxMemoryMB();
-          Integer minMemoryMB = execQ.getMinMemoryMB();
-          Integer maxMinutes = execQ.getMaxMinutes();
-          Integer minMinutes = execQ.getMinMinutes();
-          int appNodeCount = app.getNodeCount();
-          int appCoresPerNode = app.getCoresPerNode();
-          int appMemoryMb = app.getMemoryMb();
-          int appMaxMinutes = app.getMaxMinutes();
+    // If execSystemId is set verify it
+    if (!StringUtils.isBlank(app.getExecSystemId())) checkExecSystem(systemsClient, app, errMessages);
 
-          // If queue defines limit and app specifies limit and app limit out of range then add error
-          // NodeCount
-          if (maxNodeCount != null && maxNodeCount > 0 && appNodeCount > 0 && appNodeCount > maxNodeCount)
-          {
-            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_HIGH", "NodeCount", appNodeCount, maxNodeCount, execQName, execSystemId);
-            errMessages.add(msg);
-          }
-          if (minNodeCount != null && minNodeCount > 0 && appNodeCount > 0 && appNodeCount < minNodeCount)
-          {
-            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_LOW", "NodeCount", appNodeCount, minNodeCount, execQName, execSystemId);
-            errMessages.add(msg);
-          }
-          // CoresPerNode
-          if (maxCoresPerNode != null && maxCoresPerNode > 0 && appCoresPerNode > 0 && appCoresPerNode > maxCoresPerNode)
-          {
-            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_HIGH", "CoresPerNode", appCoresPerNode, maxCoresPerNode, execQName, execSystemId);
-            errMessages.add(msg);
-          }
-          if (minCoresPerNode != null && minCoresPerNode > 0 && appCoresPerNode > 0 && appCoresPerNode < minCoresPerNode)
-          {
-            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_LOW", "CoresPerNode", appCoresPerNode, minCoresPerNode, execQName, execSystemId);
-            errMessages.add(msg);
-          }
-          // MemoryMB
-          if (maxMemoryMB != null && maxMemoryMB > 0 && appMemoryMb > 0 && appMemoryMb > maxMemoryMB)
-          {
-            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_HIGH", "MemoryMB", appMemoryMb, maxMemoryMB, execQName, execSystemId);
-            errMessages.add(msg);
-          }
-          if (minMemoryMB != null && minMemoryMB > 0 && appMemoryMb > 0 && appMemoryMb < minMemoryMB)
-          {
-            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_LOW", "MemoryMB", appMemoryMb, minMemoryMB, execQName, execSystemId);
-            errMessages.add(msg);
-          }
-          // Minutes
-          if (maxMinutes != null && maxMinutes > 0 && appMaxMinutes > 0 && appMaxMinutes > maxMinutes)
-          {
-            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_HIGH", "MaxMinutes", appMaxMinutes, maxMinutes, execQName, execSystemId);
-            errMessages.add(msg);
-          }
-          if (minMinutes != null && minMinutes > 0 && appMaxMinutes > 0 && appMaxMinutes < minMinutes)
-          {
-            msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_LOW", "MaxMinutes", appMaxMinutes, minMinutes, execQName, execSystemId);
-            errMessages.add(msg);
-          }
-        }
-      }
-    }
-
-    // If archiveSystemId is set verify that it exists
-    String archiveSystemId = app.getArchiveSystemId();
-    if (!StringUtils.isBlank(archiveSystemId))
-    {
-      TapisSystem archiveSystem = null;
-      try
-      {
-        archiveSystem = systemsClient.getSystem(archiveSystemId);
-      }
-      catch (TapisClientException e)
-      {
-        msg = LibUtils.getMsg("APPLIB_ARCHSYS_CHECK_ERROR", archiveSystemId, e.getMessage());
-        _log.error(msg, e);
-        errMessages.add(msg);
-      }
-      if (archiveSystem == null)
-      {
-        msg = LibUtils.getMsg("APPLIB_ARCHSYS_NO_SYSTEM", archiveSystemId);
-        errMessages.add(msg);
-      }
-    }
+    // If archiveSystemId is set verify it
+    if (!StringUtils.isBlank(app.getArchiveSystemId())) checkArchiveSystem(systemsClient, app, errMessages);
 
     // If validation failed throw an exception
     if (!errMessages.isEmpty())
@@ -1786,5 +1667,165 @@ public class AppsServiceImpl implements AppsService
     // Search the list of the queue with the requested name.
     for (LogicalQueue q : qList) { if (qName.equals(q.getName())) return q; }
     return null;
+  }
+
+  /**
+   * Check attributes related to execSystemId
+   *   - verify that execSystemId exists
+   *   - verify that execSystem.canExec == true
+   *   - verify that if app type is BATCH then execSystem.jobIsBatch == true
+   *   - if app type is BATCH and app specifies a LogicalQueue
+   *     - verify that logical queue is defined for the execSystem
+   *     - verify that constraints for the queue are not violated.
+   */
+  private void checkExecSystem(SystemsClient systemsClient, App app, List<String> errMessages)
+  {
+    if (app == null || StringUtils.isBlank(app.getExecSystemId())) return;
+    String execSystemId = app.getExecSystemId();
+    String msg;
+    TapisSystem execSystem = null;
+    // Verify that execSystem exists with canExec == true
+    try
+    {
+      execSystem = systemsClient.getSystem(execSystemId);
+    }
+    catch (TapisClientException e)
+    {
+      msg = LibUtils.getMsg("APPLIB_EXECSYS_CHECK_ERROR", execSystemId, e.getMessage());
+      _log.error(msg, e);
+      errMessages.add(msg);
+    }
+
+    // Note that if execSystem is null we add the message and return.
+    // We do not continue since remaining checks rely on having an execSystem.
+    if (execSystem == null)
+    {
+      msg = LibUtils.getMsg("APPLIB_EXECSYS_NO_SYSTEM", execSystemId);
+      errMessages.add(msg);
+      return;
+    }
+
+    // Verify that execSystem.canExec == true
+    if (execSystem.getCanExec() == null || !execSystem.getCanExec())
+    {
+      msg = LibUtils.getMsg("APPLIB_EXECSYS_NOT_EXEC", execSystemId);
+      errMessages.add(msg);
+    }
+
+    // If app type is not BATCH then we are done. Remaining checks are for BATCH apps
+    if (!AppType.BATCH.equals(app.getAppType())) return;
+
+    // Verify that for a BATCH app then execSystem.jobIsBatch == true
+    // NOTE: Constraints for Systems requires that this means there is at least one logical queue for the system
+    //       so if app does not specify an execQ then should still be OK.
+    if (execSystem.getJobIsBatch() == null || !execSystem.getJobIsBatch())
+    {
+      msg = LibUtils.getMsg("APPLIB_EXECSYS_NOT_BATCH", execSystemId);
+      errMessages.add(msg);
+    }
+
+    // If app specifies a LogicalQueue make sure the constraints for the queue are not violated.
+    //     Max/Min constraints to check: nodeCount, coresPerNode, memoryMB, runMinutes
+    // If no execQ then we are done. Remaining checks all related to execQ
+    String execQName = app.getExecSystemLogicalQueue();
+    if (StringUtils.isBlank(execQName)) return;
+
+    List<LogicalQueue> batchQueues = execSystem.getBatchLogicalQueues();
+    // Make sure the queue is defined for the system
+    // NOTE: If no queue found then add message and return since remaining checks all involve the execQ constraints
+    LogicalQueue execQ = getLogicalQ(batchQueues, execQName);
+    if (batchQueues == null || batchQueues.isEmpty() || execQ == null)
+    {
+      msg = LibUtils.getMsg("APPLIB_EXECQ_NOT_FOUND", execQName, execSystemId);
+      errMessages.add(msg);
+      return;
+    }
+
+    // Check that app execQ settings do not violate the system execQ constraints
+    Integer maxNodeCount = execQ.getMaxNodeCount();
+    Integer minNodeCount = execQ.getMinNodeCount();
+    Integer maxCoresPerNode = execQ.getMaxCoresPerNode();
+    Integer minCoresPerNode = execQ.getMinCoresPerNode();
+    Integer maxMemoryMB = execQ.getMaxMemoryMB();
+    Integer minMemoryMB = execQ.getMinMemoryMB();
+    Integer maxMinutes = execQ.getMaxMinutes();
+    Integer minMinutes = execQ.getMinMinutes();
+    int appNodeCount = app.getNodeCount();
+    int appCoresPerNode = app.getCoresPerNode();
+    int appMemoryMb = app.getMemoryMb();
+    int appMaxMinutes = app.getMaxMinutes();
+
+    // If queue defines limit and app specifies limit and app limit out of range then add error
+    // NodeCount
+    if (maxNodeCount != null && maxNodeCount > 0 && appNodeCount > 0 && appNodeCount > maxNodeCount)
+    {
+      msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_HIGH", "NodeCount", appNodeCount, maxNodeCount, execQName, execSystemId);
+      errMessages.add(msg);
+    }
+    if (minNodeCount != null && minNodeCount > 0 && appNodeCount > 0 && appNodeCount < minNodeCount)
+    {
+      msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_LOW", "NodeCount", appNodeCount, minNodeCount, execQName, execSystemId);
+      errMessages.add(msg);
+    }
+    // CoresPerNode
+    if (maxCoresPerNode != null && maxCoresPerNode > 0 && appCoresPerNode > 0 && appCoresPerNode > maxCoresPerNode)
+    {
+      msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_HIGH", "CoresPerNode", appCoresPerNode, maxCoresPerNode, execQName, execSystemId);
+      errMessages.add(msg);
+    }
+    if (minCoresPerNode != null && minCoresPerNode > 0 && appCoresPerNode > 0 && appCoresPerNode < minCoresPerNode)
+    {
+      msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_LOW", "CoresPerNode", appCoresPerNode, minCoresPerNode, execQName, execSystemId);
+      errMessages.add(msg);
+    }
+    // MemoryMB
+    if (maxMemoryMB != null && maxMemoryMB > 0 && appMemoryMb > 0 && appMemoryMb > maxMemoryMB)
+    {
+      msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_HIGH", "MemoryMB", appMemoryMb, maxMemoryMB, execQName, execSystemId);
+      errMessages.add(msg);
+    }
+    if (minMemoryMB != null && minMemoryMB > 0 && appMemoryMb > 0 && appMemoryMb < minMemoryMB)
+    {
+      msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_LOW", "MemoryMB", appMemoryMb, minMemoryMB, execQName, execSystemId);
+      errMessages.add(msg);
+    }
+    // Minutes
+    if (maxMinutes != null && maxMinutes > 0 && appMaxMinutes > 0 && appMaxMinutes > maxMinutes)
+    {
+      msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_HIGH", "MaxMinutes", appMaxMinutes, maxMinutes, execQName, execSystemId);
+      errMessages.add(msg);
+    }
+    if (minMinutes != null && minMinutes > 0 && appMaxMinutes > 0 && appMaxMinutes < minMinutes)
+    {
+      msg = LibUtils.getMsg("APPLIB_EXECQ_LIMIT_LOW", "MaxMinutes", appMaxMinutes, minMinutes, execQName, execSystemId);
+      errMessages.add(msg);
+    }
+  }
+
+  /**
+   * Check attributes related to archiveSystemId
+   *   - verify that archiveSystemId exists
+   */
+  private void checkArchiveSystem(SystemsClient systemsClient, App app, List<String> errMessages)
+  {
+    if (app == null || StringUtils.isBlank(app.getArchiveSystemId())) return;
+    String msg;
+    String archiveSystemId = app.getArchiveSystemId();
+    TapisSystem archiveSystem = null;
+    try
+    {
+      archiveSystem = systemsClient.getSystem(archiveSystemId);
+    }
+    catch (TapisClientException e)
+    {
+      msg = LibUtils.getMsg("APPLIB_ARCHSYS_CHECK_ERROR", archiveSystemId, e.getMessage());
+      _log.error(msg, e);
+      errMessages.add(msg);
+    }
+    if (archiveSystem == null)
+    {
+      msg = LibUtils.getMsg("APPLIB_ARCHSYS_NO_SYSTEM", archiveSystemId);
+      errMessages.add(msg);
+    }
   }
 }
