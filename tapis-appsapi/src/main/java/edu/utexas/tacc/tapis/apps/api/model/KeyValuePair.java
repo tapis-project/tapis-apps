@@ -1,6 +1,6 @@
 package edu.utexas.tacc.tapis.apps.api.model;
 
-import org.jooq.tools.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /*
  * Class for KeyValuePair in an App definition contained in a request.
@@ -9,8 +9,8 @@ import org.jooq.tools.StringUtils;
 public final class KeyValuePair
 {
   private String key;
-  private String value;
-  private String keyValueStr;
+  private String value = "";
+  private transient String keyValueStr;
 
   public KeyValuePair(String key1, String value1)
   {
@@ -22,11 +22,12 @@ public final class KeyValuePair
   public String getKey() { return key; }
   public void setKey(String s) { key = s; }
   public String getValue() { return value; }
-  public void setValue(String s) { value = s; }
+  public void setValue(String s) { value = StringUtils.isBlank(s) ? "" : s; }
 
   @Override
   public String toString()
   {
+    if (StringUtils.isBlank(value)) value = "";
     if (keyValueStr == null) keyValueStr = key + "=" + value;
     return keyValueStr;
   }
