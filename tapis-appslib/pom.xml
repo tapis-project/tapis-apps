@@ -270,6 +270,12 @@
                     <includeExpression>notification_mechanisms\.mechanism</includeExpression>
                     <includeTypes>.*</includeTypes>
                   </forcedType>
+                  <forcedType>
+                    <userType>edu.utexas.tacc.tapis.apps.model.App.InputMode</userType>
+                    <enumConverter>true</enumConverter>
+                    <includeExpression>file_inputs\.input_mode</includeExpression>
+                    <includeTypes>.*</includeTypes>
+                  </forcedType>
                 </forcedTypes>
               </database>
             </generator>

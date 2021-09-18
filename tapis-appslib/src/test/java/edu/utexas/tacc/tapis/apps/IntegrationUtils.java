@@ -15,6 +15,7 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
+import edu.utexas.tacc.tapis.apps.model.App.InputMode;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -52,6 +53,8 @@ public final class IntegrationUtils
   public static final Boolean strictFileInputsNull = null;
   public static final boolean inPlaceTrue = true;
   public static final boolean inPlaceFalse = false;
+  public static final InputMode inputModeRequired = InputMode.REQUIRED;
+  public static final InputMode inputModeOptional = InputMode.OPTIONAL;
   public static final boolean metaRequiredTrue = true;
   public static final boolean metaRequiredFalse = false;
   public static final Runtime runtime1 = Runtime.DOCKER;
@@ -130,8 +133,8 @@ public final class IntegrationUtils
   public static final String[] metaKVPairs1 = {"key1A=val1A", "key1B=val1B"};
   public static final String[] metaKVPairs2 = {"key2A=val2A", "key2B=val2B"};
   public static final String[] metaKVPairs3 = {"key3A=val3A", "key3B=val3B"};
-  public static final String[] envVariables1 = {"key1A=val1A", "key1B=val1B"};
-  public static final String[] envVariables2 = {"key2A=val2A", "key2B=val2B"};
+  public static final String[] envVariables1 = {"key1A=val1A", "key1B=val1B", "key1C="};
+  public static final String[] envVariables2 = {"key2A=val2A", "key2B=val2B", "key2C="};
   public static final String[] envVariablesNull = null;
   public static final String[] archiveIncludes1 = {"/include1A", "/include1B"};
   public static final String[] archiveIncludes2 = {"/include2A", "/include2B"};
@@ -158,19 +161,19 @@ public final class IntegrationUtils
 
   // FileInputs
   public static final FileInput fin1A = new FileInput("/src1A", "/target1A", inPlaceTrue, "fin1A", "File input 1A",
-                                                      metaRequiredTrue, metaKVPairs1);
+                                                      inputModeRequired, metaKVPairs1);
   public static final FileInput fin1B = new FileInput("/src1B", "/target1B", inPlaceFalse, "fin1B", "File input 1B",
-                                                      metaRequiredFalse, metaKVPairs1);
+                                                      inputModeOptional, metaKVPairs1);
   public static final List<FileInput> finList1 = new ArrayList<>(List.of(fin1A, fin1B));
   public static final FileInput finA2 = new FileInput("/srcA2", "/targetA2", inPlaceTrue, "finA2", "File input A2",
-                                                      metaRequiredTrue, metaKVPairs2);
+          inputModeRequired, metaKVPairs2);
   public static final FileInput finB2 = new FileInput("/srcB2", "/targetB2", inPlaceFalse, "finB2", "File input B2",
-                                                      metaRequiredFalse, metaKVPairs2);
+          inputModeOptional, metaKVPairs2);
   public static final List<FileInput> finList2 = new ArrayList<>(List.of(finA2, finB2));
   public static final FileInput finA3 = new FileInput("/srcA3", "/targetA3", inPlaceTrue, "finA3", "File input A3",
-          metaRequiredTrue, metaKVPairs3);
+          inputModeRequired, metaKVPairs3);
   public static final FileInput finB3 = new FileInput("/srcB3", "/targetB3", inPlaceFalse, "finB3", "File input B3",
-          metaRequiredFalse, metaKVPairs3);
+          inputModeRequired, metaKVPairs3);
   public static final List<FileInput> finList3 = new ArrayList<>(List.of(finA3, finB3));
   public static final List<FileInput> finListNull = null;
 

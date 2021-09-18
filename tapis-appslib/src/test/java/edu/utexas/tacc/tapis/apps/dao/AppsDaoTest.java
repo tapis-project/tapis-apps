@@ -203,11 +203,11 @@ public class AppsDaoTest
     Assert.assertNotNull(tmpInputs, "Fetched fileInputs was null");
     Assert.assertEquals(tmpInputs.size(), origFileInputs.size());
     var metaNamesFound = new ArrayList<String>();
-    for (FileInput itemFound : tmpInputs) {metaNamesFound.add(itemFound.getMetaName());}
+    for (FileInput itemFound : tmpInputs) {metaNamesFound.add(itemFound.getName());}
     for (FileInput itemSeedItem : origFileInputs)
     {
-      Assert.assertTrue(metaNamesFound.contains(itemSeedItem.getMetaName()),
-              "List of fileInputs did not contain an item with metaName: " + itemSeedItem.getMetaName());
+      Assert.assertTrue(metaNamesFound.contains(itemSeedItem.getName()),
+              "List of fileInputs did not contain an item with metaName: " + itemSeedItem.getName());
     }
     // Verify app args
     List<AppArg> origArgs = app0.getAppArgs();

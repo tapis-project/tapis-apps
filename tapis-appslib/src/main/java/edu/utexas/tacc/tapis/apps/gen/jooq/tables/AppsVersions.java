@@ -16,7 +16,6 @@ import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
@@ -30,6 +29,8 @@ import org.jooq.TableField;
 import org.jooq.TableOptions;
 import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
+import org.jooq.impl.EnumConverter;
+import org.jooq.impl.SQLDataType;
 import org.jooq.impl.TableImpl;
 
 
@@ -39,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppsVersions extends TableImpl<AppsVersionsRecord> {
 
-    private static final long serialVersionUID = -1431708701;
+    private static final long serialVersionUID = 1L;
 
     /**
      * The reference instance of <code>tapis_app.apps_versions</code>
@@ -57,188 +58,189 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     /**
      * The column <code>tapis_app.apps_versions.seq_id</code>. Sequence id for specific version of application
      */
-    public final TableField<AppsVersionsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('apps_versions_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Sequence id for specific version of application");
+    public final TableField<AppsVersionsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), SQLDataType.INTEGER.nullable(false).identity(true), this, "Sequence id for specific version of application");
 
     /**
      * The column <code>tapis_app.apps_versions.app_seq_id</code>. Sequence id of application
      */
-    public final TableField<AppsVersionsRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "Sequence id of application");
+    public final TableField<AppsVersionsRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), SQLDataType.INTEGER, this, "Sequence id of application");
 
     /**
      * The column <code>tapis_app.apps_versions.version</code>. Application version
      */
-    public final TableField<AppsVersionsRecord, String> VERSION = createField(DSL.name("version"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Application version");
+    public final TableField<AppsVersionsRecord, String> VERSION = createField(DSL.name("version"), SQLDataType.CLOB.nullable(false), this, "Application version");
 
     /**
      * The column <code>tapis_app.apps_versions.description</code>. Application description
      */
-    public final TableField<AppsVersionsRecord, String> DESCRIPTION = createField(DSL.name("description"), org.jooq.impl.SQLDataType.CLOB, this, "Application description");
+    public final TableField<AppsVersionsRecord, String> DESCRIPTION = createField(DSL.name("description"), SQLDataType.CLOB, this, "Application description");
 
     /**
      * The column <code>tapis_app.apps_versions.runtime</code>.
      */
-    public final TableField<AppsVersionsRecord, Runtime> RUNTIME = createField(DSL.name("runtime"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "", new org.jooq.impl.EnumConverter<java.lang.String, edu.utexas.tacc.tapis.apps.model.App.Runtime>(java.lang.String.class, edu.utexas.tacc.tapis.apps.model.App.Runtime.class));
+    public final TableField<AppsVersionsRecord, Runtime> RUNTIME = createField(DSL.name("runtime"), SQLDataType.CLOB.nullable(false), this, "", new EnumConverter<String, Runtime>(String.class, Runtime.class));
 
     /**
      * The column <code>tapis_app.apps_versions.runtime_version</code>.
      */
-    public final TableField<AppsVersionsRecord, String> RUNTIME_VERSION = createField(DSL.name("runtime_version"), org.jooq.impl.SQLDataType.CLOB, this, "");
+    public final TableField<AppsVersionsRecord, String> RUNTIME_VERSION = createField(DSL.name("runtime_version"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.runtime_options</code>.
      */
-    public final TableField<AppsVersionsRecord, String[]> RUNTIME_OPTIONS = createField(DSL.name("runtime_options"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
+    public final TableField<AppsVersionsRecord, String[]> RUNTIME_OPTIONS = createField(DSL.name("runtime_options"), SQLDataType.CLOB.getArrayDataType(), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.container_image</code>.
      */
-    public final TableField<AppsVersionsRecord, String> CONTAINER_IMAGE = createField(DSL.name("container_image"), org.jooq.impl.SQLDataType.CLOB, this, "");
+    public final TableField<AppsVersionsRecord, String> CONTAINER_IMAGE = createField(DSL.name("container_image"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.max_jobs</code>.
      */
-    public final TableField<AppsVersionsRecord, Integer> MAX_JOBS = createField(DSL.name("max_jobs"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("'-1'::integer", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+    public final TableField<AppsVersionsRecord, Integer> MAX_JOBS = createField(DSL.name("max_jobs"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.field("'-1'::integer", SQLDataType.INTEGER)), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.max_jobs_per_user</code>.
      */
-    public final TableField<AppsVersionsRecord, Integer> MAX_JOBS_PER_USER = createField(DSL.name("max_jobs_per_user"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("'-1'::integer", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+    public final TableField<AppsVersionsRecord, Integer> MAX_JOBS_PER_USER = createField(DSL.name("max_jobs_per_user"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.field("'-1'::integer", SQLDataType.INTEGER)), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.strict_file_inputs</code>.
      */
-    public final TableField<AppsVersionsRecord, Boolean> STRICT_FILE_INPUTS = createField(DSL.name("strict_file_inputs"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("false", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
+    public final TableField<AppsVersionsRecord, Boolean> STRICT_FILE_INPUTS = createField(DSL.name("strict_file_inputs"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("false", SQLDataType.BOOLEAN)), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.job_description</code>.
      */
-    public final TableField<AppsVersionsRecord, String> JOB_DESCRIPTION = createField(DSL.name("job_description"), org.jooq.impl.SQLDataType.CLOB, this, "");
+    public final TableField<AppsVersionsRecord, String> JOB_DESCRIPTION = createField(DSL.name("job_description"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.dynamic_exec_system</code>.
      */
-    public final TableField<AppsVersionsRecord, Boolean> DYNAMIC_EXEC_SYSTEM = createField(DSL.name("dynamic_exec_system"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("false", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
+    public final TableField<AppsVersionsRecord, Boolean> DYNAMIC_EXEC_SYSTEM = createField(DSL.name("dynamic_exec_system"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("false", SQLDataType.BOOLEAN)), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.exec_system_constraints</code>.
      */
-    public final TableField<AppsVersionsRecord, String[]> EXEC_SYSTEM_CONSTRAINTS = createField(DSL.name("exec_system_constraints"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
+    public final TableField<AppsVersionsRecord, String[]> EXEC_SYSTEM_CONSTRAINTS = createField(DSL.name("exec_system_constraints"), SQLDataType.CLOB.getArrayDataType(), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.exec_system_id</code>.
      */
-    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_ID = createField(DSL.name("exec_system_id"), org.jooq.impl.SQLDataType.CLOB, this, "");
+    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_ID = createField(DSL.name("exec_system_id"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.exec_system_exec_dir</code>.
      */
-    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_EXEC_DIR = createField(DSL.name("exec_system_exec_dir"), org.jooq.impl.SQLDataType.CLOB, this, "");
+    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_EXEC_DIR = createField(DSL.name("exec_system_exec_dir"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.exec_system_input_dir</code>.
      */
-    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_INPUT_DIR = createField(DSL.name("exec_system_input_dir"), org.jooq.impl.SQLDataType.CLOB, this, "");
+    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_INPUT_DIR = createField(DSL.name("exec_system_input_dir"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.exec_system_output_dir</code>.
      */
-    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_OUTPUT_DIR = createField(DSL.name("exec_system_output_dir"), org.jooq.impl.SQLDataType.CLOB, this, "");
+    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_OUTPUT_DIR = createField(DSL.name("exec_system_output_dir"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.exec_system_logical_queue</code>.
      */
-    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_LOGICAL_QUEUE = createField(DSL.name("exec_system_logical_queue"), org.jooq.impl.SQLDataType.CLOB, this, "");
+    public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_LOGICAL_QUEUE = createField(DSL.name("exec_system_logical_queue"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.archive_system_id</code>.
      */
-    public final TableField<AppsVersionsRecord, String> ARCHIVE_SYSTEM_ID = createField(DSL.name("archive_system_id"), org.jooq.impl.SQLDataType.CLOB, this, "");
+    public final TableField<AppsVersionsRecord, String> ARCHIVE_SYSTEM_ID = createField(DSL.name("archive_system_id"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.archive_system_dir</code>.
      */
-    public final TableField<AppsVersionsRecord, String> ARCHIVE_SYSTEM_DIR = createField(DSL.name("archive_system_dir"), org.jooq.impl.SQLDataType.CLOB, this, "");
+    public final TableField<AppsVersionsRecord, String> ARCHIVE_SYSTEM_DIR = createField(DSL.name("archive_system_dir"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.archive_on_app_error</code>.
      */
-    public final TableField<AppsVersionsRecord, Boolean> ARCHIVE_ON_APP_ERROR = createField(DSL.name("archive_on_app_error"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
+    public final TableField<AppsVersionsRecord, Boolean> ARCHIVE_ON_APP_ERROR = createField(DSL.name("archive_on_app_error"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("true", SQLDataType.BOOLEAN)), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.env_variables</code>.
      */
-    public final TableField<AppsVersionsRecord, String[]> ENV_VARIABLES = createField(DSL.name("env_variables"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
+    public final TableField<AppsVersionsRecord, String[]> ENV_VARIABLES = createField(DSL.name("env_variables"), SQLDataType.CLOB.getArrayDataType(), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.archive_includes</code>.
      */
-    public final TableField<AppsVersionsRecord, String[]> ARCHIVE_INCLUDES = createField(DSL.name("archive_includes"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
+    public final TableField<AppsVersionsRecord, String[]> ARCHIVE_INCLUDES = createField(DSL.name("archive_includes"), SQLDataType.CLOB.getArrayDataType(), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.archive_excludes</code>.
      */
-    public final TableField<AppsVersionsRecord, String[]> ARCHIVE_EXCLUDES = createField(DSL.name("archive_excludes"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
+    public final TableField<AppsVersionsRecord, String[]> ARCHIVE_EXCLUDES = createField(DSL.name("archive_excludes"), SQLDataType.CLOB.getArrayDataType(), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.archive_include_launch_files</code>.
      */
-    public final TableField<AppsVersionsRecord, Boolean> ARCHIVE_INCLUDE_LAUNCH_FILES = createField(DSL.name("archive_include_launch_files"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
+    public final TableField<AppsVersionsRecord, Boolean> ARCHIVE_INCLUDE_LAUNCH_FILES = createField(DSL.name("archive_include_launch_files"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("true", SQLDataType.BOOLEAN)), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.node_count</code>.
      */
-    public final TableField<AppsVersionsRecord, Integer> NODE_COUNT = createField(DSL.name("node_count"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("1", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+    public final TableField<AppsVersionsRecord, Integer> NODE_COUNT = createField(DSL.name("node_count"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.field("1", SQLDataType.INTEGER)), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.cores_per_node</code>.
      */
-    public final TableField<AppsVersionsRecord, Integer> CORES_PER_NODE = createField(DSL.name("cores_per_node"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("1", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+    public final TableField<AppsVersionsRecord, Integer> CORES_PER_NODE = createField(DSL.name("cores_per_node"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.field("1", SQLDataType.INTEGER)), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.memory_mb</code>.
      */
-    public final TableField<AppsVersionsRecord, Integer> MEMORY_MB = createField(DSL.name("memory_mb"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("100", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+    public final TableField<AppsVersionsRecord, Integer> MEMORY_MB = createField(DSL.name("memory_mb"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.field("100", SQLDataType.INTEGER)), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.max_minutes</code>.
      */
-    public final TableField<AppsVersionsRecord, Integer> MAX_MINUTES = createField(DSL.name("max_minutes"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("10", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+    public final TableField<AppsVersionsRecord, Integer> MAX_MINUTES = createField(DSL.name("max_minutes"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.field("10", SQLDataType.INTEGER)), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.job_tags</code>.
      */
-    public final TableField<AppsVersionsRecord, String[]> JOB_TAGS = createField(DSL.name("job_tags"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
+    public final TableField<AppsVersionsRecord, String[]> JOB_TAGS = createField(DSL.name("job_tags"), SQLDataType.CLOB.getArrayDataType(), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.tags</code>. Tags for user supplied key:value pairs
      */
-    public final TableField<AppsVersionsRecord, String[]> TAGS = createField(DSL.name("tags"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "Tags for user supplied key:value pairs");
+    public final TableField<AppsVersionsRecord, String[]> TAGS = createField(DSL.name("tags"), SQLDataType.CLOB.getArrayDataType(), this, "Tags for user supplied key:value pairs");
 
     /**
      * The column <code>tapis_app.apps_versions.notes</code>. Notes for general information stored as JSON
      */
-    public final TableField<AppsVersionsRecord, JsonElement> NOTES = createField(DSL.name("notes"), org.jooq.impl.SQLDataType.JSONB.nullable(false), this, "Notes for general information stored as JSON", new JSONBToJsonElementBinding());
+    public final TableField<AppsVersionsRecord, JsonElement> NOTES = createField(DSL.name("notes"), SQLDataType.JSONB.nullable(false), this, "Notes for general information stored as JSON", new JSONBToJsonElementBinding());
 
     /**
      * The column <code>tapis_app.apps_versions.uuid</code>.
      */
-    public final TableField<AppsVersionsRecord, UUID> UUID = createField(DSL.name("uuid"), org.jooq.impl.SQLDataType.UUID.nullable(false), this, "");
+    public final TableField<AppsVersionsRecord, java.util.UUID> UUID = createField(DSL.name("uuid"), SQLDataType.UUID.nullable(false), this, "");
 
     /**
      * The column <code>tapis_app.apps_versions.created</code>. UTC time for when record was created
      */
-    public final TableField<AppsVersionsRecord, LocalDateTime> CREATED = createField(DSL.name("created"), org.jooq.impl.SQLDataType.LOCALDATETIME.nullable(false).defaultValue(org.jooq.impl.DSL.field("timezone('utc'::text, now())", org.jooq.impl.SQLDataType.LOCALDATETIME)), this, "UTC time for when record was created");
+    public final TableField<AppsVersionsRecord, LocalDateTime> CREATED = createField(DSL.name("created"), SQLDataType.LOCALDATETIME(6).nullable(false).defaultValue(DSL.field("timezone('utc'::text, now())", SQLDataType.LOCALDATETIME)), this, "UTC time for when record was created");
 
     /**
      * The column <code>tapis_app.apps_versions.updated</code>. UTC time for when record was last updated
      */
-    public final TableField<AppsVersionsRecord, LocalDateTime> UPDATED = createField(DSL.name("updated"), org.jooq.impl.SQLDataType.LOCALDATETIME.nullable(false).defaultValue(org.jooq.impl.DSL.field("timezone('utc'::text, now())", org.jooq.impl.SQLDataType.LOCALDATETIME)), this, "UTC time for when record was last updated");
+    public final TableField<AppsVersionsRecord, LocalDateTime> UPDATED = createField(DSL.name("updated"), SQLDataType.LOCALDATETIME(6).nullable(false).defaultValue(DSL.field("timezone('utc'::text, now())", SQLDataType.LOCALDATETIME)), this, "UTC time for when record was last updated");
 
-    /**
-     * Create a <code>tapis_app.apps_versions</code> table reference
-     */
-    public AppsVersions() {
-        this(DSL.name("apps_versions"), null);
+    private AppsVersions(Name alias, Table<AppsVersionsRecord> aliased) {
+        this(alias, aliased, null);
+    }
+
+    private AppsVersions(Name alias, Table<AppsVersionsRecord> aliased, Field<?>[] parameters) {
+        super(alias, null, aliased, parameters, DSL.comment(""), TableOptions.table());
     }
 
     /**
@@ -255,12 +257,11 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
         this(alias, APPS_VERSIONS);
     }
 
-    private AppsVersions(Name alias, Table<AppsVersionsRecord> aliased) {
-        this(alias, aliased, null);
-    }
-
-    private AppsVersions(Name alias, Table<AppsVersionsRecord> aliased, Field<?>[] parameters) {
-        super(alias, null, aliased, parameters, DSL.comment(""), TableOptions.table());
+    /**
+     * Create a <code>tapis_app.apps_versions</code> table reference
+     */
+    public AppsVersions() {
+        this(DSL.name("apps_versions"), null);
     }
 
     public <O extends Record> AppsVersions(Table<O> child, ForeignKey<O, AppsVersionsRecord> key) {
@@ -279,7 +280,7 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
 
     @Override
     public Identity<AppsVersionsRecord, Integer> getIdentity() {
-        return Keys.IDENTITY_APPS_VERSIONS;
+        return (Identity<AppsVersionsRecord, Integer>) super.getIdentity();
     }
 
     @Override
@@ -297,8 +298,13 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
         return Arrays.<ForeignKey<AppsVersionsRecord, ?>>asList(Keys.APPS_VERSIONS__APPS_VERSIONS_APP_SEQ_ID_FKEY);
     }
 
+    private transient Apps _apps;
+
     public Apps apps() {
-        return new Apps(this, Keys.APPS_VERSIONS__APPS_VERSIONS_APP_SEQ_ID_FKEY);
+        if (_apps == null)
+            _apps = new Apps(this, Keys.APPS_VERSIONS__APPS_VERSIONS_APP_SEQ_ID_FKEY);
+
+        return _apps;
     }
 
     @Override

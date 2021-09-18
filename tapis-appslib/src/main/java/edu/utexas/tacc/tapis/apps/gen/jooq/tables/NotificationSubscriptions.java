@@ -23,6 +23,7 @@ import org.jooq.TableField;
 import org.jooq.TableOptions;
 import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 import org.jooq.impl.TableImpl;
 
 
@@ -32,7 +33,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NotificationSubscriptions extends TableImpl<NotificationSubscriptionsRecord> {
 
-    private static final long serialVersionUID = 977355226;
+    private static final long serialVersionUID = 1L;
 
     /**
      * The reference instance of <code>tapis_app.notification_subscriptions</code>
@@ -50,23 +51,24 @@ public class NotificationSubscriptions extends TableImpl<NotificationSubscriptio
     /**
      * The column <code>tapis_app.notification_subscriptions.seq_id</code>.
      */
-    public final TableField<NotificationSubscriptionsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('notification_subscriptions_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "");
+    public final TableField<NotificationSubscriptionsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), SQLDataType.INTEGER.nullable(false).identity(true), this, "");
 
     /**
      * The column <code>tapis_app.notification_subscriptions.app_ver_seq_id</code>.
      */
-    public final TableField<NotificationSubscriptionsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "");
+    public final TableField<NotificationSubscriptionsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), SQLDataType.INTEGER, this, "");
 
     /**
      * The column <code>tapis_app.notification_subscriptions.filter</code>.
      */
-    public final TableField<NotificationSubscriptionsRecord, String> FILTER = createField(DSL.name("filter"), org.jooq.impl.SQLDataType.CLOB, this, "");
+    public final TableField<NotificationSubscriptionsRecord, String> FILTER = createField(DSL.name("filter"), SQLDataType.CLOB, this, "");
 
-    /**
-     * Create a <code>tapis_app.notification_subscriptions</code> table reference
-     */
-    public NotificationSubscriptions() {
-        this(DSL.name("notification_subscriptions"), null);
+    private NotificationSubscriptions(Name alias, Table<NotificationSubscriptionsRecord> aliased) {
+        this(alias, aliased, null);
+    }
+
+    private NotificationSubscriptions(Name alias, Table<NotificationSubscriptionsRecord> aliased, Field<?>[] parameters) {
+        super(alias, null, aliased, parameters, DSL.comment(""), TableOptions.table());
     }
 
     /**
@@ -83,12 +85,11 @@ public class NotificationSubscriptions extends TableImpl<NotificationSubscriptio
         this(alias, NOTIFICATION_SUBSCRIPTIONS);
     }
 
-    private NotificationSubscriptions(Name alias, Table<NotificationSubscriptionsRecord> aliased) {
-        this(alias, aliased, null);
-    }
-
-    private NotificationSubscriptions(Name alias, Table<NotificationSubscriptionsRecord> aliased, Field<?>[] parameters) {
-        super(alias, null, aliased, parameters, DSL.comment(""), TableOptions.table());
+    /**
+     * Create a <code>tapis_app.notification_subscriptions</code> table reference
+     */
+    public NotificationSubscriptions() {
+        this(DSL.name("notification_subscriptions"), null);
     }
 
     public <O extends Record> NotificationSubscriptions(Table<O> child, ForeignKey<O, NotificationSubscriptionsRecord> key) {
@@ -102,7 +103,7 @@ public class NotificationSubscriptions extends TableImpl<NotificationSubscriptio
 
     @Override
     public Identity<NotificationSubscriptionsRecord, Integer> getIdentity() {
-        return Keys.IDENTITY_NOTIFICATION_SUBSCRIPTIONS;
+        return (Identity<NotificationSubscriptionsRecord, Integer>) super.getIdentity();
     }
 
     @Override
@@ -120,8 +121,13 @@ public class NotificationSubscriptions extends TableImpl<NotificationSubscriptio
         return Arrays.<ForeignKey<NotificationSubscriptionsRecord, ?>>asList(Keys.NOTIFICATION_SUBSCRIPTIONS__NOTIFICATION_SUBSCRIPTIONS_APP_VER_SEQ_ID_FKEY);
     }
 
+    private transient AppsVersions _appsVersions;
+
     public AppsVersions appsVersions() {
-        return new AppsVersions(this, Keys.NOTIFICATION_SUBSCRIPTIONS__NOTIFICATION_SUBSCRIPTIONS_APP_VER_SEQ_ID_FKEY);
+        if (_appsVersions == null)
+            _appsVersions = new AppsVersions(this, Keys.NOTIFICATION_SUBSCRIPTIONS__NOTIFICATION_SUBSCRIPTIONS_APP_VER_SEQ_ID_FKEY);
+
+        return _appsVersions;
     }
 
     @Override

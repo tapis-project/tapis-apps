@@ -1611,18 +1611,18 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     for (FileInput fileInput : fileInputs) {
       String nameStr = "";
-      if (fileInput.getMetaName() != null ) nameStr = fileInput.getMetaName();
+      if (fileInput.getName() != null ) nameStr = fileInput.getName();
       String[] kvPairs = EMPTY_STR_ARRAY;
-      if (fileInput.getMetaKeyValuePairs() != null ) kvPairs = fileInput.getMetaKeyValuePairs();
+      if (fileInput.getMeta() != null ) kvPairs = fileInput.getMeta();
       db.insertInto(FILE_INPUTS)
               .set(FILE_INPUTS.APP_VER_SEQ_ID, appVerSeqId)
               .set(FILE_INPUTS.SOURCE_URL, fileInput.getSourceUrl())
               .set(FILE_INPUTS.TARGET_PATH, fileInput.getTargetPath())
               .set(FILE_INPUTS.IN_PLACE, fileInput.isInPlace())
-              .set(FILE_INPUTS.META_NAME, nameStr)
-              .set(FILE_INPUTS.META_DESCRIPTION, fileInput.getMetaDescription())
-              .set(FILE_INPUTS.META_REQUIRED, fileInput.isMetaRequired())
-              .set(FILE_INPUTS.META_KEY_VALUE_PAIRS, kvPairs)
+              .set(FILE_INPUTS.NAME, nameStr)
+              .set(FILE_INPUTS.DESCRIPTION, fileInput.getDescription())
+              .set(FILE_INPUTS.INPUT_MODE, fileInput.getMode())
+              .set(FILE_INPUTS.META, kvPairs)
               .execute();
     }
   }

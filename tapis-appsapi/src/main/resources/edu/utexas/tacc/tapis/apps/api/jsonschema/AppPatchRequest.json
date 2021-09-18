@@ -2,9 +2,9 @@
   "$id": "https://tapis.tacc.utexas.edu/AppPatchRequest",
   "$schema": "https://json-schema.org/draft-07/schema#",
   "description": "Schema for a request to update an app",
-  "additionalProperties": false,
 
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "description": { "type": "string", "maxLength": 2048 },
     "runtime": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/RuntimeEnum" },

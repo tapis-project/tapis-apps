@@ -23,6 +23,7 @@ import org.jooq.TableField;
 import org.jooq.TableOptions;
 import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 import org.jooq.impl.TableImpl;
 
 
@@ -32,7 +33,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
 
-    private static final long serialVersionUID = 1582282132;
+    private static final long serialVersionUID = 1L;
 
     /**
      * The reference instance of <code>tapis_app.scheduler_options</code>
@@ -50,43 +51,44 @@ public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
     /**
      * The column <code>tapis_app.scheduler_options.seq_id</code>. Arg sequence id
      */
-    public final TableField<SchedulerOptionsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('scheduler_options_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Arg sequence id");
+    public final TableField<SchedulerOptionsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), SQLDataType.INTEGER.nullable(false).identity(true), this, "Arg sequence id");
 
     /**
      * The column <code>tapis_app.scheduler_options.app_ver_seq_id</code>. Sequence id of application
      */
-    public final TableField<SchedulerOptionsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "Sequence id of application");
+    public final TableField<SchedulerOptionsRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), SQLDataType.INTEGER, this, "Sequence id of application");
 
     /**
      * The column <code>tapis_app.scheduler_options.arg_val</code>.
      */
-    public final TableField<SchedulerOptionsRecord, String> ARG_VAL = createField(DSL.name("arg_val"), org.jooq.impl.SQLDataType.CLOB.nullable(false).defaultValue(org.jooq.impl.DSL.field("''::text", org.jooq.impl.SQLDataType.CLOB)), this, "");
+    public final TableField<SchedulerOptionsRecord, String> ARG_VAL = createField(DSL.name("arg_val"), SQLDataType.CLOB.nullable(false).defaultValue(DSL.field("''::text", SQLDataType.CLOB)), this, "");
 
     /**
      * The column <code>tapis_app.scheduler_options.meta_name</code>.
      */
-    public final TableField<SchedulerOptionsRecord, String> META_NAME = createField(DSL.name("meta_name"), org.jooq.impl.SQLDataType.CLOB.nullable(false).defaultValue(org.jooq.impl.DSL.field("''::text", org.jooq.impl.SQLDataType.CLOB)), this, "");
+    public final TableField<SchedulerOptionsRecord, String> META_NAME = createField(DSL.name("meta_name"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.scheduler_options.meta_description</code>.
      */
-    public final TableField<SchedulerOptionsRecord, String> META_DESCRIPTION = createField(DSL.name("meta_description"), org.jooq.impl.SQLDataType.CLOB.nullable(false).defaultValue(org.jooq.impl.DSL.field("''::text", org.jooq.impl.SQLDataType.CLOB)), this, "");
+    public final TableField<SchedulerOptionsRecord, String> META_DESCRIPTION = createField(DSL.name("meta_description"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>tapis_app.scheduler_options.meta_required</code>.
      */
-    public final TableField<SchedulerOptionsRecord, Boolean> META_REQUIRED = createField(DSL.name("meta_required"), org.jooq.impl.SQLDataType.BOOLEAN.nullable(false).defaultValue(org.jooq.impl.DSL.field("true", org.jooq.impl.SQLDataType.BOOLEAN)), this, "");
+    public final TableField<SchedulerOptionsRecord, Boolean> META_REQUIRED = createField(DSL.name("meta_required"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("true", SQLDataType.BOOLEAN)), this, "");
 
     /**
      * The column <code>tapis_app.scheduler_options.meta_key_value_pairs</code>.
      */
-    public final TableField<SchedulerOptionsRecord, String[]> META_KEY_VALUE_PAIRS = createField(DSL.name("meta_key_value_pairs"), org.jooq.impl.SQLDataType.CLOB.getArrayDataType(), this, "");
+    public final TableField<SchedulerOptionsRecord, String[]> META_KEY_VALUE_PAIRS = createField(DSL.name("meta_key_value_pairs"), SQLDataType.CLOB.getArrayDataType(), this, "");
 
-    /**
-     * Create a <code>tapis_app.scheduler_options</code> table reference
-     */
-    public SchedulerOptions() {
-        this(DSL.name("scheduler_options"), null);
+    private SchedulerOptions(Name alias, Table<SchedulerOptionsRecord> aliased) {
+        this(alias, aliased, null);
+    }
+
+    private SchedulerOptions(Name alias, Table<SchedulerOptionsRecord> aliased, Field<?>[] parameters) {
+        super(alias, null, aliased, parameters, DSL.comment(""), TableOptions.table());
     }
 
     /**
@@ -103,12 +105,11 @@ public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
         this(alias, SCHEDULER_OPTIONS);
     }
 
-    private SchedulerOptions(Name alias, Table<SchedulerOptionsRecord> aliased) {
-        this(alias, aliased, null);
-    }
-
-    private SchedulerOptions(Name alias, Table<SchedulerOptionsRecord> aliased, Field<?>[] parameters) {
-        super(alias, null, aliased, parameters, DSL.comment(""), TableOptions.table());
+    /**
+     * Create a <code>tapis_app.scheduler_options</code> table reference
+     */
+    public SchedulerOptions() {
+        this(DSL.name("scheduler_options"), null);
     }
 
     public <O extends Record> SchedulerOptions(Table<O> child, ForeignKey<O, SchedulerOptionsRecord> key) {
@@ -122,7 +123,7 @@ public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
 
     @Override
     public Identity<SchedulerOptionsRecord, Integer> getIdentity() {
-        return Keys.IDENTITY_SCHEDULER_OPTIONS;
+        return (Identity<SchedulerOptionsRecord, Integer>) super.getIdentity();
     }
 
     @Override
@@ -140,8 +141,13 @@ public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
         return Arrays.<ForeignKey<SchedulerOptionsRecord, ?>>asList(Keys.SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_VER_SEQ_ID_FKEY);
     }
 
+    private transient AppsVersions _appsVersions;
+
     public AppsVersions appsVersions() {
-        return new AppsVersions(this, Keys.SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_VER_SEQ_ID_FKEY);
+        if (_appsVersions == null)
+            _appsVersions = new AppsVersions(this, Keys.SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_VER_SEQ_ID_FKEY);
+
+        return _appsVersions;
     }
 
     @Override

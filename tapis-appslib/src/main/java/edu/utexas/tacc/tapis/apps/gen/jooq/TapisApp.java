@@ -30,7 +30,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class TapisApp extends SchemaImpl {
 
-    private static final long serialVersionUID = -1320590446;
+    private static final long serialVersionUID = 1L;
 
     /**
      * The reference instance of <code>tapis_app</code>

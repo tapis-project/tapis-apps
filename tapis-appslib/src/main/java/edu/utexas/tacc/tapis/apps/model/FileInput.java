@@ -1,6 +1,8 @@
 package edu.utexas.tacc.tapis.apps.model;
 
+import edu.utexas.tacc.tapis.apps.model.App.InputMode;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
+import org.glassfish.grizzly.streams.Input;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,40 +32,40 @@ public final class FileInput
   private final String sourceUrl;
   private final String targetPath;
   private final boolean inPlace;
-  private final String metaName;
-  private final String metaDescription;
-  private final boolean metaRequired;
-  private final String[] metaKeyValuePairs;
+  private final String name;
+  private final String description;
+  private final InputMode mode;
+  private final String[] meta;
 
   /* ********************************************************************** */
   /*                           Constructors                                 */
   /* ********************************************************************** */
     public FileInput(int seqId1, int appSeqId1, String sourceUrl1, String targetPath1, boolean inPlace1,
-                     String metaName1, String metaDescription1, boolean metaRequired1, String[] metaKVPairs1)
+                     String name1, String description1, InputMode mode, String[] meta)
   {
     seqId = seqId1;
     appSeqId = appSeqId1;
     sourceUrl = sourceUrl1;
     targetPath = targetPath1;
     inPlace = inPlace1;
-    metaName = metaName1;
-    metaDescription = metaDescription1;
-    metaRequired = metaRequired1;
-    metaKeyValuePairs = metaKVPairs1;
+    name = name1;
+    description = description1;
+    this.mode = mode;
+    this.meta = meta;
   }
 
-  public FileInput(String sourceUrl1, String targetPath1, boolean inPlace1, String metaName1, String metaDescription1,
-                   boolean metaRequired1, String[] metaKVPairs1)
+  public FileInput(String sourceUrl1, String targetPath1, boolean inPlace1, String name1, String description1,
+                   InputMode mode, String[] meta)
   {
     seqId = -1;
     appSeqId = -1;
     sourceUrl = sourceUrl1;
     targetPath = targetPath1;
     inPlace = inPlace1;
-    metaName = metaName1;
-    metaDescription = metaDescription1;
-    metaRequired = metaRequired1;
-    metaKeyValuePairs = metaKVPairs1;
+    name = name1;
+    description = description1;
+    this.mode = mode;
+    this.meta = meta;
   }
 
   /* ********************************************************************** */
@@ -74,10 +76,10 @@ public final class FileInput
   public String getSourceUrl() { return sourceUrl; }
   public String getTargetPath() { return targetPath; }
   public boolean isInPlace() { return inPlace; }
-  public String getMetaName() { return metaName; }
-  public String getMetaDescription() { return metaDescription; }
-  public boolean isMetaRequired() { return metaRequired; }
-  public String[] getMetaKeyValuePairs() { return metaKeyValuePairs; }
+  public String getName() { return name; }
+  public String getDescription() { return description; }
+  public InputMode getMode() { return mode; }
+  public String[] getMeta() { return meta; }
 
   @Override
   public String toString() {return TapisUtils.toString(this);}

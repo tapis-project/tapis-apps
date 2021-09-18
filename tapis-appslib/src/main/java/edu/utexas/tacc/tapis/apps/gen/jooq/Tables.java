@@ -17,7 +17,7 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.tables.SchedulerOptions;
 
 
 /**
- * Convenience access to all tables in tapis_app
+ * Convenience access to all tables in tapis_app.
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Tables {

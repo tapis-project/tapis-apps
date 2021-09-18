@@ -26,104 +26,47 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.NotificationSubscripti
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.SchedulerOptionsRecord;
 
 import org.jooq.ForeignKey;
-import org.jooq.Identity;
 import org.jooq.TableField;
 import org.jooq.UniqueKey;
+import org.jooq.impl.DSL;
 import org.jooq.impl.Internal;
 
 
 /**
- * A class modelling foreign key relationships and constraints of tables of 
- * the <code>tapis_app</code> schema.
+ * A class modelling foreign key relationships and constraints of tables in 
+ * tapis_app.
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Keys {
 
     // -------------------------------------------------------------------------
-    // IDENTITY definitions
-    // -------------------------------------------------------------------------
-
-    public static final Identity<AppArgsRecord, Integer> IDENTITY_APP_ARGS = Identities0.IDENTITY_APP_ARGS;
-    public static final Identity<AppUpdatesRecord, Integer> IDENTITY_APP_UPDATES = Identities0.IDENTITY_APP_UPDATES;
-    public static final Identity<AppsRecord, Integer> IDENTITY_APPS = Identities0.IDENTITY_APPS;
-    public static final Identity<AppsVersionsRecord, Integer> IDENTITY_APPS_VERSIONS = Identities0.IDENTITY_APPS_VERSIONS;
-    public static final Identity<ContainerArgsRecord, Integer> IDENTITY_CONTAINER_ARGS = Identities0.IDENTITY_CONTAINER_ARGS;
-    public static final Identity<FileInputsRecord, Integer> IDENTITY_FILE_INPUTS = Identities0.IDENTITY_FILE_INPUTS;
-    public static final Identity<NotificationMechanismsRecord, Integer> IDENTITY_NOTIFICATION_MECHANISMS = Identities0.IDENTITY_NOTIFICATION_MECHANISMS;
-    public static final Identity<NotificationSubscriptionsRecord, Integer> IDENTITY_NOTIFICATION_SUBSCRIPTIONS = Identities0.IDENTITY_NOTIFICATION_SUBSCRIPTIONS;
-    public static final Identity<SchedulerOptionsRecord, Integer> IDENTITY_SCHEDULER_OPTIONS = Identities0.IDENTITY_SCHEDULER_OPTIONS;
-
-    // -------------------------------------------------------------------------
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final UniqueKey<AppArgsRecord> APP_ARGS_PKEY = UniqueKeys0.APP_ARGS_PKEY;
-    public static final UniqueKey<AppUpdatesRecord> APP_UPDATES_PKEY = UniqueKeys0.APP_UPDATES_PKEY;
-    public static final UniqueKey<AppsRecord> APPS_PKEY = UniqueKeys0.APPS_PKEY;
-    public static final UniqueKey<AppsRecord> APPS_TENANT_ID_KEY = UniqueKeys0.APPS_TENANT_ID_KEY;
-    public static final UniqueKey<AppsVersionsRecord> APPS_VERSIONS_PKEY = UniqueKeys0.APPS_VERSIONS_PKEY;
-    public static final UniqueKey<AppsVersionsRecord> APPS_VERSIONS_APP_SEQ_ID_VERSION_KEY = UniqueKeys0.APPS_VERSIONS_APP_SEQ_ID_VERSION_KEY;
-    public static final UniqueKey<ContainerArgsRecord> CONTAINER_ARGS_PKEY = UniqueKeys0.CONTAINER_ARGS_PKEY;
-    public static final UniqueKey<FileInputsRecord> FILE_INPUTS_PKEY = UniqueKeys0.FILE_INPUTS_PKEY;
-    public static final UniqueKey<FileInputsRecord> FILE_INPUTS_APP_VER_SEQ_ID_SOURCE_URL_TARGET_PATH_KEY = UniqueKeys0.FILE_INPUTS_APP_VER_SEQ_ID_SOURCE_URL_TARGET_PATH_KEY;
-    public static final UniqueKey<FlywaySchemaHistoryRecord> FLYWAY_SCHEMA_HISTORY_PK = UniqueKeys0.FLYWAY_SCHEMA_HISTORY_PK;
-    public static final UniqueKey<NotificationMechanismsRecord> NOTIFICATION_MECHANISMS_PKEY = UniqueKeys0.NOTIFICATION_MECHANISMS_PKEY;
-    public static final UniqueKey<NotificationSubscriptionsRecord> NOTIFICATION_SUBSCRIPTIONS_PKEY = UniqueKeys0.NOTIFICATION_SUBSCRIPTIONS_PKEY;
-    public static final UniqueKey<SchedulerOptionsRecord> SCHEDULER_OPTIONS_PKEY = UniqueKeys0.SCHEDULER_OPTIONS_PKEY;
+    public static final UniqueKey<AppArgsRecord> APP_ARGS_PKEY = Internal.createUniqueKey(AppArgs.APP_ARGS, DSL.name("app_args_pkey"), new TableField[] { AppArgs.APP_ARGS.SEQ_ID }, true);
+    public static final UniqueKey<AppUpdatesRecord> APP_UPDATES_PKEY = Internal.createUniqueKey(AppUpdates.APP_UPDATES, DSL.name("app_updates_pkey"), new TableField[] { AppUpdates.APP_UPDATES.SEQ_ID }, true);
+    public static final UniqueKey<AppsRecord> APPS_PKEY = Internal.createUniqueKey(Apps.APPS, DSL.name("apps_pkey"), new TableField[] { Apps.APPS.SEQ_ID }, true);
+    public static final UniqueKey<AppsRecord> APPS_TENANT_ID_KEY = Internal.createUniqueKey(Apps.APPS, DSL.name("apps_tenant_id_key"), new TableField[] { Apps.APPS.TENANT, Apps.APPS.ID }, true);
+    public static final UniqueKey<AppsVersionsRecord> APPS_VERSIONS_APP_SEQ_ID_VERSION_KEY = Internal.createUniqueKey(AppsVersions.APPS_VERSIONS, DSL.name("apps_versions_app_seq_id_version_key"), new TableField[] { AppsVersions.APPS_VERSIONS.APP_SEQ_ID, AppsVersions.APPS_VERSIONS.VERSION }, true);
+    public static final UniqueKey<AppsVersionsRecord> APPS_VERSIONS_PKEY = Internal.createUniqueKey(AppsVersions.APPS_VERSIONS, DSL.name("apps_versions_pkey"), new TableField[] { AppsVersions.APPS_VERSIONS.SEQ_ID }, true);
+    public static final UniqueKey<ContainerArgsRecord> CONTAINER_ARGS_PKEY = Internal.createUniqueKey(ContainerArgs.CONTAINER_ARGS, DSL.name("container_args_pkey"), new TableField[] { ContainerArgs.CONTAINER_ARGS.SEQ_ID }, true);
+    public static final UniqueKey<FileInputsRecord> FILE_INPUTS_APP_VER_SEQ_ID_SOURCE_URL_TARGET_PATH_KEY = Internal.createUniqueKey(FileInputs.FILE_INPUTS, DSL.name("file_inputs_app_ver_seq_id_source_url_target_path_key"), new TableField[] { FileInputs.FILE_INPUTS.APP_VER_SEQ_ID, FileInputs.FILE_INPUTS.SOURCE_URL, FileInputs.FILE_INPUTS.TARGET_PATH }, true);
+    public static final UniqueKey<FileInputsRecord> FILE_INPUTS_PKEY = Internal.createUniqueKey(FileInputs.FILE_INPUTS, DSL.name("file_inputs_pkey"), new TableField[] { FileInputs.FILE_INPUTS.SEQ_ID }, true);
+    public static final UniqueKey<FlywaySchemaHistoryRecord> FLYWAY_SCHEMA_HISTORY_PK = Internal.createUniqueKey(FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY, DSL.name("flyway_schema_history_pk"), new TableField[] { FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY.INSTALLED_RANK }, true);
+    public static final UniqueKey<NotificationMechanismsRecord> NOTIFICATION_MECHANISMS_PKEY = Internal.createUniqueKey(NotificationMechanisms.NOTIFICATION_MECHANISMS, DSL.name("notification_mechanisms_pkey"), new TableField[] { NotificationMechanisms.NOTIFICATION_MECHANISMS.SEQ_ID }, true);
+    public static final UniqueKey<NotificationSubscriptionsRecord> NOTIFICATION_SUBSCRIPTIONS_PKEY = Internal.createUniqueKey(NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS, DSL.name("notification_subscriptions_pkey"), new TableField[] { NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.SEQ_ID }, true);
+    public static final UniqueKey<SchedulerOptionsRecord> SCHEDULER_OPTIONS_PKEY = Internal.createUniqueKey(SchedulerOptions.SCHEDULER_OPTIONS, DSL.name("scheduler_options_pkey"), new TableField[] { SchedulerOptions.SCHEDULER_OPTIONS.SEQ_ID }, true);
 
     // -------------------------------------------------------------------------
     // FOREIGN KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final ForeignKey<AppArgsRecord, AppsVersionsRecord> APP_ARGS__APP_ARGS_APP_VER_SEQ_ID_FKEY = ForeignKeys0.APP_ARGS__APP_ARGS_APP_VER_SEQ_ID_FKEY;
-    public static final ForeignKey<AppUpdatesRecord, AppsRecord> APP_UPDATES__APP_UPDATES_APP_SEQ_ID_FKEY = ForeignKeys0.APP_UPDATES__APP_UPDATES_APP_SEQ_ID_FKEY;
-    public static final ForeignKey<AppsVersionsRecord, AppsRecord> APPS_VERSIONS__APPS_VERSIONS_APP_SEQ_ID_FKEY = ForeignKeys0.APPS_VERSIONS__APPS_VERSIONS_APP_SEQ_ID_FKEY;
-    public static final ForeignKey<ContainerArgsRecord, AppsVersionsRecord> CONTAINER_ARGS__CONTAINER_ARGS_APP_VER_SEQ_ID_FKEY = ForeignKeys0.CONTAINER_ARGS__CONTAINER_ARGS_APP_VER_SEQ_ID_FKEY;
-    public static final ForeignKey<FileInputsRecord, AppsVersionsRecord> FILE_INPUTS__FILE_INPUTS_APP_VER_SEQ_ID_FKEY = ForeignKeys0.FILE_INPUTS__FILE_INPUTS_APP_VER_SEQ_ID_FKEY;
-    public static final ForeignKey<NotificationMechanismsRecord, NotificationSubscriptionsRecord> NOTIFICATION_MECHANISMS__NOTIFICATION_MECHANISMS_SUBSCRIPTION_SEQ_ID_FKEY = ForeignKeys0.NOTIFICATION_MECHANISMS__NOTIFICATION_MECHANISMS_SUBSCRIPTION_SEQ_ID_FKEY;
-    public static final ForeignKey<NotificationSubscriptionsRecord, AppsVersionsRecord> NOTIFICATION_SUBSCRIPTIONS__NOTIFICATION_SUBSCRIPTIONS_APP_VER_SEQ_ID_FKEY = ForeignKeys0.NOTIFICATION_SUBSCRIPTIONS__NOTIFICATION_SUBSCRIPTIONS_APP_VER_SEQ_ID_FKEY;
-    public static final ForeignKey<SchedulerOptionsRecord, AppsVersionsRecord> SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_VER_SEQ_ID_FKEY = ForeignKeys0.SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_VER_SEQ_ID_FKEY;
-
-    // -------------------------------------------------------------------------
-    // [#1459] distribute members to avoid static initialisers > 64kb
-    // -------------------------------------------------------------------------
-
-    private static class Identities0 {
-        public static Identity<AppArgsRecord, Integer> IDENTITY_APP_ARGS = Internal.createIdentity(AppArgs.APP_ARGS, AppArgs.APP_ARGS.SEQ_ID);
-        public static Identity<AppUpdatesRecord, Integer> IDENTITY_APP_UPDATES = Internal.createIdentity(AppUpdates.APP_UPDATES, AppUpdates.APP_UPDATES.SEQ_ID);
-        public static Identity<AppsRecord, Integer> IDENTITY_APPS = Internal.createIdentity(Apps.APPS, Apps.APPS.SEQ_ID);
-        public static Identity<AppsVersionsRecord, Integer> IDENTITY_APPS_VERSIONS = Internal.createIdentity(AppsVersions.APPS_VERSIONS, AppsVersions.APPS_VERSIONS.SEQ_ID);
-        public static Identity<ContainerArgsRecord, Integer> IDENTITY_CONTAINER_ARGS = Internal.createIdentity(ContainerArgs.CONTAINER_ARGS, ContainerArgs.CONTAINER_ARGS.SEQ_ID);
-        public static Identity<FileInputsRecord, Integer> IDENTITY_FILE_INPUTS = Internal.createIdentity(FileInputs.FILE_INPUTS, FileInputs.FILE_INPUTS.SEQ_ID);
-        public static Identity<NotificationMechanismsRecord, Integer> IDENTITY_NOTIFICATION_MECHANISMS = Internal.createIdentity(NotificationMechanisms.NOTIFICATION_MECHANISMS, NotificationMechanisms.NOTIFICATION_MECHANISMS.SEQ_ID);
-        public static Identity<NotificationSubscriptionsRecord, Integer> IDENTITY_NOTIFICATION_SUBSCRIPTIONS = Internal.createIdentity(NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS, NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.SEQ_ID);
-        public static Identity<SchedulerOptionsRecord, Integer> IDENTITY_SCHEDULER_OPTIONS = Internal.createIdentity(SchedulerOptions.SCHEDULER_OPTIONS, SchedulerOptions.SCHEDULER_OPTIONS.SEQ_ID);
-    }
-
-    private static class UniqueKeys0 {
-        public static final UniqueKey<AppArgsRecord> APP_ARGS_PKEY = Internal.createUniqueKey(AppArgs.APP_ARGS, "app_args_pkey", new TableField[] { AppArgs.APP_ARGS.SEQ_ID }, true);
-        public static final UniqueKey<AppUpdatesRecord> APP_UPDATES_PKEY = Internal.createUniqueKey(AppUpdates.APP_UPDATES, "app_updates_pkey", new TableField[] { AppUpdates.APP_UPDATES.SEQ_ID }, true);
-        public static final UniqueKey<AppsRecord> APPS_PKEY = Internal.createUniqueKey(Apps.APPS, "apps_pkey", new TableField[] { Apps.APPS.SEQ_ID }, true);
-        public static final UniqueKey<AppsRecord> APPS_TENANT_ID_KEY = Internal.createUniqueKey(Apps.APPS, "apps_tenant_id_key", new TableField[] { Apps.APPS.TENANT, Apps.APPS.ID }, true);
-        public static final UniqueKey<AppsVersionsRecord> APPS_VERSIONS_PKEY = Internal.createUniqueKey(AppsVersions.APPS_VERSIONS, "apps_versions_pkey", new TableField[] { AppsVersions.APPS_VERSIONS.SEQ_ID }, true);
-        public static final UniqueKey<AppsVersionsRecord> APPS_VERSIONS_APP_SEQ_ID_VERSION_KEY = Internal.createUniqueKey(AppsVersions.APPS_VERSIONS, "apps_versions_app_seq_id_version_key", new TableField[] { AppsVersions.APPS_VERSIONS.APP_SEQ_ID, AppsVersions.APPS_VERSIONS.VERSION }, true);
-        public static final UniqueKey<ContainerArgsRecord> CONTAINER_ARGS_PKEY = Internal.createUniqueKey(ContainerArgs.CONTAINER_ARGS, "container_args_pkey", new TableField[] { ContainerArgs.CONTAINER_ARGS.SEQ_ID }, true);
-        public static final UniqueKey<FileInputsRecord> FILE_INPUTS_PKEY = Internal.createUniqueKey(FileInputs.FILE_INPUTS, "file_inputs_pkey", new TableField[] { FileInputs.FILE_INPUTS.SEQ_ID }, true);
-        public static final UniqueKey<FileInputsRecord> FILE_INPUTS_APP_VER_SEQ_ID_SOURCE_URL_TARGET_PATH_KEY = Internal.createUniqueKey(FileInputs.FILE_INPUTS, "file_inputs_app_ver_seq_id_source_url_target_path_key", new TableField[] { FileInputs.FILE_INPUTS.APP_VER_SEQ_ID, FileInputs.FILE_INPUTS.SOURCE_URL, FileInputs.FILE_INPUTS.TARGET_PATH }, true);
-        public static final UniqueKey<FlywaySchemaHistoryRecord> FLYWAY_SCHEMA_HISTORY_PK = Internal.createUniqueKey(FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY, "flyway_schema_history_pk", new TableField[] { FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY.INSTALLED_RANK }, true);
-        public static final UniqueKey<NotificationMechanismsRecord> NOTIFICATION_MECHANISMS_PKEY = Internal.createUniqueKey(NotificationMechanisms.NOTIFICATION_MECHANISMS, "notification_mechanisms_pkey", new TableField[] { NotificationMechanisms.NOTIFICATION_MECHANISMS.SEQ_ID }, true);
-        public static final UniqueKey<NotificationSubscriptionsRecord> NOTIFICATION_SUBSCRIPTIONS_PKEY = Internal.createUniqueKey(NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS, "notification_subscriptions_pkey", new TableField[] { NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.SEQ_ID }, true);
-        public static final UniqueKey<SchedulerOptionsRecord> SCHEDULER_OPTIONS_PKEY = Internal.createUniqueKey(SchedulerOptions.SCHEDULER_OPTIONS, "scheduler_options_pkey", new TableField[] { SchedulerOptions.SCHEDULER_OPTIONS.SEQ_ID }, true);
-    }
-
-    private static class ForeignKeys0 {
-        public static final ForeignKey<AppArgsRecord, AppsVersionsRecord> APP_ARGS__APP_ARGS_APP_VER_SEQ_ID_FKEY = Internal.createForeignKey(Keys.APPS_VERSIONS_PKEY, AppArgs.APP_ARGS, "app_args_app_ver_seq_id_fkey", new TableField[] { AppArgs.APP_ARGS.APP_VER_SEQ_ID }, true);
-        public static final ForeignKey<AppUpdatesRecord, AppsRecord> APP_UPDATES__APP_UPDATES_APP_SEQ_ID_FKEY = Internal.createForeignKey(Keys.APPS_PKEY, AppUpdates.APP_UPDATES, "app_updates_app_seq_id_fkey", new TableField[] { AppUpdates.APP_UPDATES.APP_SEQ_ID }, true);
-        public static final ForeignKey<AppsVersionsRecord, AppsRecord> APPS_VERSIONS__APPS_VERSIONS_APP_SEQ_ID_FKEY = Internal.createForeignKey(Keys.APPS_PKEY, AppsVersions.APPS_VERSIONS, "apps_versions_app_seq_id_fkey", new TableField[] { AppsVersions.APPS_VERSIONS.APP_SEQ_ID }, true);
-        public static final ForeignKey<ContainerArgsRecord, AppsVersionsRecord> CONTAINER_ARGS__CONTAINER_ARGS_APP_VER_SEQ_ID_FKEY = Internal.createForeignKey(Keys.APPS_VERSIONS_PKEY, ContainerArgs.CONTAINER_ARGS, "container_args_app_ver_seq_id_fkey", new TableField[] { ContainerArgs.CONTAINER_ARGS.APP_VER_SEQ_ID }, true);
-        public static final ForeignKey<FileInputsRecord, AppsVersionsRecord> FILE_INPUTS__FILE_INPUTS_APP_VER_SEQ_ID_FKEY = Internal.createForeignKey(Keys.APPS_VERSIONS_PKEY, FileInputs.FILE_INPUTS, "file_inputs_app_ver_seq_id_fkey", new TableField[] { FileInputs.FILE_INPUTS.APP_VER_SEQ_ID }, true);
-        public static final ForeignKey<NotificationMechanismsRecord, NotificationSubscriptionsRecord> NOTIFICATION_MECHANISMS__NOTIFICATION_MECHANISMS_SUBSCRIPTION_SEQ_ID_FKEY = Internal.createForeignKey(Keys.NOTIFICATION_SUBSCRIPTIONS_PKEY, NotificationMechanisms.NOTIFICATION_MECHANISMS, "notification_mechanisms_subscription_seq_id_fkey", new TableField[] { NotificationMechanisms.NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID }, true);
-        public static final ForeignKey<NotificationSubscriptionsRecord, AppsVersionsRecord> NOTIFICATION_SUBSCRIPTIONS__NOTIFICATION_SUBSCRIPTIONS_APP_VER_SEQ_ID_FKEY = Internal.createForeignKey(Keys.APPS_VERSIONS_PKEY, NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS, "notification_subscriptions_app_ver_seq_id_fkey", new TableField[] { NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID }, true);
-        public static final ForeignKey<SchedulerOptionsRecord, AppsVersionsRecord> SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_VER_SEQ_ID_FKEY = Internal.createForeignKey(Keys.APPS_VERSIONS_PKEY, SchedulerOptions.SCHEDULER_OPTIONS, "scheduler_options_app_ver_seq_id_fkey", new TableField[] { SchedulerOptions.SCHEDULER_OPTIONS.APP_VER_SEQ_ID }, true);
-    }
+    public static final ForeignKey<AppArgsRecord, AppsVersionsRecord> APP_ARGS__APP_ARGS_APP_VER_SEQ_ID_FKEY = Internal.createForeignKey(AppArgs.APP_ARGS, DSL.name("app_args_app_ver_seq_id_fkey"), new TableField[] { AppArgs.APP_ARGS.APP_VER_SEQ_ID }, Keys.APPS_VERSIONS_PKEY, new TableField[] { AppsVersions.APPS_VERSIONS.SEQ_ID }, true);
+    public static final ForeignKey<AppUpdatesRecord, AppsRecord> APP_UPDATES__APP_UPDATES_APP_SEQ_ID_FKEY = Internal.createForeignKey(AppUpdates.APP_UPDATES, DSL.name("app_updates_app_seq_id_fkey"), new TableField[] { AppUpdates.APP_UPDATES.APP_SEQ_ID }, Keys.APPS_PKEY, new TableField[] { Apps.APPS.SEQ_ID }, true);
+    public static final ForeignKey<AppsVersionsRecord, AppsRecord> APPS_VERSIONS__APPS_VERSIONS_APP_SEQ_ID_FKEY = Internal.createForeignKey(AppsVersions.APPS_VERSIONS, DSL.name("apps_versions_app_seq_id_fkey"), new TableField[] { AppsVersions.APPS_VERSIONS.APP_SEQ_ID }, Keys.APPS_PKEY, new TableField[] { Apps.APPS.SEQ_ID }, true);
+    public static final ForeignKey<ContainerArgsRecord, AppsVersionsRecord> CONTAINER_ARGS__CONTAINER_ARGS_APP_VER_SEQ_ID_FKEY = Internal.createForeignKey(ContainerArgs.CONTAINER_ARGS, DSL.name("container_args_app_ver_seq_id_fkey"), new TableField[] { ContainerArgs.CONTAINER_ARGS.APP_VER_SEQ_ID }, Keys.APPS_VERSIONS_PKEY, new TableField[] { AppsVersions.APPS_VERSIONS.SEQ_ID }, true);
+    public static final ForeignKey<FileInputsRecord, AppsVersionsRecord> FILE_INPUTS__FILE_INPUTS_APP_VER_SEQ_ID_FKEY = Internal.createForeignKey(FileInputs.FILE_INPUTS, DSL.name("file_inputs_app_ver_seq_id_fkey"), new TableField[] { FileInputs.FILE_INPUTS.APP_VER_SEQ_ID }, Keys.APPS_VERSIONS_PKEY, new TableField[] { AppsVersions.APPS_VERSIONS.SEQ_ID }, true);
+    public static final ForeignKey<NotificationMechanismsRecord, NotificationSubscriptionsRecord> NOTIFICATION_MECHANISMS__NOTIFICATION_MECHANISMS_SUBSCRIPTION_SEQ_ID_FKEY = Internal.createForeignKey(NotificationMechanisms.NOTIFICATION_MECHANISMS, DSL.name("notification_mechanisms_subscription_seq_id_fkey"), new TableField[] { NotificationMechanisms.NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID }, Keys.NOTIFICATION_SUBSCRIPTIONS_PKEY, new TableField[] { NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.SEQ_ID }, true);
+    public static final ForeignKey<NotificationSubscriptionsRecord, AppsVersionsRecord> NOTIFICATION_SUBSCRIPTIONS__NOTIFICATION_SUBSCRIPTIONS_APP_VER_SEQ_ID_FKEY = Internal.createForeignKey(NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS, DSL.name("notification_subscriptions_app_ver_seq_id_fkey"), new TableField[] { NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID }, Keys.APPS_VERSIONS_PKEY, new TableField[] { AppsVersions.APPS_VERSIONS.SEQ_ID }, true);
+    public static final ForeignKey<SchedulerOptionsRecord, AppsVersionsRecord> SCHEDULER_OPTIONS__SCHEDULER_OPTIONS_APP_VER_SEQ_ID_FKEY = Internal.createForeignKey(SchedulerOptions.SCHEDULER_OPTIONS, DSL.name("scheduler_options_app_ver_seq_id_fkey"), new TableField[] { SchedulerOptions.SCHEDULER_OPTIONS.APP_VER_SEQ_ID }, Keys.APPS_VERSIONS_PKEY, new TableField[] { AppsVersions.APPS_VERSIONS.SEQ_ID }, true);
 }

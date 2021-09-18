@@ -20,7 +20,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NotificationMechanismsRecord extends UpdatableRecordImpl<NotificationMechanismsRecord> implements Record5<Integer, Integer, NotifMechanismType, String, String> {
 
-    private static final long serialVersionUID = 298802085;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Setter for <code>tapis_app.notification_mechanisms.seq_id</code>.
@@ -247,10 +247,10 @@ public class NotificationMechanismsRecord extends UpdatableRecordImpl<Notificati
     public NotificationMechanismsRecord(Integer seqId, Integer subscriptionSeqId, NotifMechanismType mechanism, String webhookUrl, String emailAddress) {
         super(NotificationMechanisms.NOTIFICATION_MECHANISMS);
 
-        set(0, seqId);
-        set(1, subscriptionSeqId);
-        set(2, mechanism);
-        set(3, webhookUrl);
-        set(4, emailAddress);
+        setSeqId(seqId);
+        setSubscriptionSeqId(subscriptionSeqId);
+        setMechanism(mechanism);
+        setWebhookUrl(webhookUrl);
+        setEmailAddress(emailAddress);
     }
 }

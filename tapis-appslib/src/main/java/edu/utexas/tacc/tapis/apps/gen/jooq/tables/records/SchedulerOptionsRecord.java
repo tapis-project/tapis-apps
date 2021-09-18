@@ -19,7 +19,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SchedulerOptionsRecord extends UpdatableRecordImpl<SchedulerOptionsRecord> implements Record7<Integer, Integer, String, String, String, Boolean, String[]> {
 
-    private static final long serialVersionUID = 282183348;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Setter for <code>tapis_app.scheduler_options.seq_id</code>. Arg sequence id
@@ -318,12 +318,12 @@ public class SchedulerOptionsRecord extends UpdatableRecordImpl<SchedulerOptions
     public SchedulerOptionsRecord(Integer seqId, Integer appVerSeqId, String argVal, String metaName, String metaDescription, Boolean metaRequired, String[] metaKeyValuePairs) {
         super(SchedulerOptions.SCHEDULER_OPTIONS);
 
-        set(0, seqId);
-        set(1, appVerSeqId);
-        set(2, argVal);
-        set(3, metaName);
-        set(4, metaDescription);
-        set(5, metaRequired);
-        set(6, metaKeyValuePairs);
+        setSeqId(seqId);
+        setAppVerSeqId(appVerSeqId);
+        setArgVal(argVal);
+        setMetaName(metaName);
+        setMetaDescription(metaDescription);
+        setMetaRequired(metaRequired);
+        setMetaKeyValuePairs(metaKeyValuePairs);
     }
 }

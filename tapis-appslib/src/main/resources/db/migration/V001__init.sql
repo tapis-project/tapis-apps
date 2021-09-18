@@ -170,10 +170,10 @@ CREATE TABLE file_inputs
     source_url TEXT,
     target_path TEXT,
     in_place BOOLEAN NOT NULL DEFAULT false,
-    meta_name TEXT NOT NULL DEFAULT '',
-    meta_description TEXT,
-    meta_required BOOLEAN NOT NULL DEFAULT false,
-    meta_key_value_pairs TEXT[],
+    name TEXT NOT NULL DEFAULT '',
+    description TEXT,
+    input_mode TEXT NOT NULL,
+    meta TEXT[],
     UNIQUE (app_ver_seq_id, source_url, target_path)
 );
 ALTER TABLE file_inputs OWNER TO tapis_app;

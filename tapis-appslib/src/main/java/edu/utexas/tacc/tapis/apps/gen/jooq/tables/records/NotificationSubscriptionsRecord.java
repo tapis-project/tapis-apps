@@ -19,7 +19,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<NotificationSubscriptionsRecord> implements Record3<Integer, Integer, String> {
 
-    private static final long serialVersionUID = 2077423077;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Setter for <code>tapis_app.notification_subscriptions.seq_id</code>.
@@ -174,8 +174,8 @@ public class NotificationSubscriptionsRecord extends UpdatableRecordImpl<Notific
     public NotificationSubscriptionsRecord(Integer seqId, Integer appVerSeqId, String filter) {
         super(NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS);
 
-        set(0, seqId);
-        set(1, appVerSeqId);
-        set(2, filter);
+        setSeqId(seqId);
+        setAppVerSeqId(appVerSeqId);
+        setFilter(filter);
     }
 }

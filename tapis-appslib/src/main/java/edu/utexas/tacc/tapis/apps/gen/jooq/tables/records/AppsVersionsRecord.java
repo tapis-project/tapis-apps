@@ -22,7 +22,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> {
 
-    private static final long serialVersionUID = 1684097794;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Setter for <code>tapis_app.apps_versions.seq_id</code>. Sequence id for specific version of application
@@ -554,41 +554,41 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
     public AppsVersionsRecord(Integer seqId, Integer appSeqId, String version, String description, Runtime runtime, String runtimeVersion, String[] runtimeOptions, String containerImage, Integer maxJobs, Integer maxJobsPerUser, Boolean strictFileInputs, String jobDescription, Boolean dynamicExecSystem, String[] execSystemConstraints, String execSystemId, String execSystemExecDir, String execSystemInputDir, String execSystemOutputDir, String execSystemLogicalQueue, String archiveSystemId, String archiveSystemDir, Boolean archiveOnAppError, String[] envVariables, String[] archiveIncludes, String[] archiveExcludes, Boolean archiveIncludeLaunchFiles, Integer nodeCount, Integer coresPerNode, Integer memoryMb, Integer maxMinutes, String[] jobTags, String[] tags, JsonElement notes, UUID uuid, LocalDateTime created, LocalDateTime updated) {
         super(AppsVersions.APPS_VERSIONS);
 
-        set(0, seqId);
-        set(1, appSeqId);
-        set(2, version);
-        set(3, description);
-        set(4, runtime);
-        set(5, runtimeVersion);
-        set(6, runtimeOptions);
-        set(7, containerImage);
-        set(8, maxJobs);
-        set(9, maxJobsPerUser);
-        set(10, strictFileInputs);
-        set(11, jobDescription);
-        set(12, dynamicExecSystem);
-        set(13, execSystemConstraints);
-        set(14, execSystemId);
-        set(15, execSystemExecDir);
-        set(16, execSystemInputDir);
-        set(17, execSystemOutputDir);
-        set(18, execSystemLogicalQueue);
-        set(19, archiveSystemId);
-        set(20, archiveSystemDir);
-        set(21, archiveOnAppError);
-        set(22, envVariables);
-        set(23, archiveIncludes);
-        set(24, archiveExcludes);
-        set(25, archiveIncludeLaunchFiles);
-        set(26, nodeCount);
-        set(27, coresPerNode);
-        set(28, memoryMb);
-        set(29, maxMinutes);
-        set(30, jobTags);
-        set(31, tags);
-        set(32, notes);
-        set(33, uuid);
-        set(34, created);
-        set(35, updated);
+        setSeqId(seqId);
+        setAppSeqId(appSeqId);
+        setVersion(version);
+        setDescription(description);
+        setRuntime(runtime);
+        setRuntimeVersion(runtimeVersion);
+        setRuntimeOptions(runtimeOptions);
+        setContainerImage(containerImage);
+        setMaxJobs(maxJobs);
+        setMaxJobsPerUser(maxJobsPerUser);
+        setStrictFileInputs(strictFileInputs);
+        setJobDescription(jobDescription);
+        setDynamicExecSystem(dynamicExecSystem);
+        setExecSystemConstraints(execSystemConstraints);
+        setExecSystemId(execSystemId);
+        setExecSystemExecDir(execSystemExecDir);
+        setExecSystemInputDir(execSystemInputDir);
+        setExecSystemOutputDir(execSystemOutputDir);
+        setExecSystemLogicalQueue(execSystemLogicalQueue);
+        setArchiveSystemId(archiveSystemId);
+        setArchiveSystemDir(archiveSystemDir);
+        setArchiveOnAppError(archiveOnAppError);
+        setEnvVariables(envVariables);
+        setArchiveIncludes(archiveIncludes);
+        setArchiveExcludes(archiveExcludes);
+        setArchiveIncludeLaunchFiles(archiveIncludeLaunchFiles);
+        setNodeCount(nodeCount);
+        setCoresPerNode(coresPerNode);
+        setMemoryMb(memoryMb);
+        setMaxMinutes(maxMinutes);
+        setJobTags(jobTags);
+        setTags(tags);
+        setNotes(notes);
+        setUuid(uuid);
+        setCreated(created);
+        setUpdated(updated);
     }
 }

@@ -215,11 +215,11 @@ public class ApiUtils
     if (fileInputs.isEmpty()) return retList;
     for (FileInput fid : fileInputs)
     {
-      ArgMetaSpec meta = fid.meta;
-      if (meta == null) meta = new ArgMetaSpec();
-      String[] kvPairs = ApiUtils.getKeyValuesAsArray(meta.keyValuePairs);
-      edu.utexas.tacc.tapis.apps.model.FileInput fileInput = new edu.utexas.tacc.tapis.apps.model.FileInput(fid.sourceUrl, fid.targetPath, fid.inPlace,
-                                          meta.name, meta.description, meta.required, kvPairs);
+//      if (meta == null) meta = new ArgMetaSpec();
+      String[] kvPairs = ApiUtils.getKeyValuesAsArray(fid.meta);
+      edu.utexas.tacc.tapis.apps.model.FileInput fileInput =
+              new edu.utexas.tacc.tapis.apps.model.FileInput(fid.sourceUrl, fid.targetPath, fid.inPlace,
+                                          fid.name, fid.description, fid.mode, kvPairs);
       retList.add(fileInput);
     }
     return retList;
@@ -257,16 +257,14 @@ public class ApiUtils
     if (libFileInputs == null || libFileInputs.isEmpty()) return retList;
     for (edu.utexas.tacc.tapis.apps.model.FileInput libFileInput : libFileInputs)
     {
-      ArgMetaSpec meta = new ArgMetaSpec();
-      meta.name = libFileInput.getMetaName();
-      meta.description = libFileInput.getMetaDescription();
-      meta.required = libFileInput.isMetaRequired();
-      meta.keyValuePairs = ApiUtils.getKeyValuesAsList(libFileInput.getMetaKeyValuePairs());
       FileInput fid = new FileInput();
+      fid.name = libFileInput.getName();
+      fid.description = libFileInput.getDescription();
+      fid.mode = libFileInput.getMode();
+      fid.inPlace = libFileInput.isInPlace();
       fid.sourceUrl = libFileInput.getSourceUrl();
       fid.targetPath = libFileInput.getTargetPath();
-      fid.inPlace = libFileInput.isInPlace();
-      fid.meta = meta;
+      fid.meta = ApiUtils.getKeyValuesAsList(libFileInput.getMeta());
       retList.add(fid);
     }
     return retList;
