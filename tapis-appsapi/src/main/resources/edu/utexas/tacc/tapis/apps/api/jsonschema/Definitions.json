@@ -43,7 +43,7 @@
       "execSystemOutputDir": { "$ref": "#/DirPath" },
       "execSystemLogicalQueue": { "type": ["string", "null"], "minLength": 1, "maxLength": 128 },
       "archiveSystemId": { "$ref": "#/SystemId" },
-      "archiveDir": { "$ref": "#/DirPath" },
+      "archiveSystemDir": { "$ref": "#/DirPath" },
       "archiveOnAppError": { "type": "boolean", "default": true },
       "parameterSet": { "$ref": "#/ParameterSet" },
       "fileInputs": {
