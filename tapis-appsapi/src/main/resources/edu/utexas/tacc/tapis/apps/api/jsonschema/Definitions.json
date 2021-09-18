@@ -95,10 +95,7 @@
       "inPlace": { "type": "boolean", "default": false },
       "sourceUrl": { "type": "string", "format": "uri" },
       "targetPath": { "type": "string" },
-      "meta": { "type": ["array", "null"],
-                "uniqueItems": true,
-                "items": { "$ref": "#/KeyValuePair" }
-        }
+      "meta": { "type": ["array", "null"], "uniqueItems": true, "items": { "$ref": "#/KeyValuePair" } }
     }
   },
   "FileInputArray": {
@@ -110,11 +107,9 @@
       "description": { "type": "string", "maxLength": 8096 },
       "mode": { "$ref": "#/InputModeEnum" },
       "inPlace": { "type": "boolean", "default": false },
-      "sourceUrls": { "type": ["array", "null"], "items": { "type": "string", "format": "uri" }},
+      "sourceUrls": { "type": ["array", "null"], "items": { "type": "string", "format": "uri" } },
       "targetPaths": {"type": ["array", "null"], "items": { "type": "string" } },
-      "meta": { "type": ["array", "null"],
-                "uniqueItems": true,
-                "items": { "$ref": "#/KeyValuePair" } }
+      "meta": { "type": ["array", "null"], "uniqueItems": true, "items": { "$ref": "#/KeyValuePair" } }
     }
   },
   "NotificationSubscription": {
@@ -146,13 +141,14 @@
   },
   "ArgSpec": {
     "type": "object",
+    "required": [ "name" ],
     "additionalProperties": false,
     "properties": {
       "name": { "type": "string", "minLength": 1 },
       "description": { "type": "string" },
-      "required": { "type": "boolean", "default": false },
+      "mode": { "$ref": "#/InputModeEnum" },
       "arg": { "type":  "string" },
-      "meta": { "type": ["array", "null"], "items": { "$ref": "#/KeyValuePair" } }
+      "meta": { "type": ["array", "null"], "uniqueItems": true, "items": { "$ref": "#/KeyValuePair" } }
     }
   },
   "KeyValuePair": {

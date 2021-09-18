@@ -273,7 +273,7 @@
                   <forcedType>
                     <userType>edu.utexas.tacc.tapis.apps.model.App.InputMode</userType>
                     <enumConverter>true</enumConverter>
-                    <includeExpression>file_inputs\.input_mode</includeExpression>
+                    <includeExpression>(file_inputs\.input_mode|app_args\.input_mode|container_args\.input_mode|scheduler_options\.input_mode)</includeExpression>
                     <includeTypes>.*</includeTypes>
                   </forcedType>
                 </forcedTypes>

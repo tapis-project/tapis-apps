@@ -208,43 +208,43 @@ public final class IntegrationUtils
   public static final List<NotifSubscription> notifListNull = null;
 
   // AppArgs, ContainerArgs, SchedulerOptions
-  public static final AppArg appArg1A = new AppArg("value1A", "appArg1A", "App arg 1A", metaRequiredTrue, metaKVPairs1);
-  public static final AppArg appArg1B = new AppArg("value1B", "appArg1B", "App arg 1B", metaRequiredFalse, metaKVPairs1);
+  public static final AppArg appArg1A = new AppArg("value1A", "appArg1A", "App arg 1A", inputModeRequired, metaKVPairs1);
+  public static final AppArg appArg1B = new AppArg("value1B", "appArg1B", "App arg 1B", inputModeOptional, metaKVPairs1);
   public static final List<AppArg> appArgList1 = new ArrayList<>(List.of(appArg1A, appArg1B));
-  public static final AppArg appArg2A = new AppArg("value2A", "appArg2A", "App arg 2A", metaRequiredTrue, metaKVPairs2);
-  public static final AppArg appArg2B = new AppArg("value2B", "appArg2B", "App arg 2B", metaRequiredFalse, metaKVPairs2);
+  public static final AppArg appArg2A = new AppArg("value2A", "appArg2A", "App arg 2A", inputModeRequired, metaKVPairs2);
+  public static final AppArg appArg2B = new AppArg("value2B", "appArg2B", "App arg 2B", inputModeOptional, metaKVPairs2);
   public static final List<AppArg> appArgList2 = new ArrayList<>(List.of(appArg2A, appArg2B));
-  public static final AppArg appArg3A = new AppArg("value3A", "appArg3A", "App arg 3A", metaRequiredTrue, metaKVPairs3);
-  public static final AppArg appArg3B = new AppArg("value3B", "appArg3B", "App arg 3B", metaRequiredFalse, metaKVPairs3);
+  public static final AppArg appArg3A = new AppArg("value3A", "appArg3A", "App arg 3A", inputModeRequired, metaKVPairs3);
+  public static final AppArg appArg3B = new AppArg("value3B", "appArg3B", "App arg 3B", inputModeOptional, metaKVPairs3);
   public static final List<AppArg> appArgList3 = new ArrayList<>(List.of(appArg3A, appArg3B));
   public static final List<AppArg> appArgListNull = null;
 
   public static final AppArg containerArg1A = new AppArg("value1A", "containerArg1A", "Container arg 1A",
-                                                          metaRequiredTrue, metaKVPairs1);
+          inputModeRequired, metaKVPairs1);
   public static final AppArg containerArg1B = new AppArg("value1B", "containerArg1B", "Container arg 1B",
-                                                         metaRequiredFalse, metaKVPairs1);
+          inputModeOptional, metaKVPairs1);
   public static final List<AppArg> containerArgList1 = new ArrayList<>(List.of(containerArg1A, containerArg1B));
   public static final AppArg containerArg2A = new AppArg("value2A", "containerArg2A", "Container arg 2A",
-          metaRequiredTrue, metaKVPairs2);
+          inputModeRequired, metaKVPairs2);
   public static final AppArg containerArg2B = new AppArg("value2B", "containerArg2B", "Container arg 2B",
-          metaRequiredFalse, metaKVPairs2);
+          inputModeOptional, metaKVPairs2);
   public static final List<AppArg> containerArgList2 = new ArrayList<>(List.of(containerArg2A, containerArg2B));
   public static final AppArg containerArg3A = new AppArg("value3A", "containerArg3A", "Container arg 3A",
-          metaRequiredTrue, metaKVPairs3);
+          inputModeRequired, metaKVPairs3);
   public static final AppArg containerArg3B = new AppArg("value3B", "containerArg3B", "Container arg 3B",
-          metaRequiredFalse, metaKVPairs3);
+          inputModeOptional, metaKVPairs3);
   public static final List<AppArg> containerArgList3 = new ArrayList<>(List.of(containerArg3A, containerArg3B));
   public static final List<AppArg> containerArgListNull = null;
 
   public static final AppArg schedulerOption1A = new AppArg("value1A", "schedulerOption1A", "Scheduler option 1A",
-                                                            metaRequiredTrue, metaKVPairs1);
+          inputModeRequired, metaKVPairs1);
   public static final AppArg schedulerOption1B = new AppArg("value1B", "schedulerOption1B", "Scheduler option 1B",
-                                                            metaRequiredFalse, metaKVPairs1);
+          inputModeOptional, metaKVPairs1);
   public static final List<AppArg> schedulerOptionList1 = new ArrayList<>(List.of(schedulerOption1A, schedulerOption1B));
   public static final AppArg schedulerOption2A = new AppArg("value2A", "schedulerOption2A", "Scheduler option 2A",
-          metaRequiredTrue, metaKVPairs2);
+          inputModeRequired, metaKVPairs2);
   public static final AppArg schedulerOption2B = new AppArg("value2B", "schedulerOption2B", "Scheduler option 2B",
-          metaRequiredFalse, metaKVPairs2);
+          inputModeOptional, metaKVPairs2);
   public static final List<AppArg> schedulerOptionList2 = new ArrayList<>(List.of(schedulerOption2A, schedulerOption2B));
   public static final List<AppArg> schedulerOptionListNull = null;
 

@@ -43,13 +43,11 @@ public final class ParameterSet
     for (AppArg appArg : appArgs)
     {
       ArgSpec argSpec = new ArgSpec();
-      ArgMetaSpec meta = new ArgMetaSpec();
+      argSpec.name = appArg.getName();
+      argSpec.description = appArg.getDescription();
+      argSpec.mode = appArg.getMode();
       argSpec.arg = appArg.getArgValue();
-      meta.name = appArg.getMetaName();
-      meta.description = appArg.getMetaDescription();
-      meta.required = appArg.isMetaRequired();
-      meta.keyValuePairs = ApiUtils.getKeyValuesAsList(appArg.getMetaKeyValuePairs());
-      argSpec.meta = meta;
+      argSpec.meta = ApiUtils.getKeyValuesAsList(appArg.getMeta());
       retList.add(argSpec);
     }
     return retList;

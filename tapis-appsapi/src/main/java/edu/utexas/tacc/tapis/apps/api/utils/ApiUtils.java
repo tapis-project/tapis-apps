@@ -1,7 +1,6 @@
 package edu.utexas.tacc.tapis.apps.api.utils;
 
 import com.google.gson.JsonElement;
-import edu.utexas.tacc.tapis.apps.api.model.ArgMetaSpec;
 import edu.utexas.tacc.tapis.apps.api.model.ArgSpec;
 import edu.utexas.tacc.tapis.apps.api.model.FileInput;
 import edu.utexas.tacc.tapis.apps.api.model.KeyValuePair;
@@ -196,10 +195,8 @@ public class ApiUtils
     if (argSpecs.isEmpty()) return retList;
     for (ArgSpec argSpec : argSpecs)
     {
-      ArgMetaSpec meta = argSpec.meta;
-      if (meta == null) meta = new ArgMetaSpec();
-      String[] kvPairs = ApiUtils.getKeyValuesAsArray(meta.keyValuePairs);
-      AppArg appArg = new AppArg(argSpec.arg, meta.name, meta.description, meta.required, kvPairs);
+      String[] kvPairs = ApiUtils.getKeyValuesAsArray(argSpec.meta);
+      AppArg appArg = new AppArg(argSpec.arg, argSpec.name, argSpec.description, argSpec.mode, kvPairs);
       retList.add(appArg);
     }
     return retList;

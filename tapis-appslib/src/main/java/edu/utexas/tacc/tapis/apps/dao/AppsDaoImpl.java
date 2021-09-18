@@ -1639,14 +1639,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       String valStr = "";
       if (appArg.getArgValue() != null ) valStr = appArg.getArgValue();
       String[] kvPairs = EMPTY_STR_ARRAY;
-      if (appArg.getMetaKeyValuePairs() != null ) kvPairs = appArg.getMetaKeyValuePairs();
+      if (appArg.getMeta() != null ) kvPairs = appArg.getMeta();
       db.insertInto(APP_ARGS)
               .set(APP_ARGS.APP_VER_SEQ_ID, appVerSeqId)
               .set(APP_ARGS.ARG_VAL, valStr)
-              .set(APP_ARGS.META_NAME, appArg.getMetaName())
-              .set(APP_ARGS.META_DESCRIPTION, appArg.getMetaDescription())
-              .set(APP_ARGS.META_REQUIRED, appArg.isMetaRequired())
-              .set(APP_ARGS.META_KEY_VALUE_PAIRS, kvPairs)
+              .set(APP_ARGS.NAME, appArg.getName())
+              .set(APP_ARGS.DESCRIPTION, appArg.getDescription())
+              .set(APP_ARGS.INPUT_MODE, appArg.getMode())
+              .set(APP_ARGS.META, kvPairs)
               .execute();
     }
   }
@@ -1663,14 +1663,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       String valStr = "";
       if (containerArg.getArgValue() != null ) valStr = containerArg.getArgValue();
       String[] kvPairs = EMPTY_STR_ARRAY;
-      if (containerArg.getMetaKeyValuePairs() != null ) kvPairs = containerArg.getMetaKeyValuePairs();
+      if (containerArg.getMeta() != null ) kvPairs = containerArg.getMeta();
       db.insertInto(CONTAINER_ARGS)
               .set(CONTAINER_ARGS.APP_VER_SEQ_ID, appVerSeqId)
               .set(CONTAINER_ARGS.ARG_VAL, valStr)
-              .set(CONTAINER_ARGS.META_NAME, containerArg.getMetaName())
-              .set(CONTAINER_ARGS.META_DESCRIPTION, containerArg.getMetaDescription())
-              .set(CONTAINER_ARGS.META_REQUIRED, containerArg.isMetaRequired())
-              .set(CONTAINER_ARGS.META_KEY_VALUE_PAIRS, kvPairs)
+              .set(CONTAINER_ARGS.NAME, containerArg.getName())
+              .set(CONTAINER_ARGS.DESCRIPTION, containerArg.getDescription())
+              .set(CONTAINER_ARGS.INPUT_MODE, containerArg.getMode())
+              .set(CONTAINER_ARGS.META, kvPairs)
               .execute();
     }
   }
@@ -1687,14 +1687,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       String valStr = "";
       if (schedulerOption.getArgValue() != null ) valStr = schedulerOption.getArgValue();
       String[] kvPairs = EMPTY_STR_ARRAY;
-      if (schedulerOption.getMetaKeyValuePairs() != null ) kvPairs = schedulerOption.getMetaKeyValuePairs();
+      if (schedulerOption.getMeta() != null ) kvPairs = schedulerOption.getMeta();
       db.insertInto(SCHEDULER_OPTIONS)
               .set(SCHEDULER_OPTIONS.APP_VER_SEQ_ID, appVerSeqId)
               .set(SCHEDULER_OPTIONS.ARG_VAL, valStr)
-              .set(SCHEDULER_OPTIONS.META_NAME, schedulerOption.getMetaName())
-              .set(SCHEDULER_OPTIONS.META_DESCRIPTION, schedulerOption.getMetaDescription())
-              .set(SCHEDULER_OPTIONS.META_REQUIRED, schedulerOption.isMetaRequired())
-              .set(SCHEDULER_OPTIONS.META_KEY_VALUE_PAIRS, kvPairs)
+              .set(SCHEDULER_OPTIONS.NAME, schedulerOption.getName())
+              .set(SCHEDULER_OPTIONS.DESCRIPTION, schedulerOption.getDescription())
+              .set(SCHEDULER_OPTIONS.INPUT_MODE, schedulerOption.getMode())
+              .set(SCHEDULER_OPTIONS.META, kvPairs)
               .execute();
     }
   }

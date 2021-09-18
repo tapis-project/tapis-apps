@@ -215,10 +215,10 @@ CREATE TABLE app_args
     seq_id SERIAL PRIMARY KEY,
     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     arg_val TEXT NOT NULL DEFAULT '',
-    meta_name TEXT,
-    meta_description TEXT,
-    meta_required BOOLEAN NOT NULL DEFAULT true,
-    meta_key_value_pairs TEXT[]
+    name TEXT,
+    description TEXT,
+    input_mode TEXT NOT NULL,
+    meta TEXT[]
 );
 ALTER TABLE app_args OWNER TO tapis_app;
 COMMENT ON COLUMN app_args.seq_id IS 'Arg sequence id';
@@ -231,10 +231,10 @@ CREATE TABLE container_args
     seq_id SERIAL PRIMARY KEY,
     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     arg_val TEXT NOT NULL DEFAULT '',
-    meta_name TEXT,
-    meta_description TEXT,
-    meta_required BOOLEAN NOT NULL DEFAULT true,
-    meta_key_value_pairs TEXT[]
+    name TEXT,
+    description TEXT,
+    input_mode TEXT NOT NULL,
+    meta TEXT[]
 );
 ALTER TABLE container_args OWNER TO tapis_app;
 COMMENT ON COLUMN container_args.seq_id IS 'Arg sequence id';
@@ -247,10 +247,10 @@ CREATE TABLE scheduler_options
     seq_id SERIAL PRIMARY KEY,
     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
     arg_val TEXT NOT NULL DEFAULT '',
-    meta_name TEXT,
-    meta_description TEXT,
-    meta_required BOOLEAN NOT NULL DEFAULT true,
-    meta_key_value_pairs TEXT[]
+    name TEXT,
+    description TEXT,
+    input_mode TEXT NOT NULL,
+    meta TEXT[]
 );
 ALTER TABLE scheduler_options OWNER TO tapis_app;
 COMMENT ON COLUMN scheduler_options.seq_id IS 'Arg sequence id';

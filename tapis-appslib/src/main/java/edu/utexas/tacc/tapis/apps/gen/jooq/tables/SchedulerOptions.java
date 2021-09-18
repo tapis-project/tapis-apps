@@ -7,6 +7,7 @@ package edu.utexas.tacc.tapis.apps.gen.jooq.tables;
 import edu.utexas.tacc.tapis.apps.gen.jooq.Keys;
 import edu.utexas.tacc.tapis.apps.gen.jooq.TapisApp;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.SchedulerOptionsRecord;
+import edu.utexas.tacc.tapis.apps.model.App.InputMode;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +24,7 @@ import org.jooq.TableField;
 import org.jooq.TableOptions;
 import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
+import org.jooq.impl.EnumConverter;
 import org.jooq.impl.SQLDataType;
 import org.jooq.impl.TableImpl;
 
@@ -64,24 +66,24 @@ public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
     public final TableField<SchedulerOptionsRecord, String> ARG_VAL = createField(DSL.name("arg_val"), SQLDataType.CLOB.nullable(false).defaultValue(DSL.field("''::text", SQLDataType.CLOB)), this, "");
 
     /**
-     * The column <code>tapis_app.scheduler_options.meta_name</code>.
+     * The column <code>tapis_app.scheduler_options.name</code>.
      */
-    public final TableField<SchedulerOptionsRecord, String> META_NAME = createField(DSL.name("meta_name"), SQLDataType.CLOB, this, "");
+    public final TableField<SchedulerOptionsRecord, String> NAME = createField(DSL.name("name"), SQLDataType.CLOB, this, "");
 
     /**
-     * The column <code>tapis_app.scheduler_options.meta_description</code>.
+     * The column <code>tapis_app.scheduler_options.description</code>.
      */
-    public final TableField<SchedulerOptionsRecord, String> META_DESCRIPTION = createField(DSL.name("meta_description"), SQLDataType.CLOB, this, "");
+    public final TableField<SchedulerOptionsRecord, String> DESCRIPTION = createField(DSL.name("description"), SQLDataType.CLOB, this, "");
 
     /**
-     * The column <code>tapis_app.scheduler_options.meta_required</code>.
+     * The column <code>tapis_app.scheduler_options.input_mode</code>.
      */
-    public final TableField<SchedulerOptionsRecord, Boolean> META_REQUIRED = createField(DSL.name("meta_required"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("true", SQLDataType.BOOLEAN)), this, "");
+    public final TableField<SchedulerOptionsRecord, InputMode> INPUT_MODE = createField(DSL.name("input_mode"), SQLDataType.CLOB.nullable(false), this, "", new EnumConverter<String, InputMode>(String.class, InputMode.class));
 
     /**
-     * The column <code>tapis_app.scheduler_options.meta_key_value_pairs</code>.
+     * The column <code>tapis_app.scheduler_options.meta</code>.
      */
-    public final TableField<SchedulerOptionsRecord, String[]> META_KEY_VALUE_PAIRS = createField(DSL.name("meta_key_value_pairs"), SQLDataType.CLOB.getArrayDataType(), this, "");
+    public final TableField<SchedulerOptionsRecord, String[]> META = createField(DSL.name("meta"), SQLDataType.CLOB.getArrayDataType(), this, "");
 
     private SchedulerOptions(Name alias, Table<SchedulerOptionsRecord> aliased) {
         this(alias, aliased, null);
@@ -181,7 +183,7 @@ public class SchedulerOptions extends TableImpl<SchedulerOptionsRecord> {
     // -------------------------------------------------------------------------
 
     @Override
-    public Row7<Integer, Integer, String, String, String, Boolean, String[]> fieldsRow() {
+    public Row7<Integer, Integer, String, String, String, InputMode, String[]> fieldsRow() {
         return (Row7) super.fieldsRow();
     }
 }
