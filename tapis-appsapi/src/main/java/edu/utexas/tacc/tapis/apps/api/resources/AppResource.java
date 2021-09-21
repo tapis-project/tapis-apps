@@ -1095,10 +1095,16 @@ public class AppResource
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
           jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
           envVariables, parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes, parmSet.archiveFilter.includeLaunchFiles,
+          ApiUtils.buildLibFileInputs(jobAttrs.fileInputs),
           jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
+
+    // Complex types stored as json in main table
+    // TODO/TBD: Since now in main table to we need to instead add an argument (a json string?) to the
+    //           special jOOQ compatible constructor used above?
+//    app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputs));
+
     // Data for aux tables
-    app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputs));
     app.setNotificationSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
     app.setAppArgs(ApiUtils.buildLibAppArgs(parmSet.appArgs));
     app.setContainerArgs(ApiUtils.buildLibAppArgs(parmSet.containerArgs));
@@ -1130,10 +1136,11 @@ public class AppResource
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
           jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
           envVariables, parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes, parmSet.archiveFilter.includeLaunchFiles,
+          ApiUtils.buildLibFileInputs(jobAttrs.fileInputs),
           jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
     // Data for aux tables
-    app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputs));
+//    app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputs));
     app.setNotificationSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
     app.setAppArgs(ApiUtils.buildLibAppArgs(parmSet.appArgs));
     app.setContainerArgs(ApiUtils.buildLibAppArgs(parmSet.containerArgs));
@@ -1235,6 +1242,8 @@ public class AppResource
 
   /**
    * Extract notes from the incoming json
+   * This explicit method to extract is needed because notes is an unstructured object and other seemingly simpler
+   * approaches caused problems with the json marshalling.
    */
   private static Object extractNotes(String rawJson)
   {

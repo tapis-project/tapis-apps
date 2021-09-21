@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
@@ -55,6 +56,7 @@ public final class App
   public static final boolean DEFAULT_CONTAINERIZED = true;
   public static final boolean DEFAULT_STRICT_FILE_INPUTS = false;
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
+  public static final JsonElement DEFAULT_FILE_INPUTS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
   public static final JsonObject DEFAULT_NOTES = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
   public static final int DEFAULT_NODE_COUNT = 1;
   public static final int DEFAULT_CORES_PER_NODE = 1;
@@ -297,6 +299,7 @@ public final class App
              String execSystemInputDir1, String execSystemOutputDir1, String execSystemLogicalQueue1,
              String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1, String[] envVariables1,
              String[] archiveIncludes1, String[] archiveExcludes1, boolean archiveIncludeLaunchFiles1,
+             List<FileInput> fileInputs1,
              int nodeCount1, int coresPerNode1, int memoryMb1, int maxMinutes1,
              String[] jobTags1,
              // == End jobAttributes
@@ -330,6 +333,7 @@ public final class App
     archiveSystemId = archiveSystemId1;
     archiveSystemDir = archiveSystemDir1;
     archiveOnAppError = archiveOnAppError1;
+    fileInputs = fileInputs1;
     nodeCount = nodeCount1;
     coresPerNode = coresPerNode1;
     memoryMb = memoryMb1;

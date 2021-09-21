@@ -300,6 +300,8 @@ public final class IntegrationUtils
                  execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
                  execSystemLogicalQueue1, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
                  envVariables1, archiveIncludes1, archiveExcludes1, archiveIncludeLaunchFilesTrue,
+// TODO fileInputs
+                 null,
                  nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
                  tags1, notes1, uuidNull, deletedFalse, createdNull, updatedNull);
       // Aux table data
@@ -327,6 +329,8 @@ public final class IntegrationUtils
             execSystemId1, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
             envVariablesNull, archiveIncludesNull, archiveExcludesNull, archiveIncludeLaunchFilesFalse,
+// TODO fileInputs
+            null,
             nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTagsNull,
             tagsNull, notesNull, uuidNull, deletedFalse, createdNull, updatedNull);
   }
@@ -344,6 +348,8 @@ public final class IntegrationUtils
             execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
             archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse, envVariables2,
             archiveIncludes2, archiveExcludes2, archiveIncludeLaunchFilesFalse,
+// TODO fileInputs
+            null,
             nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, jobTags2,
             tags2, notes2, uuidNull, deletedFalse, createdNull, updatedNull);
     // Aux table data

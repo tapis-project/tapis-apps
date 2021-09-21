@@ -46,6 +46,7 @@ public final class PatchApp
   private final String[] archiveIncludes;
   private final String[] archiveExcludes;
   private final Boolean archiveIncludeLaunchFiles;
+  private final List<FileInput> fileInputs;
   private final Integer nodeCount;
   private final Integer coresPerNode;
   private final Integer memoryMb;
@@ -54,7 +55,6 @@ public final class PatchApp
   // === End jobAttributes ==========
 
   // Aux tables
-  private final List<FileInput> fileInputs;
   private final List<NotifSubscription> notifSubscriptions;
   private final List<AppArg> appArgs;
   private final List<AppArg> containerArgs;
@@ -69,7 +69,7 @@ public final class PatchApp
   /**
    * Constructor setting all final attributes.
    * Note that because PatchApp does not have a corresponding table in the DB we can pass in
-   *   FileInputs, AppArgs, ContainerArgs, SchedulerOptions and Subscriptions.
+   *   AppArgs, ContainerArgs, SchedulerOptions and Subscriptions.
    */
   public PatchApp(String tenantId1, String id1, String version1, String description1, Runtime runtime1, String runtimeVersion1, List<RuntimeOption> runtimeOptions1,
                   String containerImage1, Integer maxJobs1, Integer maxJobsPerUser1, Boolean strictFileInputs1,

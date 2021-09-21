@@ -461,6 +461,8 @@ public class AppsDaoTest
             execSystemConstraints1, execSystemId1, execSystemExecDir1, execSystemInputDir1, execSystemOutputDir1,
             execSystemLogicalQueue1, archiveSystemIdNull, archiveSystemDir1, archiveOnAppErrorTrue,
             envVariables1, archiveIncludes1, archiveExcludes1, archiveIncludeLaunchFilesTrue,
+// TODO fileInputs
+            null,
             nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
             tags1, notes1, uuidNull, isDeletedFalse, createdNull, updatedNull);
     // Make sure app does not exist

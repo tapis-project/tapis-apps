@@ -101,6 +101,7 @@ CREATE TABLE apps_versions
     archive_excludes TEXT[],
     archive_include_launch_files BOOLEAN NOT NULL DEFAULT true,
 --   fileInputs location in jobAttributes =====================
+    file_inputs JSONB NOT NULL,
     node_count INTEGER NOT NULL DEFAULT 1,
     cores_per_node INTEGER NOT NULL DEFAULT 1,
     memory_mb INTEGER NOT NULL DEFAULT 100,
@@ -163,22 +164,22 @@ COMMENT ON COLUMN app_updates.created IS 'UTC time for when record was created';
 -- ----------------------------------------------------------------------------------------
 -- File Inputs table
 -- Inputs associated with an app
-CREATE TABLE file_inputs
-(
-    seq_id SERIAL PRIMARY KEY,
-    app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
-    source_url TEXT,
-    target_path TEXT,
-    in_place BOOLEAN NOT NULL DEFAULT false,
-    name TEXT NOT NULL DEFAULT '',
-    description TEXT,
-    input_mode TEXT NOT NULL,
-    meta TEXT[],
-    UNIQUE (app_ver_seq_id, source_url, target_path)
-);
-ALTER TABLE file_inputs OWNER TO tapis_app;
-COMMENT ON COLUMN file_inputs.seq_id IS 'File input sequence id';
-COMMENT ON COLUMN file_inputs.app_ver_seq_id IS 'Sequence id of application requiring the file input';
+-- CREATE TABLE file_inputs
+-- (
+--     seq_id SERIAL PRIMARY KEY,
+--     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
+--     source_url TEXT,
+--     target_path TEXT,
+--     in_place BOOLEAN NOT NULL DEFAULT false,
+--     name TEXT NOT NULL DEFAULT '',
+--     description TEXT,
+--     input_mode TEXT NOT NULL,
+--     meta TEXT[],
+--     UNIQUE (app_ver_seq_id, source_url, target_path)
+-- );
+-- ALTER TABLE file_inputs OWNER TO tapis_app;
+-- COMMENT ON COLUMN file_inputs.seq_id IS 'File input sequence id';
+-- COMMENT ON COLUMN file_inputs.app_ver_seq_id IS 'Sequence id of application requiring the file input';
 
 -- ----------------------------------------------------------------------------------------
 --                           NOTIFICATIONS

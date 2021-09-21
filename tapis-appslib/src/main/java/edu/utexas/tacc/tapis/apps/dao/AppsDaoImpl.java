@@ -1,5 +1,6 @@
 package edu.utexas.tacc.tapis.apps.dao;
 
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.Types;
 import java.time.Instant;
@@ -14,6 +15,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.StringUtils;
@@ -74,7 +76,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   private static final Logger _log = LoggerFactory.getLogger(AppsDaoImpl.class);
 
   private static final String VERS_ANY = "%";
-  private static final String EMPTY_JSON = "{}";
+  private static final String EMPTY_JSON_OBJ = "{}";
+  private static final String EMPTY_JSON_ARRAY = "[]";
   private static final String[] EMPTY_STR_ARRAY = {};
 
   // Create a static Set of column names for tables APPS and APPS_VERSIONS
@@ -140,6 +143,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       String[] envVariablesStrArray = null;
       String[] archiveIncludesStrArray = null;
       String[] archiveExcludesStrArray = null;
+      JsonElement fileInputsJson = App.DEFAULT_FILE_INPUTS;
       String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
       String[] tagsStrArray = App.EMPTY_STR_ARRAY;
       JsonObject notesObj = App.DEFAULT_NOTES;
@@ -154,6 +158,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (app.getEnvVariables() != null) envVariablesStrArray = app.getEnvVariables();
       if (app.getArchiveIncludes() != null) archiveIncludesStrArray = app.getArchiveIncludes();
       if (app.getArchiveExcludes() != null) archiveExcludesStrArray = app.getArchiveExcludes();
+      if (app.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(app.getFileInputs());
       if (app.getJobTags() != null) jobTagsStrArray = app.getJobTags();
       if (app.getTags() != null) tagsStrArray = app.getTags();
       if (app.getNotes() != null) notesObj = (JsonObject) app.getNotes();
@@ -210,6 +215,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
               .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
               .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, app.getArchiveIncludeLaunchFiles())
+              .set(APPS_VERSIONS.FILE_INPUTS, fileInputsJson)
               .set(APPS_VERSIONS.NODE_COUNT, app.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, app.getCoresPerNode())
               .set(APPS_VERSIONS.MEMORY_MB, app.getMemoryMb())
@@ -230,7 +236,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       appVerSeqId = record.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Persist data to aux tables
-      persistFileInputs(db, app, appVerSeqId);
+//      persistFileInputs(db, app, appVerSeqId);
       persistAppArgs(db, app, appVerSeqId);
       persistContainerArgs(db, app, appVerSeqId);
       persistSchedulerOptions(db, app, appVerSeqId);
@@ -288,6 +294,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     String[] envVariablesStrArray = null;
     String[] archiveIncludesStrArray = null;
     String[] archiveExcludesStrArray = null;
+    JsonElement fileInputsJson = App.DEFAULT_FILE_INPUTS;
     String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
     String[] tagsStrArray = App.EMPTY_STR_ARRAY;
     JsonObject notesObj =  App.DEFAULT_NOTES;
@@ -302,6 +309,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (putApp.getEnvVariables() != null) envVariablesStrArray = putApp.getEnvVariables();
     if (putApp.getArchiveIncludes() != null) archiveIncludesStrArray = putApp.getArchiveIncludes();
     if (putApp.getArchiveExcludes() != null) archiveExcludesStrArray = putApp.getArchiveExcludes();
+    if (putApp.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(putApp.getFileInputs());
     if (putApp.getJobTags() != null) jobTagsStrArray = putApp.getJobTags();
     if (putApp.getTags() != null) tagsStrArray = putApp.getTags();
     if (putApp.getNotes() != null) notesObj = (JsonObject) putApp.getNotes();
@@ -348,6 +356,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
               .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
               .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, putApp.getArchiveIncludeLaunchFiles())
+              .set(APPS_VERSIONS.FILE_INPUTS, fileInputsJson)
               .set(APPS_VERSIONS.NODE_COUNT, putApp.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, putApp.getCoresPerNode())
               .set(APPS_VERSIONS.MEMORY_MB, putApp.getMemoryMb())
@@ -369,8 +378,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Persist data to aux tables
-      db.deleteFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-      persistFileInputs(db, putApp, appVerSeqId);
+//      db.deleteFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+//      persistFileInputs(db, putApp, appVerSeqId);
       db.deleteFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
       persistAppArgs(db, putApp, appVerSeqId);
       db.deleteFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
@@ -443,6 +452,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       String[] envVariablesStrArray = null;
       String[] archiveIncludesStrArray = null;
       String[] archiveExcludesStrArray = null;
+      JsonElement fileInputsJson;
       String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
       String[] tagsStrArray = App.EMPTY_STR_ARRAY;
       JsonObject notesObj = App.DEFAULT_NOTES;
@@ -456,6 +466,16 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (patchedApp.getEnvVariables() != null) envVariablesStrArray = patchedApp.getEnvVariables();
       if (patchedApp.getArchiveIncludes() != null) archiveIncludesStrArray = patchedApp.getArchiveIncludes();
       if (patchedApp.getArchiveExcludes() != null) archiveExcludesStrArray = patchedApp.getArchiveExcludes();
+      // If fileInputs part of the patch then convert them to a JsonElement
+      // else convert original FileInputs to a JsonElement.
+      if (patchApp.getFileInputs() != null)
+      {
+        fileInputsJson = TapisGsonUtils.getGson().toJsonTree(patchApp.getFileInputs());
+      }
+      else
+      {
+        fileInputsJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getFileInputs());
+      }
       if (patchedApp.getJobTags() != null) jobTagsStrArray = patchedApp.getJobTags();
       if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
       if (patchedApp.getTags() != null) tagsStrArray = patchedApp.getTags();
@@ -486,6 +506,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
               .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
               .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, patchedApp.getArchiveIncludeLaunchFiles())
+              .set(APPS_VERSIONS.FILE_INPUTS, fileInputsJson)
               .set(APPS_VERSIONS.NODE_COUNT, patchedApp.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, patchedApp.getCoresPerNode())
               .set(APPS_VERSIONS.MEMORY_MB, patchedApp.getMemoryMb())
@@ -507,11 +528,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Persist data to aux tables as needed
-      if (patchedApp.getFileInputs() != null)
-      {
-        db.deleteFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-        persistFileInputs(db, patchedApp, appVerSeqId);
-      }
+//      if (patchedApp.getFileInputs() != null)
+//      {
+//        db.deleteFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+//        persistFileInputs(db, patchedApp, appVerSeqId);
+//      }
       if (patchedApp.getAppArgs() != null)
       {
         db.deleteFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
@@ -1462,7 +1483,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
                                 String version, int appSeqId, int appVerSeqId, AppOperation op,
                                 String upd_json, String upd_text, UUID uuid)
   {
-    String updJsonStr = (StringUtils.isBlank(upd_json)) ? EMPTY_JSON : upd_json;
+    String updJsonStr = (StringUtils.isBlank(upd_json)) ? EMPTY_JSON_OBJ : upd_json;
     if (appSeqId < 1)
     {
       appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(id)).fetchOne(APPS.SEQ_ID);
@@ -1574,6 +1595,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       runtimeOptions = Arrays.stream(runtimeOptionsStrArray).map(RuntimeOption::valueOf).collect(Collectors.toList());
     }
 
+    // Convert FileInputs json to List<FileInput>
+//    String fiJsonStr = r.get(APPS_VERSIONS.FILE_INPUTS).toString();
+    JsonElement fiJsonElement = r.get(APPS_VERSIONS.FILE_INPUTS);
+    List<FileInput> fileInputs = Arrays.asList(TapisGsonUtils.getGson().fromJson(fiJsonElement, FileInput[].class));
+//    Type fiType = new TypeToken<ArrayList<FileInput>>(){}.getType();
+//    List<FileInput> fileInputs = TapisGsonUtils.getGson().fromJson(fiJsonStr, fiType);
+//    TapisGsonUtils.getGson().fromJson(r.get(APPS_VERSIONS.FILE_INPUTS).toString(), FileInput[].class);
+//    List<FileInput> fileInputs = TapisGsonUtils.getGson().fromJson(r.get(APPS_VERSIONS.FILE_INPUTS).toString(), FileInput[].class);
     app = new App(appSeqId, appVerSeqId, r.get(APPS.TENANT), r.get(APPS.ID), r.get(APPS_VERSIONS.VERSION),
             r.get(APPS_VERSIONS.DESCRIPTION), r.get(APPS.APP_TYPE), r.get(APPS.OWNER), r.get(APPS.ENABLED),
             r.get(APPS.CONTAINERIZED), r.get(APPS_VERSIONS.RUNTIME), r.get(APPS_VERSIONS.RUNTIME_VERSION),
@@ -1586,13 +1615,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             r.get(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE), r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_ID),
             r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR), r.get(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR),
             r.get(APPS_VERSIONS.ENV_VARIABLES), r.get(APPS_VERSIONS.ARCHIVE_INCLUDES), r.get(APPS_VERSIONS.ARCHIVE_EXCLUDES),
-            r.get(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES),
+            r.get(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES), fileInputs,
             r.get(APPS_VERSIONS.NODE_COUNT), r.get(APPS_VERSIONS.CORES_PER_NODE), r.get(APPS_VERSIONS.MEMORY_MB),
             r.get(APPS_VERSIONS.MAX_MINUTES), r.get(APPS_VERSIONS.JOB_TAGS),
             r.get(APPS_VERSIONS.TAGS), r.get(APPS_VERSIONS.NOTES), r.get(APPS_VERSIONS.UUID),
             r.get(APPS.DELETED), created, updated);
     // Fill in data from aux tables
-    app.setFileInputs(retrieveFileInputs(db, appVerSeqId));
+//    app.setFileInputs(retrieveFileInputs(db, appVerSeqId));
     app.setAppArgs(retrieveAppArgs(db, appVerSeqId));
     app.setContainerArgs(retrieveContainerArgs(db, appVerSeqId));
     app.setSchedulerOptions(retrieveSchedulerOptions(db, appVerSeqId));
@@ -1601,32 +1630,32 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     return app;
   }
 
-  /**
-   * Persist file inputs given an sql connection and an app
-   */
-  private static void persistFileInputs(DSLContext db, App app, int appVerSeqId)
-  {
-    var fileInputs = app.getFileInputs();
-    if (fileInputs == null || fileInputs.isEmpty()) return;
-
-    for (FileInput fileInput : fileInputs) {
-      String nameStr = "";
-      if (fileInput.getName() != null ) nameStr = fileInput.getName();
-      String[] kvPairs = EMPTY_STR_ARRAY;
-      if (fileInput.getMeta() != null ) kvPairs = fileInput.getMeta();
-      db.insertInto(FILE_INPUTS)
-              .set(FILE_INPUTS.APP_VER_SEQ_ID, appVerSeqId)
-              .set(FILE_INPUTS.SOURCE_URL, fileInput.getSourceUrl())
-              .set(FILE_INPUTS.TARGET_PATH, fileInput.getTargetPath())
-              .set(FILE_INPUTS.IN_PLACE, fileInput.isInPlace())
-              .set(FILE_INPUTS.NAME, nameStr)
-              .set(FILE_INPUTS.DESCRIPTION, fileInput.getDescription())
-              .set(FILE_INPUTS.INPUT_MODE, fileInput.getMode())
-              .set(FILE_INPUTS.META, kvPairs)
-              .execute();
-    }
-  }
-
+//  /**
+//   * Persist file inputs given an sql connection and an app
+//   */
+//  private static void persistFileInputs(DSLContext db, App app, int appVerSeqId)
+//  {
+//    var fileInputs = app.getFileInputs();
+//    if (fileInputs == null || fileInputs.isEmpty()) return;
+//
+//    for (FileInput fileInput : fileInputs) {
+//      String nameStr = "";
+//      if (fileInput.getName() != null ) nameStr = fileInput.getName();
+//      String[] kvPairs = EMPTY_STR_ARRAY;
+//      if (fileInput.getMeta() != null ) kvPairs = fileInput.getMeta();
+//      db.insertInto(FILE_INPUTS)
+//              .set(FILE_INPUTS.APP_VER_SEQ_ID, appVerSeqId)
+//              .set(FILE_INPUTS.SOURCE_URL, fileInput.getSourceUrl())
+//              .set(FILE_INPUTS.TARGET_PATH, fileInput.getTargetPath())
+//              .set(FILE_INPUTS.IN_PLACE, fileInput.isInPlace())
+//              .set(FILE_INPUTS.NAME, nameStr)
+//              .set(FILE_INPUTS.DESCRIPTION, fileInput.getDescription())
+//              .set(FILE_INPUTS.INPUT_MODE, fileInput.getMode())
+//              .set(FILE_INPUTS.META, kvPairs)
+//              .execute();
+//    }
+//  }
+//
   /**
    * Persist app args given an sql connection and an app
    */
@@ -1736,18 +1765,18 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     }
   }
 
-  /**
-   * Get file inputs for an app from an auxiliary table
-   * @param db - DB connection
-   * @param appVerSeqId - app
-   * @return list of file inputs
-   */
-  private static List<FileInput> retrieveFileInputs(DSLContext db, int appVerSeqId)
-  {
-    List<FileInput> fileInputs = db.selectFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(FileInput.class);
-    if (fileInputs == null || fileInputs.isEmpty()) return null;
-    return fileInputs;
-  }
+//  /**
+//   * Get file inputs for an app from an auxiliary table
+//   * @param db - DB connection
+//   * @param appVerSeqId - app
+//   * @return list of file inputs
+//   */
+//  private static List<FileInput> retrieveFileInputs(DSLContext db, int appVerSeqId)
+//  {
+//    List<FileInput> fileInputs = db.selectFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(FileInput.class);
+//    if (fileInputs == null || fileInputs.isEmpty()) return null;
+//    return fileInputs;
+//  }
 
   /**
    * Get notification subscriptions for an app from an auxiliary table

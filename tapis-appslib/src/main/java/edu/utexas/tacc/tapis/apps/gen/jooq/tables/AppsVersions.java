@@ -186,6 +186,11 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     public final TableField<AppsVersionsRecord, Boolean> ARCHIVE_INCLUDE_LAUNCH_FILES = createField(DSL.name("archive_include_launch_files"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("true", SQLDataType.BOOLEAN)), this, "");
 
     /**
+     * The column <code>tapis_app.apps_versions.file_inputs</code>.
+     */
+    public final TableField<AppsVersionsRecord, JsonElement> FILE_INPUTS = createField(DSL.name("file_inputs"), SQLDataType.JSONB, this, "", new JSONBToJsonElementBinding());
+
+    /**
      * The column <code>tapis_app.apps_versions.node_count</code>.
      */
     public final TableField<AppsVersionsRecord, Integer> NODE_COUNT = createField(DSL.name("node_count"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.field("1", SQLDataType.INTEGER)), this, "");

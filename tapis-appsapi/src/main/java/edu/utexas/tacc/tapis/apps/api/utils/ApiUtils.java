@@ -212,7 +212,6 @@ public class ApiUtils
     if (fileInputs.isEmpty()) return retList;
     for (FileInput fid : fileInputs)
     {
-//      if (meta == null) meta = new ArgMetaSpec();
       String[] kvPairs = ApiUtils.getKeyValuesAsArray(fid.meta);
       edu.utexas.tacc.tapis.apps.model.FileInput fileInput =
               new edu.utexas.tacc.tapis.apps.model.FileInput(fid.sourceUrl, fid.targetPath, fid.inPlace,

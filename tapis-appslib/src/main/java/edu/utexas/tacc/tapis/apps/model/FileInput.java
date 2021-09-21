@@ -2,7 +2,6 @@ package edu.utexas.tacc.tapis.apps.model;
 
 import edu.utexas.tacc.tapis.apps.model.App.InputMode;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
-import org.glassfish.grizzly.streams.Input;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

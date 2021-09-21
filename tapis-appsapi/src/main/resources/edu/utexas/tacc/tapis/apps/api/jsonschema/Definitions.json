@@ -12,7 +12,7 @@
   "RuntimeEnum": { "type": "string", "enum": [ "SINGULARITY", "DOCKER" ] },
   "RuntimeOptionEnum": { "type": "string", "enum": [ "NONE", "SINGULARITY_START", "SINGULARITY_RUN" ] },
   "NotificationMechanismEnum": { "type": "string", "enum": [ "WEBHOOK", "EMAIL", "QUEUE", "ACTOR" ] },
-  "InputModeEnum": { "type": "string", "enum": [ "OPTIONAL", "REQUIRED", "STATIC" ], "default": "OPTIONAL" },
+  "InputModeEnum": { "type": "string", "enum": [ "OPTIONAL", "REQUIRED", "FIXED" ], "default": "OPTIONAL" },
   "RuntimeOptions": {
     "type": ["array", "null"],
     "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/RuntimeOptionEnum" }
@@ -91,7 +91,7 @@
     "properties": {
       "name": { "type": "string", "minLength": 1 },
       "description": { "type": "string", "maxLength": 8096 },
-      "mode": { "$ref": "#/InputModeEnum" },
+      "inputMode": { "$ref": "#/InputModeEnum" },
       "inPlace": { "type": "boolean", "default": false },
       "sourceUrl": { "type": "string", "format": "uri" },
       "targetPath": { "type": "string" },
@@ -105,7 +105,7 @@
     "properties": {
       "name": { "type": "string", "minLength": 1 },
       "description": { "type": "string", "maxLength": 8096 },
-      "mode": { "$ref": "#/InputModeEnum" },
+      "inputMode": { "$ref": "#/InputModeEnum" },
       "inPlace": { "type": "boolean", "default": false },
       "sourceUrls": { "type": ["array", "null"], "items": { "type": "string", "format": "uri" } },
       "targetPaths": {"type": ["array", "null"], "items": { "type": "string" } },
@@ -146,7 +146,7 @@
     "properties": {
       "name": { "type": "string", "minLength": 1 },
       "description": { "type": "string" },
-      "mode": { "$ref": "#/InputModeEnum" },
+      "inputMode": { "$ref": "#/InputModeEnum" },
       "arg": { "type":  "string" },
       "meta": { "type": ["array", "null"], "uniqueItems": true, "items": { "$ref": "#/KeyValuePair" } }
     }
@@ -157,7 +157,7 @@
     "additionalProperties": false,
     "properties": {
       "key": { "type":  "string", "minLength": 1 },
-      "value": { "type":  "string" }
+      "value": { "type":  "string", "default": "" }
     }
   }
 }
