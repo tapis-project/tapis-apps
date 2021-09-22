@@ -3,10 +3,13 @@ package edu.utexas.tacc.tapis.apps;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
+import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
 import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
 import edu.utexas.tacc.tapis.apps.model.NotifMechanism.NotifMechanismType;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
@@ -16,11 +19,13 @@ import edu.utexas.tacc.tapis.apps.model.App.AppType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 import edu.utexas.tacc.tapis.apps.model.App.InputMode;
+import org.testng.Assert;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -130,18 +135,33 @@ public final class IntegrationUtils
   public static final Instant updatedNull = null;
   public static final UUID uuidNull = null;
 
-  public static final String[] metaKVPairs1 = {"key1A=val1A", "key1B=val1B"};
-  public static final String[] metaKVPairs2 = {"key2A=val2A", "key2B=val2B"};
-  public static final String[] metaKVPairs3 = {"key3A=val3A", "key3B=val3B"};
-  public static final String[] envVariables1 = {"key1A=val1A", "key1B=val1B", "key1C="};
-  public static final String[] envVariables2 = {"key2A=val2A", "key2B=val2B", "key2C="};
-  public static final String[] envVariablesNull = null;
+  public static final List<KeyValuePair> metaKVPairs1 = List.of(KeyValuePair.fromString("key1A=val1A"),
+                                                                KeyValuePair.fromString("key1B=val1B"),
+                                                                KeyValuePair.fromString("key1C="));
+  public static final List<KeyValuePair> metaKVPairs2 = List.of(KeyValuePair.fromString("key2A=val2A"),
+                                                                KeyValuePair.fromString("key2B=val2B"),
+                                                                KeyValuePair.fromString("key2C="));
+  public static final List<KeyValuePair> metaKVPairs3 = List.of(KeyValuePair.fromString("key3A=val3A"),
+                                                                KeyValuePair.fromString("key3B=val3B"));
+  public static final List<KeyValuePair> envVariables1 = List.of(KeyValuePair.fromString("key1A=val1A"),
+                                                         KeyValuePair.fromString("key1B=val1B"),
+                                                         KeyValuePair.fromString("key1C="));
+  public static final List<KeyValuePair> envVariables2 = List.of(KeyValuePair.fromString("key2A=val2A"),
+                                                         KeyValuePair.fromString("key2B=val2B"),
+                                                         KeyValuePair.fromString("key2C="));
+  public static final List<KeyValuePair> envVariablesNull = null;
   public static final String[] archiveIncludes1 = {"/include1A", "/include1B"};
   public static final String[] archiveIncludes2 = {"/include2A", "/include2B"};
   public static final String[] archiveIncludesNull = null;
   public static final String[] archiveExcludes1 = {"/exclude1A", "/exclude1B"};
   public static final String[] archiveExcludes2 = {"/exclude2A", "/exclude2B"};
   public static final String[] archiveExcludesNull = null;
+  public static final boolean includeLaunchFilesTrue = true;
+  public static final boolean includeLaunchFilesFalse = false;
+
+  public static final ArchiveFilter archiveFilter1 = new ArchiveFilter(archiveIncludes1, archiveExcludes1, includeLaunchFilesTrue);
+  public static final ArchiveFilter archiveFilter2 = new ArchiveFilter(archiveIncludes2, archiveExcludes2, includeLaunchFilesFalse);
+  public static final ArchiveFilter archiveFilterNull = null;
 
   public static final String[] jobTags1 = {"jobtag1a", "jobtag1b"};
   public static final String[] jobTags2 = {"jobtag2b", "jobtag2b"};
@@ -248,6 +268,12 @@ public final class IntegrationUtils
   public static final List<AppArg> schedulerOptionList2 = new ArrayList<>(List.of(schedulerOption2A, schedulerOption2B));
   public static final List<AppArg> schedulerOptionListNull = null;
 
+  public static final ParameterSet parameterSet1 = new ParameterSet(appArgList1, containerArgList1, schedulerOptionList1,
+                                                                    envVariables1, archiveFilter1);
+  public static final ParameterSet parameterSet2 = new ParameterSet(appArgList2, containerArgList2, schedulerOptionList2,
+                                                                    envVariables2, archiveFilter2);
+  public static final ParameterSet parameterSetNull = null;
+
   public static final List<OrderBy> orderByListNull = null;
   public static final List<OrderBy> orderByListAsc = Collections.singletonList(OrderBy.fromString("id(asc)"));
   public static final List<OrderBy> orderByListDesc = Collections.singletonList(OrderBy.fromString("id(desc)"));
@@ -292,6 +318,7 @@ public final class IntegrationUtils
       // Suffix which should be unique for each app within each integration test
       String suffix = key + "_" + String.format("%03d", i+1);
       String appId = appIdPrefix + "_" + suffix;
+
       // Constructor initializes all attributes except for JobCapabilities
       apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, description1 + suffix, appType, owner1,
                  enabledTrue, containerizedTrue, runtime1, runtimeVersion1 +suffix, runtimeOptions1,
@@ -299,18 +326,10 @@ public final class IntegrationUtils
                  jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
                  execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
                  execSystemLogicalQueue1, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
-                 // TODO appArgs, containerArgs, schedulerOptions
-//                 null, null, null,
-//                 envVariables1, archiveIncludes1, archiveExcludes1, archiveIncludeLaunchFilesTrue,
-// TODO parameterSet, fileInputs
-                 null, null,
+                 parameterSet1, finList1,
                  nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
                  tags1, notes1, uuidNull, deletedFalse, createdNull, updatedNull);
       // Aux table data
-//      apps[i].setFileInputs(finList1);
-//      apps[i].setAppArgs(appArgList1);
-//      apps[i].setContainerArgs(containerArgList1);
-//      apps[i].setSchedulerOptions(schedulerOptionList1);
       apps[i].setNotificationSubscriptions(notifList1);
     }
     return apps;
@@ -330,11 +349,7 @@ public final class IntegrationUtils
             strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
             execSystemId1, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
-            // TODO appArgs, containerArgs, schedulerOptions
-//            null, null, null,
-//            envVariablesNull, archiveIncludesNull, archiveExcludesNull, archiveIncludeLaunchFilesFalse,
-// TODO parameterSet, fileInputs
-            null, null,
+            parameterSet1, finList1,
             nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTagsNull,
             tagsNull, notesNull, uuidNull, deletedFalse, createdNull, updatedNull);
   }
@@ -351,18 +366,10 @@ public final class IntegrationUtils
             jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
             execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
             archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse,
-            // TODO appArgs, containerArgs, schedulerOptions
-//            null, null, null,
-//            envVariables2, archiveIncludes2, archiveExcludes2, archiveIncludeLaunchFilesFalse,
-// TODO parameterSet, fileInputs
-            null, null,
+            parameterSet2, finList2,
             nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, jobTags2,
             tags2, notes2, uuidNull, deletedFalse, createdNull, updatedNull);
     // Aux table data
-//    putApp.setFileInputs(finList2);
-//    putApp.setAppArgs(appArgList2);
-//    putApp.setContainerArgs(containerArgList2);
-//    putApp.setSchedulerOptions(schedulerOptionList2);
     putApp.setNotificationSubscriptions(notifList2);
     return putApp;
   }
@@ -371,17 +378,14 @@ public final class IntegrationUtils
    * Create a PatchApp in memory for use in testing.
    * All attributes are to be updated.
    */
-  public static PatchApp makePatchAppFull(String id, String version)
+  public static PatchApp makePatchAppFull()
   {
-//     return new PatchApp(tenantName, id, version, description2, runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
       return new PatchApp(description2, runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
              maxJobs2, maxJobsPerUser2, strictFileInputsTrue,
              jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
              execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
              archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse,
-//              appArgList2, containerArgList2, schedulerOptionList2, envVariables2, archiveIncludes2, archiveExcludes2, archiveIncludeLaunchFilesFalse,
-             null, // TODO parameterSet
-             finList2, nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, notifList2, jobTags2,
+             parameterSet2, finList2, nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, notifList2, jobTags2,
              tags2, notes2);
   }
 
@@ -389,17 +393,14 @@ public final class IntegrationUtils
    * Create a PatchApp in memory for use in testing.
    * Some attributes are to be updated: description, containerImage, execSystemId
    */
-  public static PatchApp makePatchAppPartial1(String id, String version)
+  public static PatchApp makePatchAppPartial1()
   {
-//    return new PatchApp(tenantName, id, version, description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
     return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
             jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
-//            appArgListNull, containerArgListNull, schedulerOptionListNull, envVariablesNull, archiveIncludesNull, archiveExcludesNull, archiveIncludeLaunchFilesNull,
-            null, // TODO parameterSet
-            finListNull, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
+            parameterSetNull, finListNull, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
             tagsNull, notesNull);
   }
 
@@ -408,17 +409,16 @@ public final class IntegrationUtils
    * Some attributes are to be updated: description, containerImage, execSystemId,
    *   jobAttributes.fileInputs, jobAttributes.parameterSet.containerArgs
    */
-  public static PatchApp makePatchAppPartial2(String id, String version)
+  public static PatchApp makePatchAppPartial2()
   {
-//    return new PatchApp(tenantName, id, version, description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
+    ParameterSet tmpParameterSet = new ParameterSet(appArgListNull, containerArgList3, schedulerOptionListNull,
+                                                    envVariablesNull, archiveFilterNull);
     return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
             jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
-//            appArgListNull, containerArgList3, schedulerOptionListNull, envVariablesNull, archiveIncludesNull, archiveExcludesNull, archiveIncludeLaunchFilesNull,
-            null, // TODO parameterSet
-            finList3, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
+            tmpParameterSet, finList3, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
             tagsNull, notesNull);
   }
 
@@ -426,17 +426,16 @@ public final class IntegrationUtils
    * Create a PatchApp in memory for use in testing.
    * Some attributes are to be updated: jobAttributes.parameterSet.appArgs
    */
-  public static PatchApp makePatchAppPartial3(String id, String version)
+  public static PatchApp makePatchAppPartial3()
   {
-//    return new PatchApp(tenantName, id, version, descriptionNull, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImageNull,
+    ParameterSet tmpParameterSet = new ParameterSet(appArgList3, containerArgListNull, schedulerOptionListNull,
+                                                    envVariablesNull, archiveFilterNull);
     return new PatchApp(descriptionNull, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImageNull,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
             jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
-//            // appArgList3, containerArgListNull, schedulerOptionListNull, envVariablesNull, archiveIncludesNull, archiveExcludesNull, archiveIncludeLaunchFilesNull,
-            null, // TODO parameterSet
-            finListNull, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
+            tmpParameterSet, finListNull, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
             tagsNull, notesNull);
   }
 
@@ -450,5 +449,80 @@ public final class IntegrationUtils
   {
     String suffix = key + "_" + String.format("%03d", idx);
     return appIdPrefix + "_" + suffix;
+  }
+
+  // Verify that original list of AppArgs matches the fetched list
+  public static void verifyAppArgs(String argType, List<AppArg> origArgs, List<AppArg> fetchedArgs)
+  {
+    System.out.println("Verifying fetched AppArgs of type: " + argType);
+    Assert.assertNotNull(origArgs, "Orig AppArgs is null");
+    Assert.assertNotNull(fetchedArgs, "Fetched AppArgs is null");
+    Assert.assertEquals(fetchedArgs.size(), origArgs.size());
+    // Create hash maps of orig and fetched with name as key
+    var origMap = new HashMap<String, AppArg>();
+    var fetchedMap = new HashMap<String, AppArg>();
+    for (AppArg a : origArgs) origMap.put(a.getName(), a);
+    for (AppArg a : fetchedArgs) fetchedMap.put(a.getName(), a);
+    // Go through origMap and check properties
+    for (String argName : origMap.keySet())
+    {
+      Assert.assertTrue(fetchedMap.containsKey(argName), "Fetched list does not contain original item: " + argName);
+      AppArg fetchedArg = fetchedMap.get(argName);
+      AppArg origArg = origMap.get(argName);
+      System.out.println("Found fetched item: " + argName);
+      Assert.assertEquals(fetchedArg.getArg(), origArg.getArg());
+      Assert.assertEquals(fetchedArg.getDescription(), origArg.getDescription());
+      Assert.assertEquals(fetchedArg.getInputMode(), origArg.getInputMode());
+      verifyKeyValuePairs(argType, fetchedArg.getMeta(), origArg.getMeta());
+    }
+  }
+
+  // Verify that original list of KeyValuePairs matches the fetched list
+  public static void verifyKeyValuePairs(String argType, List<KeyValuePair> origKVs, List<KeyValuePair> fetchedKVs)
+  {
+    System.out.println("Verifying fetched KV pairs of type: " + argType);
+    Assert.assertNotNull(origKVs, "Orig KVs is null");
+    Assert.assertNotNull(fetchedKVs, "Fetched KVs is null");
+    Assert.assertEquals(fetchedKVs.size(), origKVs.size());
+    // Create hash maps of orig and fetched with KV key as key
+    var origMap = new HashMap<String, KeyValuePair>();
+    var fetchedMap = new HashMap<String, KeyValuePair>();
+    for (KeyValuePair kv : origKVs) origMap.put(kv.getKey(), kv);
+    for (KeyValuePair kv : fetchedKVs) fetchedMap.put(kv.getKey(), kv);
+    // Go through origMap and check properties
+    for (String kvKey : origMap.keySet())
+    {
+      Assert.assertTrue(fetchedMap.containsKey(kvKey), "Fetched list does not contain original item: " + kvKey);
+      KeyValuePair fetchedKV = fetchedMap.get(kvKey);
+      System.out.println("Found fetched KeyValuePair: " + fetchedKV);
+      Assert.assertEquals(fetchedMap.get(kvKey).toString(), origMap.get(kvKey).toString());
+    }
+  }
+
+  // Verify that original list of FileInputs matches the fetched list
+  public static void verifyFileInputs(List<FileInput> origFileInputs, List<FileInput> fetchedFileInputs)
+  {
+    System.out.println("Verifying list of FileInputs");
+    Assert.assertNotNull(origFileInputs, "Orig FileInputs is null");
+    Assert.assertNotNull(fetchedFileInputs, "Fetched FileInputs is null");
+    Assert.assertEquals(fetchedFileInputs.size(), origFileInputs.size());
+    // Create hash maps of orig and fetched with name as key
+    var origMap = new HashMap<String, FileInput>();
+    var fetchedMap = new HashMap<String, FileInput>();
+    for (FileInput fi : origFileInputs) origMap.put(fi.getName(), fi);
+    for (FileInput fi : fetchedFileInputs) fetchedMap.put(fi.getName(), fi);
+    // Go through origMap and check properties
+    for (String fiName : origMap.keySet())
+    {
+      Assert.assertTrue(fetchedMap.containsKey(fiName), "Fetched list does not contain original item: " + fiName);
+      FileInput fetchedFileInput = fetchedMap.get(fiName);
+      FileInput origFileInput = origMap.get(fiName);
+      System.out.println("Found fetched FileInput: " + fiName);
+      Assert.assertEquals(fetchedFileInput.getSourceUrl(), origFileInput.getSourceUrl());
+      Assert.assertEquals(fetchedFileInput.getTargetPath(), origFileInput.getTargetPath());
+      Assert.assertEquals(fetchedFileInput.getDescription(), origFileInput.getDescription());
+      Assert.assertEquals(fetchedFileInput.getInputMode(), origFileInput.getInputMode());
+      verifyKeyValuePairs("FileInput", fetchedFileInput.getMeta(), origFileInput.getMeta());
+    }
   }
 }

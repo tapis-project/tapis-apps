@@ -5,6 +5,8 @@ import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /*
  * Class representing FileInputs contained in an App definition.
 
@@ -25,39 +27,21 @@ public final class FileInput
   // Logging
   private static final Logger _log = LoggerFactory.getLogger(FileInput.class);
 
-//  private final int seqId; // Unique database sequence number
-//  private final int appSeqId;
-//
   private final String sourceUrl;
   private final String targetPath;
   private final boolean inPlace;
   private final String name;
   private final String description;
   private final InputMode inputMode;
-  private final String[] meta;
+  private final List<KeyValuePair> meta;
 
   /* ********************************************************************** */
   /*                           Constructors                                 */
   /* ********************************************************************** */
-//    public FileInput(int seqId1, int appSeqId1, String sourceUrl1, String targetPath1, boolean inPlace1,
-//                     String name1, String description1, InputMode mode, String[] meta)
-//  {
-////    seqId = seqId1;
-////    appSeqId = appSeqId1;
-//    sourceUrl = sourceUrl1;
-//    targetPath = targetPath1;
-//    inPlace = inPlace1;
-//    name = name1;
-//    description = description1;
-//    this.inputMode = mode;
-//    this.meta = meta;
-//  }
-//
+
   public FileInput(String sourceUrl1, String targetPath1, boolean inPlace1, String name1, String description1,
-                   InputMode mode, String[] meta)
+                   InputMode mode, List<KeyValuePair> meta)
   {
-//    seqId = -1;
-//    appSeqId = -1;
     sourceUrl = sourceUrl1;
     targetPath = targetPath1;
     inPlace = inPlace1;
@@ -70,15 +54,13 @@ public final class FileInput
   /* ********************************************************************** */
   /*                               Accessors                                */
   /* ********************************************************************** */
-//  public int getSeqId() { return seqId; }
-//  public int getAppSeqId() { return appSeqId; }
   public String getSourceUrl() { return sourceUrl; }
   public String getTargetPath() { return targetPath; }
   public boolean isInPlace() { return inPlace; }
   public String getName() { return name; }
   public String getDescription() { return description; }
   public InputMode getInputMode() { return inputMode; }
-  public String[] getMeta() { return meta; }
+  public List<KeyValuePair> getMeta() { return meta; }
 
   @Override
   public String toString() {return TapisUtils.toString(this);}

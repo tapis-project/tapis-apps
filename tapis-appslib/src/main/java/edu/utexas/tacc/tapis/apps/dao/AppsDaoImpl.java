@@ -209,10 +209,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, app.getArchiveSystemDir())
               .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, app.isArchiveOnAppError())
               .set(APPS_VERSIONS.PARAMETER_SET, parameterSetJson)
-//              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
-//              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
-//              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
-//              .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, app.getArchiveIncludeLaunchFiles())
               .set(APPS_VERSIONS.FILE_INPUTS, fileInputsJson)
               .set(APPS_VERSIONS.NODE_COUNT, app.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, app.getCoresPerNode())
@@ -234,10 +230,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       appVerSeqId = record.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Persist data to aux tables
-//      persistFileInputs(db, app, appVerSeqId);
-//      persistAppArgs(db, app, appVerSeqId);
-//      persistContainerArgs(db, app, appVerSeqId);
-//      persistSchedulerOptions(db, app, appVerSeqId);
       persistNotificationSubscriptions(db, app, appVerSeqId);
 
       // Update top level table APPS
@@ -370,14 +362,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Persist data to aux tables
-//      db.deleteFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-//      persistFileInputs(db, putApp, appVerSeqId);
-//      db.deleteFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-//      persistAppArgs(db, putApp, appVerSeqId);
-//      db.deleteFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-//      persistContainerArgs(db, putApp, appVerSeqId);
-//      db.deleteFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-//      persistSchedulerOptions(db, putApp, appVerSeqId);
       db.deleteFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
       persistNotificationSubscriptions(db, putApp, appVerSeqId);
 

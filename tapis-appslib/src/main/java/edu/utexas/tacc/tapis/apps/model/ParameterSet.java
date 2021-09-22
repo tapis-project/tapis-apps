@@ -64,7 +64,8 @@ public final class ParameterSet
   public void setSchedulerOptions(List<AppArg> aa) { schedulerOptions = aa; }
   public List<KeyValuePair> getEnvVariables() { return (envVariables == null) ? null : new ArrayList<>(envVariables); }
   public void setEnvVariables(List<KeyValuePair> kv) { envVariables = kv; }
-  public ArchiveFilter getArchiveFilter() { return (archiveFilter == null) ? null : new ArchiveFilter(archiveFilter); }
+  // When patching we update archiveFilter attributes via setter, so do not return a new instance of ArchiveFilter.
+  public ArchiveFilter getArchiveFilter() { return archiveFilter; }
   public void setArchiveFilter(ArchiveFilter af) { archiveFilter = af; }
   @Override
   public String toString() {return TapisUtils.toString(this);}

@@ -70,13 +70,13 @@
     "additionalProperties": false,
     "properties": {
       "appArgs": {
-        "type": ["array", "null"], "items":  { "$ref": "#/ArgSpec" }
+        "type": ["array", "null"], "items":  { "$ref": "#/AppArg" }
       },
       "containerArgs": {
-        "type": ["array", "null"], "items":  { "$ref": "#/ArgSpec" }
+        "type": ["array", "null"], "items":  { "$ref": "#/AppArg" }
       },
       "schedulerOptions": {
-        "type": ["array", "null"], "items":  { "$ref": "#/ArgSpec" }
+        "type": ["array", "null"], "items":  { "$ref": "#/AppArg" }
       },
       "envVariables": {
         "type": ["array", "null"], "items":  { "$ref": "#/KeyValuePair" }
@@ -139,7 +139,7 @@
       "includeLaunchFiles": { "type": "boolean", "default": true }
     }
   },
-  "ArgSpec": {
+  "AppArg": {
     "type": "object",
     "required": [ "name" ],
     "additionalProperties": false,

@@ -1,9 +1,9 @@
 package edu.utexas.tacc.tapis.apps.service;
 
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.apps.model.AppArg;
-import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
@@ -217,6 +217,8 @@ public class AppsServiceTest
     String createText = "{\"testPut\": \"0-create1\"}";
     svc.createApp(rUser1, app0, createText);
     App tmpApp = svc.getApp(rUser1, appId, appVersion, false);
+    checkCommonAppAttrs(app0, tmpApp);
+
     // Get last updated timestamp
     LocalDateTime updated = LocalDateTime.ofInstant(tmpApp.getUpdated(), ZoneOffset.UTC);
     String updatedStr1 = TapisUtils.getSQLStringFromUTCTime(updated);
@@ -225,10 +227,10 @@ public class AppsServiceTest
     // Create putApp where all updatable attributes are changed
     String put1Text = "{\"testPut\": \"1-put1\"}";
     App putApp = IntegrationUtils.makePutAppFull(tmpApp);
-
     // Update using putApp
     svc.putApp(rUser1, putApp, put1Text);
     tmpApp = svc.getApp(rUser1, appId, appVersion, false);
+
     // Get last updated timestamp
     updated = LocalDateTime.ofInstant(tmpApp.getUpdated(), ZoneOffset.UTC);
     String updatedStr2 = TapisUtils.getSQLStringFromUTCTime(updated);
@@ -256,13 +258,7 @@ public class AppsServiceTest
     app0.setArchiveSystemId(archiveSystemId2);
     app0.setArchiveSystemDir(archiveSystemDir2);
     app0.setArchiveOnAppError(archiveOnAppErrorFalse);
-//    app0.setAppArgs(appArgList2);
-//    app0.setContainerArgs(containerArgList2);
-//    app0.setSchedulerOptions(schedulerOptionList2);
-//    app0.setEnvVariables(envVariables2);
-//    app0.setArchiveIncludes(archiveIncludes2);
-//    app0.setArchiveExcludes(archiveExcludes2);
-//    app0.setArchiveIncludeLaunchFiles(archiveIncludeLaunchFilesFalse);
+    app0.setParameterSet(parameterSet2);
     app0.setFileInputs(finList2);
     app0.setNodeCount(nodeCount2);
     app0.setCoresPerNode(coresPerNode2);
@@ -293,10 +289,12 @@ public class AppsServiceTest
     LocalDateTime updated = LocalDateTime.ofInstant(tmpApp.getUpdated(), ZoneOffset.UTC);
     String updatedStr1 = TapisUtils.getSQLStringFromUTCTime(updated);
     Thread.sleep(300);
+    // ===========================================================
     // Create patchApp where all updatable attributes are changed
+    // ===========================================================
     String patchFullText = "{\"testPatch\": \"1-patchFull\"}";
-    PatchApp patchAppFull = IntegrationUtils.makePatchAppFull(appId, appVersion);
-    // Update using updateApp
+    PatchApp patchAppFull = IntegrationUtils.makePatchAppFull();
+    // Update using patchApp
     svc.patchApp(rUser1, appId, appVersion, patchAppFull, patchFullText);
     App tmpAppFull = svc.getApp(rUser1, appId, appVersion, false);
     // Get last updated timestamp
@@ -325,13 +323,7 @@ public class AppsServiceTest
     app0.setArchiveSystemId(archiveSystemId2);
     app0.setArchiveSystemDir(archiveSystemDir2);
     app0.setArchiveOnAppError(archiveOnAppErrorFalse);
-//    app0.setAppArgs(appArgList2);
-//    app0.setContainerArgs(containerArgList2);
-//    app0.setSchedulerOptions(schedulerOptionList2);
-//    app0.setEnvVariables(envVariables2);
-//    app0.setArchiveIncludes(archiveIncludes2);
-//    app0.setArchiveExcludes(archiveExcludes2);
-//    app0.setArchiveIncludeLaunchFiles(archiveIncludeLaunchFilesFalse);
+    app0.setParameterSet(parameterSet2);
     app0.setFileInputs(finList2);
     app0.setNodeCount(nodeCount2);
     app0.setCoresPerNode(coresPerNode2);
@@ -344,7 +336,9 @@ public class AppsServiceTest
     //Check common app attributes:
     checkCommonAppAttrs(app0, tmpAppFull);
 
+    // ===========================================================
     // Test updating just a few attributes
+    // ===========================================================
     app0 = apps[22];
     appId = app0.getId();
     appVersion = app0.getVersion();
@@ -353,8 +347,8 @@ public class AppsServiceTest
     // Create patchApp where some attributes are changed
     //   * Some attributes are to be updated: description, containerImage, execSystemId,
     String patchPartialText1 = "{\"testPatch\": \"1-patchPartial1\"}";
-    PatchApp patchAppPartial1 = IntegrationUtils.makePatchAppPartial1(appId, appVersion);
-    // Update using updateApp
+    PatchApp patchAppPartial1 = IntegrationUtils.makePatchAppPartial1();
+    // Update using patchApp
     svc.patchApp(rUser1, appId, appVersion, patchAppPartial1, patchPartialText1);
     App tmpAppPartial = svc.getApp(rUser1, appId, appVersion, false);
     // Update original app definition with patched values
@@ -364,9 +358,11 @@ public class AppsServiceTest
     //Check common app attributes:
     checkCommonAppAttrs(app0, tmpAppPartial);
 
+    // ===========================================================
     // Test updating a few more attributes including a collection in JobAttributes
     //   and a collection in JobAttributes.ParameterSet.
     //   jobAttributes.fileInputs, jobAttributes.parameterSet.containerArgs
+    // ===========================================================
     app0 = apps[23];
     appId = app0.getId();
     appVersion = app0.getVersion();
@@ -374,21 +370,23 @@ public class AppsServiceTest
     svc.createApp(rUser1, app0, createText);
     // Create patchApp where some attributes are changed
     String patchPartialText2 = "{\"testPatch\": \"1-patchPartial2\"}";
-    PatchApp patchAppPartial2 = IntegrationUtils.makePatchAppPartial2(appId, appVersion);
-    // Update using updateApp
+    PatchApp patchAppPartial2 = IntegrationUtils.makePatchAppPartial2();
+    // Update using patchApp
     svc.patchApp(rUser1, appId, appVersion, patchAppPartial2, patchPartialText2);
     tmpAppPartial = svc.getApp(rUser1, appId, appVersion, false);
     // Update original app definition with patched values
     app0.setDescription(description2);
     app0.setContainerImage(containerImage2);
     app0.setExecSystemId(execSystemId2);
+    app0.getParameterSet().setContainerArgs(containerArgList3);
     app0.setFileInputs(finList3);
-// TODO    app0.setContainerArgs(containerArgList3);
     //Check common app attributes:
     checkCommonAppAttrs(app0, tmpAppPartial);
 
+    // ===========================================================
     // Test updating just one of the collections in JobAttributes.ParameterSet.
     //   jobAttributes.parameterSet.appArgs
+    // ===========================================================
     app0 = apps[24];
     appId = app0.getId();
     appVersion = app0.getVersion();
@@ -396,12 +394,12 @@ public class AppsServiceTest
     svc.createApp(rUser1, app0, createText);
     // Create patchApp where some attributes are changed
     String patchPartialText3 = "{\"testPatch\": \"1-patchPartial3\"}";
-    PatchApp patchAppPartial3 = IntegrationUtils.makePatchAppPartial3(appId, appVersion);
-    // Update using updateApp
+    PatchApp patchAppPartial3 = IntegrationUtils.makePatchAppPartial3();
+    // Update using patchApp
     svc.patchApp(rUser1, appId, appVersion, patchAppPartial3, patchPartialText3);
     tmpAppPartial = svc.getApp(rUser1, appId, appVersion, false);
     // Update original app definition with patched values
-// TODO    app0.setAppArgs(appArgList3);
+    app0.getParameterSet().setAppArgs(appArgList3);
     //Check common app attributes:
     checkCommonAppAttrs(app0, tmpAppPartial);
   }
@@ -1028,8 +1026,9 @@ public class AppsServiceTest
   public void testAuthDeny() throws Exception
   {
     App app0 = apps[12];
-    String appId = app0.getId();
-    PatchApp patchApp = IntegrationUtils.makePatchAppFull(appId, app0.getVersion());
+    String app0Id = app0.getId();
+    String app0Version = app0.getVersion();
+    PatchApp patchApp = IntegrationUtils.makePatchAppFull();
     // CREATE - Deny user not owner/admin, deny service
     boolean pass = false;
     try { svc.createApp(rUser0, app0, scrubbedJson); }
@@ -1051,12 +1050,12 @@ public class AppsServiceTest
     // Create an app and grant permissions
     svc.createApp(rUser1, app0, scrubbedJson);
     // Grant User3 - READ and User4 - MODIFY
-    svc.grantUserPermissions(rUser1, appId, testUser3, testPermsREAD, scrubbedJson);
-    svc.grantUserPermissions(rUser1, appId, testUser4, testPermsMODIFY, scrubbedJson);
+    svc.grantUserPermissions(rUser1, app0Id, testUser3, testPermsREAD, scrubbedJson);
+    svc.grantUserPermissions(rUser1, app0Id, testUser4, testPermsMODIFY, scrubbedJson);
 
     // READ - deny user not owner/admin and no READ or MODIFY access (testuser0)
     pass = false;
-    try { svc.getApp(rUser0, appId, app0.getVersion(), false); }
+    try { svc.getApp(rUser0, app0Id, app0Version, false); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1066,7 +1065,7 @@ public class AppsServiceTest
 
     // EXECUTE - deny user not owner/admin with READ but not EXECUTE (testuser3)
     pass = false;
-    try { svc.getApp(rUser3, appId, app0.getVersion(), true); }
+    try { svc.getApp(rUser3, app0Id, app0Version, true); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1076,7 +1075,7 @@ public class AppsServiceTest
 
     // MODIFY Deny user with no READ or MODIFY (testuser0), deny user with only READ (testuser3), deny service
     pass = false;
-    try { svc.patchApp(rUser0, appId, appVersion, patchApp, scrubbedJson); }
+    try { svc.patchApp(rUser0, app0Id, app0Version, patchApp, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1084,7 +1083,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.patchApp(rUser3, appId, appVersion, patchApp, scrubbedJson); }
+    try { svc.patchApp(rUser3, app0Id, app0Version, patchApp, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1092,7 +1091,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.patchApp(rFilesSvc, appId, appVersion, patchApp, scrubbedJson); }
+    try { svc.patchApp(rFilesSvc, app0Id, app0Version, patchApp, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1102,7 +1101,7 @@ public class AppsServiceTest
 
     // DELETE - deny user not owner/admin (testuser3), deny service
     pass = false;
-    try { svc.deleteApp(rUser3, app0.getId()); }
+    try { svc.deleteApp(rUser3, app0Id); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1110,7 +1109,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.deleteApp(rFilesSvc, app0.getId()); }
+    try { svc.deleteApp(rFilesSvc, app0Id); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1120,7 +1119,7 @@ public class AppsServiceTest
 
     // CHANGE_OWNER - deny user not owner/admin (testuser3), deny service
     pass = false;
-    try { svc.changeAppOwner(rUser3, app0.getId(), testUser2); }
+    try { svc.changeAppOwner(rUser3, app0Id, testUser2); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1128,7 +1127,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.changeAppOwner(rFilesSvc, app0.getId(), testUser2); }
+    try { svc.changeAppOwner(rFilesSvc, app0Id, testUser2); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1138,7 +1137,7 @@ public class AppsServiceTest
 
     // GET_PERMS - deny user not owner/admin and no READ or MODIFY access (testuser0)
     pass = false;
-    try { svc.getUserPermissions(rUser0, app0.getId(), testUser1); }
+    try { svc.getUserPermissions(rUser0, app0Id, testUser1); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1148,7 +1147,7 @@ public class AppsServiceTest
 
     // GRANT_PERMS - deny user not owner/admin (testuser3), deny service
     pass = false;
-    try { svc.grantUserPermissions(rUser3, app0.getId(), testUser3, testPermsREADMODIFY, scrubbedJson); }
+    try { svc.grantUserPermissions(rUser3, app0Id, testUser3, testPermsREADMODIFY, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1156,7 +1155,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.grantUserPermissions(rFilesSvc, app0.getId(), testUser3, testPermsREADMODIFY, scrubbedJson); }
+    try { svc.grantUserPermissions(rFilesSvc, app0Id, testUser3, testPermsREADMODIFY, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1166,7 +1165,7 @@ public class AppsServiceTest
 
     // REVOKE_PERMS - deny user not owner/admin (testuser3), deny service
     pass = false;
-    try { svc.revokeUserPermissions(rUser3, app0.getId(), testUser4, testPermsREADMODIFY, scrubbedJson); }
+    try { svc.revokeUserPermissions(rUser3, app0Id, testUser4, testPermsREADMODIFY, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1174,7 +1173,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.grantUserPermissions(rFilesSvc, app0.getId(), testUser4, testPermsREADMODIFY, scrubbedJson); }
+    try { svc.grantUserPermissions(rFilesSvc, app0Id, testUser4, testPermsREADMODIFY, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1262,40 +1261,47 @@ public class AppsServiceTest
     Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
     Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
     Assert.assertEquals(tmpApp.isArchiveOnAppError(), app0.isArchiveOnAppError());
-//TODO    Assert.assertEquals(tmpApp.getArchiveIncludeLaunchFiles(), app0.getArchiveIncludeLaunchFiles());
+
+    // Verify parameterSet
+    ParameterSet parmSet = tmpApp.getParameterSet();
+    ParameterSet parmSet0 = app0.getParameterSet();
+    Assert.assertNotNull(parmSet, "parameterSet was null");
+    verifyAppArgs("App Arg", parmSet0.getAppArgs(), parmSet.getAppArgs());
+    verifyAppArgs("Container Arg", parmSet0.getContainerArgs(), parmSet.getContainerArgs());
+    verifyAppArgs("Scheduler Option Arg", parmSet0.getSchedulerOptions(), parmSet.getSchedulerOptions());
+
     // Verify envVariables
-//TODO     String[] origEnvVariables = app0.getEnvVariables();
-//TODO     String[] tmpEnvVariables = tmpApp.getEnvVariables();
-//TODO     Assert.assertNotNull(tmpEnvVariables, "envVariables value was null");
-//TODO     var envVariablesList = Arrays.asList(tmpEnvVariables);
-//    Assert.assertEquals(tmpEnvVariables.length, origEnvVariables.length, "Wrong number of envVariables");
-//    for (String envVariableStr : origEnvVariables)
-//    {
-//      Assert.assertTrue(envVariablesList.contains(envVariableStr));
-//      System.out.println("Found envVariable: " + envVariableStr);
-//    }
-//    // Verify archiveIncludes
-//    String[] origArchiveIncludes = app0.getArchiveIncludes();
-//    String[] tmpArchiveIncludes = tmpApp.getArchiveIncludes();
-//    Assert.assertNotNull(tmpArchiveIncludes, "archiveIncludes value was null");
-//    var archiveIncludesList = Arrays.asList(tmpArchiveIncludes);
-//    Assert.assertEquals(tmpArchiveIncludes.length, origArchiveIncludes.length, "Wrong number of archiveIncludes");
-//    for (String archiveIncludeStr : origArchiveIncludes)
-//    {
-//      Assert.assertTrue(archiveIncludesList.contains(archiveIncludeStr));
-//      System.out.println("Found archiveInclude: " + archiveIncludeStr);
-//    }
-//    // Verify archiveExcludes
-//    String[] origArchiveExcludes = app0.getArchiveExcludes();
-//    String[] tmpArchiveExcludes = tmpApp.getArchiveExcludes();
-//    Assert.assertNotNull(tmpArchiveExcludes, "archiveExcludes value was null");
-//    var archiveExcludesList = Arrays.asList(tmpArchiveExcludes);
-//    Assert.assertEquals(tmpArchiveExcludes.length, origArchiveExcludes.length, "Wrong number of archiveExcludes");
-//    for (String archiveExcludeStr : origArchiveExcludes)
-//    {
-//      Assert.assertTrue(archiveExcludesList.contains(archiveExcludeStr));
-//      System.out.println("Found archiveExclude: " + archiveExcludeStr);
-//    }
+    verifyKeyValuePairs("Env Var", parmSet0.getEnvVariables(), parmSet.getEnvVariables());
+
+    // Verify archiveFilter in parameterSet
+    ArchiveFilter tmpArchiveFilter = parmSet.getArchiveFilter();
+    ArchiveFilter archiveFilter0 = parmSet0.getArchiveFilter();
+    Assert.assertNotNull(tmpArchiveFilter, "archiveFilter was null");
+    Assert.assertEquals(tmpArchiveFilter.isIncludeLaunchFiles(), archiveFilter0.isIncludeLaunchFiles());
+    // Verify archiveIncludes
+    String[] tmpArchiveIncludes = tmpArchiveFilter.getIncludes();
+    Assert.assertNotNull(tmpArchiveIncludes, "archiveIncludes value was null");
+    var archiveIncludesList = Arrays.asList(tmpArchiveIncludes);
+    Assert.assertEquals(tmpArchiveIncludes.length, archiveFilter0.getIncludes().length, "Wrong number of archiveIncludes");
+    for (String archiveIncludeStr : archiveFilter0.getIncludes())
+    {
+      Assert.assertTrue(archiveIncludesList.contains(archiveIncludeStr));
+      System.out.println("Found archiveInclude: " + archiveIncludeStr);
+    }
+    // Verify archiveExcludes
+    String[] tmpArchiveExcludes = tmpArchiveFilter.getExcludes();
+    Assert.assertNotNull(tmpArchiveExcludes, "archiveExcludes value was null");
+    var archiveExcludesList = Arrays.asList(tmpArchiveExcludes);
+    Assert.assertEquals(tmpArchiveExcludes.length, archiveFilter0.getExcludes().length, "Wrong number of archiveExcludes");
+    for (String archiveExcludeStr : archiveFilter0.getExcludes())
+    {
+      Assert.assertTrue(archiveExcludesList.contains(archiveExcludeStr));
+      System.out.println("Found archiveExclude: " + archiveExcludeStr);
+    }
+
+    // Verify file inputs
+    verifyFileInputs(app0.getFileInputs(), tmpApp.getFileInputs());
+
     Assert.assertEquals(tmpApp.getNodeCount(), app0.getNodeCount());
     Assert.assertEquals(tmpApp.getCoresPerNode(), app0.getCoresPerNode());
     Assert.assertEquals(tmpApp.getMemoryMb(), app0.getMemoryMb());
@@ -1335,61 +1341,10 @@ public class AppsServiceTest
     Assert.assertTrue(tmpObj.has("testdata"));
     String testdataStr = origNotes.get("testdata").getAsString();
     Assert.assertEquals(tmpObj.get("testdata").getAsString(), testdataStr);
+
     // ===============================================================================================
-    // Verify data in aux tables: file_inputs, notification_subscriptions, app_args, container_args, scheduler_options
+    // Verify data in aux tables: notification_subscriptions
     // ===============================================================================================
-    // Verify file inputs
-    List<FileInput> origFileInputs = app0.getFileInputs();
-    List<FileInput> tmpInputs = tmpApp.getFileInputs();
-    Assert.assertNotNull(origFileInputs, "Orig fileInputs was null");
-    Assert.assertNotNull(tmpInputs, "Fetched fileInputs was null");
-    Assert.assertEquals(tmpInputs.size(), origFileInputs.size());
-    var metaNamesFound = new ArrayList<String>();
-    for (FileInput itemFound : tmpInputs) {metaNamesFound.add(itemFound.getName());}
-    for (FileInput itemSeedItem : origFileInputs)
-    {
-      Assert.assertTrue(metaNamesFound.contains(itemSeedItem.getName()),
-              "List of fileInputs did not contain an item with metaName: " + itemSeedItem.getName());
-    }
-    // Verify app args
-//TODO    List<AppArg> origArgs = app0.getAppArgs();
-//    List<AppArg> tmpArgs = tmpApp.getAppArgs();
-//    Assert.assertNotNull(origArgs, "Orig appArgs was null");
-//    Assert.assertNotNull(tmpArgs, "Fetched appArgs was null");
-//    Assert.assertEquals(tmpArgs.size(), origArgs.size());
-//    var argValuesFound = new ArrayList<String>();
-//    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getArgValue());}
-//    for (AppArg itemSeedItem : origArgs)
-//    {
-//      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getArgValue()),
-//              "List of appArgs did not contain an item with value: " + itemSeedItem.getArgValue());
-//    }
-    // Verify container args
-//TODO    origArgs = app0.getContainerArgs();
-//    tmpArgs = tmpApp.getContainerArgs();
-//    Assert.assertNotNull(origArgs, "Orig containerArgs was null");
-//    Assert.assertNotNull(tmpArgs, "Fetched containerArgs was null");
-//    Assert.assertEquals(tmpArgs.size(), origArgs.size());
-//    argValuesFound = new ArrayList<>();
-//    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getArgValue());}
-//    for (AppArg itemSeedItem : origArgs)
-//    {
-//      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getArgValue()),
-//              "List of containerArgs did not contain an item with value: " + itemSeedItem.getArgValue());
-//    }
-//    // Verify scheduler options
-//    origArgs = app0.getSchedulerOptions();
-//    tmpArgs = tmpApp.getSchedulerOptions();
-//    Assert.assertNotNull(origArgs, "Orig schedulerOptions was null");
-//    Assert.assertNotNull(tmpArgs, "Fetched schedulerOptions was null");
-//    Assert.assertEquals(tmpArgs.size(), origArgs.size());
-//    argValuesFound = new ArrayList<>();
-//    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getArgValue());}
-//    for (AppArg itemSeedItem : origArgs)
-//    {
-//      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getArgValue()),
-//              "List of schedulerOptions did not contain an item with value: " + itemSeedItem.getArgValue());
-//    }
     // Verify notification subscriptions
     List<NotifSubscription> origNotificationSubs = app0.getNotificationSubscriptions();
     List<NotifSubscription> tmpSubs = tmpApp.getNotificationSubscriptions();

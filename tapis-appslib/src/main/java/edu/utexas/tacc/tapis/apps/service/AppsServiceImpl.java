@@ -1642,8 +1642,8 @@ public class AppsServiceImpl implements AppsService
     {
       ParameterSet pParmSet = p.getParameterSet();
       if (pParmSet.getAppArgs() != null) app1.getParameterSet().setAppArgs(pParmSet.getAppArgs());
-      if (pParmSet.getContainerArgs() != null) app1.getParameterSet().setAppArgs(pParmSet.getContainerArgs());
-      if (pParmSet.getSchedulerOptions() != null) app1.getParameterSet().setAppArgs(pParmSet.getSchedulerOptions());
+      if (pParmSet.getContainerArgs() != null) app1.getParameterSet().setContainerArgs(pParmSet.getContainerArgs());
+      if (pParmSet.getSchedulerOptions() != null) app1.getParameterSet().setSchedulerOptions(pParmSet.getSchedulerOptions());
       if (pParmSet.getEnvVariables() != null) app1.getParameterSet().setEnvVariables(pParmSet.getEnvVariables());
       // If ArchiveFilter in ParameterSet is being updated then process it
       if (pParmSet.getArchiveFilter() != null)

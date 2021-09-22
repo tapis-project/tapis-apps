@@ -2,6 +2,7 @@ package edu.utexas.tacc.tapis.apps.api.model;
 
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 
 import java.util.List;
@@ -58,7 +59,7 @@ public final class JobAttributes
     archiveSystemDir = a.getArchiveSystemDir();
     archiveOnAppError = a.isArchiveOnAppError();
     parameterSet = new ParameterSet(a.getParameterSet());
-    fileInputs = ApiUtils.buildApiFileInputs(a.getFileInputs());
+    fileInputs = a.getFileInputs();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
     memoryMB = a.getMemoryMb();

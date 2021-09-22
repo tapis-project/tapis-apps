@@ -1,8 +1,6 @@
 package edu.utexas.tacc.tapis.apps.api.utils;
 
 import com.google.gson.JsonElement;
-import edu.utexas.tacc.tapis.apps.api.model.ArgSpec;
-import edu.utexas.tacc.tapis.apps.api.model.FileInput;
 import edu.utexas.tacc.tapis.apps.api.model.NotificationMechanism;
 import edu.utexas.tacc.tapis.apps.api.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.App;
@@ -188,19 +186,18 @@ public class ApiUtils
   /**
    * Build a list of lib model AppArg objects given the request objects
    */
-  public static List<AppArg> buildLibAppArgs(List<ArgSpec> argSpecs)
-  {
-    if (argSpecs == null) return null;
-    var retList = new ArrayList<AppArg>();
-    if (argSpecs.isEmpty()) return retList;
-    for (ArgSpec argSpec : argSpecs)
-    {
-      String[] kvPairs = ApiUtils.getKeyValuesAsArray(argSpec.meta);
-      AppArg appArg = new AppArg(argSpec.arg, argSpec.name, argSpec.description, argSpec.mode, kvPairs);
-      retList.add(appArg);
-    }
-    return retList;
-  }
+//  public static List<AppArg> buildLibAppArgs(List<ArgSpec> argSpecs)
+//  {
+//    if (argSpecs == null) return null;
+//    var retList = new ArrayList<AppArg>();
+//    if (argSpecs.isEmpty()) return retList;
+//    for (ArgSpec argSpec : argSpecs)
+//    {
+//      AppArg appArg = new AppArg(argSpec.arg, argSpec.name, argSpec.description, argSpec.mode, argSpec.meta);
+//      retList.add(appArg);
+//    }
+//    return retList;
+//  }
 
 //  /**
 //   * Build a lib model ParameterSet object given the ParameterSet request object
@@ -233,21 +230,22 @@ public class ApiUtils
   /**
    * Build a list of lib model FileInput objects given the request objects
    */
-  public static List<edu.utexas.tacc.tapis.apps.model.FileInput> buildLibFileInputs(List<FileInput> fileInputs)
-  {
-    if (fileInputs == null) return null;
-    var retList = new ArrayList<edu.utexas.tacc.tapis.apps.model.FileInput>();
-    if (fileInputs.isEmpty()) return retList;
-    for (FileInput fid : fileInputs)
-    {
-      String[] kvPairs = ApiUtils.getKeyValuesAsArray(fid.meta);
-      edu.utexas.tacc.tapis.apps.model.FileInput fileInput =
-              new edu.utexas.tacc.tapis.apps.model.FileInput(fid.sourceUrl, fid.targetPath, fid.inPlace,
-                                          fid.name, fid.description, fid.mode, kvPairs);
-      retList.add(fileInput);
-    }
-    return retList;
-  }
+// TODO/TBD: do we really need this? Seems like with recent updates can now always use model class
+//  public static List<edu.utexas.tacc.tapis.apps.model.FileInput> buildLibFileInputs(List<FileInput> fileInputs)
+//  {
+//    if (fileInputs == null) return null;
+//    var retList = new ArrayList<edu.utexas.tacc.tapis.apps.model.FileInput>();
+//    if (fileInputs.isEmpty()) return retList;
+//    for (FileInput fid : fileInputs)
+//    {
+//      String[] kvPairs = ApiUtils.getKeyValuesAsArray(fid.meta);
+//      edu.utexas.tacc.tapis.apps.model.FileInput fileInput =
+//              new edu.utexas.tacc.tapis.apps.model.FileInput(fid.sourceUrl, fid.targetPath, fid.inPlace,
+//                                          fid.name, fid.description, fid.mode, kvPairs);
+//      retList.add(fileInput);
+//    }
+//    return retList;
+//  }
 
   /**
    * Build a list of lib model subscription objects given the request api model objects
@@ -275,24 +273,25 @@ public class ApiUtils
   }
 
   // Build a list of api model file inputs based on the lib model objects
-  public static List<FileInput> buildApiFileInputs(List<edu.utexas.tacc.tapis.apps.model.FileInput> libFileInputs)
-  {
-    var retList = new ArrayList<FileInput>();
-    if (libFileInputs == null || libFileInputs.isEmpty()) return retList;
-    for (edu.utexas.tacc.tapis.apps.model.FileInput libFileInput : libFileInputs)
-    {
-      FileInput fid = new FileInput();
-      fid.name = libFileInput.getName();
-      fid.description = libFileInput.getDescription();
-      fid.mode = libFileInput.getInputMode();
-      fid.inPlace = libFileInput.isInPlace();
-      fid.sourceUrl = libFileInput.getSourceUrl();
-      fid.targetPath = libFileInput.getTargetPath();
-      fid.meta = ApiUtils.getKeyValuesAsList(libFileInput.getMeta());
-      retList.add(fid);
-    }
-    return retList;
-  }
+// TODO/TBD: do we really need this? Seems like with recent updates can now always use model class
+//  public static List<FileInput> buildApiFileInputs(List<edu.utexas.tacc.tapis.apps.model.FileInput> libFileInputs)
+//  {
+//    var retList = new ArrayList<FileInput>();
+//    if (libFileInputs == null || libFileInputs.isEmpty()) return retList;
+//    for (edu.utexas.tacc.tapis.apps.model.FileInput libFileInput : libFileInputs)
+//    {
+//      FileInput fid = new FileInput();
+//      fid.name = libFileInput.getName();
+//      fid.description = libFileInput.getDescription();
+//      fid.mode = libFileInput.getInputMode();
+//      fid.inPlace = libFileInput.isInPlace();
+//      fid.sourceUrl = libFileInput.getSourceUrl();
+//      fid.targetPath = libFileInput.getTargetPath();
+//      fid.meta = ApiUtils.getKeyValuesAsList(libFileInput.getMeta());
+//      retList.add(fid);
+//    }
+//    return retList;
+//  }
 
   // Build a list of api model subscriptions based on the lib model objects
   public static List<NotificationMechanism> buildApiNotifMechanisms(List<NotifMechanism> libMechanisms)
