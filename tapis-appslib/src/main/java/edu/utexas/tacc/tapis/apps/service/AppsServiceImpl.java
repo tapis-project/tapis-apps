@@ -10,6 +10,8 @@ import javax.inject.Inject;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
+import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
+import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
@@ -219,7 +221,7 @@ public class AppsServiceImpl implements AppsService
    * @throws NotFoundException - Resource not found
    */
   @Override
-  public void patchApp(ResourceRequestUser rUser, PatchApp patchApp, String scrubbedText)
+  public void patchApp(ResourceRequestUser rUser, String appId, String appVersion, PatchApp patchApp, String scrubbedText)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException,
                  NotAuthorizedException, NotFoundException
   {
@@ -227,9 +229,9 @@ public class AppsServiceImpl implements AppsService
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (patchApp == null) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
-    String resourceTenantId = patchApp.getTenant();
-    String resourceId = patchApp.getId();
-    String resourceVersion = patchApp.getVersion();
+    String resourceTenantId = rUser.getOboTenantId();
+    String resourceId = appId;
+    String resourceVersion = appVersion;
 
     // ---------------------------- Check inputs ------------------------------------
     if (StringUtils.isBlank(resourceTenantId) || StringUtils.isBlank(resourceId) ||
@@ -260,7 +262,7 @@ public class AppsServiceImpl implements AppsService
     // ----------------- Create all artifacts --------------------
     // No distributed transactions so no distributed rollback needed
     // ------------------- Make Dao call to persist the app -----------------------------------
-    dao.patchApp(rUser, patchedApp, patchApp, updateJsonStr, scrubbedText);
+    dao.patchApp(rUser, appId, appVersion, patchedApp, updateJsonStr, scrubbedText);
   }
 
   /**
@@ -305,7 +307,7 @@ public class AppsServiceImpl implements AppsService
       throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, resourceId, resourceVersion));
     }
 
-    // Retrieve the app being patched and create fully populated App with changes merged in
+    // Retrieve the app being updated and create fully populated App with changes merged in
     App origApp = dao.getApp(resourceTenantId, resourceId, resourceVersion);
     App updatedApp = createUpdatedApp(origApp, putApp);
 
@@ -315,7 +317,7 @@ public class AppsServiceImpl implements AppsService
     // ---------------- Check constraints on App attributes ------------------------
     validateApp(rUser, updatedApp);
 
-    // Construct Json string representing the PatchApp about to be used to update the app
+    // Construct Json string representing the App about to be used to update
     String updateJsonStr = TapisGsonUtils.getGson().toJson(putApp);
 
     // ----------------- Create all artifacts --------------------
@@ -1612,7 +1614,9 @@ public class AppsServiceImpl implements AppsService
    */
   private App createPatchedApp(App o, PatchApp p)
   {
+    // Start off with the current up
     App app1 = new App(o);
+    // Now update fields that are being patched
     if (p.getDescription() != null) app1.setDescription(p.getDescription());
     if (p.getRuntime() != null) app1.setRuntime(p.getRuntime());
     if (p.getRuntimeVersion() != null) app1.setRuntimeVersion(p.getRuntimeVersion());
@@ -1633,15 +1637,24 @@ public class AppsServiceImpl implements AppsService
     if (p.getArchiveSystemId() != null) app1.setArchiveSystemId(p.getArchiveSystemId());
     if (p.getArchiveSystemDir() != null) app1.setArchiveSystemDir(p.getArchiveSystemDir());
     if (p.getArchiveOnAppError() != null) app1.setArchiveOnAppError(p.getArchiveOnAppError());
-    // Start parameterSet
-    if (p.getAppArgs() != null) app1.setAppArgs(p.getAppArgs());
-    if (p.getContainerArgs() != null) app1.setContainerArgs(p.getContainerArgs());
-    if (p.getSchedulerOptions() != null) app1.setSchedulerOptions(p.getSchedulerOptions());
-    if (p.getEnvVariables() != null) app1.setEnvVariables(p.getEnvVariables());
-    if (p.getArchiveIncludes() != null) app1.setArchiveIncludes(p.getArchiveIncludes());
-    if (p.getArchiveExcludes() != null) app1.setArchiveExcludes(p.getArchiveExcludes());
-    if (p.getArchiveIncludeLaunchFiles() != null) app1.setArchiveIncludeLaunchFiles(p.getArchiveIncludeLaunchFiles());
-    // End parameterSet
+    // If parameterSet is being updated then we need to include it
+    if (p.getParameterSet() != null)
+    {
+      ParameterSet pParmSet = p.getParameterSet();
+      if (pParmSet.getAppArgs() != null) app1.getParameterSet().setAppArgs(pParmSet.getAppArgs());
+      if (pParmSet.getContainerArgs() != null) app1.getParameterSet().setAppArgs(pParmSet.getContainerArgs());
+      if (pParmSet.getSchedulerOptions() != null) app1.getParameterSet().setAppArgs(pParmSet.getSchedulerOptions());
+      if (pParmSet.getEnvVariables() != null) app1.getParameterSet().setEnvVariables(pParmSet.getEnvVariables());
+      // If ArchiveFilter in ParameterSet is being updated then process it
+      if (pParmSet.getArchiveFilter() != null)
+      {
+        ArchiveFilter af = pParmSet.getArchiveFilter();
+        if (af.getIncludes() != null) app1.getParameterSet().getArchiveFilter().setIncludes(af.getIncludes());
+        if (af.getExcludes() != null) app1.getParameterSet().getArchiveFilter().setExcludes(af.getExcludes());
+        if (af.isIncludeLaunchFiles() != null) app1.getParameterSet().getArchiveFilter().setIncludeLaunchFiles(af.isIncludeLaunchFiles());
+
+      }
+    }
     if (p.getFileInputs() != null) app1.setFileInputs(p.getFileInputs());
     if (p.getNodeCount() != null) app1.setNodeCount(p.getNodeCount());
     if (p.getCoresPerNode() != null) app1.setCoresPerNode(p.getCoresPerNode());

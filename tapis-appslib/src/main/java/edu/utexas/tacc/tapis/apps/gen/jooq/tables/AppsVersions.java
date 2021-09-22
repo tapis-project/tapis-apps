@@ -166,29 +166,14 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     public final TableField<AppsVersionsRecord, Boolean> ARCHIVE_ON_APP_ERROR = createField(DSL.name("archive_on_app_error"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("true", SQLDataType.BOOLEAN)), this, "");
 
     /**
-     * The column <code>tapis_app.apps_versions.env_variables</code>.
+     * The column <code>tapis_app.apps_versions.parameter_set</code>.
      */
-    public final TableField<AppsVersionsRecord, String[]> ENV_VARIABLES = createField(DSL.name("env_variables"), SQLDataType.CLOB.getArrayDataType(), this, "");
-
-    /**
-     * The column <code>tapis_app.apps_versions.archive_includes</code>.
-     */
-    public final TableField<AppsVersionsRecord, String[]> ARCHIVE_INCLUDES = createField(DSL.name("archive_includes"), SQLDataType.CLOB.getArrayDataType(), this, "");
-
-    /**
-     * The column <code>tapis_app.apps_versions.archive_excludes</code>.
-     */
-    public final TableField<AppsVersionsRecord, String[]> ARCHIVE_EXCLUDES = createField(DSL.name("archive_excludes"), SQLDataType.CLOB.getArrayDataType(), this, "");
-
-    /**
-     * The column <code>tapis_app.apps_versions.archive_include_launch_files</code>.
-     */
-    public final TableField<AppsVersionsRecord, Boolean> ARCHIVE_INCLUDE_LAUNCH_FILES = createField(DSL.name("archive_include_launch_files"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("true", SQLDataType.BOOLEAN)), this, "");
+    public final TableField<AppsVersionsRecord, JsonElement> PARAMETER_SET = createField(DSL.name("parameter_set"), SQLDataType.JSONB.nullable(false), this, "", new JSONBToJsonElementBinding());
 
     /**
      * The column <code>tapis_app.apps_versions.file_inputs</code>.
      */
-    public final TableField<AppsVersionsRecord, JsonElement> FILE_INPUTS = createField(DSL.name("file_inputs"), SQLDataType.JSONB, this, "", new JSONBToJsonElementBinding());
+    public final TableField<AppsVersionsRecord, JsonElement> FILE_INPUTS = createField(DSL.name("file_inputs"), SQLDataType.JSONB.nullable(false), this, "", new JSONBToJsonElementBinding());
 
     /**
      * The column <code>tapis_app.apps_versions.node_count</code>.

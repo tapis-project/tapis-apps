@@ -1,6 +1,5 @@
 package edu.utexas.tacc.tapis.apps.dao;
 
-import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.Types;
 import java.time.Instant;
@@ -15,9 +14,9 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import org.apache.commons.lang3.StringUtils;
 import org.flywaydb.core.Flyway;
 import org.jooq.Condition;
@@ -119,6 +118,37 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (StringUtils.isBlank(app.getId())) LibUtils.logAndThrowNullParmException(opName, "appId");
     if (StringUtils.isBlank(app.getVersion())) LibUtils.logAndThrowNullParmException(opName, "appVersion");
 
+    // Make sure owner, runtime, notes, tags etc are set
+    String owner = App.DEFAULT_OWNER;
+    Runtime runtime = App.DEFAULT_RUNTIME;
+    String[] runtimeOptionsStrArray = null;
+    String[] execSystemConstraintsStrArray = null;
+    JsonElement parameterSetJson = App.DEFAULT_PARAMETER_SET;
+    JsonElement fileInputsJson = App.DEFAULT_FILE_INPUTS;
+    String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
+    String[] tagsStrArray = App.EMPTY_STR_ARRAY;
+    JsonObject notesObj = App.DEFAULT_NOTES;
+
+    if (StringUtils.isNotBlank(app.getOwner())) owner = app.getOwner();
+    if (app.getRuntime() != null) runtime = app.getRuntime();
+    // Convert runtimeOptions array from enum to string
+    if (app.getRuntimeOptions() != null)
+    {
+      runtimeOptionsStrArray = app.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
+    }
+    if (app.getExecSystemConstraints() != null) execSystemConstraintsStrArray = app.getExecSystemConstraints();
+    if (app.getParameterSet() != null) parameterSetJson = TapisGsonUtils.getGson().toJsonTree(app.getParameterSet());
+    if (app.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(app.getFileInputs());
+    if (app.getJobTags() != null) jobTagsStrArray = app.getJobTags();
+    if (app.getTags() != null) tagsStrArray = app.getTags();
+    if (app.getNotes() != null) notesObj = (JsonObject) app.getNotes();
+
+    // Generated sequence IDs
+    int appSeqId = -1;
+    int appVerSeqId = -1;
+    // Generate uuid for the new app version
+    app.setUuid(UUID.randomUUID());
+
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
     try
@@ -135,39 +165,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (checkIfAppExists(db, app.getTenant(), app.getId(), app.getVersion(), false))
         throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_EXISTS", rUser, app.getId(),
                                                             app.getVersion()));
-      // Make sure owner, runtime, notes, tags etc are set
-      String owner = App.DEFAULT_OWNER;
-      Runtime runtime = App.DEFAULT_RUNTIME;
-      String[] runtimeOptionsStrArray = null;
-      String[] execSystemConstraintsStrArray = null;
-      String[] envVariablesStrArray = null;
-      String[] archiveIncludesStrArray = null;
-      String[] archiveExcludesStrArray = null;
-      JsonElement fileInputsJson = App.DEFAULT_FILE_INPUTS;
-      String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
-      String[] tagsStrArray = App.EMPTY_STR_ARRAY;
-      JsonObject notesObj = App.DEFAULT_NOTES;
-      if (StringUtils.isNotBlank(app.getOwner())) owner = app.getOwner();
-      if (app.getRuntime() != null) runtime = app.getRuntime();
-      // Convert runtimeOptions array from enum to string
-      if (app.getRuntimeOptions() != null)
-      {
-        runtimeOptionsStrArray = app.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
-      }
-      if (app.getExecSystemConstraints() != null) execSystemConstraintsStrArray = app.getExecSystemConstraints();
-      if (app.getEnvVariables() != null) envVariablesStrArray = app.getEnvVariables();
-      if (app.getArchiveIncludes() != null) archiveIncludesStrArray = app.getArchiveIncludes();
-      if (app.getArchiveExcludes() != null) archiveExcludesStrArray = app.getArchiveExcludes();
-      if (app.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(app.getFileInputs());
-      if (app.getJobTags() != null) jobTagsStrArray = app.getJobTags();
-      if (app.getTags() != null) tagsStrArray = app.getTags();
-      if (app.getNotes() != null) notesObj = (JsonObject) app.getNotes();
-
-      // Generated sequence IDs
-      int appSeqId = -1;
-      int appVerSeqId = -1;
-      // Generate uuid for the new app version
-      app.setUuid(UUID.randomUUID());
       // If no top level app entry this is the first version. Create the initial top level record
       if (!checkIfAppExists(db, app.getTenant(), app.getId(), null, false))
       {
@@ -211,10 +208,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, app.getArchiveSystemId())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, app.getArchiveSystemDir())
               .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, app.isArchiveOnAppError())
-              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, app.getArchiveIncludeLaunchFiles())
+              .set(APPS_VERSIONS.PARAMETER_SET, parameterSetJson)
+//              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
+//              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
+//              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
+//              .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, app.getArchiveIncludeLaunchFiles())
               .set(APPS_VERSIONS.FILE_INPUTS, fileInputsJson)
               .set(APPS_VERSIONS.NODE_COUNT, app.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, app.getCoresPerNode())
@@ -237,9 +235,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
       // Persist data to aux tables
 //      persistFileInputs(db, app, appVerSeqId);
-      persistAppArgs(db, app, appVerSeqId);
-      persistContainerArgs(db, app, appVerSeqId);
-      persistSchedulerOptions(db, app, appVerSeqId);
+//      persistAppArgs(db, app, appVerSeqId);
+//      persistContainerArgs(db, app, appVerSeqId);
+//      persistSchedulerOptions(db, app, appVerSeqId);
       persistNotificationSubscriptions(db, app, appVerSeqId);
 
       // Update top level table APPS
@@ -291,13 +289,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // Make sure runtime, notes, tags, etc are all set
     Runtime runtime = App.DEFAULT_RUNTIME;
     String[] execSystemConstraintsStrArray = null;
-    String[] envVariablesStrArray = null;
-    String[] archiveIncludesStrArray = null;
-    String[] archiveExcludesStrArray = null;
+    JsonElement parameterSetJson = App.DEFAULT_PARAMETER_SET;
     JsonElement fileInputsJson = App.DEFAULT_FILE_INPUTS;
     String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
     String[] tagsStrArray = App.EMPTY_STR_ARRAY;
     JsonObject notesObj =  App.DEFAULT_NOTES;
+
     if (putApp.getRuntime() != null) runtime = putApp.getRuntime();
     String[] runtimeOptionsStrArray = null;
     // Convert runtimeOptions array from enum to string
@@ -306,9 +303,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       runtimeOptionsStrArray = putApp.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
     }
     if (putApp.getExecSystemConstraints() != null) execSystemConstraintsStrArray = putApp.getExecSystemConstraints();
-    if (putApp.getEnvVariables() != null) envVariablesStrArray = putApp.getEnvVariables();
-    if (putApp.getArchiveIncludes() != null) archiveIncludesStrArray = putApp.getArchiveIncludes();
-    if (putApp.getArchiveExcludes() != null) archiveExcludesStrArray = putApp.getArchiveExcludes();
+    if (putApp.getParameterSet() != null) parameterSetJson = TapisGsonUtils.getGson().toJsonTree(putApp.getParameterSet());
     if (putApp.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(putApp.getFileInputs());
     if (putApp.getJobTags() != null) jobTagsStrArray = putApp.getJobTags();
     if (putApp.getTags() != null) tagsStrArray = putApp.getTags();
@@ -352,10 +347,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, putApp.getArchiveSystemId())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, putApp.getArchiveSystemDir())
               .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, putApp.isArchiveOnAppError())
-              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, putApp.getArchiveIncludeLaunchFiles())
+              .set(APPS_VERSIONS.PARAMETER_SET, parameterSetJson)
               .set(APPS_VERSIONS.FILE_INPUTS, fileInputsJson)
               .set(APPS_VERSIONS.NODE_COUNT, putApp.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, putApp.getCoresPerNode())
@@ -380,12 +372,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Persist data to aux tables
 //      db.deleteFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
 //      persistFileInputs(db, putApp, appVerSeqId);
-      db.deleteFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-      persistAppArgs(db, putApp, appVerSeqId);
-      db.deleteFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-      persistContainerArgs(db, putApp, appVerSeqId);
-      db.deleteFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-      persistSchedulerOptions(db, putApp, appVerSeqId);
+//      db.deleteFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+//      persistAppArgs(db, putApp, appVerSeqId);
+//      db.deleteFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+//      persistContainerArgs(db, putApp, appVerSeqId);
+//      db.deleteFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+//      persistSchedulerOptions(db, putApp, appVerSeqId);
       db.deleteFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
       persistNotificationSubscriptions(db, putApp, appVerSeqId);
 
@@ -414,24 +406,43 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @throws IllegalStateException - if app already exists
    */
   @Override
-  public void patchApp(ResourceRequestUser rUser, App patchedApp, PatchApp patchApp,
+  public void patchApp(ResourceRequestUser rUser, String appId, String appVersion, App patchedApp,
                        String updateJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException {
-    String opName = "updateApp";
+    String opName = "patchApp";
     // ------------------------- Check Input -------------------------
     if (patchedApp == null) LibUtils.logAndThrowNullParmException(opName, "patchedApp");
-    if (patchApp == null) LibUtils.logAndThrowNullParmException(opName, "patchApp");
     if (rUser == null) LibUtils.logAndThrowNullParmException(opName, "resourceRequestUser");
 
-    // Pull out some values for convenience
-    String tenant = patchedApp.getTenant();
-    String appId = patchedApp.getId();
-    String appVersion = patchedApp.getVersion();
+    String tenant = rUser.getOboTenantId();
     // Check required attributes have been provided
     if (StringUtils.isBlank(updateJsonStr)) LibUtils.logAndThrowNullParmException(opName, "updateJson");
     if (StringUtils.isBlank(tenant)) LibUtils.logAndThrowNullParmException(opName, "tenant");
     if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
     if (StringUtils.isBlank(appVersion)) LibUtils.logAndThrowNullParmException(opName, "appVersion");
+
+    // Make sure runtime, notes, tags, etc are all set
+    Runtime runtime = App.DEFAULT_RUNTIME;
+    String[] execSystemConstraintsStrArray = null;
+    JsonElement parameterSetJson = App.DEFAULT_PARAMETER_SET;
+    JsonElement fileInputsJson = App.DEFAULT_FILE_INPUTS;
+    String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
+    String[] tagsStrArray = App.EMPTY_STR_ARRAY;
+    JsonObject notesObj =  App.DEFAULT_NOTES;
+
+    if (patchedApp.getRuntime() != null) runtime = patchedApp.getRuntime();
+    String[] runtimeOptionsStrArray = null;
+    // Convert runtimeOptions array from enum to string
+    if (patchedApp.getRuntimeOptions() != null)
+    {
+      runtimeOptionsStrArray = patchedApp.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
+    }
+    if (patchedApp.getExecSystemConstraints() != null) execSystemConstraintsStrArray = patchedApp.getExecSystemConstraints();
+    if (patchedApp.getParameterSet() != null) parameterSetJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getParameterSet());
+    if (patchedApp.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getFileInputs());
+    if (patchedApp.getJobTags() != null) jobTagsStrArray = patchedApp.getJobTags();
+    if (patchedApp.getTags() != null) tagsStrArray = patchedApp.getTags();
+    if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -444,41 +455,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Check to see if app exists and has not been marked as deleted. If no then throw IllegalStateException
       boolean doesExist = checkIfAppExists(db, tenant, appId, appVersion, false);
       if (!doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", rUser, appId));
-
-      // Make sure runtime, string arrays and json objects are set
-      Runtime runtime = App.DEFAULT_RUNTIME;
-      String[] runtimeOptionsStrArray = null;
-      String[] execSystemConstraintsStrArray = null;
-      String[] envVariablesStrArray = null;
-      String[] archiveIncludesStrArray = null;
-      String[] archiveExcludesStrArray = null;
-      JsonElement fileInputsJson;
-      String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
-      String[] tagsStrArray = App.EMPTY_STR_ARRAY;
-      JsonObject notesObj = App.DEFAULT_NOTES;
-      if (patchedApp.getRuntime() != null) runtime = patchedApp.getRuntime();
-      // Convert runtimeOptions array from enum to string
-      if (patchedApp.getRuntimeOptions() != null)
-      {
-        runtimeOptionsStrArray = patchedApp.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
-      }
-      if (patchedApp.getExecSystemConstraints() != null) execSystemConstraintsStrArray = patchedApp.getExecSystemConstraints();
-      if (patchedApp.getEnvVariables() != null) envVariablesStrArray = patchedApp.getEnvVariables();
-      if (patchedApp.getArchiveIncludes() != null) archiveIncludesStrArray = patchedApp.getArchiveIncludes();
-      if (patchedApp.getArchiveExcludes() != null) archiveExcludesStrArray = patchedApp.getArchiveExcludes();
-      // If fileInputs part of the patch then convert them to a JsonElement
-      // else convert original FileInputs to a JsonElement.
-      if (patchApp.getFileInputs() != null)
-      {
-        fileInputsJson = TapisGsonUtils.getGson().toJsonTree(patchApp.getFileInputs());
-      }
-      else
-      {
-        fileInputsJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getFileInputs());
-      }
-      if (patchedApp.getJobTags() != null) jobTagsStrArray = patchedApp.getJobTags();
-      if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
-      if (patchedApp.getTags() != null) tagsStrArray = patchedApp.getTags();
 
       int appSeqId = getAppSeqIdUsingDb(db, tenant, appId);
       int appVerSeqId = -1;
@@ -502,10 +478,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, patchedApp.getArchiveSystemId())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, patchedApp.getArchiveSystemDir())
               .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, patchedApp.isArchiveOnAppError())
-              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, patchedApp.getArchiveIncludeLaunchFiles())
+              .set(APPS_VERSIONS.PARAMETER_SET, parameterSetJson)
               .set(APPS_VERSIONS.FILE_INPUTS, fileInputsJson)
               .set(APPS_VERSIONS.NODE_COUNT, patchedApp.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, patchedApp.getCoresPerNode())
@@ -528,31 +501,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Persist data to aux tables as needed
-//      if (patchedApp.getFileInputs() != null)
-//      {
-//        db.deleteFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-//        persistFileInputs(db, patchedApp, appVerSeqId);
-//      }
-      if (patchedApp.getAppArgs() != null)
-      {
-        db.deleteFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-        persistAppArgs(db, patchedApp, appVerSeqId);
-      }
-      if (patchedApp.getContainerArgs() != null)
-      {
-        db.deleteFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-        persistContainerArgs(db, patchedApp, appVerSeqId);
-      }
-      if (patchedApp.getSchedulerOptions() != null)
-      {
-        db.deleteFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-        persistSchedulerOptions(db, patchedApp, appVerSeqId);
-      }
-      if (patchedApp.getNotificationSubscriptions() != null)
-      {
-        db.deleteFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-        persistNotificationSubscriptions(db, patchedApp, appVerSeqId);
-      }
+      db.deleteFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
+      persistNotificationSubscriptions(db, patchedApp, appVerSeqId);
 
       // Persist update record
       addUpdate(db, rUser, tenant, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
@@ -1595,6 +1545,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       runtimeOptions = Arrays.stream(runtimeOptionsStrArray).map(RuntimeOption::valueOf).collect(Collectors.toList());
     }
 
+    JsonElement parmSetJsonElement = r.get(APPS_VERSIONS.PARAMETER_SET);
+    ParameterSet parmSet = TapisGsonUtils.getGson().fromJson(parmSetJsonElement, ParameterSet.class);
     // Convert FileInputs json to List<FileInput>
 //    String fiJsonStr = r.get(APPS_VERSIONS.FILE_INPUTS).toString();
     JsonElement fiJsonElement = r.get(APPS_VERSIONS.FILE_INPUTS);
@@ -1614,17 +1566,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             r.get(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR), r.get(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR),
             r.get(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE), r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_ID),
             r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR), r.get(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR),
-            r.get(APPS_VERSIONS.ENV_VARIABLES), r.get(APPS_VERSIONS.ARCHIVE_INCLUDES), r.get(APPS_VERSIONS.ARCHIVE_EXCLUDES),
-            r.get(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES), fileInputs,
+            parmSet, fileInputs,
             r.get(APPS_VERSIONS.NODE_COUNT), r.get(APPS_VERSIONS.CORES_PER_NODE), r.get(APPS_VERSIONS.MEMORY_MB),
             r.get(APPS_VERSIONS.MAX_MINUTES), r.get(APPS_VERSIONS.JOB_TAGS),
             r.get(APPS_VERSIONS.TAGS), r.get(APPS_VERSIONS.NOTES), r.get(APPS_VERSIONS.UUID),
             r.get(APPS.DELETED), created, updated);
     // Fill in data from aux tables
-//    app.setFileInputs(retrieveFileInputs(db, appVerSeqId));
-    app.setAppArgs(retrieveAppArgs(db, appVerSeqId));
-    app.setContainerArgs(retrieveContainerArgs(db, appVerSeqId));
-    app.setSchedulerOptions(retrieveSchedulerOptions(db, appVerSeqId));
     app.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, appVerSeqId));
 
     return app;
@@ -1656,77 +1603,77 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 //    }
 //  }
 //
-  /**
-   * Persist app args given an sql connection and an app
-   */
-  private static void persistAppArgs(DSLContext db, App app, int appVerSeqId)
-  {
-    var appArgs = app.getAppArgs();
-    if (appArgs == null || appArgs.isEmpty()) return;
-
-    for (AppArg appArg : appArgs) {
-      String valStr = "";
-      if (appArg.getArgValue() != null ) valStr = appArg.getArgValue();
-      String[] kvPairs = EMPTY_STR_ARRAY;
-      if (appArg.getMeta() != null ) kvPairs = appArg.getMeta();
-      db.insertInto(APP_ARGS)
-              .set(APP_ARGS.APP_VER_SEQ_ID, appVerSeqId)
-              .set(APP_ARGS.ARG_VAL, valStr)
-              .set(APP_ARGS.NAME, appArg.getName())
-              .set(APP_ARGS.DESCRIPTION, appArg.getDescription())
-              .set(APP_ARGS.INPUT_MODE, appArg.getMode())
-              .set(APP_ARGS.META, kvPairs)
-              .execute();
-    }
-  }
-
-  /**
-   * Persist container args given an sql connection and an app
-   */
-  private static void persistContainerArgs(DSLContext db, App app, int appVerSeqId)
-  {
-    var containerArgs = app.getContainerArgs();
-    if (containerArgs == null || containerArgs.isEmpty()) return;
-
-    for (AppArg containerArg : containerArgs) {
-      String valStr = "";
-      if (containerArg.getArgValue() != null ) valStr = containerArg.getArgValue();
-      String[] kvPairs = EMPTY_STR_ARRAY;
-      if (containerArg.getMeta() != null ) kvPairs = containerArg.getMeta();
-      db.insertInto(CONTAINER_ARGS)
-              .set(CONTAINER_ARGS.APP_VER_SEQ_ID, appVerSeqId)
-              .set(CONTAINER_ARGS.ARG_VAL, valStr)
-              .set(CONTAINER_ARGS.NAME, containerArg.getName())
-              .set(CONTAINER_ARGS.DESCRIPTION, containerArg.getDescription())
-              .set(CONTAINER_ARGS.INPUT_MODE, containerArg.getMode())
-              .set(CONTAINER_ARGS.META, kvPairs)
-              .execute();
-    }
-  }
-
-  /**
-   * Persist scheduler options given an sql connection and an app
-   */
-  private static void persistSchedulerOptions(DSLContext db, App app, int appVerSeqId)
-  {
-    var schedulerOptions = app.getSchedulerOptions();
-    if (schedulerOptions == null || schedulerOptions.isEmpty()) return;
-
-    for (AppArg schedulerOption : schedulerOptions) {
-      String valStr = "";
-      if (schedulerOption.getArgValue() != null ) valStr = schedulerOption.getArgValue();
-      String[] kvPairs = EMPTY_STR_ARRAY;
-      if (schedulerOption.getMeta() != null ) kvPairs = schedulerOption.getMeta();
-      db.insertInto(SCHEDULER_OPTIONS)
-              .set(SCHEDULER_OPTIONS.APP_VER_SEQ_ID, appVerSeqId)
-              .set(SCHEDULER_OPTIONS.ARG_VAL, valStr)
-              .set(SCHEDULER_OPTIONS.NAME, schedulerOption.getName())
-              .set(SCHEDULER_OPTIONS.DESCRIPTION, schedulerOption.getDescription())
-              .set(SCHEDULER_OPTIONS.INPUT_MODE, schedulerOption.getMode())
-              .set(SCHEDULER_OPTIONS.META, kvPairs)
-              .execute();
-    }
-  }
+//  /**
+//   * Persist app args given an sql connection and an app
+//   */
+//  private static void persistAppArgs(DSLContext db, App app, int appVerSeqId)
+//  {
+//    var appArgs = app.getAppArgs();
+//    if (appArgs == null || appArgs.isEmpty()) return;
+//
+//    for (AppArg appArg : appArgs) {
+//      String valStr = "";
+//      if (appArg.getArgValue() != null ) valStr = appArg.getArgValue();
+//      String[] kvPairs = EMPTY_STR_ARRAY;
+//      if (appArg.getMeta() != null ) kvPairs = appArg.getMeta();
+//      db.insertInto(APP_ARGS)
+//              .set(APP_ARGS.APP_VER_SEQ_ID, appVerSeqId)
+//              .set(APP_ARGS.ARG_VAL, valStr)
+//              .set(APP_ARGS.NAME, appArg.getName())
+//              .set(APP_ARGS.DESCRIPTION, appArg.getDescription())
+//              .set(APP_ARGS.INPUT_MODE, appArg.getMode())
+//              .set(APP_ARGS.META, kvPairs)
+//              .execute();
+//    }
+//  }
+//
+//  /**
+//   * Persist container args given an sql connection and an app
+//   */
+//  private static void persistContainerArgs(DSLContext db, App app, int appVerSeqId)
+//  {
+//    var containerArgs = app.getContainerArgs();
+//    if (containerArgs == null || containerArgs.isEmpty()) return;
+//
+//    for (AppArg containerArg : containerArgs) {
+//      String valStr = "";
+//      if (containerArg.getArgValue() != null ) valStr = containerArg.getArgValue();
+//      String[] kvPairs = EMPTY_STR_ARRAY;
+//      if (containerArg.getMeta() != null ) kvPairs = containerArg.getMeta();
+//      db.insertInto(CONTAINER_ARGS)
+//              .set(CONTAINER_ARGS.APP_VER_SEQ_ID, appVerSeqId)
+//              .set(CONTAINER_ARGS.ARG_VAL, valStr)
+//              .set(CONTAINER_ARGS.NAME, containerArg.getName())
+//              .set(CONTAINER_ARGS.DESCRIPTION, containerArg.getDescription())
+//              .set(CONTAINER_ARGS.INPUT_MODE, containerArg.getMode())
+//              .set(CONTAINER_ARGS.META, kvPairs)
+//              .execute();
+//    }
+//  }
+//
+//  /**
+//   * Persist scheduler options given an sql connection and an app
+//   */
+//  private static void persistSchedulerOptions(DSLContext db, App app, int appVerSeqId)
+//  {
+//    var schedulerOptions = app.getSchedulerOptions();
+//    if (schedulerOptions == null || schedulerOptions.isEmpty()) return;
+//
+//    for (AppArg schedulerOption : schedulerOptions) {
+//      String valStr = "";
+//      if (schedulerOption.getArgValue() != null ) valStr = schedulerOption.getArgValue();
+//      String[] kvPairs = EMPTY_STR_ARRAY;
+//      if (schedulerOption.getMeta() != null ) kvPairs = schedulerOption.getMeta();
+//      db.insertInto(SCHEDULER_OPTIONS)
+//              .set(SCHEDULER_OPTIONS.APP_VER_SEQ_ID, appVerSeqId)
+//              .set(SCHEDULER_OPTIONS.ARG_VAL, valStr)
+//              .set(SCHEDULER_OPTIONS.NAME, schedulerOption.getName())
+//              .set(SCHEDULER_OPTIONS.DESCRIPTION, schedulerOption.getDescription())
+//              .set(SCHEDULER_OPTIONS.INPUT_MODE, schedulerOption.getMode())
+//              .set(SCHEDULER_OPTIONS.META, kvPairs)
+//              .execute();
+//    }
+//  }
 
   /**
    * Persist notification subscriptions given an sql connection and an app
@@ -1811,49 +1758,49 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     return mechanisms;
   }
 
-  /**
-   * Get app args for an app from an auxiliary table
-   * @param db - DB connection
-   * @param appVerSeqId - app
-   * @return list of app args
-   */
-  private static List<AppArg> retrieveAppArgs(DSLContext db, int appVerSeqId)
-  {
-    List<AppArg> appArgs =
-            db.selectFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
-    if (appArgs == null || appArgs.isEmpty()) return null;
-    return appArgs;
-  }
-
-  /**
-   * Get container args for an app from an auxiliary table
-   * @param db - DB connection
-   * @param appVerSeqId - app
-   * @return list of container args
-   */
-  private static List<AppArg> retrieveContainerArgs(DSLContext db, int appVerSeqId)
-  {
-    List<AppArg> containerArgs =
-            db.selectFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
-    if (containerArgs == null || containerArgs.isEmpty()) return null;
-    return containerArgs;
-  }
-
-  /**
-   * Get scheduler options for an app from an auxiliary table
-   * @param db - DB connection
-   * @param appVerSeqId - app
-   * @return list of scheduler options
-   */
-  private static List<AppArg> retrieveSchedulerOptions(DSLContext db, int appVerSeqId)
-  {
-    List<AppArg> schedulerOptions =
-            db.selectFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId))
-                    .fetchInto(AppArg.class);
-    if (schedulerOptions == null || schedulerOptions.isEmpty()) return null;
-    return schedulerOptions;
-  }
-
+//  /**
+//   * Get app args for an app from an auxiliary table
+//   * @param db - DB connection
+//   * @param appVerSeqId - app
+//   * @return list of app args
+//   */
+//  private static List<AppArg> retrieveAppArgs(DSLContext db, int appVerSeqId)
+//  {
+//    List<AppArg> appArgs =
+//            db.selectFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
+//    if (appArgs == null || appArgs.isEmpty()) return null;
+//    return appArgs;
+//  }
+//
+//  /**
+//   * Get container args for an app from an auxiliary table
+//   * @param db - DB connection
+//   * @param appVerSeqId - app
+//   * @return list of container args
+//   */
+//  private static List<AppArg> retrieveContainerArgs(DSLContext db, int appVerSeqId)
+//  {
+//    List<AppArg> containerArgs =
+//            db.selectFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
+//    if (containerArgs == null || containerArgs.isEmpty()) return null;
+//    return containerArgs;
+//  }
+//
+//  /**
+//   * Get scheduler options for an app from an auxiliary table
+//   * @param db - DB connection
+//   * @param appVerSeqId - app
+//   * @return list of scheduler options
+//   */
+//  private static List<AppArg> retrieveSchedulerOptions(DSLContext db, int appVerSeqId)
+//  {
+//    List<AppArg> schedulerOptions =
+//            db.selectFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId))
+//                    .fetchInto(AppArg.class);
+//    if (schedulerOptions == null || schedulerOptions.isEmpty()) return null;
+//    return schedulerOptions;
+//  }
+//
   /**
    * Given an sql connection retrieve the app_ver uuid.
    * @param db - jooq context

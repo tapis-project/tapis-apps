@@ -16,11 +16,6 @@ import org.jooq.impl.SQLDataType;
 public class Sequences {
 
     /**
-     * The sequence <code>tapis_app.app_args_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> APP_ARGS_SEQ_ID_SEQ = Internal.createSequence("app_args_seq_id_seq", TapisApp.TAPIS_APP, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
      * The sequence <code>tapis_app.app_updates_seq_id_seq</code>
      */
     public static final Sequence<Integer> APP_UPDATES_SEQ_ID_SEQ = Internal.createSequence("app_updates_seq_id_seq", TapisApp.TAPIS_APP, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
@@ -36,16 +31,6 @@ public class Sequences {
     public static final Sequence<Integer> APPS_VERSIONS_SEQ_ID_SEQ = Internal.createSequence("apps_versions_seq_id_seq", TapisApp.TAPIS_APP, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
 
     /**
-     * The sequence <code>tapis_app.container_args_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> CONTAINER_ARGS_SEQ_ID_SEQ = Internal.createSequence("container_args_seq_id_seq", TapisApp.TAPIS_APP, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
-     * The sequence <code>tapis_app.file_inputs_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> FILE_INPUTS_SEQ_ID_SEQ = Internal.createSequence("file_inputs_seq_id_seq", TapisApp.TAPIS_APP, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
      * The sequence <code>tapis_app.notification_mechanisms_seq_id_seq</code>
      */
     public static final Sequence<Integer> NOTIFICATION_MECHANISMS_SEQ_ID_SEQ = Internal.createSequence("notification_mechanisms_seq_id_seq", TapisApp.TAPIS_APP, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
@@ -54,9 +39,4 @@ public class Sequences {
      * The sequence <code>tapis_app.notification_subscriptions_seq_id_seq</code>
      */
     public static final Sequence<Integer> NOTIFICATION_SUBSCRIPTIONS_SEQ_ID_SEQ = Internal.createSequence("notification_subscriptions_seq_id_seq", TapisApp.TAPIS_APP, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
-     * The sequence <code>tapis_app.scheduler_options_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> SCHEDULER_OPTIONS_SEQ_ID_SEQ = Internal.createSequence("scheduler_options_seq_id_seq", TapisApp.TAPIS_APP, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
 }

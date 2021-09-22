@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 /*
  * Argument with metadata
- *  - used for container arguments, command arguments, scheduler options
+ *  - used for app arguments, container arguments, scheduler options
  *
  * This class is intended to represent an immutable object.
  * Please keep it immutable.
@@ -25,8 +25,8 @@ public final class AppArg
   // Logging
   private static final Logger _log = LoggerFactory.getLogger(AppArg.class);
 
-  private final int seqId; // Unique database sequence number
-  private final int appSeqId;
+//  private final int seqId; // Unique database sequence number
+//  private final int appSeqId;
   private final String argValue;
   private final String name;
   private final String description;
@@ -36,22 +36,22 @@ public final class AppArg
   /* ********************************************************************** */
   /*                           Constructors                                 */
   /* ********************************************************************** */
-    public AppArg(int seqId1, int appId1, String value1, String name1,
-                  String description1, InputMode mode1, String[] meta1)
-  {
-    seqId = seqId1;
-    appSeqId = appId1;
-    argValue = value1;
-    name = name1;
-    description = description1;
-    mode = mode1;
-    meta = meta1;
-  }
-
+//    public AppArg(int seqId1, int appId1, String value1, String name1,
+//                  String description1, InputMode mode1, String[] meta1)
+//  {
+////    seqId = seqId1;
+////    appSeqId = appId1;
+//    argValue = value1;
+//    name = name1;
+//    description = description1;
+//    mode = mode1;
+//    meta = meta1;
+//  }
+//
   public AppArg(String value1, String name1, String description1, InputMode mode1, String[] meta1)
   {
-    seqId = -1;
-    appSeqId = -1;
+//    seqId = -1;
+//    appSeqId = -1;
     argValue = value1;
     name = name1;
     description = description1;
@@ -62,8 +62,8 @@ public final class AppArg
   /* ********************************************************************** */
   /*                               Accessors                                */
   /* ********************************************************************** */
-  public int getSeqId() { return seqId; }
-  public int getAppSeqId() { return appSeqId; }
+//  public int getSeqId() { return seqId; }
+//  public int getAppSeqId() { return appSeqId; }
   public String getArgValue() { return argValue; }
   public String getName() { return name; }
   public String getDescription() { return description; }

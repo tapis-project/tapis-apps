@@ -4,7 +4,6 @@ import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 
@@ -16,7 +15,8 @@ public interface AppsDao
   boolean createApp(ResourceRequestUser rUser, App app, String createJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException;
 
-  void patchApp(ResourceRequestUser rUser, App patchedApp, PatchApp patchApp, String updateJsonStr, String scrubbedText)
+  void patchApp(ResourceRequestUser rUser, String appId, String appVersion, App patchedApp,
+                String updateJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException;
 
   void putApp(ResourceRequestUser rUser, App putApp, String updateJsonStr, String scrubbedText)

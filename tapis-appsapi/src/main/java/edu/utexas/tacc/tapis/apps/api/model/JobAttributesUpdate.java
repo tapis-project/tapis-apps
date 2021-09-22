@@ -4,7 +4,7 @@ import java.util.List;
 
 /*
  * Class representing JobAttribute fields that can be set in an incoming patch request json body
- * Use classes for attribute types instead of primitives so that null can be use to indicate
+ * Use classes for attribute types instead of primitives so that null can be used to indicate
  *   that the value has not been included in the update request.
  */
 public final class JobAttributesUpdate

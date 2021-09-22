@@ -24,7 +24,7 @@ public interface AppsService
   void createApp(ResourceRequestUser rUser, App app, String scrubbedText)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException;
 
-  void patchApp(ResourceRequestUser rUser, PatchApp patchApp, String scrubbedText)
+  void patchApp(ResourceRequestUser rUser, String appId, String appVersion, PatchApp patchApp, String scrubbedText)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
   void putApp(ResourceRequestUser rUser, App putApp, String scrubbedText)
@@ -43,7 +43,7 @@ public interface AppsService
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
   int changeAppOwner(ResourceRequestUser rUser, String appId, String newOwnerName)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalArgumentException, NotFoundException;
 
   boolean checkForApp(ResourceRequestUser rUser, String appId)
           throws TapisException, TapisClientException, NotAuthorizedException;

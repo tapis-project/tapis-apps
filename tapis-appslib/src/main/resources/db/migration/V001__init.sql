@@ -94,12 +94,13 @@ CREATE TABLE apps_versions
     archive_system_id TEXT,
     archive_system_dir TEXT,
     archive_on_app_error BOOLEAN NOT NULL DEFAULT true,
+    parameter_set JSONB NOT NULL,
 --   parameterSet location in jobAttributes ===================
 --   parameterSet attributes flattened into this table ========
-    env_variables TEXT[],
-    archive_includes TEXT[],
-    archive_excludes TEXT[],
-    archive_include_launch_files BOOLEAN NOT NULL DEFAULT true,
+--     env_variables TEXT[],
+--     archive_includes TEXT[],
+--     archive_excludes TEXT[],
+--     archive_include_launch_files BOOLEAN NOT NULL DEFAULT true,
 --   fileInputs location in jobAttributes =====================
     file_inputs JSONB NOT NULL,
     node_count INTEGER NOT NULL DEFAULT 1,
@@ -211,48 +212,48 @@ ALTER TABLE notification_mechanisms OWNER TO tapis_app;
 -- App args table
 -- App arguments associated with an app
 -- All columns are specified NOT NULL to make queries easier. <col> = null is not the same as <col> is null
-CREATE TABLE app_args
-(
-    seq_id SERIAL PRIMARY KEY,
-    app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
-    arg_val TEXT NOT NULL DEFAULT '',
-    name TEXT,
-    description TEXT,
-    input_mode TEXT NOT NULL,
-    meta TEXT[]
-);
-ALTER TABLE app_args OWNER TO tapis_app;
-COMMENT ON COLUMN app_args.seq_id IS 'Arg sequence id';
-COMMENT ON COLUMN app_args.app_ver_seq_id IS 'Sequence id of application';
+-- CREATE TABLE app_args
+-- (
+--     seq_id SERIAL PRIMARY KEY,
+--     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
+--     arg_val TEXT NOT NULL DEFAULT '',
+--     name TEXT,
+--     description TEXT,
+--     input_mode TEXT NOT NULL,
+--     meta TEXT[]
+-- );
+-- ALTER TABLE app_args OWNER TO tapis_app;
+-- COMMENT ON COLUMN app_args.seq_id IS 'Arg sequence id';
+-- COMMENT ON COLUMN app_args.app_ver_seq_id IS 'Sequence id of application';
 
 -- Container args table
 -- Container arguments associated with an app
-CREATE TABLE container_args
-(
-    seq_id SERIAL PRIMARY KEY,
-    app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
-    arg_val TEXT NOT NULL DEFAULT '',
-    name TEXT,
-    description TEXT,
-    input_mode TEXT NOT NULL,
-    meta TEXT[]
-);
-ALTER TABLE container_args OWNER TO tapis_app;
-COMMENT ON COLUMN container_args.seq_id IS 'Arg sequence id';
-COMMENT ON COLUMN container_args.app_ver_seq_id IS 'Sequence id of application';
+-- CREATE TABLE container_args
+-- (
+--     seq_id SERIAL PRIMARY KEY,
+--     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
+--     arg_val TEXT NOT NULL DEFAULT '',
+--     name TEXT,
+--     description TEXT,
+--     input_mode TEXT NOT NULL,
+--     meta TEXT[]
+-- );
+-- ALTER TABLE container_args OWNER TO tapis_app;
+-- COMMENT ON COLUMN container_args.seq_id IS 'Arg sequence id';
+-- COMMENT ON COLUMN container_args.app_ver_seq_id IS 'Sequence id of application';
 
 -- Scheduler options table
 -- Scheduler options associated with an app
-CREATE TABLE scheduler_options
-(
-    seq_id SERIAL PRIMARY KEY,
-    app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
-    arg_val TEXT NOT NULL DEFAULT '',
-    name TEXT,
-    description TEXT,
-    input_mode TEXT NOT NULL,
-    meta TEXT[]
-);
-ALTER TABLE scheduler_options OWNER TO tapis_app;
-COMMENT ON COLUMN scheduler_options.seq_id IS 'Arg sequence id';
-COMMENT ON COLUMN scheduler_options.app_ver_seq_id IS 'Sequence id of application';
+-- CREATE TABLE scheduler_options
+-- (
+--     seq_id SERIAL PRIMARY KEY,
+--     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
+--     arg_val TEXT NOT NULL DEFAULT '',
+--     name TEXT,
+--     description TEXT,
+--     input_mode TEXT NOT NULL,
+--     meta TEXT[]
+-- );
+-- ALTER TABLE scheduler_options OWNER TO tapis_app;
+-- COMMENT ON COLUMN scheduler_options.seq_id IS 'Arg sequence id';
+-- COMMENT ON COLUMN scheduler_options.app_ver_seq_id IS 'Sequence id of application';

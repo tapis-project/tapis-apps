@@ -1,6 +1,7 @@
 package edu.utexas.tacc.tapis.apps.api.model;
 
 import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
 
 import java.util.List;
 

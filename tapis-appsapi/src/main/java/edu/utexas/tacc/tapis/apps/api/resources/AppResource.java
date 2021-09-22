@@ -34,25 +34,21 @@ import org.glassfish.grizzly.http.server.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.utexas.tacc.tapis.apps.model.AppArg;
-import edu.utexas.tacc.tapis.apps.model.FileInput;
-import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.shared.threadlocal.SearchParameters;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultBoolean;
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 
+import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.PatchApp;
+
 import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
-import edu.utexas.tacc.tapis.apps.api.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqPostApp;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqPutApp;
-import edu.utexas.tacc.tapis.apps.api.requests.ReqPatchApp;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApp;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApps;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
-import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
 import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.sharedapi.responses.RespAbstract;
@@ -301,7 +297,7 @@ public class AppResource
                             InputStream payloadStream,
                             @Context SecurityContext securityContext)
   {
-    String opName = "updateApp";
+    String opName = "patchApp";
     // ------------------------- Retrieve and validate thread context -------------------------
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -337,23 +333,36 @@ public class AppResource
     }
 
     // ------------------------- Create a PatchApp from the json and validate constraints -------------------------
-    ReqPatchApp req;
-    try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqPatchApp.class); }
+//    ReqPatchApp reqPatchApp;
+//    try { reqPatchApp = TapisGsonUtils.getGson().fromJson(rawJson, ReqPatchApp.class); }
+//    catch (JsonSyntaxException e)
+//    {
+//      msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
+//      _log.error(msg, e);
+//      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+//    }
+
+// TODO ?????????????????
+    // ------------------------- Create a PatchApp from the json -------------------------
+    PatchApp patchApp;
+    try { patchApp = TapisGsonUtils.getGson().fromJson(rawJson, PatchApp.class); }
     catch (JsonSyntaxException e)
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
       _log.error(msg, e);
       return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
     }
-    // If req is null that is an unrecoverable error
-    if (req == null)
-    {
-      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", rUser, appId, opName, "ReqPatchApp == null");
-      _log.error(msg);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-    }
 
-    PatchApp patchApp = createPatchAppFromRequest(req, rUser.getOboTenantId(), appId, appVersion, rawJson);
+//    // If req is null that is an unrecoverable error
+//    if (reqPatchApp == null)
+//    {
+//      msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", rUser, appId, opName, "ReqPatchApp == null");
+//      _log.error(msg);
+//      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+//    }
+
+    String appTenant = rUser.getOboTenantId();
+//    PatchApp patchApp = createPatchAppFromRequest(reqPatchApp, appTenant, appId, appVersion, rawJson);
     if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_PATCH_TRACE", rUser, rawJson));
 
     // No attributes are required. Constraints validated and defaults filled in on server side.
@@ -362,7 +371,8 @@ public class AppResource
     // ---------------------------- Make service call to update the app -------------------------------
     try
     {
-      appsService.patchApp(rUser, patchApp, rawJson);
+//      appsService.patchApp(rUser, appId, appVersion, patchApp, rawJson);
+      appsService.patchApp(rUser, appId, appVersion, patchApp, rawJson);
     }
     catch (NotFoundException e)
     {
@@ -1045,7 +1055,7 @@ public class AppResource
       }
       else
       {
-        // IllegalStateException indicates an Invalid PatchApp was passed in
+        // IllegalStateException indicates resulting app would be invalid
         msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
         _log.error(msg);
         return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
@@ -1082,9 +1092,9 @@ public class AppResource
   {
     var jobAttrs = req.jobAttributes;
     if (jobAttrs == null) jobAttrs = new JobAttributes();
-    var parmSet = jobAttrs.parameterSet;
-    if (parmSet == null) parmSet = new ParameterSet();
-    String[] envVariables = ApiUtils.getKeyValuesAsArray(parmSet.envVariables);
+//TODO    var parmSet = jobAttrs.parameterSet;
+//    if (parmSet == null) parmSet = new ParameterSetApiJunk();
+//    String[] envVariables = ApiUtils.getKeyValuesAsArray(parmSet.envVariables);
     // Extract Notes from the raw json.
     Object notes = extractNotes(rawJson);
     // Create App
@@ -1094,21 +1104,14 @@ public class AppResource
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
           jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
-          envVariables, parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes, parmSet.archiveFilter.includeLaunchFiles,
+//TODO          ApiUtils.buildLibParameterSet(parmSet),
+          jobAttrs.parameterSet,
           ApiUtils.buildLibFileInputs(jobAttrs.fileInputs),
           jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
 
-    // Complex types stored as json in main table
-    // TODO/TBD: Since now in main table to we need to instead add an argument (a json string?) to the
-    //           special jOOQ compatible constructor used above?
-//    app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputs));
-
     // Data for aux tables
     app.setNotificationSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
-    app.setAppArgs(ApiUtils.buildLibAppArgs(parmSet.appArgs));
-    app.setContainerArgs(ApiUtils.buildLibAppArgs(parmSet.containerArgs));
-    app.setSchedulerOptions(ApiUtils.buildLibAppArgs(parmSet.schedulerOptions));
     return app;
   }
 
@@ -1119,9 +1122,8 @@ public class AppResource
   {
     var jobAttrs = req.jobAttributes;
     if (jobAttrs == null) jobAttrs = new JobAttributes();
-    var parmSet = jobAttrs.parameterSet;
-    if (parmSet == null) parmSet = new ParameterSet();
-    String[] envVariables = ApiUtils.getKeyValuesAsArray(parmSet.envVariables);
+//TODO    var parmSet = jobAttrs.parameterSet;
+//   if (parmSet == null) parmSet = new ParameterSetApiJunk();
     // Extract Notes from the raw json.
     Object notes = extractNotes(rawJson);
 
@@ -1135,84 +1137,101 @@ public class AppResource
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
           jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
-          envVariables, parmSet.archiveFilter.includes, parmSet.archiveFilter.excludes, parmSet.archiveFilter.includeLaunchFiles,
+//TODO          ApiUtils.buildLibParameterSet(parmSet),
+          jobAttrs.parameterSet,
           ApiUtils.buildLibFileInputs(jobAttrs.fileInputs),
           jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
+
     // Data for aux tables
-//    app.setFileInputs(ApiUtils.buildLibFileInputs(jobAttrs.fileInputs));
     app.setNotificationSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
-    app.setAppArgs(ApiUtils.buildLibAppArgs(parmSet.appArgs));
-    app.setContainerArgs(ApiUtils.buildLibAppArgs(parmSet.containerArgs));
-    app.setSchedulerOptions(ApiUtils.buildLibAppArgs(parmSet.schedulerOptions));
     return app;
   }
 
-  /**
-   * Create a PatchApp from a ReqPatchApp
-   * Note that tenant, id and version are for tracking and needed by the service call. They are not updated.
-   */
-  private static PatchApp createPatchAppFromRequest(ReqPatchApp req, String tenantId, String id, String version,
-                                                    String rawJson)
-  {
-    PatchApp patchApp;
-    // Extract Notes from the raw json.
-    Object notes = extractNotes(rawJson);
-
-    // Potentially many arguments are null if jobAttrs or parmSet is null.
-    List<FileInput> fileInputs = null;
-    List<NotifSubscription> notifSubscriptions = null;
-    String[] envVariables = null;
-    List<AppArg> appArgs = null;
-    List<AppArg> containerArgs = null;
-    List<AppArg> schedulerOptions = null;
-    String[] archiveIncludes = null;
-    String[] archiveExcludes = null;
-    Boolean includeLaunchFiles = null;
-    var jobAttrs = req.jobAttributes;
-    if (jobAttrs != null)
-    {
-      fileInputs = ApiUtils.buildLibFileInputs(jobAttrs.fileInputs);
-      notifSubscriptions = ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions);
-      if (jobAttrs.parameterSet != null)
-      {
-        envVariables = ApiUtils.getKeyValuesAsArray(jobAttrs.parameterSet.envVariables);
-        appArgs = ApiUtils.buildLibAppArgs(jobAttrs.parameterSet.appArgs);
-        containerArgs = ApiUtils.buildLibAppArgs(jobAttrs.parameterSet.containerArgs);
-        schedulerOptions = ApiUtils.buildLibAppArgs(jobAttrs.parameterSet.schedulerOptions);
-        if (jobAttrs.parameterSet.archiveFilter != null)
-        {
-          archiveIncludes = jobAttrs.parameterSet.archiveFilter.includes;
-          archiveExcludes = jobAttrs.parameterSet.archiveFilter.excludes;
-          includeLaunchFiles = jobAttrs.parameterSet.archiveFilter.includeLaunchFiles;
-        }
-      }
-    }
-
-    // If jobAttrs is null then many arguments are null
-    // else potentially many more arguments are non-null
-    if (jobAttrs == null)
-    {
-      patchApp = new PatchApp(tenantId, id, version, req.description, req.runtime, req.runtimeVersion,
-            req.runtimeOptions, req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
-            null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, req.tags, notes);
-    }
-    else
-    {
-      patchApp = new PatchApp(tenantId, id, version, req.description, req.runtime, req.runtimeVersion,
-              req.runtimeOptions, req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
-              jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
-              jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
-              jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
-              appArgs, containerArgs, schedulerOptions, envVariables, archiveIncludes, archiveExcludes,
-              includeLaunchFiles, fileInputs, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB,
-              jobAttrs.maxMinutes, notifSubscriptions, jobAttrs.tags, req.tags, notes);
-    }
-
-    return patchApp;
-  }
-
+//  /**
+//   * Create a PatchApp from a ReqPatchApp
+//   * Note that tenant, id and version are for tracking and needed by the service call. They are not updated.
+//   */
+//  private static PatchApp createPatchAppFromRequest(ReqPatchApp req, String tenantId, String id, String version,
+//                                                    String rawJson)
+//  {
+//    PatchApp patchApp;
+//    // Extract Notes from the raw json.
+//    Object notes = extractNotes(rawJson);
+//
+//    // Potentially many arguments are null if jobAttrs or parmSet is null.
+//    edu.utexas.tacc.tapis.apps.model.ParameterSet libParameterSet = null;
+//    List<edu.utexas.tacc.tapis.apps.model.FileInput> fileInputs = null;
+//    List<NotifSubscription> notifSubscriptions = null;
+////    String[] envVariables = null;
+////    List<AppArg> appArgs = null;
+////    List<AppArg> containerArgs = null;
+////    List<AppArg> schedulerOptions = null;
+////    String[] archiveIncludes = null;
+////    String[] archiveExcludes = null;
+////    Boolean includeLaunchFiles = null;
+//
+//    // If any jobAttrs given process them
+//    var jobAttrs = req.jobAttributes;
+//    if (jobAttrs != null)
+//    {
+//      fileInputs = ApiUtils.buildLibFileInputs(jobAttrs.fileInputs);
+//      // If any parameterSet attributes given process them
+//      if (jobAttrs.parameterSet != null)
+//      {
+//
+//        edu.utexas.tacc.tapis.apps.model.ArchiveFilter libArchiveFilter = new edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
+//        // If any archiveFilter attributes given process them
+//        if (jobAttrs.parameterSet != null)
+//          ApiUtils.buildLibParameterSet();
+//      }
+//      notifSubscriptions = ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions);
+//
+//
+//
+//
+//
+//
+//      if (jobAttrs.parameterSet != null)
+//      {
+//        appArgs = ApiUtils.buildLibAppArgs(jobAttrs.parameterSet.appArgs);
+//        containerArgs = ApiUtils.buildLibAppArgs(jobAttrs.parameterSet.containerArgs);
+//        schedulerOptions = ApiUtils.buildLibAppArgs(jobAttrs.parameterSet.schedulerOptions);
+//        envVariables = ApiUtils.getKeyValuesAsArray(jobAttrs.parameterSet.envVariables);
+//        if (jobAttrs.parameterSet.archiveFilter != null)
+//        {
+//          archiveIncludes = jobAttrs.parameterSet.archiveFilter.includes;
+//          archiveExcludes = jobAttrs.parameterSet.archiveFilter.excludes;
+//          includeLaunchFiles = jobAttrs.parameterSet.archiveFilter.includeLaunchFiles;
+//        }
+//      }
+//    }
+//
+//    // If jobAttrs is null then many arguments are null
+//    // else potentially many more arguments are non-null
+//    if (jobAttrs == null)
+//    {
+////      patchApp = new PatchApp(tenantId, id, version, req.description, req.runtime, req.runtimeVersion,
+//      patchApp = new PatchApp(req.description, req.runtime, req.runtimeVersion,
+//            req.runtimeOptions, req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs, null, null,
+//            null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+//            req.tags, notes);
+//    }
+//    else
+//    {
+////      patchApp = new PatchApp(tenantId, id, version, req.description, req.runtime, req.runtimeVersion,
+//      patchApp = new PatchApp(req.description, req.runtime, req.runtimeVersion,
+//              req.runtimeOptions, req.containerImage, req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
+//              jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
+//              jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
+//              jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
+//              libParameterSet, fileInputs, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB,
+//              jobAttrs.maxMinutes, notifSubscriptions, jobAttrs.tags, req.tags, notes);
+//    }
+//
+//    return patchApp;
+//  }
+//
   /**
    * Fill in defaults and check constraints on App attributes
    * Check values. Id and version must be set.

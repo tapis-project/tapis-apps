@@ -10,7 +10,7 @@ import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
  * Class representing an update to a Tapis App.
  * Fields set to null indicate attribute not updated.
  *
- * Note that fields tenant, id and version are not for update. They are for reference during the update process.
+ * TODO/TBD: Note that fields tenant, id and version are not for update. They are for reference during the update process.
  *
  * Make defensive copies as needed on get/set to keep this class as immutable as possible.
  */
@@ -19,13 +19,13 @@ public final class PatchApp
   // ************************************************************************
   // *********************** Fields *****************************************
   // ************************************************************************
-  private String tenant; // No update - reference only
-  private String id; // No update - reference only
-  private String version; // No update - reference only
+//  private final String tenant; // No update - reference only
+//  private final String id; // No update - reference only
+//  private final String version; // No update - reference only
   private final String description;
   private final Runtime runtime;
   private final String runtimeVersion;
-  private List<RuntimeOption> runtimeOptions;
+  private final List<RuntimeOption> runtimeOptions;
   private final String containerImage;
   private final Integer maxJobs;
   private final Integer maxJobsPerUser;
@@ -42,10 +42,7 @@ public final class PatchApp
   private final String archiveSystemId;
   private final String archiveSystemDir;
   private final Boolean archiveOnAppError;
-  private final String[] envVariables;
-  private final String[] archiveIncludes;
-  private final String[] archiveExcludes;
-  private final Boolean archiveIncludeLaunchFiles;
+  private final ParameterSet parameterSet;
   private final List<FileInput> fileInputs;
   private final Integer nodeCount;
   private final Integer coresPerNode;
@@ -56,9 +53,7 @@ public final class PatchApp
 
   // Aux tables
   private final List<NotifSubscription> notifSubscriptions;
-  private final List<AppArg> appArgs;
-  private final List<AppArg> containerArgs;
-  private final List<AppArg> schedulerOptions;
+
   private final String[] tags;
   private final Object notes;
 
@@ -68,27 +63,24 @@ public final class PatchApp
 
   /**
    * Constructor setting all final attributes.
-   * Note that because PatchApp does not have a corresponding table in the DB we can pass in
-   *   AppArgs, ContainerArgs, SchedulerOptions and Subscriptions.
+   * Note that because PatchApp does not have a corresponding table in the DB we can pass in Subscriptions.
    */
-  public PatchApp(String tenantId1, String id1, String version1, String description1, Runtime runtime1, String runtimeVersion1, List<RuntimeOption> runtimeOptions1,
+//  public PatchApp(String tenantId1, String id1, String version1, String description1, Runtime runtime1, String runtimeVersion1, List<RuntimeOption> runtimeOptions1,
+  public PatchApp(String description1, Runtime runtime1, String runtimeVersion1, List<RuntimeOption> runtimeOptions1,
                   String containerImage1, Integer maxJobs1, Integer maxJobsPerUser1, Boolean strictFileInputs1,
                   // == Start jobAttributes
                   String jobDescription1, Boolean dynamicExecSystem1, String[] execSystemConstraints1,
                   String execSystemId1, String execSystemExecDir1, String execSystemInputDir1, String execSystemOutputDir1,
                   String execSystemLogicalQueue1, String archiveSystemId1, String archiveSystemDir1,
-                  Boolean archiveOnAppError1,
-                  List<AppArg> appArgs1, List<AppArg> containerArgs1, List<AppArg> schedulerOptions1,
-                  String[] envVariables1, String[] archiveIncludes1, String[] archiveExcludes1,
-                  Boolean archiveIncludeLaunchFiles1, List<FileInput> fileInputs1,
+                  Boolean archiveOnAppError1, ParameterSet parameterSet1, List<FileInput> fileInputs1,
                   Integer nodeCount1, Integer coresPerNode1, Integer memoryMb1, Integer maxMinutes1,
                   List<NotifSubscription> notifSubscriptions1, String[] jobTags1,
                   // == End jobAttributes
                   String[] tags1, Object notes1)
   {
-    tenant = tenantId1;
-    id = id1;
-    version = version1;
+//    tenant = tenantId1;
+//    id = id1;
+//    version = version1;
     description = description1;
     runtime = runtime1;
     runtimeVersion = runtimeVersion1;
@@ -108,19 +100,13 @@ public final class PatchApp
     archiveSystemId = archiveSystemId1;
     archiveSystemDir = archiveSystemDir1;
     archiveOnAppError = archiveOnAppError1;
-    appArgs = appArgs1;
-    containerArgs = containerArgs1;
-    schedulerOptions = schedulerOptions1;
-    envVariables = (envVariables1 == null) ? null : envVariables1.clone();
-    archiveIncludes = (archiveIncludes1 == null) ? null : archiveIncludes1.clone();
-    archiveExcludes = (archiveExcludes1 == null) ? null : archiveExcludes1.clone();
-    archiveIncludeLaunchFiles = archiveIncludeLaunchFiles1;
-    fileInputs = fileInputs1;
+    parameterSet = (parameterSet1 == null) ? null : new ParameterSet(parameterSet1);
+    fileInputs = (fileInputs1 == null) ? null: new ArrayList<>(fileInputs1);
     nodeCount = nodeCount1;
     coresPerNode = coresPerNode1;
     memoryMb = memoryMb1;
     maxMinutes = maxMinutes1;
-    notifSubscriptions = notifSubscriptions1;
+    notifSubscriptions = (notifSubscriptions1 == null) ? null : new ArrayList<>(notifSubscriptions1);
     jobTags = (jobTags1 == null) ? null : jobTags1.clone();
     tags = (tags1 == null) ? null : tags1.clone();
     notes = notes1;
@@ -129,9 +115,9 @@ public final class PatchApp
   // ************************************************************************
   // *********************** Accessors **************************************
   // ************************************************************************
-  public String getTenant() { return tenant; }
-  public String getId() { return id; }
-  public String getVersion() { return version; }
+//  public String getTenant() { return tenant; }
+//  public String getId() { return id; }
+//  public String getVersion() { return version; }
 
   public String getDescription() { return description; }
   public Runtime getRuntime() { return runtime; }
@@ -158,19 +144,7 @@ public final class PatchApp
   public String getArchiveSystemId() { return archiveSystemId; }
   public String getArchiveSystemDir() { return archiveSystemDir; }
   public Boolean getArchiveOnAppError() { return archiveOnAppError; }
-  public List<AppArg> getAppArgs() { return (appArgs == null) ? null : new ArrayList<>(appArgs); }
-  public List<AppArg> getContainerArgs() { return (containerArgs == null) ? null : new ArrayList<>(containerArgs); }
-  public List<AppArg> getSchedulerOptions() { return (schedulerOptions == null) ? null : new ArrayList<>(schedulerOptions); }
-  public String[] getEnvVariables() {
-    return (envVariables == null) ? null : envVariables.clone();
-  }
-  public String[] getArchiveIncludes() {
-    return (archiveIncludes == null) ? null : archiveIncludes.clone();
-  }
-  public String[] getArchiveExcludes() {
-    return (archiveExcludes == null) ? null : archiveExcludes.clone();
-  }
-  public Boolean getArchiveIncludeLaunchFiles() { return archiveIncludeLaunchFiles; }
+  public ParameterSet getParameterSet() { return (parameterSet == null) ? null : new ParameterSet(parameterSet); }
   public List<FileInput> getFileInputs() { return (fileInputs == null) ? null : new ArrayList<>(fileInputs); }
   public Integer getNodeCount() { return nodeCount; }
   public Integer getCoresPerNode() { return coresPerNode; }

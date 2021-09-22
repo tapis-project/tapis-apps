@@ -3,11 +3,11 @@ package edu.utexas.tacc.tapis.apps.api.utils;
 import com.google.gson.JsonElement;
 import edu.utexas.tacc.tapis.apps.api.model.ArgSpec;
 import edu.utexas.tacc.tapis.apps.api.model.FileInput;
-import edu.utexas.tacc.tapis.apps.api.model.KeyValuePair;
 import edu.utexas.tacc.tapis.apps.api.model.NotificationMechanism;
 import edu.utexas.tacc.tapis.apps.api.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
+import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
 import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
@@ -202,6 +202,34 @@ public class ApiUtils
     return retList;
   }
 
+//  /**
+//   * Build a lib model ParameterSet object given the ParameterSet request object
+//   */
+//  public static edu.utexas.tacc.tapis.apps.model.ParameterSet buildLibParameterSet(ParameterSet parmSet)
+//  {
+//    if (parmSet == null) return null;
+//    var retParmSet = new edu.utexas.tacc.tapis.apps.model.ParameterSet();
+//    retParmSet.setAppArgs(buildLibAppArgs(parmSet.appArgs));
+//    retParmSet.setAppArgs(buildLibAppArgs(parmSet.containerArgs));
+//    retParmSet.setAppArgs(buildLibAppArgs(parmSet.schedulerOptions));
+//    retParmSet.setEnvVariables(parmSet.envVariables);
+//    // Handle ArchiveFilter
+//    edu.utexas.tacc.tapis.apps.model.ArchiveFilter archiveFilter = null;
+//    if (parmSet.archiveFilter != null)
+//    {
+//      archiveFilter = new ArchiveFilter();
+//      // TODO includes, excludes
+//      ??
+//      archiveFilter.setIncludeLaunchFiles(parmSet.archiveFilter.includeLaunchFiles);
+//    }
+//    retParmSet.setArchiveFilter(archiveFilter);
+//
+//    return retParmSet;
+//  }
+//
+//          ApiUtils.buildLibAppArgs(parmSet.appArgs), ApiUtils.buildLibAppArgs(parmSet.containerArgs),
+//          ApiUtils.buildLibAppArgs(parmSet.schedulerOptions), envVariables, parmSet.archiveFilter.includes,
+//          parmSet.archiveFilter.excludes, parmSet.archiveFilter.includeLaunchFiles,
   /**
    * Build a list of lib model FileInput objects given the request objects
    */
@@ -256,7 +284,7 @@ public class ApiUtils
       FileInput fid = new FileInput();
       fid.name = libFileInput.getName();
       fid.description = libFileInput.getDescription();
-      fid.mode = libFileInput.getMode();
+      fid.mode = libFileInput.getInputMode();
       fid.inPlace = libFileInput.isInPlace();
       fid.sourceUrl = libFileInput.getSourceUrl();
       fid.targetPath = libFileInput.getTargetPath();
