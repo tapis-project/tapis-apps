@@ -264,7 +264,7 @@ public class AppsServiceTest
     app0.setCoresPerNode(coresPerNode2);
     app0.setMemoryMb(memoryMb2);
     app0.setMaxMinutes(maxMinutes2);
-    app0.setNotificationSubscriptions(notifList2);
+    app0.setSubscriptions(notifList2);
     app0.setJobTags(jobTags2);
     app0.setTags(tags2);
     app0.setNotes(notes2);
@@ -329,7 +329,7 @@ public class AppsServiceTest
     app0.setCoresPerNode(coresPerNode2);
     app0.setMemoryMb(memoryMb2);
     app0.setMaxMinutes(maxMinutes2);
-    app0.setNotificationSubscriptions(notifList2);
+    app0.setSubscriptions(notifList2);
     app0.setJobTags(jobTags2);
     app0.setTags(tags2);
     app0.setNotes(notes2);
@@ -1219,6 +1219,7 @@ public class AppsServiceTest
   {
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
     System.out.println("Found item: " + app0.getId());
+    Assert.assertEquals(tmpApp.getTenant(), app0.getTenant());
     Assert.assertEquals(tmpApp.getId(), app0.getId());
     Assert.assertEquals(tmpApp.getVersion(), app0.getVersion());
     Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
@@ -1240,6 +1241,8 @@ public class AppsServiceTest
     Assert.assertEquals(tmpApp.getMaxJobs(), app0.getMaxJobs());
     Assert.assertEquals(tmpApp.getMaxJobsPerUser(), app0.getMaxJobsPerUser());
     Assert.assertEquals(tmpApp.isStrictFileInputs(), app0.isStrictFileInputs());
+
+    // ========== JobAttributes
     Assert.assertEquals(tmpApp.getJobDescription(), app0.getJobDescription());
     Assert.assertEquals(tmpApp.isDynamicExecSystem(), app0.isDynamicExecSystem());
     // Verify execSystemConstraints
@@ -1346,8 +1349,8 @@ public class AppsServiceTest
     // Verify data in aux tables: notification_subscriptions
     // ===============================================================================================
     // Verify notification subscriptions
-    List<NotifSubscription> origNotificationSubs = app0.getNotificationSubscriptions();
-    List<NotifSubscription> tmpSubs = tmpApp.getNotificationSubscriptions();
+    List<NotifSubscription> origNotificationSubs = app0.getSubscriptions();
+    List<NotifSubscription> tmpSubs = tmpApp.getSubscriptions();
     Assert.assertNotNull(origNotificationSubs, "Orig notificationSubscriptions was null");
     Assert.assertNotNull(tmpSubs, "Fetched notificationSubscriptions was null");
     Assert.assertEquals(tmpSubs.size(), origNotificationSubs.size());

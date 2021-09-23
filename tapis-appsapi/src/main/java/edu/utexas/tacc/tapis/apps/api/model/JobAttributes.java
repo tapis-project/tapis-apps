@@ -33,7 +33,7 @@ public final class JobAttributes
   public List<FileInput> fileInputs;
   public int nodeCount = DEFAULT_NODE_COUNT;
   public int coresPerNode = DEFAULT_CORES_PER_NODE;
-  public int memoryMB = DEFAULT_MEMORY_MB;
+  public int memoryMb = DEFAULT_MEMORY_MB;
   public int maxMinutes = DEFAULT_MAX_MINUTES;
   public List<NotificationSubscription> subscriptions;
   public String[] tags;
@@ -62,9 +62,9 @@ public final class JobAttributes
     fileInputs = a.getFileInputs();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
-    memoryMB = a.getMemoryMb();
+    memoryMb = a.getMemoryMb();
     maxMinutes = a.getMaxMinutes();
-    subscriptions = ApiUtils.buildApiNotifSubscriptions(a.getNotificationSubscriptions());
+    subscriptions = ApiUtils.buildApiNotifSubscriptions(a.getSubscriptions());
     tags = a.getJobTags();
   }
 }

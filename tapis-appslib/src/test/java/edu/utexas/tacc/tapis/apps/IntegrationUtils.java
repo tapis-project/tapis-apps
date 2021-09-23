@@ -5,12 +5,14 @@ import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
 import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
 import edu.utexas.tacc.tapis.apps.model.NotifMechanism.NotifMechanismType;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
+import edu.utexas.tacc.tapis.jobs.client.gen.model.Job;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
@@ -60,8 +62,6 @@ public final class IntegrationUtils
   public static final boolean inPlaceFalse = false;
   public static final InputMode inputModeRequired = InputMode.REQUIRED;
   public static final InputMode inputModeOptional = InputMode.OPTIONAL;
-  public static final boolean metaRequiredTrue = true;
-  public static final boolean metaRequiredFalse = false;
   public static final Runtime runtime1 = Runtime.DOCKER;
   public static final Runtime runtime2 = Runtime.SINGULARITY;
   public static final Runtime runtimeNull = null;
@@ -330,7 +330,7 @@ public final class IntegrationUtils
                  nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
                  tags1, notes1, uuidNull, deletedFalse, createdNull, updatedNull);
       // Aux table data
-      apps[i].setNotificationSubscriptions(notifList1);
+      apps[i].setSubscriptions(notifList1);
     }
     return apps;
   }
@@ -370,7 +370,7 @@ public final class IntegrationUtils
             nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, jobTags2,
             tags2, notes2, uuidNull, deletedFalse, createdNull, updatedNull);
     // Aux table data
-    putApp.setNotificationSubscriptions(notifList2);
+    putApp.setSubscriptions(notifList2);
     return putApp;
   }
 
@@ -380,13 +380,13 @@ public final class IntegrationUtils
    */
   public static PatchApp makePatchAppFull()
   {
-      return new PatchApp(description2, runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
-             maxJobs2, maxJobsPerUser2, strictFileInputsTrue,
-             jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
-             execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
-             archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse,
-             parameterSet2, finList2, nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, notifList2, jobTags2,
-             tags2, notes2);
+    JobAttributes jobAttributes = new JobAttributes(jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
+            execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
+            archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse, parameterSet2, finList2, nodeCount2,
+            coresPerNode2, memoryMb2, maxMinutes2, notifList2, jobTags2);
+
+    return new PatchApp(description2, runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
+             maxJobs2, maxJobsPerUser2, strictFileInputsTrue, jobAttributes, tags2, notes2);
   }
 
   /**
@@ -395,13 +395,13 @@ public final class IntegrationUtils
    */
   public static PatchApp makePatchAppPartial1()
   {
-    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
-            maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
-            jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
+    JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
-            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
-            parameterSetNull, finListNull, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
-            tagsNull, notesNull);
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSetNull, finListNull, nodeCountNull,
+            coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull);
+
+    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
+            maxJobsNull, maxJobsPerUserNull, strictFileInputsNull, jobAttributes, tagsNull, notesNull);
   }
 
   /**
@@ -411,15 +411,14 @@ public final class IntegrationUtils
    */
   public static PatchApp makePatchAppPartial2()
   {
-    ParameterSet tmpParameterSet = new ParameterSet(appArgListNull, containerArgList3, schedulerOptionListNull,
-                                                    envVariablesNull, archiveFilterNull);
-    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
-            maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
-            jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
+    ParameterSet parameterSet = new ParameterSet(appArgListNull, containerArgList3, schedulerOptionListNull,
+                                                 envVariablesNull, archiveFilterNull);
+    JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
-            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
-            tmpParameterSet, finList3, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
-            tagsNull, notesNull);
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSet, finList3, nodeCountNull,
+            coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull);
+    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
+            maxJobsNull, maxJobsPerUserNull, strictFileInputsNull, jobAttributes, tagsNull, notesNull);
   }
 
   /**
@@ -428,15 +427,14 @@ public final class IntegrationUtils
    */
   public static PatchApp makePatchAppPartial3()
   {
-    ParameterSet tmpParameterSet = new ParameterSet(appArgList3, containerArgListNull, schedulerOptionListNull,
-                                                    envVariablesNull, archiveFilterNull);
-    return new PatchApp(descriptionNull, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImageNull,
-            maxJobsNull, maxJobsPerUserNull, strictFileInputsNull,
-            jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
+    ParameterSet parameterSet = new ParameterSet(appArgList3, containerArgListNull, schedulerOptionListNull,
+                                                 envVariablesNull, archiveFilterNull);
+    JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
-            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
-            tmpParameterSet, finListNull, nodeCountNull, coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull,
-            tagsNull, notesNull);
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSet, finListNull, nodeCountNull,
+            coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull);
+    return new PatchApp(descriptionNull, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImageNull,
+            maxJobsNull, maxJobsPerUserNull, strictFileInputsNull, jobAttributes, tagsNull, notesNull);
   }
 
   public static String getContainerImage(String key, int idx)

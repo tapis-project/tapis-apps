@@ -11,6 +11,7 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
 import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
+import edu.utexas.tacc.tapis.apps.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
@@ -1626,44 +1627,47 @@ public class AppsServiceImpl implements AppsService
     if (p.getMaxJobsPerUser() != null) app1.setMaxJobsPerUser(p.getMaxJobsPerUser());
     if (p.isStrictFileInputs() != null) app1.setStrictFileInputs(p.isStrictFileInputs());
     // Start JobAttributes
-    if (p.getJobDescription() != null) app1.setJobDescription(p.getJobDescription());
-    if (p.isDynamicExecSystem() != null) app1.setDynamicExecSystem(p.isDynamicExecSystem());
-    if (p.getExecSystemConstraints() != null) app1.setExecSystemConstraints(p.getExecSystemConstraints());
-    if (p.getExecSystemId() != null) app1.setExecSystemId(p.getExecSystemId());
-    if (p.getExecSystemExecDir() != null) app1.setExecSystemExecDir(p.getExecSystemExecDir());
-    if (p.getExecSystemInputDir() != null) app1.setExecSystemInputDir(p.getExecSystemInputDir());
-    if (p.getExecSystemOutputDir() != null) app1.setExecSystemOutputDir(p.getExecSystemOutputDir());
-    if (p.getExecSystemLogicalQueue() != null) app1.setExecSystemLogicalQueue(p.getExecSystemLogicalQueue());
-    if (p.getArchiveSystemId() != null) app1.setArchiveSystemId(p.getArchiveSystemId());
-    if (p.getArchiveSystemDir() != null) app1.setArchiveSystemDir(p.getArchiveSystemDir());
-    if (p.getArchiveOnAppError() != null) app1.setArchiveOnAppError(p.getArchiveOnAppError());
-    // If parameterSet is being updated then we need to include it
-    if (p.getParameterSet() != null)
+    if (p.getJobAttributes() != null)
     {
-      ParameterSet pParmSet = p.getParameterSet();
-      if (pParmSet.getAppArgs() != null) app1.getParameterSet().setAppArgs(pParmSet.getAppArgs());
-      if (pParmSet.getContainerArgs() != null) app1.getParameterSet().setContainerArgs(pParmSet.getContainerArgs());
-      if (pParmSet.getSchedulerOptions() != null) app1.getParameterSet().setSchedulerOptions(pParmSet.getSchedulerOptions());
-      if (pParmSet.getEnvVariables() != null) app1.getParameterSet().setEnvVariables(pParmSet.getEnvVariables());
-      // If ArchiveFilter in ParameterSet is being updated then process it
-      if (pParmSet.getArchiveFilter() != null)
+      JobAttributes jobAttrs = p.getJobAttributes();
+      if (jobAttrs.getDescription() != null) app1.setJobDescription(jobAttrs.getDescription());
+      if (jobAttrs.isDynamicExecSystem() != null) app1.setDynamicExecSystem(jobAttrs.isDynamicExecSystem());
+      if (jobAttrs.getExecSystemConstraints() != null) app1.setExecSystemConstraints(jobAttrs.getExecSystemConstraints());
+      if (jobAttrs.getExecSystemId() != null) app1.setExecSystemId(jobAttrs.getExecSystemId());
+      if (jobAttrs.getExecSystemExecDir() != null) app1.setExecSystemExecDir(jobAttrs.getExecSystemExecDir());
+      if (jobAttrs.getExecSystemInputDir() != null) app1.setExecSystemInputDir(jobAttrs.getExecSystemInputDir());
+      if (jobAttrs.getExecSystemOutputDir() != null) app1.setExecSystemOutputDir(jobAttrs.getExecSystemOutputDir());
+      if (jobAttrs.getExecSystemLogicalQueue() != null) app1.setExecSystemLogicalQueue(jobAttrs.getExecSystemLogicalQueue());
+      if (jobAttrs.getArchiveSystemId() != null) app1.setArchiveSystemId(jobAttrs.getArchiveSystemId());
+      if (jobAttrs.getArchiveSystemDir() != null) app1.setArchiveSystemDir(jobAttrs.getArchiveSystemDir());
+      if (jobAttrs.getArchiveOnAppError() != null) app1.setArchiveOnAppError(jobAttrs.getArchiveOnAppError());
+      // If parameterSet is being updated then we need to include it
+      if (jobAttrs.getParameterSet() != null)
       {
-        ArchiveFilter af = pParmSet.getArchiveFilter();
-        if (af.getIncludes() != null) app1.getParameterSet().getArchiveFilter().setIncludes(af.getIncludes());
-        if (af.getExcludes() != null) app1.getParameterSet().getArchiveFilter().setExcludes(af.getExcludes());
-        if (af.isIncludeLaunchFiles() != null) app1.getParameterSet().getArchiveFilter().setIncludeLaunchFiles(af.isIncludeLaunchFiles());
-
+        ParameterSet pParmSet = jobAttrs.getParameterSet();
+        if (pParmSet.getAppArgs() != null) app1.getParameterSet().setAppArgs(pParmSet.getAppArgs());
+        if (pParmSet.getContainerArgs() != null) app1.getParameterSet().setContainerArgs(pParmSet.getContainerArgs());
+        if (pParmSet.getSchedulerOptions() != null) app1.getParameterSet().setSchedulerOptions(pParmSet.getSchedulerOptions());
+        if (pParmSet.getEnvVariables() != null) app1.getParameterSet().setEnvVariables(pParmSet.getEnvVariables());
+        // If ArchiveFilter in ParameterSet is being updated then process it
+        if (pParmSet.getArchiveFilter() != null)
+        {
+          ArchiveFilter af = pParmSet.getArchiveFilter();
+          if (af.getIncludes() != null) app1.getParameterSet().getArchiveFilter().setIncludes(af.getIncludes());
+          if (af.getExcludes() != null) app1.getParameterSet().getArchiveFilter().setExcludes(af.getExcludes());
+          if (af.isIncludeLaunchFiles() != null)
+            app1.getParameterSet().getArchiveFilter().setIncludeLaunchFiles(af.isIncludeLaunchFiles());
+        }
       }
+      if (jobAttrs.getFileInputs() != null) app1.setFileInputs(jobAttrs.getFileInputs());
+      if (jobAttrs.getNodeCount() != null) app1.setNodeCount(jobAttrs.getNodeCount());
+      if (jobAttrs.getCoresPerNode() != null) app1.setCoresPerNode(jobAttrs.getCoresPerNode());
+      if (jobAttrs.getMemoryMb() != null) app1.setMemoryMb(jobAttrs.getMemoryMb());
+      if (jobAttrs.getMaxMinutes() != null) app1.setMaxMinutes(jobAttrs.getMaxMinutes());
+      if (jobAttrs.getSubscriptions() != null) app1.setSubscriptions(jobAttrs.getSubscriptions());
+      if (jobAttrs.getTags() != null) app1.setJobTags(jobAttrs.getTags());
+      // End JobAttributes
     }
-    if (p.getFileInputs() != null) app1.setFileInputs(p.getFileInputs());
-    if (p.getNodeCount() != null) app1.setNodeCount(p.getNodeCount());
-    if (p.getCoresPerNode() != null) app1.setCoresPerNode(p.getCoresPerNode());
-    if (p.getMemoryMb() != null) app1.setMemoryMb(p.getMemoryMb());
-    if (p.getMaxMinutes() != null) app1.setMaxMinutes(p.getMaxMinutes());
-    if (p.getNotifSubscriptions() != null) app1.setNotificationSubscriptions(p.getNotifSubscriptions());
-    if (p.getJobTags() != null) app1.setJobTags(p.getJobTags());
-    // End JobAttributes
-
     if (p.getTags() != null) app1.setTags(p.getTags());
     if (p.getNotes() != null) app1.setNotes(p.getNotes());
     return app1;

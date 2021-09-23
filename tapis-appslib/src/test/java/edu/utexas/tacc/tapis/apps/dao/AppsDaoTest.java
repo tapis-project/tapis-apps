@@ -2,13 +2,11 @@ package edu.utexas.tacc.tapis.apps.dao;
 
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
-import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.apps.IntegrationUtils;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
@@ -209,8 +207,8 @@ public class AppsDaoTest
     // Verify data in aux tables: notification_subscriptions
     // ===============================================================================================
     // Verify notification subscriptions
-    List<NotifSubscription> origNotificationSubs = app0.getNotificationSubscriptions();
-    List<NotifSubscription> tmpSubs = tmpApp.getNotificationSubscriptions();
+    List<NotifSubscription> origNotificationSubs = app0.getSubscriptions();
+    List<NotifSubscription> tmpSubs = tmpApp.getSubscriptions();
     Assert.assertNotNull(origNotificationSubs, "Orig notificationSubscriptions was null");
     Assert.assertNotNull(tmpSubs, "Fetched notificationSubscriptions was null");
     Assert.assertEquals(tmpSubs.size(), origNotificationSubs.size());

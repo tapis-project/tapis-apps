@@ -56,7 +56,7 @@
       },
       "nodeCount": { "type": "integer", "default": -1 },
       "coresPerNode": { "type": "integer", "default": -1 },
-      "memoryMB": { "type": "integer", "default": -1 },
+      "memoryMb": { "type": "integer", "default": -1 },
       "maxMinutes": { "type": "integer", "default": -1 },
       "subscriptions": {
         "type": ["array", "null"],

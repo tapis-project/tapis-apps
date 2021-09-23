@@ -292,10 +292,10 @@ public class AppResource
   @Path("{appId}/{appVersion}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response updateApp(@PathParam("appId") String appId,
-                            @PathParam("appVersion") String appVersion,
-                            InputStream payloadStream,
-                            @Context SecurityContext securityContext)
+  public Response patchApp(@PathParam("appId") String appId,
+                           @PathParam("appVersion") String appVersion,
+                           InputStream payloadStream,
+                           @Context SecurityContext securityContext)
   {
     String opName = "patchApp";
     // ------------------------- Retrieve and validate thread context -------------------------
@@ -343,6 +343,10 @@ public class AppResource
     }
 
     if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_PATCH_TRACE", rUser, rawJson));
+
+    // Notes require special handling. Else they end up as a LinkedTreeMap which causes trouble when attempting to
+    // convert to a JsonObject.
+    patchApp.setNotes(extractNotes(rawJson));
 
     // No attributes are required. Constraints validated and defaults filled in on server side.
     // No secrets in PatchApp so no need to scrub
@@ -1080,11 +1084,11 @@ public class AppResource
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
           jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
           jobAttrs.parameterSet, jobAttrs.fileInputs,
-          jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.tags,
+          jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMb, jobAttrs.maxMinutes, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
 
     // Data for aux tables
-    app.setNotificationSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
+    app.setSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
     return app;
   }
 
@@ -1109,11 +1113,11 @@ public class AppResource
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
           jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
           jobAttrs.parameterSet, jobAttrs.fileInputs,
-          jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.tags,
+          jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMb, jobAttrs.maxMinutes, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
 
     // Data for aux tables
-    app.setNotificationSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
+    app.setSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
     return app;
   }
 
@@ -1147,7 +1151,8 @@ public class AppResource
   /**
    * Extract notes from the incoming json
    * This explicit method to extract is needed because notes is an unstructured object and other seemingly simpler
-   * approaches caused problems with the json marshalling.
+   * approaches caused problems with the json marshalling. This method ensures notes end up as a JsonObject rather
+   * than a LinkedTreeMap.
    */
   private static Object extractNotes(String rawJson)
   {

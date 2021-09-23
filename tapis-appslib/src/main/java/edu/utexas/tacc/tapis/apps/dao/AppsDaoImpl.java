@@ -33,11 +33,9 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
-import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
 import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.search.parser.ASTBinaryExpression;
 import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
@@ -1556,7 +1554,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             r.get(APPS_VERSIONS.TAGS), r.get(APPS_VERSIONS.NOTES), r.get(APPS_VERSIONS.UUID),
             r.get(APPS.DELETED), created, updated);
     // Fill in data from aux tables
-    app.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, appVerSeqId));
+    app.setSubscriptions(retrieveNotificationSubscriptions(db, appVerSeqId));
 
     return app;
   }
@@ -1664,7 +1662,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    */
   private static void persistNotificationSubscriptions(DSLContext db, App app, int appVerSeqId)
   {
-    var subscriptions = app.getNotificationSubscriptions();
+    var subscriptions = app.getSubscriptions();
     if (subscriptions == null || subscriptions.isEmpty()) return;
 
     for (NotifSubscription subscription : subscriptions) {

@@ -11,8 +11,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.artifact.versioning.VersionRange;
 
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
@@ -197,8 +195,7 @@ public final class App
   private Instant updated; // UTC time for when record was last updated
   // === End fields in table apps_versions =============================================
 
-  // Aux tables
-  private List<NotifSubscription> notificationSubscriptions;
+  private List<NotifSubscription> subscriptions;
 
 
   // ************************************************************************
@@ -278,7 +275,7 @@ public final class App
     memoryMb = a.getMemoryMb();
     maxMinutes = a.getMaxMinutes();
     jobTags = a.getJobTags();
-    notificationSubscriptions = a.getNotificationSubscriptions();
+    subscriptions = a.getSubscriptions();
     tags = (a.getTags() == null) ? EMPTY_STR_ARRAY : a.getTags().clone();
     notes = a.getNotes();
     uuid = a.getUuid();
@@ -405,7 +402,7 @@ public final class App
 //    archiveIncludeLaunchFiles = a.getArchiveIncludeLaunchFiles();
     jobTags = a.getJobTags();
     fileInputs = a.getFileInputs();
-    notificationSubscriptions = a.getNotificationSubscriptions();
+    subscriptions = a.getSubscriptions();
 //    appArgs = a.getAppArgs();
 //    containerArgs = a.getContainerArgs();
 //    schedulerOptions = a.getSchedulerOptions();
@@ -771,13 +768,13 @@ public final class App
     fileInputs = (fi == null) ? null : new ArrayList<>(fi);
   }
 
-  public List<NotifSubscription> getNotificationSubscriptions()
+  public List<NotifSubscription> getSubscriptions()
   {
-    return (notificationSubscriptions == null) ? null : new ArrayList<>(notificationSubscriptions);
+    return (subscriptions == null) ? null : new ArrayList<>(subscriptions);
   }
-  public void setNotificationSubscriptions(List<NotifSubscription> ns)
+  public void setSubscriptions(List<NotifSubscription> ns)
   {
-    notificationSubscriptions = (ns == null) ? null : new ArrayList<>(ns);
+    subscriptions = (ns == null) ? null : new ArrayList<>(ns);
   }
 
   public ParameterSet getParameterSet() { return parameterSet; }
