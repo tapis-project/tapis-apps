@@ -8,8 +8,6 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppUpdates;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppsVersions;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationMechanisms;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationSubscriptions;
 
 
 /**
@@ -37,14 +35,4 @@ public class Tables {
      * The table <code>tapis_app.flyway_schema_history</code>.
      */
     public static final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
-
-    /**
-     * The table <code>tapis_app.notification_mechanisms</code>.
-     */
-    public static final NotificationMechanisms NOTIFICATION_MECHANISMS = NotificationMechanisms.NOTIFICATION_MECHANISMS;
-
-    /**
-     * The table <code>tapis_app.notification_subscriptions</code>.
-     */
-    public static final NotificationSubscriptions NOTIFICATION_SUBSCRIPTIONS = NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS;
 }

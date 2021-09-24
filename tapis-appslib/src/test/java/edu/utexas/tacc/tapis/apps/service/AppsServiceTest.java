@@ -2,7 +2,7 @@ package edu.utexas.tacc.tapis.apps.service;
 
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
-import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
@@ -1349,14 +1349,14 @@ public class AppsServiceTest
     // Verify data in aux tables: notification_subscriptions
     // ===============================================================================================
     // Verify notification subscriptions
-    List<NotifSubscription> origNotificationSubs = app0.getSubscriptions();
-    List<NotifSubscription> tmpSubs = tmpApp.getSubscriptions();
+    List<NotificationSubscription> origNotificationSubs = app0.getSubscriptions();
+    List<NotificationSubscription> tmpSubs = tmpApp.getSubscriptions();
     Assert.assertNotNull(origNotificationSubs, "Orig notificationSubscriptions was null");
     Assert.assertNotNull(tmpSubs, "Fetched notificationSubscriptions was null");
     Assert.assertEquals(tmpSubs.size(), origNotificationSubs.size());
     var filtersFound = new ArrayList<String>();
-    for (NotifSubscription itemFound : tmpSubs) {filtersFound.add(itemFound.getFilter());}
-    for (NotifSubscription itemSeedItem : origNotificationSubs)
+    for (NotificationSubscription itemFound : tmpSubs) {filtersFound.add(itemFound.getFilter());}
+    for (NotificationSubscription itemSeedItem : origNotificationSubs)
     {
       Assert.assertTrue(filtersFound.contains(itemSeedItem.getFilter()),
               "List of notificationSubscriptions did not contain an item with filter: " + itemSeedItem.getFilter());

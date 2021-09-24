@@ -107,7 +107,7 @@ CREATE TABLE apps_versions
     cores_per_node INTEGER NOT NULL DEFAULT 1,
     memory_mb INTEGER NOT NULL DEFAULT 100,
     max_minutes INTEGER NOT NULL DEFAULT 10,
---   subscriptions location in jobAttributes ==================
+    subscriptions JSONB NOT NULL,
     job_tags TEXT[] NOT NULL,
 -- ==== End jobAttributes ======================================
     tags       TEXT[] NOT NULL,
@@ -186,24 +186,24 @@ COMMENT ON COLUMN app_updates.created IS 'UTC time for when record was created';
 --                           NOTIFICATIONS
 -- ----------------------------------------------------------------------------------------
 -- Notification subscriptions table
-CREATE TABLE notification_subscriptions
-(
-    seq_id SERIAL PRIMARY KEY,
-    app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
-    filter TEXT
-);
-ALTER TABLE notification_subscriptions OWNER TO tapis_app;
-
--- Notification mechanisms table
-CREATE TABLE notification_mechanisms
-(
-    seq_id SERIAL PRIMARY KEY,
-    subscription_seq_id INTEGER REFERENCES notification_subscriptions(seq_id) ON DELETE CASCADE,
-    mechanism TEXT NOT NULL,
-    webhook_url TEXT,
-    email_address TEXT
-);
-ALTER TABLE notification_mechanisms OWNER TO tapis_app;
+-- CREATE TABLE notification_subscriptions
+-- (
+--     seq_id SERIAL PRIMARY KEY,
+--     app_ver_seq_id INTEGER REFERENCES apps_versions(seq_id) ON DELETE CASCADE,
+--     filter TEXT
+-- );
+-- ALTER TABLE notification_subscriptions OWNER TO tapis_app;
+--
+-- -- Notification mechanisms table
+-- CREATE TABLE notification_mechanisms
+-- (
+--     seq_id SERIAL PRIMARY KEY,
+--     subscription_seq_id INTEGER REFERENCES notification_subscriptions(seq_id) ON DELETE CASCADE,
+--     mechanism TEXT NOT NULL,
+--     webhook_url TEXT,
+--     email_address TEXT
+-- );
+-- ALTER TABLE notification_mechanisms OWNER TO tapis_app;
 
 -- ----------------------------------------------------------------------------------------
 --                           ARGS

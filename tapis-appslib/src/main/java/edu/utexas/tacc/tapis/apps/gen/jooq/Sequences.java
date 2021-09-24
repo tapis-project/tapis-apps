@@ -29,14 +29,4 @@ public class Sequences {
      * The sequence <code>tapis_app.apps_versions_seq_id_seq</code>
      */
     public static final Sequence<Integer> APPS_VERSIONS_SEQ_ID_SEQ = Internal.createSequence("apps_versions_seq_id_seq", TapisApp.TAPIS_APP, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
-     * The sequence <code>tapis_app.notification_mechanisms_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> NOTIFICATION_MECHANISMS_SEQ_ID_SEQ = Internal.createSequence("notification_mechanisms_seq_id_seq", TapisApp.TAPIS_APP, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
-
-    /**
-     * The sequence <code>tapis_app.notification_subscriptions_seq_id_seq</code>
-     */
-    public static final Sequence<Integer> NOTIFICATION_SUBSCRIPTIONS_SEQ_ID_SEQ = Internal.createSequence("notification_subscriptions_seq_id_seq", TapisApp.TAPIS_APP, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
 }

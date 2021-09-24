@@ -1,13 +1,10 @@
 package edu.utexas.tacc.tapis.apps.api.utils;
 
 import com.google.gson.JsonElement;
-import edu.utexas.tacc.tapis.apps.api.model.NotificationMechanism;
-import edu.utexas.tacc.tapis.apps.api.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
-import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
-import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.apps.model.NotificationMechanism;
+import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
@@ -247,30 +244,30 @@ public class ApiUtils
 //    return retList;
 //  }
 
-  /**
-   * Build a list of lib model subscription objects given the request api model objects
-   */
-  public static List<NotifSubscription> buildLibNotifSubscriptions(List<NotificationSubscription> apiSubscriptions)
-  {
-    if (apiSubscriptions == null) return null;
-    var retList = new ArrayList<NotifSubscription>();
-    if (apiSubscriptions.isEmpty()) return retList;
-    for (NotificationSubscription apiSubscription : apiSubscriptions)
-    {
-      NotifSubscription libSubscription = new NotifSubscription(apiSubscription.filter);
-      var apiMechanisms = apiSubscription.notificationMechanisms;
-      if (apiMechanisms == null || apiMechanisms.isEmpty()) apiMechanisms = new ArrayList<>();
-      var libMechanisms = new ArrayList<NotifMechanism>();
-      for (NotificationMechanism apiMech : apiMechanisms)
-      {
-        var libMech = new NotifMechanism(apiMech.mechanism, apiMech.webhookURL, apiMech.emailAddress);
-        libMechanisms.add(libMech);
-      }
-      libSubscription.setNotificationMechanisms(libMechanisms);
-      retList.add(libSubscription);
-    }
-    return retList;
-  }
+//  /**
+//   * Build a list of lib model subscription objects given the request api model objects
+//   */
+//  public static List<NotificationSubscription> buildLibNotifSubscriptions(List<NotificationSubscription> apiSubscriptions)
+//  {
+//    if (apiSubscriptions == null) return null;
+//    var retList = new ArrayList<NotificationSubscription>();
+//    if (apiSubscriptions.isEmpty()) return retList;
+//    for (NotificationSubscription apiSubscription : apiSubscriptions)
+//    {
+//      NotificationSubscription libSubscription = new NotificationSubscription(apiSubscription.filter);
+//      var apiMechanisms = apiSubscription.notificationMechanisms;
+//      if (apiMechanisms == null || apiMechanisms.isEmpty()) apiMechanisms = new ArrayList<>();
+//      var libMechanisms = new ArrayList<NotificationMechanism>();
+//      for (NotificationMechanism apiMech : apiMechanisms)
+//      {
+//        var libMech = new NotificationMechanism(apiMech.mechanism, apiMech.webhookURL, apiMech.emailAddress);
+//        libMechanisms.add(libMech);
+//      }
+//      libSubscription.setNotificationMechanisms(libMechanisms);
+//      retList.add(libSubscription);
+//    }
+//    return retList;
+//  }
 
   // Build a list of api model file inputs based on the lib model objects
 // TODO/TBD: do we really need this? Seems like with recent updates can now always use model class
@@ -293,36 +290,36 @@ public class ApiUtils
 //    return retList;
 //  }
 
-  // Build a list of api model subscriptions based on the lib model objects
-  public static List<NotificationMechanism> buildApiNotifMechanisms(List<NotifMechanism> libMechanisms)
-  {
-    var retList = new ArrayList<NotificationMechanism>();
-    if (libMechanisms == null || libMechanisms.isEmpty()) return retList;
-    for (NotifMechanism libMechanism : libMechanisms)
-    {
-      NotificationMechanism apiMechanism = new NotificationMechanism();
-      apiMechanism.mechanism = libMechanism.getMechanism();
-      apiMechanism.webhookURL = libMechanism.getWebhookUrl();
-      apiMechanism.emailAddress = libMechanism.getEmailAddress();
-      retList.add(apiMechanism);
-    }
-    return retList;
-  }
+//  // Build a list of api model subscriptions based on the lib model objects
+//  public static List<NotificationMechanism> buildApiNotifMechanisms(List<NotificationMechanism> libMechanisms)
+//  {
+//    var retList = new ArrayList<NotificationMechanism>();
+//    if (libMechanisms == null || libMechanisms.isEmpty()) return retList;
+//    for (NotificationMechanism libMechanism : libMechanisms)
+//    {
+//      NotificationMechanism apiMechanism = new NotificationMechanism();
+//      apiMechanism.mechanism = libMechanism.getMechanism();
+//      apiMechanism.webhookURL = libMechanism.getWebhookUrl();
+//      apiMechanism.emailAddress = libMechanism.getEmailAddress();
+//      retList.add(apiMechanism);
+//    }
+//    return retList;
+//  }
 
-  // Build a list of api model notif mechanisms based on the lib model objects
-  public static List<NotificationSubscription> buildApiNotifSubscriptions(List<NotifSubscription> libSubscriptions)
-  {
-    var retList = new ArrayList<NotificationSubscription>();
-    if (libSubscriptions == null || libSubscriptions.isEmpty()) return retList;
-    for (NotifSubscription libSubscription : libSubscriptions)
-    {
-      NotificationSubscription apiSubscription = new NotificationSubscription();
-      apiSubscription.filter = libSubscription.getFilter();
-      apiSubscription.notificationMechanisms = buildApiNotifMechanisms(libSubscription.getNotificationMechanisms());
-      retList.add(apiSubscription);
-    }
-    return retList;
-  }
+//  // Build a list of api model notif mechanisms based on the lib model objects
+//  public static List<NotificationSubscription> buildApiNotifSubscriptions(List<NotificationSubscription> libSubscriptions)
+//  {
+//    var retList = new ArrayList<NotificationSubscription>();
+//    if (libSubscriptions == null || libSubscriptions.isEmpty()) return retList;
+//    for (NotificationSubscription libSubscription : libSubscriptions)
+//    {
+//      NotificationSubscription apiSubscription = new NotificationSubscription();
+//      apiSubscription.filter = libSubscription.getFilter();
+//      apiSubscription.notificationMechanisms = buildApiNotifMechanisms(libSubscription.getNotificationMechanisms());
+//      retList.add(apiSubscription);
+//    }
+//    return retList;
+//  }
 
   /**
    * Return String[] array of key=value given list of KeyValuePair

@@ -8,8 +8,6 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppUpdates;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppsVersions;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationMechanisms;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationSubscriptions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -54,16 +52,6 @@ public class TapisApp extends SchemaImpl {
     public final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
 
     /**
-     * The table <code>tapis_app.notification_mechanisms</code>.
-     */
-    public final NotificationMechanisms NOTIFICATION_MECHANISMS = NotificationMechanisms.NOTIFICATION_MECHANISMS;
-
-    /**
-     * The table <code>tapis_app.notification_subscriptions</code>.
-     */
-    public final NotificationSubscriptions NOTIFICATION_SUBSCRIPTIONS = NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS;
-
-    /**
      * No further instances allowed
      */
     private TapisApp() {
@@ -81,9 +69,7 @@ public class TapisApp extends SchemaImpl {
         return Arrays.<Sequence<?>>asList(
             Sequences.APP_UPDATES_SEQ_ID_SEQ,
             Sequences.APPS_SEQ_ID_SEQ,
-            Sequences.APPS_VERSIONS_SEQ_ID_SEQ,
-            Sequences.NOTIFICATION_MECHANISMS_SEQ_ID_SEQ,
-            Sequences.NOTIFICATION_SUBSCRIPTIONS_SEQ_ID_SEQ);
+            Sequences.APPS_VERSIONS_SEQ_ID_SEQ);
     }
 
     @Override
@@ -92,8 +78,6 @@ public class TapisApp extends SchemaImpl {
             AppUpdates.APP_UPDATES,
             Apps.APPS,
             AppsVersions.APPS_VERSIONS,
-            FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY,
-            NotificationMechanisms.NOTIFICATION_MECHANISMS,
-            NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS);
+            FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY);
     }
 }

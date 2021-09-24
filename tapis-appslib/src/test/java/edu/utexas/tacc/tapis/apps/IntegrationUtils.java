@@ -7,12 +7,11 @@ import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
-import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
-import edu.utexas.tacc.tapis.apps.model.NotifMechanism.NotifMechanismType;
-import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.apps.model.NotificationMechanism;
+import edu.utexas.tacc.tapis.apps.model.NotificationMechanism.NotifMechanismType;
+import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
-import edu.utexas.tacc.tapis.jobs.client.gen.model.Job;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
@@ -198,34 +197,34 @@ public final class IntegrationUtils
   public static final List<FileInput> finListNull = null;
 
   // NotificationSubscriptions
-  public static final NotifMechanism notifMech1Aa = new NotifMechanism(NotifMechanismType.WEBHOOK, "webhookUrl1Aa", "emailAddress1Aa");
-  public static final NotifMechanism notifMech1Ab = new NotifMechanism(NotifMechanismType.ACTOR, "webhookUrl1Ab", "emailAddress1Ab");
-  public static final List<NotifMechanism> notifMechList1A = new ArrayList<>(List.of(notifMech1Aa, notifMech1Ab));
-  public static final NotifMechanism notifMech1Ba = new NotifMechanism(NotifMechanismType.EMAIL, "webhookUrl1Ba", "emailAddress1Ba");
-  public static final NotifMechanism notifMech1Bb = new NotifMechanism(NotifMechanismType.QUEUE, "webhookUrl1Ba", "emailAddress1Bb");
-  public static final List<NotifMechanism> notifMechList1B = new ArrayList<>(List.of(notifMech1Ba, notifMech1Bb));
-  public static final NotifSubscription notif1A = new NotifSubscription("filter1A");
-  public static final NotifSubscription notif1B = new NotifSubscription("filter1B");
+  public static final NotificationMechanism notifMech1Aa = new NotificationMechanism(NotifMechanismType.WEBHOOK, "webhookUrl1Aa", "emailAddress1Aa");
+  public static final NotificationMechanism notifMech1Ab = new NotificationMechanism(NotifMechanismType.ACTOR, "webhookUrl1Ab", "emailAddress1Ab");
+  public static final List<NotificationMechanism> notifMechList1A = new ArrayList<>(List.of(notifMech1Aa, notifMech1Ab));
+  public static final NotificationMechanism notifMech1Ba = new NotificationMechanism(NotifMechanismType.EMAIL, "webhookUrl1Ba", "emailAddress1Ba");
+  public static final NotificationMechanism notifMech1Bb = new NotificationMechanism(NotifMechanismType.QUEUE, "webhookUrl1Ba", "emailAddress1Bb");
+  public static final List<NotificationMechanism> notifMechList1B = new ArrayList<>(List.of(notifMech1Ba, notifMech1Bb));
+  public static final NotificationSubscription notif1A = new NotificationSubscription("filter1A");
+  public static final NotificationSubscription notif1B = new NotificationSubscription("filter1B");
   static {
     notif1A.setNotificationMechanisms(notifMechList1A);
     notif1B.setNotificationMechanisms(notifMechList1B);
   }
-  public static final List<NotifSubscription> notifList1 = new ArrayList<>(List.of(notif1A, notif1B));
+  public static final List<NotificationSubscription> notifList1 = new ArrayList<>(List.of(notif1A, notif1B));
 
-  public static final NotifMechanism notifMech2Aa = new NotifMechanism(NotifMechanismType.WEBHOOK, "webhookUrl2Aa", "emailAddress2Aa");
-  public static final NotifMechanism notifMech2Ab = new NotifMechanism(NotifMechanismType.ACTOR, "webhookUrl2Ab", "emailAddress2Ab");
-  public static final List<NotifMechanism> notifMechList2A = new ArrayList<>(List.of(notifMech2Aa, notifMech2Ab));
-  public static final NotifMechanism notifMech2Ba = new NotifMechanism(NotifMechanismType.EMAIL, "webhookUrl2Ba", "emailAddress2Ba");
-  public static final NotifMechanism notifMech2Bb = new NotifMechanism(NotifMechanismType.QUEUE, "webhookUrl2Ba", "emailAddress2Bb");
-  public static final List<NotifMechanism> notifMechList2B = new ArrayList<>(List.of(notifMech2Ba, notifMech2Bb));
-  public static final NotifSubscription notif2A = new NotifSubscription("filter2A");
-  public static final NotifSubscription notif2B = new NotifSubscription("filter2B");
+  public static final NotificationMechanism notifMech2Aa = new NotificationMechanism(NotifMechanismType.WEBHOOK, "webhookUrl2Aa", "emailAddress2Aa");
+  public static final NotificationMechanism notifMech2Ab = new NotificationMechanism(NotifMechanismType.ACTOR, "webhookUrl2Ab", "emailAddress2Ab");
+  public static final List<NotificationMechanism> notifMechList2A = new ArrayList<>(List.of(notifMech2Aa, notifMech2Ab));
+  public static final NotificationMechanism notifMech2Ba = new NotificationMechanism(NotifMechanismType.EMAIL, "webhookUrl2Ba", "emailAddress2Ba");
+  public static final NotificationMechanism notifMech2Bb = new NotificationMechanism(NotifMechanismType.QUEUE, "webhookUrl2Ba", "emailAddress2Bb");
+  public static final List<NotificationMechanism> notifMechList2B = new ArrayList<>(List.of(notifMech2Ba, notifMech2Bb));
+  public static final NotificationSubscription notif2A = new NotificationSubscription("filter2A");
+  public static final NotificationSubscription notif2B = new NotificationSubscription("filter2B");
   static {
     notif2A.setNotificationMechanisms(notifMechList2A);
     notif2B.setNotificationMechanisms(notifMechList2B);
   }
-  public static final List<NotifSubscription> notifList2 = new ArrayList<>(List.of(notif2A, notif2B));
-  public static final List<NotifSubscription> notifListNull = null;
+  public static final List<NotificationSubscription> notifList2 = new ArrayList<>(List.of(notif2A, notif2B));
+  public static final List<NotificationSubscription> notifListNull = null;
 
   // AppArgs, ContainerArgs, SchedulerOptions
   public static final AppArg appArg1A = new AppArg("value1A", "appArg1A", "App arg 1A", inputModeRequired, metaKVPairs1);
@@ -326,11 +325,8 @@ public final class IntegrationUtils
                  jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
                  execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
                  execSystemLogicalQueue1, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
-                 parameterSet1, finList1,
-                 nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
+                 parameterSet1, finList1, nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, notifList1, jobTags1,
                  tags1, notes1, uuidNull, deletedFalse, createdNull, updatedNull);
-      // Aux table data
-      apps[i].setSubscriptions(notifList1);
     }
     return apps;
   }
@@ -349,8 +345,7 @@ public final class IntegrationUtils
             strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
             execSystemId1, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
-            parameterSet1, finList1,
-            nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTagsNull,
+            parameterSet1, finList1, nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, notifList1, jobTagsNull,
             tagsNull, notesNull, uuidNull, deletedFalse, createdNull, updatedNull);
   }
 
@@ -366,11 +361,8 @@ public final class IntegrationUtils
             jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
             execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
             archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse,
-            parameterSet2, finList2,
-            nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, jobTags2,
+            parameterSet2, finList2, nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, notifList2, jobTags2,
             tags2, notes2, uuidNull, deletedFalse, createdNull, updatedNull);
-    // Aux table data
-    putApp.setSubscriptions(notifList2);
     return putApp;
   }
 

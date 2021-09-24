@@ -8,14 +8,10 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppUpdates;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppsVersions;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationMechanisms;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationSubscriptions;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppUpdatesRecord;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsRecord;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsVersionsRecord;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.FlywaySchemaHistoryRecord;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.NotificationMechanismsRecord;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.NotificationSubscriptionsRecord;
 
 import org.jooq.ForeignKey;
 import org.jooq.TableField;
@@ -41,8 +37,6 @@ public class Keys {
     public static final UniqueKey<AppsVersionsRecord> APPS_VERSIONS_APP_SEQ_ID_VERSION_KEY = Internal.createUniqueKey(AppsVersions.APPS_VERSIONS, DSL.name("apps_versions_app_seq_id_version_key"), new TableField[] { AppsVersions.APPS_VERSIONS.APP_SEQ_ID, AppsVersions.APPS_VERSIONS.VERSION }, true);
     public static final UniqueKey<AppsVersionsRecord> APPS_VERSIONS_PKEY = Internal.createUniqueKey(AppsVersions.APPS_VERSIONS, DSL.name("apps_versions_pkey"), new TableField[] { AppsVersions.APPS_VERSIONS.SEQ_ID }, true);
     public static final UniqueKey<FlywaySchemaHistoryRecord> FLYWAY_SCHEMA_HISTORY_PK = Internal.createUniqueKey(FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY, DSL.name("flyway_schema_history_pk"), new TableField[] { FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY.INSTALLED_RANK }, true);
-    public static final UniqueKey<NotificationMechanismsRecord> NOTIFICATION_MECHANISMS_PKEY = Internal.createUniqueKey(NotificationMechanisms.NOTIFICATION_MECHANISMS, DSL.name("notification_mechanisms_pkey"), new TableField[] { NotificationMechanisms.NOTIFICATION_MECHANISMS.SEQ_ID }, true);
-    public static final UniqueKey<NotificationSubscriptionsRecord> NOTIFICATION_SUBSCRIPTIONS_PKEY = Internal.createUniqueKey(NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS, DSL.name("notification_subscriptions_pkey"), new TableField[] { NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.SEQ_ID }, true);
 
     // -------------------------------------------------------------------------
     // FOREIGN KEY definitions
@@ -50,6 +44,4 @@ public class Keys {
 
     public static final ForeignKey<AppUpdatesRecord, AppsRecord> APP_UPDATES__APP_UPDATES_APP_SEQ_ID_FKEY = Internal.createForeignKey(AppUpdates.APP_UPDATES, DSL.name("app_updates_app_seq_id_fkey"), new TableField[] { AppUpdates.APP_UPDATES.APP_SEQ_ID }, Keys.APPS_PKEY, new TableField[] { Apps.APPS.SEQ_ID }, true);
     public static final ForeignKey<AppsVersionsRecord, AppsRecord> APPS_VERSIONS__APPS_VERSIONS_APP_SEQ_ID_FKEY = Internal.createForeignKey(AppsVersions.APPS_VERSIONS, DSL.name("apps_versions_app_seq_id_fkey"), new TableField[] { AppsVersions.APPS_VERSIONS.APP_SEQ_ID }, Keys.APPS_PKEY, new TableField[] { Apps.APPS.SEQ_ID }, true);
-    public static final ForeignKey<NotificationMechanismsRecord, NotificationSubscriptionsRecord> NOTIFICATION_MECHANISMS__NOTIFICATION_MECHANISMS_SUBSCRIPTION_SEQ_ID_FKEY = Internal.createForeignKey(NotificationMechanisms.NOTIFICATION_MECHANISMS, DSL.name("notification_mechanisms_subscription_seq_id_fkey"), new TableField[] { NotificationMechanisms.NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID }, Keys.NOTIFICATION_SUBSCRIPTIONS_PKEY, new TableField[] { NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.SEQ_ID }, true);
-    public static final ForeignKey<NotificationSubscriptionsRecord, AppsVersionsRecord> NOTIFICATION_SUBSCRIPTIONS__NOTIFICATION_SUBSCRIPTIONS_APP_VER_SEQ_ID_FKEY = Internal.createForeignKey(NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS, DSL.name("notification_subscriptions_app_ver_seq_id_fkey"), new TableField[] { NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID }, Keys.APPS_VERSIONS_PKEY, new TableField[] { AppsVersions.APPS_VERSIONS.SEQ_ID }, true);
 }

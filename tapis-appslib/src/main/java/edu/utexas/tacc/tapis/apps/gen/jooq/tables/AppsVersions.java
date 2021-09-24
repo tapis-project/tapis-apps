@@ -196,6 +196,11 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     public final TableField<AppsVersionsRecord, Integer> MAX_MINUTES = createField(DSL.name("max_minutes"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.field("10", SQLDataType.INTEGER)), this, "");
 
     /**
+     * The column <code>tapis_app.apps_versions.subscriptions</code>.
+     */
+    public final TableField<AppsVersionsRecord, JsonElement> SUBSCRIPTIONS = createField(DSL.name("subscriptions"), SQLDataType.JSONB.nullable(false), this, "", new JSONBToJsonElementBinding());
+
+    /**
      * The column <code>tapis_app.apps_versions.job_tags</code>.
      */
     public final TableField<AppsVersionsRecord, String[]> JOB_TAGS = createField(DSL.name("job_tags"), SQLDataType.CLOB.getArrayDataType(), this, "");

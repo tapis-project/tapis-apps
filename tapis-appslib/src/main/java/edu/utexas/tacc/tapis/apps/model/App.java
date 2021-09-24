@@ -56,6 +56,7 @@ public final class App
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
   public static final JsonObject DEFAULT_PARAMETER_SET = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
   public static final JsonElement DEFAULT_FILE_INPUTS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
+  public static final JsonObject DEFAULT_SUBSCRIPTIONS = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
   public static final JsonObject DEFAULT_NOTES = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
   public static final int DEFAULT_NODE_COUNT = 1;
   public static final int DEFAULT_CORES_PER_NODE = 1;
@@ -171,21 +172,13 @@ public final class App
   private String archiveSystemId;
   private String archiveSystemDir;
   private boolean archiveOnAppError;
-  // === Start parameterSet in jobAttrs ==========
   private ParameterSet parameterSet;
-//  private List<AppArg> appArgs;              // parameterSet
-//  private List<AppArg> containerArgs;        // parameterSet
-//  private List<AppArg> schedulerOptions;     // parameterSet
-//  private String[] envVariables;             // parameterSet
-//  private String[] archiveIncludes;          // parameterSet
-//  private String[] archiveExcludes;          // parameterSet
-//  private boolean archiveIncludeLaunchFiles; // parameterSet
-  // === End parameterSet ==========
   private List<FileInput> fileInputs;
   private int nodeCount = DEFAULT_NODE_COUNT;
   private int coresPerNode = DEFAULT_CORES_PER_NODE;
   private int memoryMb = DEFAULT_MEMORY_MB;
   private int maxMinutes = DEFAULT_MAX_MINUTES;
+  private List<NotificationSubscription> subscriptions;
   private String[] jobTags;
   // === End jobAttributes ==========
   private String[] tags;       // List of arbitrary tags as strings
@@ -194,9 +187,6 @@ public final class App
   private Instant created; // UTC time for when record was created
   private Instant updated; // UTC time for when record was last updated
   // === End fields in table apps_versions =============================================
-
-  private List<NotifSubscription> subscriptions;
-
 
   // ************************************************************************
   // *********************** Constructors ***********************************
@@ -274,8 +264,8 @@ public final class App
     coresPerNode = a.getCoresPerNode();
     memoryMb = a.getMemoryMb();
     maxMinutes = a.getMaxMinutes();
-    jobTags = a.getJobTags();
     subscriptions = a.getSubscriptions();
+    jobTags = a.getJobTags();
     tags = (a.getTags() == null) ? EMPTY_STR_ARRAY : a.getTags().clone();
     notes = a.getNotes();
     uuid = a.getUuid();
@@ -285,7 +275,6 @@ public final class App
   /**
    * Constructor for jOOQ with input parameter matching order of columns in DB
    * Also useful for testing
-   * Note that Subscriptions must be set separately.
    */
   public App(int seqId1, int verSeqId1, String tenant1, String id1, String version1, String description1,
              AppType appType1, String owner1, boolean enabled1, boolean containerized1,
@@ -296,13 +285,8 @@ public final class App
              String[] execSystemConstraints1, String execSystemId1, String execSystemExecDir1,
              String execSystemInputDir1, String execSystemOutputDir1, String execSystemLogicalQueue1,
              String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1,
-             // == Start parameterSet
-             ParameterSet parameterSet1,
-//             List<AppArg> appArgs1, List<AppArg> containerArgs1, List<AppArg> schedulerOptions1, String[] envVariables1,
-//             String[] archiveIncludes1, String[] archiveExcludes1, boolean archiveIncludeLaunchFiles1,
-             // == End parameterSet
-             List<FileInput> fileInputs1, int nodeCount1, int coresPerNode1, int memoryMb1, int maxMinutes1,
-             String[] jobTags1,
+             ParameterSet parameterSet1, List<FileInput> fileInputs1, int nodeCount1, int coresPerNode1, int memoryMb1,
+             int maxMinutes1, List<NotificationSubscription> subscriptions1, String[] jobTags1,
              // == End jobAttributes
              String[] tags1, Object notes1, UUID uuid1, boolean deleted1, Instant created1, Instant updated1)
   {
@@ -335,18 +319,12 @@ public final class App
     archiveSystemDir = archiveSystemDir1;
     archiveOnAppError = archiveOnAppError1;
     parameterSet = parameterSet1;
-//    appArgs = appArgs1;
-//    containerArgs = containerArgs1;
-//    schedulerOptions = schedulerOptions1;
     fileInputs = fileInputs1;
     nodeCount = nodeCount1;
     coresPerNode = coresPerNode1;
     memoryMb = memoryMb1;
     maxMinutes = maxMinutes1;
-//    envVariables = (envVariables1 == null) ? null : envVariables1.clone();
-//    archiveIncludes = (archiveIncludes1 == null) ? null : archiveIncludes1.clone();
-//    archiveExcludes = (archiveExcludes1 == null) ? null : archiveExcludes1.clone();
-//    archiveIncludeLaunchFiles = archiveIncludeLaunchFiles1;
+    subscriptions = subscriptions1;
     jobTags = (jobTags1 == null) ? null : jobTags1.clone();
     tags = (tags1 == null) ? null : tags1.clone();
     notes = notes1;
@@ -391,21 +369,14 @@ public final class App
     archiveSystemId = a.getArchiveSystemId();
     archiveSystemDir = a.getArchiveSystemDir();
     archiveOnAppError = a.isArchiveOnAppError();
+    parameterSet = a.getParameterSet();
+    fileInputs = a.getFileInputs();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
     memoryMb = a.getMemoryMb();
     maxMinutes = a.getMaxMinutes();
-    parameterSet = a.getParameterSet();
-//    envVariables = a.getEnvVariables();
-//    archiveIncludes = a.getArchiveIncludes();
-//    archiveExcludes = a.getArchiveExcludes();
-//    archiveIncludeLaunchFiles = a.getArchiveIncludeLaunchFiles();
-    jobTags = a.getJobTags();
-    fileInputs = a.getFileInputs();
     subscriptions = a.getSubscriptions();
-//    appArgs = a.getAppArgs();
-//    containerArgs = a.getContainerArgs();
-//    schedulerOptions = a.getSchedulerOptions();
+    jobTags = a.getJobTags();
     tags = a.getTags();
     notes = a.getNotes();
     uuid = a.getUuid();
@@ -768,11 +739,11 @@ public final class App
     fileInputs = (fi == null) ? null : new ArrayList<>(fi);
   }
 
-  public List<NotifSubscription> getSubscriptions()
+  public List<NotificationSubscription> getSubscriptions()
   {
     return (subscriptions == null) ? null : new ArrayList<>(subscriptions);
   }
-  public void setSubscriptions(List<NotifSubscription> ns)
+  public void setSubscriptions(List<NotificationSubscription> ns)
   {
     subscriptions = (ns == null) ? null : new ArrayList<>(ns);
   }

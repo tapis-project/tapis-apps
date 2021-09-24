@@ -11,16 +11,14 @@ import org.slf4j.LoggerFactory;
  * Please keep it immutable.
  *
  */
-public final class NotifMechanism
+public final class NotificationMechanism
 {
   // ============== Enums ==========================================
   public enum NotifMechanismType {WEBHOOK, EMAIL, QUEUE, ACTOR}
 
   // ============== Fields =========================================
-  private static final Logger _log = LoggerFactory.getLogger(NotifMechanism.class);
+  private static final Logger _log = LoggerFactory.getLogger(NotificationMechanism.class);
 
-  private final int seqId; // Unique database sequence number
-  private final int subscriptionSeqId;
   private final NotifMechanismType mechanism;
   private final String webhookUrl;
   private final String emailAddress;
@@ -28,20 +26,8 @@ public final class NotifMechanism
   /* ********************************************************************** */
   /*                           Constructors                                 */
   /* ********************************************************************** */
-  public NotifMechanism(int seqId1, int subscriptionSeqId1, NotifMechanismType mechanism1,
-                        String webhookUrl1, String emailAddress1)
+  public NotificationMechanism(NotifMechanismType mechanism1, String webhookUrl1, String emailAddress1)
   {
-    seqId = seqId1;
-    subscriptionSeqId = subscriptionSeqId1;
-    mechanism = mechanism1;
-    webhookUrl = webhookUrl1;
-    emailAddress = emailAddress1;
-  }
-
-  public NotifMechanism(NotifMechanismType mechanism1, String webhookUrl1, String emailAddress1)
-  {
-    seqId = -1;
-    subscriptionSeqId = -1;
     mechanism = mechanism1;
     webhookUrl = webhookUrl1;
     emailAddress = emailAddress1;
@@ -50,8 +36,6 @@ public final class NotifMechanism
   /* ********************************************************************** */
   /*                               Accessors                                */
   /* ********************************************************************** */
-  public int getSeqId() { return seqId; }
-  public int getSubscriptionSeqId() { return subscriptionSeqId; }
   public NotifMechanismType getMechanism() { return mechanism; }
   public String getWebhookUrl() { return webhookUrl; }
   public String getEmailAddress() { return emailAddress; }

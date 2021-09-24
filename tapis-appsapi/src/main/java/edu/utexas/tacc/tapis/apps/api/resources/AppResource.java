@@ -1083,12 +1083,9 @@ public class AppResource
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
           jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
-          jobAttrs.parameterSet, jobAttrs.fileInputs,
-          jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMb, jobAttrs.maxMinutes, jobAttrs.tags,
+          jobAttrs.parameterSet, jobAttrs.fileInputs, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMb,
+          jobAttrs.maxMinutes, jobAttrs.subscriptions, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
-
-    // Data for aux tables
-    app.setSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
     return app;
   }
 
@@ -1112,12 +1109,9 @@ public class AppResource
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
           jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
-          jobAttrs.parameterSet, jobAttrs.fileInputs,
-          jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMb, jobAttrs.maxMinutes, jobAttrs.tags,
+          jobAttrs.parameterSet, jobAttrs.fileInputs, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMb,
+          jobAttrs.maxMinutes, jobAttrs.subscriptions, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
-
-    // Data for aux tables
-    app.setSubscriptions(ApiUtils.buildLibNotifSubscriptions(jobAttrs.subscriptions));
     return app;
   }
 

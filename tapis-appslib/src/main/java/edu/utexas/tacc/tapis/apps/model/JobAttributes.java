@@ -29,7 +29,7 @@ public final class JobAttributes
   private final Integer coresPerNode;
   private final Integer memoryMb;
   private final Integer maxMinutes;
-  private final List<NotifSubscription> subscriptions;
+  private final List<NotificationSubscription> subscriptions;
   private final String[] tags;
 
   // ************************************************************************
@@ -44,7 +44,7 @@ public final class JobAttributes
                        String execSystemLogicalQueue1, String archiveSystemId1, String archiveSystemDir1,
                        Boolean archiveOnAppError1, ParameterSet parameterSet1, List<FileInput> fileInputs1,
                        Integer nodeCount1, Integer coresPerNode1, Integer memoryMb1, Integer maxMinutes1,
-                       List<NotifSubscription> subscriptions1, String[] tags1)
+                       List<NotificationSubscription> subscriptions1, String[] tags1)
   {
     description = description1;
     dynamicExecSystem = dynamicExecSystem1;
@@ -87,7 +87,7 @@ public final class JobAttributes
   public Integer getCoresPerNode() { return coresPerNode; }
   public Integer getMemoryMb() { return memoryMb; }
   public Integer getMaxMinutes() { return maxMinutes; }
-  public List<NotifSubscription> getSubscriptions() { return subscriptions; }
+  public List<NotificationSubscription> getSubscriptions() { return subscriptions; }
   public String[] getTags() {
     return tags;
   }

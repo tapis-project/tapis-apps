@@ -2,7 +2,7 @@ package edu.utexas.tacc.tapis.apps.dao;
 
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
-import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
@@ -207,14 +207,14 @@ public class AppsDaoTest
     // Verify data in aux tables: notification_subscriptions
     // ===============================================================================================
     // Verify notification subscriptions
-    List<NotifSubscription> origNotificationSubs = app0.getSubscriptions();
-    List<NotifSubscription> tmpSubs = tmpApp.getSubscriptions();
+    List<NotificationSubscription> origNotificationSubs = app0.getSubscriptions();
+    List<NotificationSubscription> tmpSubs = tmpApp.getSubscriptions();
     Assert.assertNotNull(origNotificationSubs, "Orig notificationSubscriptions was null");
     Assert.assertNotNull(tmpSubs, "Fetched notificationSubscriptions was null");
     Assert.assertEquals(tmpSubs.size(), origNotificationSubs.size());
     var filtersFound = new ArrayList<String>();
-    for (NotifSubscription itemFound : tmpSubs) {filtersFound.add(itemFound.getFilter());}
-    for (NotifSubscription itemSeedItem : origNotificationSubs)
+    for (NotificationSubscription itemFound : tmpSubs) {filtersFound.add(itemFound.getFilter());}
+    for (NotificationSubscription itemSeedItem : origNotificationSubs)
     {
       Assert.assertTrue(filtersFound.contains(itemSeedItem.getFilter()),
               "List of notificationSubscriptions did not contain an item with filter: " + itemSeedItem.getFilter());
@@ -417,8 +417,7 @@ public class AppsDaoTest
             maxJobs1, maxJobsPerUser1, strictFileInputsFalse, IntegrationUtils.jobDescription1, dynamicExecSystemTrue,
             execSystemConstraints1, execSystemId1, execSystemExecDir1, execSystemInputDir1, execSystemOutputDir1,
             execSystemLogicalQueue1, archiveSystemIdNull, archiveSystemDir1, archiveOnAppErrorTrue,
-            parameterSet1, finList1,
-            nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
+            parameterSet1, finList1, nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, notifList1, jobTags1,
             tags1, notes1, uuidNull, isDeletedFalse, createdNull, updatedNull);
     // Make sure app does not exist
     Assert.assertFalse(dao.checkForApp(tenantName, fakeAppId, true));

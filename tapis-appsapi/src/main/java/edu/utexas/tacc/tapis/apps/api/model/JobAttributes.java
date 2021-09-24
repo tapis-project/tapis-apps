@@ -1,8 +1,8 @@
 package edu.utexas.tacc.tapis.apps.api.model;
 
-import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 
 import java.util.List;
@@ -64,7 +64,7 @@ public final class JobAttributes
     coresPerNode = a.getCoresPerNode();
     memoryMb = a.getMemoryMb();
     maxMinutes = a.getMaxMinutes();
-    subscriptions = ApiUtils.buildApiNotifSubscriptions(a.getSubscriptions());
+    subscriptions = a.getSubscriptions();
     tags = a.getJobTags();
   }
 }
