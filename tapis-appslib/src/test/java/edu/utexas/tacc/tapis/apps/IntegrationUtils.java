@@ -2,7 +2,7 @@ package edu.utexas.tacc.tapis.apps;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.apps.model.AppArg;
+import edu.utexas.tacc.tapis.apps.model.ArgSpec;
 import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.JobAttributes;
@@ -227,45 +227,45 @@ public final class IntegrationUtils
   public static final List<NotificationSubscription> notifListNull = null;
 
   // AppArgs, ContainerArgs, SchedulerOptions
-  public static final AppArg appArg1A = new AppArg("value1A", "appArg1A", "App arg 1A", inputModeRequired, metaKVPairs1);
-  public static final AppArg appArg1B = new AppArg("value1B", "appArg1B", "App arg 1B", inputModeOptional, metaKVPairs1);
-  public static final List<AppArg> appArgList1 = new ArrayList<>(List.of(appArg1A, appArg1B));
-  public static final AppArg appArg2A = new AppArg("value2A", "appArg2A", "App arg 2A", inputModeRequired, metaKVPairs2);
-  public static final AppArg appArg2B = new AppArg("value2B", "appArg2B", "App arg 2B", inputModeOptional, metaKVPairs2);
-  public static final List<AppArg> appArgList2 = new ArrayList<>(List.of(appArg2A, appArg2B));
-  public static final AppArg appArg3A = new AppArg("value3A", "appArg3A", "App arg 3A", inputModeRequired, metaKVPairs3);
-  public static final AppArg appArg3B = new AppArg("value3B", "appArg3B", "App arg 3B", inputModeOptional, metaKVPairs3);
-  public static final List<AppArg> appArgList3 = new ArrayList<>(List.of(appArg3A, appArg3B));
-  public static final List<AppArg> appArgListNull = null;
+  public static final ArgSpec appArg1A = new ArgSpec("value1A", "appArg1A", "App arg 1A", inputModeRequired, metaKVPairs1);
+  public static final ArgSpec appArg1B = new ArgSpec("value1B", "appArg1B", "App arg 1B", inputModeOptional, metaKVPairs1);
+  public static final List<ArgSpec> appArgList1 = new ArrayList<>(List.of(appArg1A, appArg1B));
+  public static final ArgSpec appArg2A = new ArgSpec("value2A", "appArg2A", "App arg 2A", inputModeRequired, metaKVPairs2);
+  public static final ArgSpec appArg2B = new ArgSpec("value2B", "appArg2B", "App arg 2B", inputModeOptional, metaKVPairs2);
+  public static final List<ArgSpec> appArgList2 = new ArrayList<>(List.of(appArg2A, appArg2B));
+  public static final ArgSpec appArg3A = new ArgSpec("value3A", "appArg3A", "App arg 3A", inputModeRequired, metaKVPairs3);
+  public static final ArgSpec appArg3B = new ArgSpec("value3B", "appArg3B", "App arg 3B", inputModeOptional, metaKVPairs3);
+  public static final List<ArgSpec> appArgList3 = new ArrayList<>(List.of(appArg3A, appArg3B));
+  public static final List<ArgSpec> appArgListNull = null;
 
-  public static final AppArg containerArg1A = new AppArg("value1A", "containerArg1A", "Container arg 1A",
+  public static final ArgSpec containerArg1A = new ArgSpec("value1A", "containerArg1A", "Container arg 1A",
           inputModeRequired, metaKVPairs1);
-  public static final AppArg containerArg1B = new AppArg("value1B", "containerArg1B", "Container arg 1B",
+  public static final ArgSpec containerArg1B = new ArgSpec("value1B", "containerArg1B", "Container arg 1B",
           inputModeOptional, metaKVPairs1);
-  public static final List<AppArg> containerArgList1 = new ArrayList<>(List.of(containerArg1A, containerArg1B));
-  public static final AppArg containerArg2A = new AppArg("value2A", "containerArg2A", "Container arg 2A",
+  public static final List<ArgSpec> containerArgList1 = new ArrayList<>(List.of(containerArg1A, containerArg1B));
+  public static final ArgSpec containerArg2A = new ArgSpec("value2A", "containerArg2A", "Container arg 2A",
           inputModeRequired, metaKVPairs2);
-  public static final AppArg containerArg2B = new AppArg("value2B", "containerArg2B", "Container arg 2B",
+  public static final ArgSpec containerArg2B = new ArgSpec("value2B", "containerArg2B", "Container arg 2B",
           inputModeOptional, metaKVPairs2);
-  public static final List<AppArg> containerArgList2 = new ArrayList<>(List.of(containerArg2A, containerArg2B));
-  public static final AppArg containerArg3A = new AppArg("value3A", "containerArg3A", "Container arg 3A",
+  public static final List<ArgSpec> containerArgList2 = new ArrayList<>(List.of(containerArg2A, containerArg2B));
+  public static final ArgSpec containerArg3A = new ArgSpec("value3A", "containerArg3A", "Container arg 3A",
           inputModeRequired, metaKVPairs3);
-  public static final AppArg containerArg3B = new AppArg("value3B", "containerArg3B", "Container arg 3B",
+  public static final ArgSpec containerArg3B = new ArgSpec("value3B", "containerArg3B", "Container arg 3B",
           inputModeOptional, metaKVPairs3);
-  public static final List<AppArg> containerArgList3 = new ArrayList<>(List.of(containerArg3A, containerArg3B));
-  public static final List<AppArg> containerArgListNull = null;
+  public static final List<ArgSpec> containerArgList3 = new ArrayList<>(List.of(containerArg3A, containerArg3B));
+  public static final List<ArgSpec> containerArgListNull = null;
 
-  public static final AppArg schedulerOption1A = new AppArg("value1A", "schedulerOption1A", "Scheduler option 1A",
+  public static final ArgSpec schedulerOption1A = new ArgSpec("value1A", "schedulerOption1A", "Scheduler option 1A",
           inputModeRequired, metaKVPairs1);
-  public static final AppArg schedulerOption1B = new AppArg("value1B", "schedulerOption1B", "Scheduler option 1B",
+  public static final ArgSpec schedulerOption1B = new ArgSpec("value1B", "schedulerOption1B", "Scheduler option 1B",
           inputModeOptional, metaKVPairs1);
-  public static final List<AppArg> schedulerOptionList1 = new ArrayList<>(List.of(schedulerOption1A, schedulerOption1B));
-  public static final AppArg schedulerOption2A = new AppArg("value2A", "schedulerOption2A", "Scheduler option 2A",
+  public static final List<ArgSpec> schedulerOptionList1 = new ArrayList<>(List.of(schedulerOption1A, schedulerOption1B));
+  public static final ArgSpec schedulerOption2A = new ArgSpec("value2A", "schedulerOption2A", "Scheduler option 2A",
           inputModeRequired, metaKVPairs2);
-  public static final AppArg schedulerOption2B = new AppArg("value2B", "schedulerOption2B", "Scheduler option 2B",
+  public static final ArgSpec schedulerOption2B = new ArgSpec("value2B", "schedulerOption2B", "Scheduler option 2B",
           inputModeOptional, metaKVPairs2);
-  public static final List<AppArg> schedulerOptionList2 = new ArrayList<>(List.of(schedulerOption2A, schedulerOption2B));
-  public static final List<AppArg> schedulerOptionListNull = null;
+  public static final List<ArgSpec> schedulerOptionList2 = new ArrayList<>(List.of(schedulerOption2A, schedulerOption2B));
+  public static final List<ArgSpec> schedulerOptionListNull = null;
 
   public static final ParameterSet parameterSet1 = new ParameterSet(appArgList1, containerArgList1, schedulerOptionList1,
                                                                     envVariables1, archiveFilter1);
@@ -442,23 +442,23 @@ public final class IntegrationUtils
   }
 
   // Verify that original list of AppArgs matches the fetched list
-  public static void verifyAppArgs(String argType, List<AppArg> origArgs, List<AppArg> fetchedArgs)
+  public static void verifyAppArgs(String argType, List<ArgSpec> origArgs, List<ArgSpec> fetchedArgs)
   {
     System.out.println("Verifying fetched AppArgs of type: " + argType);
     Assert.assertNotNull(origArgs, "Orig AppArgs is null");
     Assert.assertNotNull(fetchedArgs, "Fetched AppArgs is null");
     Assert.assertEquals(fetchedArgs.size(), origArgs.size());
     // Create hash maps of orig and fetched with name as key
-    var origMap = new HashMap<String, AppArg>();
-    var fetchedMap = new HashMap<String, AppArg>();
-    for (AppArg a : origArgs) origMap.put(a.getName(), a);
-    for (AppArg a : fetchedArgs) fetchedMap.put(a.getName(), a);
+    var origMap = new HashMap<String, ArgSpec>();
+    var fetchedMap = new HashMap<String, ArgSpec>();
+    for (ArgSpec a : origArgs) origMap.put(a.getName(), a);
+    for (ArgSpec a : fetchedArgs) fetchedMap.put(a.getName(), a);
     // Go through origMap and check properties
     for (String argName : origMap.keySet())
     {
       Assert.assertTrue(fetchedMap.containsKey(argName), "Fetched list does not contain original item: " + argName);
-      AppArg fetchedArg = fetchedMap.get(argName);
-      AppArg origArg = origMap.get(argName);
+      ArgSpec fetchedArg = fetchedMap.get(argName);
+      ArgSpec origArg = origMap.get(argName);
       System.out.println("Found fetched item: " + argName);
       Assert.assertEquals(fetchedArg.getArg(), origArg.getArg());
       Assert.assertEquals(fetchedArg.getDescription(), origArg.getDescription());

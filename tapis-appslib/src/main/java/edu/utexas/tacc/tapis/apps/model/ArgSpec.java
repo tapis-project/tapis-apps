@@ -15,7 +15,7 @@ import java.util.List;
  * Please keep it immutable.
  *
  */
-public final class AppArg
+public final class ArgSpec
 {
   /* ********************************************************************** */
   /*                               Constants                                */
@@ -25,7 +25,7 @@ public final class AppArg
   /*                                 Fields                                 */
   /* ********************************************************************** */
   // Logging
-  private static final Logger _log = LoggerFactory.getLogger(AppArg.class);
+  private static final Logger _log = LoggerFactory.getLogger(ArgSpec.class);
 
   private final String arg;
   private final String name;
@@ -37,7 +37,7 @@ public final class AppArg
   /*                           Constructors                                 */
   /* ********************************************************************** */
 
-  public AppArg(String value1, String name1, String description1, InputMode mode1, List<KeyValuePair> meta1)
+  public ArgSpec(String value1, String name1, String description1, InputMode mode1, List<KeyValuePair> meta1)
   {
     arg = value1;
     name = name1;

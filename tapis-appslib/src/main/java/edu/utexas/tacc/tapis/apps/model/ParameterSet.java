@@ -12,9 +12,9 @@ import java.util.List;
  */
 public final class ParameterSet
 {
-  private List<AppArg> appArgs;
-  private List<AppArg> containerArgs;
-  private List<AppArg> schedulerOptions;
+  private List<ArgSpec> appArgs;
+  private List<ArgSpec> containerArgs;
+  private List<ArgSpec> schedulerOptions;
   private List<KeyValuePair> envVariables;
   private ArchiveFilter archiveFilter;
 
@@ -34,7 +34,7 @@ public final class ParameterSet
   /**
    * Constructor setting all final attributes.
    */
-  public ParameterSet(List<AppArg> appArgs1, List<AppArg> containerArgs1, List<AppArg> schedulerOptions1,
+  public ParameterSet(List<ArgSpec> appArgs1, List<ArgSpec> containerArgs1, List<ArgSpec> schedulerOptions1,
                       List<KeyValuePair> envVariables1, ArchiveFilter archiveFilter1)
   {
     appArgs = (appArgs1 == null) ? null: new ArrayList<>(appArgs1);
@@ -56,12 +56,12 @@ public final class ParameterSet
   /* ********************************************************************** */
   /*                               Accessors                                */
   /* ********************************************************************** */
-  public List<AppArg> getAppArgs() { return (appArgs == null) ? null : new ArrayList<>(appArgs);  }
-  public void setAppArgs(List<AppArg> aa) { appArgs = aa; }
-  public List<AppArg> getContainerArgs() { return (containerArgs == null) ? null : new ArrayList<>(containerArgs); }
-  public void setContainerArgs(List<AppArg> aa) { containerArgs = aa; }
-  public List<AppArg> getSchedulerOptions() { return (schedulerOptions == null) ? null : new ArrayList<>(schedulerOptions); }
-  public void setSchedulerOptions(List<AppArg> aa) { schedulerOptions = aa; }
+  public List<ArgSpec> getAppArgs() { return (appArgs == null) ? null : new ArrayList<>(appArgs);  }
+  public void setAppArgs(List<ArgSpec> aa) { appArgs = aa; }
+  public List<ArgSpec> getContainerArgs() { return (containerArgs == null) ? null : new ArrayList<>(containerArgs); }
+  public void setContainerArgs(List<ArgSpec> aa) { containerArgs = aa; }
+  public List<ArgSpec> getSchedulerOptions() { return (schedulerOptions == null) ? null : new ArrayList<>(schedulerOptions); }
+  public void setSchedulerOptions(List<ArgSpec> aa) { schedulerOptions = aa; }
   public List<KeyValuePair> getEnvVariables() { return (envVariables == null) ? null : new ArrayList<>(envVariables); }
   public void setEnvVariables(List<KeyValuePair> kv) { envVariables = kv; }
   // When patching we update archiveFilter attributes via setter, so do not return a new instance of ArchiveFilter.
