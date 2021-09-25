@@ -73,6 +73,8 @@ CREATE TABLE apps_versions
 (
     seq_id SERIAL PRIMARY KEY,
     app_seq_id INTEGER REFERENCES apps(seq_id) ON DELETE CASCADE,
+    tenant  TEXT NOT NULL,
+    id      TEXT NOT NULL,
     version TEXT NOT NULL,
     description TEXT,
     runtime TEXT NOT NULL,

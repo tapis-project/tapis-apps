@@ -34,7 +34,6 @@ import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
-import edu.utexas.tacc.tapis.apps.model.NotificationMechanism;
 import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.search.parser.ASTBinaryExpression;
 import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
@@ -189,6 +188,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Insert new record into APPS_VERSIONS
       Record record = db.insertInto(APPS_VERSIONS)
               .set(APPS_VERSIONS.APP_SEQ_ID, appSeqId)
+              .set(APPS_VERSIONS.TENANT, app.getTenant())
+              .set(APPS_VERSIONS.ID, app.getId())
               .set(APPS_VERSIONS.VERSION, app.getVersion())
               .set(APPS_VERSIONS.DESCRIPTION, app.getDescription())
               .set(APPS_VERSIONS.RUNTIME, runtime)

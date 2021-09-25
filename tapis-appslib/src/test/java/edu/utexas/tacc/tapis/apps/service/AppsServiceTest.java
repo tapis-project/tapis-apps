@@ -2,7 +2,6 @@ package edu.utexas.tacc.tapis.apps.service;
 
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
-import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
@@ -189,6 +188,8 @@ public class AppsServiceTest
     tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false);
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
     System.out.println("Found item: " + app0.getId());
+    // Verify attributes
+// TODO    checkCommonAppAttrs(app0, tmpApp);
   }
 
   // Test retrieving an app.
@@ -1309,6 +1310,10 @@ public class AppsServiceTest
     Assert.assertEquals(tmpApp.getCoresPerNode(), app0.getCoresPerNode());
     Assert.assertEquals(tmpApp.getMemoryMb(), app0.getMemoryMb());
     Assert.assertEquals(tmpApp.getMaxMinutes(), app0.getMaxMinutes());
+
+    // Verify notification subscriptions
+    verifySubscriptions(app0.getSubscriptions(), tmpApp.getSubscriptions());
+
     // Verify jobTags
     String[] origJobTags = app0.getJobTags();
     String[] tmpJobTags = tmpApp.getJobTags();
@@ -1344,22 +1349,5 @@ public class AppsServiceTest
     Assert.assertTrue(tmpObj.has("testdata"));
     String testdataStr = origNotes.get("testdata").getAsString();
     Assert.assertEquals(tmpObj.get("testdata").getAsString(), testdataStr);
-
-    // ===============================================================================================
-    // Verify data in aux tables: notification_subscriptions
-    // ===============================================================================================
-    // Verify notification subscriptions
-    List<NotificationSubscription> origNotificationSubs = app0.getSubscriptions();
-    List<NotificationSubscription> tmpSubs = tmpApp.getSubscriptions();
-    Assert.assertNotNull(origNotificationSubs, "Orig notificationSubscriptions was null");
-    Assert.assertNotNull(tmpSubs, "Fetched notificationSubscriptions was null");
-    Assert.assertEquals(tmpSubs.size(), origNotificationSubs.size());
-    var filtersFound = new ArrayList<String>();
-    for (NotificationSubscription itemFound : tmpSubs) {filtersFound.add(itemFound.getFilter());}
-    for (NotificationSubscription itemSeedItem : origNotificationSubs)
-    {
-      Assert.assertTrue(filtersFound.contains(itemSeedItem.getFilter()),
-              "List of notificationSubscriptions did not contain an item with filter: " + itemSeedItem.getFilter());
-    }
   }
 }

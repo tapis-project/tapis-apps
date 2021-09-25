@@ -66,6 +66,16 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     public final TableField<AppsVersionsRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), SQLDataType.INTEGER, this, "Sequence id of application");
 
     /**
+     * The column <code>tapis_app.apps_versions.tenant</code>.
+     */
+    public final TableField<AppsVersionsRecord, String> TENANT = createField(DSL.name("tenant"), SQLDataType.CLOB.nullable(false), this, "");
+
+    /**
+     * The column <code>tapis_app.apps_versions.id</code>.
+     */
+    public final TableField<AppsVersionsRecord, String> ID = createField(DSL.name("id"), SQLDataType.CLOB.nullable(false), this, "");
+
+    /**
      * The column <code>tapis_app.apps_versions.version</code>. Application version
      */
     public final TableField<AppsVersionsRecord, String> VERSION = createField(DSL.name("version"), SQLDataType.CLOB.nullable(false), this, "Application version");

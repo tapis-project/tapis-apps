@@ -54,9 +54,9 @@ public final class App
   public static final boolean DEFAULT_CONTAINERIZED = true;
   public static final boolean DEFAULT_STRICT_FILE_INPUTS = false;
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
-  public static final JsonObject DEFAULT_PARAMETER_SET = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
+  public static final JsonElement DEFAULT_PARAMETER_SET = TapisGsonUtils.getGson().fromJson("{}", JsonElement.class);
   public static final JsonElement DEFAULT_FILE_INPUTS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
-  public static final JsonObject DEFAULT_SUBSCRIPTIONS = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
+  public static final JsonElement DEFAULT_SUBSCRIPTIONS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
   public static final JsonObject DEFAULT_NOTES = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
   public static final int DEFAULT_NODE_COUNT = 1;
   public static final int DEFAULT_CORES_PER_NODE = 1;

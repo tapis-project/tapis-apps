@@ -175,6 +175,9 @@ public class AppsDaoTest
     Assert.assertEquals(tmpApp.getCoresPerNode(), app0.getCoresPerNode());
     Assert.assertEquals(tmpApp.getMemoryMb(), app0.getMemoryMb());
     Assert.assertEquals(tmpApp.getMaxMinutes(), app0.getMaxMinutes());
+
+    // Verify notification subscriptions
+    verifySubscriptions(app0.getSubscriptions(), tmpApp.getSubscriptions());
     // Verify jobTags
     String[] tmpJobTags = tmpApp.getJobTags();
     Assert.assertNotNull(tmpJobTags, "JobTags value was null");
@@ -202,23 +205,6 @@ public class AppsDaoTest
     Assert.assertEquals(obj.get("project").getAsString(), notes1Obj.get("project").getAsString());
     Assert.assertTrue(obj.has("testdata"));
     Assert.assertEquals(obj.get("testdata").getAsString(), notes1Obj.get("testdata").getAsString());
-
-    // ===============================================================================================
-    // Verify data in aux tables: notification_subscriptions
-    // ===============================================================================================
-    // Verify notification subscriptions
-    List<NotificationSubscription> origNotificationSubs = app0.getSubscriptions();
-    List<NotificationSubscription> tmpSubs = tmpApp.getSubscriptions();
-    Assert.assertNotNull(origNotificationSubs, "Orig notificationSubscriptions was null");
-    Assert.assertNotNull(tmpSubs, "Fetched notificationSubscriptions was null");
-    Assert.assertEquals(tmpSubs.size(), origNotificationSubs.size());
-    var filtersFound = new ArrayList<String>();
-    for (NotificationSubscription itemFound : tmpSubs) {filtersFound.add(itemFound.getFilter());}
-    for (NotificationSubscription itemSeedItem : origNotificationSubs)
-    {
-      Assert.assertTrue(filtersFound.contains(itemSeedItem.getFilter()),
-              "List of notificationSubscriptions did not contain an item with filter: " + itemSeedItem.getFilter());
-    }
   }
 
   // Test retrieving all app IDs

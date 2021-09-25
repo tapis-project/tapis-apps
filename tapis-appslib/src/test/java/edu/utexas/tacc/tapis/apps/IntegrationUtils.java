@@ -515,4 +515,20 @@ public final class IntegrationUtils
       verifyKeyValuePairs("FileInput", fetchedFileInput.getMeta(), origFileInput.getMeta());
     }
   }
+  // Verify that original list of subscriptions matches the fetched list
+  public static void verifySubscriptions(List<NotificationSubscription> origSubscriptions, List<NotificationSubscription> fetchedSubscriptions)
+  {
+    System.out.println("Verifying list of NotificationSubscription");
+    Assert.assertNotNull(origSubscriptions, "Orig Subscriptions is null");
+    Assert.assertNotNull(fetchedSubscriptions, "Fetched Subscriptionss is null");
+    Assert.assertEquals(fetchedSubscriptions.size(), origSubscriptions.size());
+    var filtersFound = new ArrayList<String>();
+    for (NotificationSubscription itemFound : fetchedSubscriptions) {filtersFound.add(itemFound.getFilter());}
+    for (NotificationSubscription itemSeedItem : origSubscriptions)
+    {
+      Assert.assertTrue(filtersFound.contains(itemSeedItem.getFilter()),
+              "List of notificationSubscriptions did not contain an item with filter: " + itemSeedItem.getFilter());
+      System.out.println("Found fetched subscription with filter: " + itemSeedItem.getFilter());
+    }
+  }
 }
