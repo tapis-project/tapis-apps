@@ -1083,7 +1083,7 @@ public class AppResource
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
           jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
-          jobAttrs.parameterSet, jobAttrs.fileInputs, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMb,
+          jobAttrs.parameterSet, jobAttrs.fileInputs, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB,
           jobAttrs.maxMinutes, jobAttrs.subscriptions, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
     return app;
@@ -1109,7 +1109,7 @@ public class AppResource
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
           jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
           jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
-          jobAttrs.parameterSet, jobAttrs.fileInputs, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMb,
+          jobAttrs.parameterSet, jobAttrs.fileInputs, jobAttrs.nodeCount, jobAttrs.coresPerNode, jobAttrs.memoryMB,
           jobAttrs.maxMinutes, jobAttrs.subscriptions, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
     return app;
