@@ -85,7 +85,7 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
      */
     public final TableField<AppsVersionsRecord, String> DESCRIPTION = createField(DSL.name("description"), SQLDataType.CLOB, this, "Application description");
 
-    /**
+    /*
      * The column <code>tapis_app.apps_versions.runtime</code>.
      */
     public final TableField<AppsVersionsRecord, Runtime> RUNTIME = createField(DSL.name("runtime"), SQLDataType.CLOB.nullable(false), this, "", new EnumConverter<String, Runtime>(String.class, Runtime.class));

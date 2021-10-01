@@ -942,7 +942,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (appRecord == null) return null;
 
       // Create an App object using the appRecord
-      app = getAppFromJoinRecord(db, appRecord);
+      app = getAppFromJoinRecord(appRecord);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -1257,7 +1257,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       for (Record appRecord : results)
       {
         // Create App from appRecord using appVersion=null to use the latest app version
-        App a = getAppFromJoinRecord(db, appRecord);
+        App a = getAppFromJoinRecord(appRecord);
         retList.add(a);
       }
 
@@ -1504,10 +1504,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * Given an sql connection and an appRecord from a JOIN, create an App object
+   * Given an appRecord from a JOIN, create an App object
    *
    */
-  private static App getAppFromJoinRecord(DSLContext db, Record r)
+  private static App getAppFromJoinRecord(Record r)
   {
     App app;
     int appSeqId = r.get(APPS.SEQ_ID);

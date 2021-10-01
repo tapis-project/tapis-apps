@@ -84,6 +84,8 @@ public class PermsResource
   @Inject
   private AppsService appsService;
 
+  private final String className = getClass().getSimpleName();
+
   // ************************************************************************
   // *********************** Public Methods *********************************
   // ************************************************************************
@@ -113,7 +115,8 @@ public class PermsResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled()) logRequest(rUser, opName);
+    if (_log.isTraceEnabled())
+      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId,"userName="+userName);
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
@@ -182,7 +185,8 @@ public class PermsResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled()) logRequest(rUser, opName);
+    if (_log.isTraceEnabled())
+      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId,"userName="+userName);
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
@@ -236,7 +240,8 @@ public class PermsResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled()) logRequest(rUser, opName);
+    if (_log.isTraceEnabled())
+      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId,"userName="+userName,"permission="+permissionStr);
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
@@ -301,7 +306,8 @@ public class PermsResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled()) logRequest(rUser, opName);
+    if (_log.isTraceEnabled())
+      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId,"userName="+userName);
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
@@ -351,17 +357,6 @@ public class PermsResource
   // ************************************************************************
   // *********************** Private Methods ********************************
   // ************************************************************************
-
-  /**
-   * Trace the incoming request, include info about requesting user, op name and request URL
-   * @param rUser resource user
-   * @param opName name of operation
-   */
-  private void logRequest(ResourceRequestUser rUser, String opName)
-  {
-    String msg = ApiUtils.getMsgAuth("APPAPI_TRACE_REQUEST", rUser, getClass().getSimpleName(), opName, _request.getRequestURL());
-    _log.trace(msg);
-  }
 
   /**
    * Check json payload and extract permissions list.
