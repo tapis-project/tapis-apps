@@ -1660,6 +1660,7 @@ public class AppsServiceImpl implements AppsService
         }
       }
       if (jobAttrs.getFileInputs() != null) app1.setFileInputs(jobAttrs.getFileInputs());
+      if (jobAttrs.getFileInputArrays() != null) app1.setFileInputArrays(jobAttrs.getFileInputArrays());
       if (jobAttrs.getNodeCount() != null) app1.setNodeCount(jobAttrs.getNodeCount());
       if (jobAttrs.getCoresPerNode() != null) app1.setCoresPerNode(jobAttrs.getCoresPerNode());
       if (jobAttrs.getMemoryMb() != null) app1.setMemoryMb(jobAttrs.getMemoryMb());

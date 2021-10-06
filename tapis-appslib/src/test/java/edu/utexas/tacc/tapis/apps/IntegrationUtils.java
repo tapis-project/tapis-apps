@@ -207,8 +207,15 @@ public final class IntegrationUtils
   public static final FileInputArray fia2A = new FileInputArray("fia2A", "File input array 2A", inputModeRequired,
           List.of("/src2Aa","/src2Ab"), "/targetDir2A");
   public static final FileInputArray fia2B = new FileInputArray("fia2B", "File input array 2B", inputModeOptional,
-          List.of("/src2Ba","/src2Bb"), "/targetDirBA");
+          List.of("/src2Ba","/src2Bb"), "/targetDir2B");
   public static final List<FileInputArray> fiaList2 = new ArrayList<>(List.of(fia2A, fia2B));
+
+  public static final FileInputArray fia3A = new FileInputArray("fia3A", "File input array 3A", inputModeRequired,
+          List.of("/src3Aa","/src3Ab"), "/targetDir3A");
+  public static final FileInputArray fia3B = new FileInputArray("fia3B", "File input array 3B", inputModeOptional,
+          List.of("/src3Ba","/src3Bb"), "/targetDir3B");
+  public static final List<FileInputArray> fiaList3 = new ArrayList<>(List.of(fia3A, fia3B));
+
   public static final List<FileInputArray> fiaListNull = null;
 
   // NotificationSubscriptions
@@ -422,7 +429,7 @@ public final class IntegrationUtils
                                                  envVariablesNull, archiveFilterNull);
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
-            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSet, finList3, fiaList2, nodeCountNull,
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSet, finList3, fiaList3, nodeCountNull,
             coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull);
     return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull, jobAttributes, tagsNull, notesNull);
@@ -530,6 +537,33 @@ public final class IntegrationUtils
       Assert.assertEquals(fetchedFileInput.isAutoMountLocal(), origFileInput.isAutoMountLocal());
     }
   }
+
+  // Verify that original list of FileInputs matches the fetched list
+  public static void verifyFileInputArrays(List<FileInputArray> origFia, List<FileInputArray> fetchedFia)
+  {
+    System.out.println("Verifying list of FileInputArrays");
+    Assert.assertNotNull(origFia, "Orig FileInputArrays is null");
+    Assert.assertNotNull(fetchedFia, "Fetched FileInputArrays is null");
+    Assert.assertEquals(fetchedFia.size(), origFia.size());
+    // Create hash maps of orig and fetched with name as key
+    var origMap = new HashMap<String, FileInputArray>();
+    var fetchedMap = new HashMap<String, FileInputArray>();
+    for (FileInputArray fia : origFia) origMap.put(fia.getName(), fia);
+    for (FileInputArray fia : fetchedFia) fetchedMap.put(fia.getName(), fia);
+    // Go through origMap and check properties
+    for (String fiaName : origMap.keySet())
+    {
+      Assert.assertTrue(fetchedMap.containsKey(fiaName), "Fetched list does not contain original item: " + fiaName);
+      FileInputArray fetchedItem = fetchedMap.get(fiaName);
+      FileInputArray origItem = origMap.get(fiaName);
+      System.out.println("Found fetched FileInputArray: " + fiaName);
+//      Assert.assertEquals(fetchedFia.getSourceUrl(), origFia.getSourceUrl());
+      Assert.assertEquals(fetchedItem.getTargetDir(), origItem.getTargetDir());
+      Assert.assertEquals(fetchedItem.getDescription(), origItem.getDescription());
+      Assert.assertEquals(fetchedItem.getInputMode(), origItem.getInputMode());
+    }
+  }
+
   // Verify that original list of subscriptions matches the fetched list
   public static void verifySubscriptions(List<NotificationSubscription> origSubscriptions, List<NotificationSubscription> fetchedSubscriptions)
   {

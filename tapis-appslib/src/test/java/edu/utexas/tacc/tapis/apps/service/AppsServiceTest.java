@@ -261,6 +261,7 @@ public class AppsServiceTest
     app0.setArchiveOnAppError(archiveOnAppErrorFalse);
     app0.setParameterSet(parameterSet2);
     app0.setFileInputs(finList2);
+    app0.setFileInputArrays(fiaList2);
     app0.setNodeCount(nodeCount2);
     app0.setCoresPerNode(coresPerNode2);
     app0.setMemoryMb(memoryMb2);
@@ -326,6 +327,7 @@ public class AppsServiceTest
     app0.setArchiveOnAppError(archiveOnAppErrorFalse);
     app0.setParameterSet(parameterSet2);
     app0.setFileInputs(finList2);
+    app0.setFileInputArrays(fiaList2);
     app0.setNodeCount(nodeCount2);
     app0.setCoresPerNode(coresPerNode2);
     app0.setMemoryMb(memoryMb2);
@@ -381,6 +383,7 @@ public class AppsServiceTest
     app0.setExecSystemId(execSystemId2);
     app0.getParameterSet().setContainerArgs(containerArgList3);
     app0.setFileInputs(finList3);
+    app0.setFileInputArrays(fiaList3);
     //Check common app attributes:
     checkCommonAppAttrs(app0, tmpAppPartial);
 
@@ -1305,6 +1308,9 @@ public class AppsServiceTest
 
     // Verify file inputs
     verifyFileInputs(app0.getFileInputs(), tmpApp.getFileInputs());
+
+    // Verify file input arrays
+    verifyFileInputArrays(app0.getFileInputArrays(), tmpApp.getFileInputArrays());
 
     Assert.assertEquals(tmpApp.getNodeCount(), app0.getNodeCount());
     Assert.assertEquals(tmpApp.getCoresPerNode(), app0.getCoresPerNode());

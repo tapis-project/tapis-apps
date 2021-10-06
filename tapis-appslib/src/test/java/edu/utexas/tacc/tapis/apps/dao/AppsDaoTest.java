@@ -171,6 +171,9 @@ public class AppsDaoTest
     // Verify file inputs
     verifyFileInputs(app0.getFileInputs(), tmpApp.getFileInputs());
 
+    // Verify file input arrays
+    verifyFileInputArrays(app0.getFileInputArrays(), tmpApp.getFileInputArrays());
+
     Assert.assertEquals(tmpApp.getNodeCount(), app0.getNodeCount());
     Assert.assertEquals(tmpApp.getCoresPerNode(), app0.getCoresPerNode());
     Assert.assertEquals(tmpApp.getMemoryMb(), app0.getMemoryMb());
