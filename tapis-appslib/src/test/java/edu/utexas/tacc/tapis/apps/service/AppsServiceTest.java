@@ -694,21 +694,6 @@ public class AppsServiceTest
     // Reset in prep for continued checking
     app0.setExecSystemConstraints(execSystemConstraints1);
 
-    // If not dynamicExecSystem then execSystemId must be given
-    app0.setDynamicExecSystem(false);
-    app0.setExecSystemId(null);
-    pass = false;
-    try { svc.createApp(rUser1, app0, scrubbedJson); }
-    catch (Exception e)
-    {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_NOTDYNAMIC_NOSYSTEMID"));
-      pass = true;
-    }
-    Assert.assertTrue(pass);
-    // Reset in prep for continued checking
-    app0.setExecSystemId(execSystemId1);
-    app0.setDynamicExecSystem(true);
-
     // If archiveSystem given then archive dir must be given
     // Note we save dir name because it varies with each test app.
     String tmpArchiveSystemDir = app0.getArchiveSystemDir();

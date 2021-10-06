@@ -594,12 +594,6 @@ public final class App
       }
     }
 
-    // If not dynamicExecSystem then execSystemId must be given
-    if (!dynamicExecSystem && StringUtils.isBlank(execSystemId))
-    {
-      errMessages.add(LibUtils.getMsg("APPLIB_NOTDYNAMIC_NOSYSTEMID"));
-    }
-
     // If archiveSystem given then archive dir must be given
     if (!StringUtils.isBlank(archiveSystemId) && StringUtils.isBlank(archiveSystemDir))
     {
