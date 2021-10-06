@@ -85,7 +85,7 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
      */
     public final TableField<AppsVersionsRecord, String> DESCRIPTION = createField(DSL.name("description"), SQLDataType.CLOB, this, "Application description");
 
-    /*
+    /**
      * The column <code>tapis_app.apps_versions.runtime</code>.
      */
     public final TableField<AppsVersionsRecord, Runtime> RUNTIME = createField(DSL.name("runtime"), SQLDataType.CLOB.nullable(false), this, "", new EnumConverter<String, Runtime>(String.class, Runtime.class));
@@ -184,6 +184,11 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
      * The column <code>tapis_app.apps_versions.file_inputs</code>.
      */
     public final TableField<AppsVersionsRecord, JsonElement> FILE_INPUTS = createField(DSL.name("file_inputs"), SQLDataType.JSONB.nullable(false), this, "", new JSONBToJsonElementBinding());
+
+    /**
+     * The column <code>tapis_app.apps_versions.file_input_arrays</code>.
+     */
+    public final TableField<AppsVersionsRecord, JsonElement> FILE_INPUT_ARRAYS = createField(DSL.name("file_input_arrays"), SQLDataType.JSONB.nullable(false), this, "", new JSONBToJsonElementBinding());
 
     /**
      * The column <code>tapis_app.apps_versions.node_count</code>.

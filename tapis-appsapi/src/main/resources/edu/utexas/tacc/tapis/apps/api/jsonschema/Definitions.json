@@ -70,13 +70,13 @@
     "additionalProperties": false,
     "properties": {
       "appArgs": {
-        "type": ["array", "null"], "items":  { "$ref": "#/AppArg" }
+        "type": ["array", "null"], "items":  { "$ref": "#/ArgSpec" }
       },
       "containerArgs": {
-        "type": ["array", "null"], "items":  { "$ref": "#/AppArg" }
+        "type": ["array", "null"], "items":  { "$ref": "#/ArgSpec" }
       },
       "schedulerOptions": {
-        "type": ["array", "null"], "items":  { "$ref": "#/AppArg" }
+        "type": ["array", "null"], "items":  { "$ref": "#/ArgSpec" }
       },
       "envVariables": {
         "type": ["array", "null"], "items":  { "$ref": "#/KeyValuePair" }
@@ -86,30 +86,27 @@
   },
   "FileInput": {
     "type": "object",
-    "required": [ "name" ],
+    "required": [ "name", "targetPath" ],
     "additionalProperties": false,
     "properties": {
-      "name": { "type": "string", "minLength": 1 },
+      "name": { "type": "string", "minLength": 1, "maxLength": 80 },
       "description": { "type": "string", "maxLength": 8096 },
       "inputMode": { "$ref": "#/InputModeEnum" },
-      "inPlace": { "type": "boolean", "default": false },
-      "sourceUrl": { "type": "string", "format": "uri" },
-      "targetPath": { "type": "string" },
-      "meta": { "type": ["array", "null"], "uniqueItems": true, "items": { "$ref": "#/KeyValuePair" } }
+      "autoMountLocal": { "type": "boolean", "default": true },
+      "sourceUrl": { "type": "string", "minLength": 1, "format": "uri" },
+      "targetPath": { "type": "string", "minLength": 1 }
     }
   },
   "FileInputArray": {
     "type": "object",
-    "required": [ "name" ],
+    "required": [ "name", "targetDir" ],
     "additionalProperties": false,
     "properties": {
-      "name": { "type": "string", "minLength": 1 },
+      "name": { "type": "string", "minLength": 1, "maxLength": 80 },
       "description": { "type": "string", "maxLength": 8096 },
       "inputMode": { "$ref": "#/InputModeEnum" },
-      "inPlace": { "type": "boolean", "default": false },
       "sourceUrls": { "type": ["array", "null"], "items": { "type": "string", "format": "uri" } },
-      "targetPaths": {"type": ["array", "null"], "items": { "type": "string" } },
-      "meta": { "type": ["array", "null"], "uniqueItems": true, "items": { "$ref": "#/KeyValuePair" } }
+      "targetDir": {"type": "string", "minLength": 1 }
     }
   },
   "NotificationSubscription": {
@@ -139,16 +136,15 @@
       "includeLaunchFiles": { "type": "boolean", "default": true }
     }
   },
-  "AppArg": {
+  "ArgSpec": {
     "type": "object",
     "required": [ "name" ],
     "additionalProperties": false,
     "properties": {
-      "name": { "type": "string", "minLength": 1 },
-      "description": { "type": "string" },
+      "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+      "description": { "type": "string", "minLength": 1, "maxLength": 8096 },
       "inputMode": { "$ref": "#/InputModeEnum" },
-      "arg": { "type":  "string" },
-      "meta": { "type": ["array", "null"], "uniqueItems": true, "items": { "$ref": "#/KeyValuePair" } }
+      "arg": { "type": "string", "minLength": 1 }
     }
   },
   "KeyValuePair": {

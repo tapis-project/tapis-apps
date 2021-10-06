@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.ArgSpec;
 import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.FileInputArray;
 import edu.utexas.tacc.tapis.apps.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
 import edu.utexas.tacc.tapis.apps.model.NotificationMechanism;
@@ -57,10 +58,11 @@ public final class IntegrationUtils
   public static final boolean strictFileInputsTrue = true;
   public static final boolean strictFileInputsFalse = false;
   public static final Boolean strictFileInputsNull = null;
-  public static final boolean inPlaceTrue = true;
-  public static final boolean inPlaceFalse = false;
+  public static final boolean autoMountLocalTrue = true;
+  public static final boolean autoMountLocalFalse = false;
   public static final InputMode inputModeRequired = InputMode.REQUIRED;
   public static final InputMode inputModeOptional = InputMode.OPTIONAL;
+  public static final InputMode inputModeFixed = InputMode.FIXED;
   public static final Runtime runtime1 = Runtime.DOCKER;
   public static final Runtime runtime2 = Runtime.SINGULARITY;
   public static final Runtime runtimeNull = null;
@@ -179,22 +181,35 @@ public final class IntegrationUtils
   public static final String scrubbedJson = "{}";
 
   // FileInputs
-  public static final FileInput fin1A = new FileInput("/src1A", "/target1A", inPlaceTrue, "fin1A", "File input 1A",
-                                                      inputModeRequired, metaKVPairs1);
-  public static final FileInput fin1B = new FileInput("/src1B", "/target1B", inPlaceFalse, "fin1B", "File input 1B",
-                                                      inputModeOptional, metaKVPairs1);
+  public static final FileInput fin1A = new FileInput("fin1A", "File input 1A", inputModeRequired, autoMountLocalTrue,
+                                                      "/src1A", "/target1A");
+  public static final FileInput fin1B = new FileInput("fin1B", "File input 1B", inputModeOptional, autoMountLocalFalse,
+                                                      "/src1B", "/target1B");
   public static final List<FileInput> finList1 = new ArrayList<>(List.of(fin1A, fin1B));
-  public static final FileInput finA2 = new FileInput("/srcA2", "/targetA2", inPlaceTrue, "finA2", "File input A2",
-          inputModeRequired, metaKVPairs2);
-  public static final FileInput finB2 = new FileInput("/srcB2", "/targetB2", inPlaceFalse, "finB2", "File input B2",
-          inputModeOptional, metaKVPairs2);
-  public static final List<FileInput> finList2 = new ArrayList<>(List.of(finA2, finB2));
-  public static final FileInput finA3 = new FileInput("/srcA3", "/targetA3", inPlaceTrue, "finA3", "File input A3",
-          inputModeRequired, metaKVPairs3);
-  public static final FileInput finB3 = new FileInput("/srcB3", "/targetB3", inPlaceFalse, "finB3", "File input B3",
-          inputModeRequired, metaKVPairs3);
-  public static final List<FileInput> finList3 = new ArrayList<>(List.of(finA3, finB3));
+  public static final FileInput fin2A = new FileInput("fin2A", "File input 2A", inputModeRequired, autoMountLocalTrue,
+          "/src2A", "/target2A");
+  public static final FileInput fin2B = new FileInput("fin2B", "File input 2B", inputModeOptional, autoMountLocalFalse,
+          "/src2B", "/targetBA");
+  public static final List<FileInput> finList2 = new ArrayList<>(List.of(fin2A, fin2B));
+  public static final FileInput fin3A = new FileInput("fin3A", "File input 3A", inputModeOptional, autoMountLocalTrue,
+          "/src3A", "/target3A");
+  public static final FileInput fin3B = new FileInput("fin3B", "File input 3B", inputModeFixed, autoMountLocalFalse,
+          "/src3B", "/target3B");
+  public static final List<FileInput> finList3 = new ArrayList<>(List.of(fin3A, fin3B));
   public static final List<FileInput> finListNull = null;
+
+  // FileInputArrays
+  public static final FileInputArray fia1A = new FileInputArray("fia1A", "File input array 1A", inputModeRequired,
+          List.of("/src1Aa","/src1Ab"), "/targetDir1A");
+  public static final FileInputArray fia1B = new FileInputArray("fia1B", "File input array 1B", inputModeOptional,
+          List.of("/src1Ba","/src1Bb"), "/targetDir1B");
+  public static final List<FileInputArray> fiaList1 = new ArrayList<>(List.of(fia1A, fia1B));
+  public static final FileInputArray fia2A = new FileInputArray("fia2A", "File input array 2A", inputModeRequired,
+          List.of("/src2Aa","/src2Ab"), "/targetDir2A");
+  public static final FileInputArray fia2B = new FileInputArray("fia2B", "File input array 2B", inputModeOptional,
+          List.of("/src2Ba","/src2Bb"), "/targetDirBA");
+  public static final List<FileInputArray> fiaList2 = new ArrayList<>(List.of(fia2A, fia2B));
+  public static final List<FileInputArray> fiaListNull = null;
 
   // NotificationSubscriptions
   public static final NotificationMechanism notifMech1Aa = new NotificationMechanism(NotifMechanismType.WEBHOOK, "webhookUrl1Aa", "emailAddress1Aa");
@@ -325,7 +340,7 @@ public final class IntegrationUtils
                  jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
                  execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
                  execSystemLogicalQueue1, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
-                 parameterSet1, finList1, nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, notifList1, jobTags1,
+                 parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, notifList1, jobTags1,
                  tags1, notes1, uuidNull, deletedFalse, createdNull, updatedNull);
     }
     return apps;
@@ -345,7 +360,7 @@ public final class IntegrationUtils
             strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
             execSystemId1, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
-            parameterSet1, finList1, nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, notifList1, jobTagsNull,
+            parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, notifList1, jobTagsNull,
             tagsNull, notesNull, uuidNull, deletedFalse, createdNull, updatedNull);
   }
 
@@ -361,7 +376,7 @@ public final class IntegrationUtils
             jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
             execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
             archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse,
-            parameterSet2, finList2, nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, notifList2, jobTags2,
+            parameterSet2, finList2, fiaList2, nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, notifList2, jobTags2,
             tags2, notes2, uuidNull, deletedFalse, createdNull, updatedNull);
     return putApp;
   }
@@ -374,7 +389,7 @@ public final class IntegrationUtils
   {
     JobAttributes jobAttributes = new JobAttributes(jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
             execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
-            archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse, parameterSet2, finList2, nodeCount2,
+            archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse, parameterSet2, finList2, fiaList2, nodeCount2,
             coresPerNode2, memoryMb2, maxMinutes2, notifList2, jobTags2);
 
     return new PatchApp(description2, runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
@@ -389,7 +404,7 @@ public final class IntegrationUtils
   {
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
-            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSetNull, finListNull, nodeCountNull,
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSetNull, finListNull, fiaListNull, nodeCountNull,
             coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull);
 
     return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
@@ -407,7 +422,7 @@ public final class IntegrationUtils
                                                  envVariablesNull, archiveFilterNull);
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
-            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSet, finList3, nodeCountNull,
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSet, finList3, fiaList2, nodeCountNull,
             coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull);
     return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull, jobAttributes, tagsNull, notesNull);
@@ -423,7 +438,7 @@ public final class IntegrationUtils
                                                  envVariablesNull, archiveFilterNull);
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
-            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSet, finListNull, nodeCountNull,
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSet, finListNull, fiaListNull, nodeCountNull,
             coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull);
     return new PatchApp(descriptionNull, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImageNull,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull, jobAttributes, tagsNull, notesNull);
@@ -512,7 +527,7 @@ public final class IntegrationUtils
       Assert.assertEquals(fetchedFileInput.getTargetPath(), origFileInput.getTargetPath());
       Assert.assertEquals(fetchedFileInput.getDescription(), origFileInput.getDescription());
       Assert.assertEquals(fetchedFileInput.getInputMode(), origFileInput.getInputMode());
-      verifyKeyValuePairs("FileInput", fetchedFileInput.getMeta(), origFileInput.getMeta());
+      Assert.assertEquals(fetchedFileInput.isAutoMountLocal(), origFileInput.isAutoMountLocal());
     }
   }
   // Verify that original list of subscriptions matches the fetched list

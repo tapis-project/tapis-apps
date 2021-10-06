@@ -240,7 +240,7 @@
                     <userType>com.google.gson.JsonElement</userType>
                     <binding>edu.utexas.tacc.tapis.apps.dao.JSONBToJsonElementBinding</binding>
                     <!-- Match only certain columns, no need to filter on type -->
-                    <includeExpression>(apps_versions\.subscriptions|apps_versions\.parameter_set|apps_versions\.file_inputs|apps_versions\.notes|app_updates\.upd_json)</includeExpression>
+                    <includeExpression>(apps_versions\.subscriptions|apps_versions\.parameter_set|apps_versions\.file_inputs|apps_versions\.file_input_arrays|apps_versions\.notes|app_updates\.upd_json)</includeExpression>
                     <includeTypes>.*</includeTypes>
                   </forcedType>
                   <!-- ****************************************** -->

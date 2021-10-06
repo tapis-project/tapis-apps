@@ -25,6 +25,7 @@ public final class JobAttributes
   private final Boolean archiveOnAppError;
   private final ParameterSet parameterSet;
   private final List<FileInput> fileInputs;
+  private final List<FileInputArray> fileInputArrays;
   private final Integer nodeCount;
   private final Integer coresPerNode;
   private final Integer memoryMb;
@@ -43,8 +44,8 @@ public final class JobAttributes
                        String execSystemId1, String execSystemExecDir1, String execSystemInputDir1, String execSystemOutputDir1,
                        String execSystemLogicalQueue1, String archiveSystemId1, String archiveSystemDir1,
                        Boolean archiveOnAppError1, ParameterSet parameterSet1, List<FileInput> fileInputs1,
-                       Integer nodeCount1, Integer coresPerNode1, Integer memoryMb1, Integer maxMinutes1,
-                       List<NotificationSubscription> subscriptions1, String[] tags1)
+                       List<FileInputArray> fileInputArrays1, Integer nodeCount1, Integer coresPerNode1, Integer memoryMb1,
+                       Integer maxMinutes1, List<NotificationSubscription> subscriptions1, String[] tags1)
   {
     description = description1;
     dynamicExecSystem = dynamicExecSystem1;
@@ -59,6 +60,7 @@ public final class JobAttributes
     archiveOnAppError = archiveOnAppError1;
     parameterSet = (parameterSet1 == null) ? null : new ParameterSet(parameterSet1);
     fileInputs = (fileInputs1 == null) ? null: new ArrayList<>(fileInputs1);
+    fileInputArrays = (fileInputArrays1 == null) ? null: new ArrayList<>(fileInputArrays1);
     nodeCount = nodeCount1;
     coresPerNode = coresPerNode1;
     memoryMb = memoryMb1;
@@ -83,6 +85,7 @@ public final class JobAttributes
   public Boolean getArchiveOnAppError() { return archiveOnAppError; }
   public ParameterSet getParameterSet() { return parameterSet; }
   public List<FileInput> getFileInputs() { return fileInputs; }
+  public List<FileInputArray> getFileInputArrays() { return fileInputArrays; }
   public Integer getNodeCount() { return nodeCount; }
   public Integer getCoresPerNode() { return coresPerNode; }
   public Integer getMemoryMb() { return memoryMb; }

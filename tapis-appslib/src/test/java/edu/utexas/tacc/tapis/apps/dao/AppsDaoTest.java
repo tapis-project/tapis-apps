@@ -74,7 +74,7 @@ public class AppsDaoTest
     App app0 = apps[0];
     boolean appCreated = dao.createApp(rUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
-    System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
+    System.out.println("Created ictem, id: " + app0.getId() + " version: " + app0.getVersion());
   }
 
   // Test retrieving a single item
@@ -403,7 +403,7 @@ public class AppsDaoTest
             maxJobs1, maxJobsPerUser1, strictFileInputsFalse, IntegrationUtils.jobDescription1, dynamicExecSystemTrue,
             execSystemConstraints1, execSystemId1, execSystemExecDir1, execSystemInputDir1, execSystemOutputDir1,
             execSystemLogicalQueue1, archiveSystemIdNull, archiveSystemDir1, archiveOnAppErrorTrue,
-            parameterSet1, finList1, nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, notifList1, jobTags1,
+            parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, notifList1, jobTags1,
             tags1, notes1, uuidNull, isDeletedFalse, createdNull, updatedNull);
     // Make sure app does not exist
     Assert.assertFalse(dao.checkForApp(tenantName, fakeAppId, true));

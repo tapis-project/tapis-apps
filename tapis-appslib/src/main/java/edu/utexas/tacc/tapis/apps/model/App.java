@@ -56,6 +56,7 @@ public final class App
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
   public static final JsonElement DEFAULT_PARAMETER_SET = TapisGsonUtils.getGson().fromJson("{}", JsonElement.class);
   public static final JsonElement DEFAULT_FILE_INPUTS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
+  public static final JsonElement DEFAULT_FILE_INPUT_ARRAYS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
   public static final JsonElement DEFAULT_SUBSCRIPTIONS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
   public static final JsonObject DEFAULT_NOTES = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
   public static final int DEFAULT_NODE_COUNT = 1;
@@ -174,6 +175,7 @@ public final class App
   private boolean archiveOnAppError;
   private ParameterSet parameterSet;
   private List<FileInput> fileInputs;
+  private List<FileInputArray> fileInputArrays;
   private int nodeCount = DEFAULT_NODE_COUNT;
   private int coresPerNode = DEFAULT_CORES_PER_NODE;
   private int memoryMb = DEFAULT_MEMORY_MB;
@@ -260,6 +262,7 @@ public final class App
     archiveOnAppError = a.isArchiveOnAppError();
     parameterSet = a.getParameterSet();
     fileInputs = a.getFileInputs();
+    fileInputArrays = a.getFileInputArrays();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
     memoryMb = a.getMemoryMb();
@@ -285,8 +288,9 @@ public final class App
              String[] execSystemConstraints1, String execSystemId1, String execSystemExecDir1,
              String execSystemInputDir1, String execSystemOutputDir1, String execSystemLogicalQueue1,
              String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1,
-             ParameterSet parameterSet1, List<FileInput> fileInputs1, int nodeCount1, int coresPerNode1, int memoryMb1,
-             int maxMinutes1, List<NotificationSubscription> subscriptions1, String[] jobTags1,
+             ParameterSet parameterSet1, List<FileInput> fileInputs1, List<FileInputArray> fileInputArrays1,
+             int nodeCount1, int coresPerNode1, int memoryMb1, int maxMinutes1,
+             List<NotificationSubscription> subscriptions1, String[] jobTags1,
              // == End jobAttributes
              String[] tags1, Object notes1, UUID uuid1, boolean deleted1, Instant created1, Instant updated1)
   {
@@ -319,7 +323,8 @@ public final class App
     archiveSystemDir = archiveSystemDir1;
     archiveOnAppError = archiveOnAppError1;
     parameterSet = parameterSet1;
-    fileInputs = fileInputs1;
+    fileInputs = (fileInputs1 == null) ? null : new ArrayList<>(fileInputs1);
+    fileInputArrays = (fileInputArrays1 == null) ? null : new ArrayList<>(fileInputArrays1);
     nodeCount = nodeCount1;
     coresPerNode = coresPerNode1;
     memoryMb = memoryMb1;
@@ -371,6 +376,7 @@ public final class App
     archiveOnAppError = a.isArchiveOnAppError();
     parameterSet = a.getParameterSet();
     fileInputs = a.getFileInputs();
+    fileInputArrays = a.getFileInputArrays();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
     memoryMb = a.getMemoryMb();
@@ -737,6 +743,12 @@ public final class App
   public void setFileInputs(List<FileInput> fi)
   {
     fileInputs = (fi == null) ? null : new ArrayList<>(fi);
+  }
+
+  public List<FileInputArray> getFileInputArrays() {
+    return (fileInputArrays == null) ? null : new ArrayList<>(fileInputArrays);
+  }
+  public void setFileInputArrays(List<FileInputArray> fia) { fileInputArrays = (fia == null) ? null : new ArrayList<>(fia);
   }
 
   public List<NotificationSubscription> getSubscriptions()

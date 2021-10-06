@@ -2,6 +2,7 @@ package edu.utexas.tacc.tapis.apps.api.model;
 
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.FileInputArray;
 import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 
@@ -31,6 +32,7 @@ public final class JobAttributes
   public boolean archiveOnAppError;
   public ParameterSet parameterSet;
   public List<FileInput> fileInputs;
+  public List<FileInputArray> fileInputArrays;
   public int nodeCount = DEFAULT_NODE_COUNT;
   public int coresPerNode = DEFAULT_CORES_PER_NODE;
   public int memoryMB = DEFAULT_MEMORY_MB;
@@ -60,6 +62,7 @@ public final class JobAttributes
     archiveOnAppError = a.isArchiveOnAppError();
     parameterSet = new ParameterSet(a.getParameterSet());
     fileInputs = a.getFileInputs();
+    fileInputArrays = a.getFileInputArrays();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
     memoryMB = a.getMemoryMb();

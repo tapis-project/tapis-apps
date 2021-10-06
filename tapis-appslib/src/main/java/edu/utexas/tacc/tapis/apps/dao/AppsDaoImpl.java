@@ -34,6 +34,7 @@ import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.FileInputArray;
 import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.search.parser.ASTBinaryExpression;
 import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
@@ -122,6 +123,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     String[] execSystemConstraintsStrArray = null;
     JsonElement parameterSetJson = App.DEFAULT_PARAMETER_SET;
     JsonElement fileInputsJson = App.DEFAULT_FILE_INPUTS;
+    JsonElement fileInputArraysJson = App.DEFAULT_FILE_INPUT_ARRAYS;
     JsonElement subscriptionsJson = App.DEFAULT_SUBSCRIPTIONS;
     String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
     String[] tagsStrArray = App.EMPTY_STR_ARRAY;
@@ -137,6 +139,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (app.getExecSystemConstraints() != null) execSystemConstraintsStrArray = app.getExecSystemConstraints();
     if (app.getParameterSet() != null) parameterSetJson = TapisGsonUtils.getGson().toJsonTree(app.getParameterSet());
     if (app.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(app.getFileInputs());
+    if (app.getFileInputArrays() != null) fileInputArraysJson = TapisGsonUtils.getGson().toJsonTree(app.getFileInputArrays());
     if (app.getSubscriptions() != null) subscriptionsJson = TapisGsonUtils.getGson().toJsonTree(app.getSubscriptions());
     if (app.getJobTags() != null) jobTagsStrArray = app.getJobTags();
     if (app.getTags() != null) tagsStrArray = app.getTags();
@@ -211,6 +214,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, app.isArchiveOnAppError())
               .set(APPS_VERSIONS.PARAMETER_SET, parameterSetJson)
               .set(APPS_VERSIONS.FILE_INPUTS, fileInputsJson)
+              .set(APPS_VERSIONS.FILE_INPUT_ARRAYS, fileInputArraysJson)
               .set(APPS_VERSIONS.NODE_COUNT, app.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, app.getCoresPerNode())
               .set(APPS_VERSIONS.MEMORY_MB, app.getMemoryMb())
@@ -282,6 +286,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     String[] execSystemConstraintsStrArray = null;
     JsonElement parameterSetJson = App.DEFAULT_PARAMETER_SET;
     JsonElement fileInputsJson = App.DEFAULT_FILE_INPUTS;
+    JsonElement fileInputArraysJson = App.DEFAULT_FILE_INPUT_ARRAYS;
     JsonElement subscriptionsJson = App.DEFAULT_SUBSCRIPTIONS;
     String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
     String[] tagsStrArray = App.EMPTY_STR_ARRAY;
@@ -297,6 +302,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (putApp.getExecSystemConstraints() != null) execSystemConstraintsStrArray = putApp.getExecSystemConstraints();
     if (putApp.getParameterSet() != null) parameterSetJson = TapisGsonUtils.getGson().toJsonTree(putApp.getParameterSet());
     if (putApp.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(putApp.getFileInputs());
+    if (putApp.getFileInputArrays() != null) fileInputArraysJson = TapisGsonUtils.getGson().toJsonTree(putApp.getFileInputArrays());
     if (putApp.getSubscriptions() != null) subscriptionsJson = TapisGsonUtils.getGson().toJsonTree(putApp.getSubscriptions());
     if (putApp.getJobTags() != null) jobTagsStrArray = putApp.getJobTags();
     if (putApp.getTags() != null) tagsStrArray = putApp.getTags();
@@ -342,6 +348,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, putApp.isArchiveOnAppError())
               .set(APPS_VERSIONS.PARAMETER_SET, parameterSetJson)
               .set(APPS_VERSIONS.FILE_INPUTS, fileInputsJson)
+              .set(APPS_VERSIONS.FILE_INPUT_ARRAYS, fileInputArraysJson)
               .set(APPS_VERSIONS.NODE_COUNT, putApp.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, putApp.getCoresPerNode())
               .set(APPS_VERSIONS.MEMORY_MB, putApp.getMemoryMb())
@@ -408,6 +415,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     String[] execSystemConstraintsStrArray = null;
     JsonElement parameterSetJson = App.DEFAULT_PARAMETER_SET;
     JsonElement fileInputsJson = App.DEFAULT_FILE_INPUTS;
+    JsonElement fileInputArraysJson = App.DEFAULT_FILE_INPUT_ARRAYS;
     JsonElement subscriptionsJson = App.DEFAULT_SUBSCRIPTIONS;
     String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
     String[] tagsStrArray = App.EMPTY_STR_ARRAY;
@@ -423,6 +431,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (patchedApp.getExecSystemConstraints() != null) execSystemConstraintsStrArray = patchedApp.getExecSystemConstraints();
     if (patchedApp.getParameterSet() != null) parameterSetJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getParameterSet());
     if (patchedApp.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getFileInputs());
+    if (patchedApp.getFileInputArrays() != null) fileInputArraysJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getFileInputArrays());
     if (patchedApp.getSubscriptions() != null) subscriptionsJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getSubscriptions());
     if (patchedApp.getJobTags() != null) jobTagsStrArray = patchedApp.getJobTags();
     if (patchedApp.getTags() != null) tagsStrArray = patchedApp.getTags();
@@ -464,6 +473,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, patchedApp.isArchiveOnAppError())
               .set(APPS_VERSIONS.PARAMETER_SET, parameterSetJson)
               .set(APPS_VERSIONS.FILE_INPUTS, fileInputsJson)
+              .set(APPS_VERSIONS.FILE_INPUT_ARRAYS, fileInputArraysJson)
               .set(APPS_VERSIONS.NODE_COUNT, patchedApp.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, patchedApp.getCoresPerNode())
               .set(APPS_VERSIONS.MEMORY_MB, patchedApp.getMemoryMb())
@@ -1530,6 +1540,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     ParameterSet parmSet = TapisGsonUtils.getGson().fromJson(parmSetJsonElement, ParameterSet.class);
     JsonElement fiJsonElement = r.get(APPS_VERSIONS.FILE_INPUTS);
     List<FileInput> fileInputs = Arrays.asList(TapisGsonUtils.getGson().fromJson(fiJsonElement, FileInput[].class));
+    JsonElement fiaJsonElement = r.get(APPS_VERSIONS.FILE_INPUT_ARRAYS);
+    List<FileInputArray> fileInputArrays = Arrays.asList(TapisGsonUtils.getGson().fromJson(fiaJsonElement, FileInputArray[].class));
     JsonElement subscriptionsJsonElement = r.get(APPS_VERSIONS.SUBSCRIPTIONS);
     List<NotificationSubscription> subscriptions =
             Arrays.asList(TapisGsonUtils.getGson().fromJson(subscriptionsJsonElement, NotificationSubscription[].class));
@@ -1544,7 +1556,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             r.get(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR), r.get(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR),
             r.get(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE), r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_ID),
             r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR), r.get(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR),
-            parmSet, fileInputs, r.get(APPS_VERSIONS.NODE_COUNT), r.get(APPS_VERSIONS.CORES_PER_NODE),
+            parmSet, fileInputs, fileInputArrays, r.get(APPS_VERSIONS.NODE_COUNT), r.get(APPS_VERSIONS.CORES_PER_NODE),
             r.get(APPS_VERSIONS.MEMORY_MB), r.get(APPS_VERSIONS.MAX_MINUTES), subscriptions,
             r.get(APPS_VERSIONS.JOB_TAGS), r.get(APPS_VERSIONS.TAGS), r.get(APPS_VERSIONS.NOTES),
             r.get(APPS_VERSIONS.UUID), r.get(APPS.DELETED), created, updated);
