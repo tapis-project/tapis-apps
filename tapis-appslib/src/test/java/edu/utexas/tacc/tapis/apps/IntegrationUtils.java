@@ -249,43 +249,43 @@ public final class IntegrationUtils
   public static final List<NotificationSubscription> notifListNull = null;
 
   // AppArgs, ContainerArgs, SchedulerOptions
-  public static final ArgSpec appArg1A = new ArgSpec("value1A", "appArg1A", "App arg 1A", inputModeRequired, metaKVPairs1);
-  public static final ArgSpec appArg1B = new ArgSpec("value1B", "appArg1B", "App arg 1B", inputModeOptional, metaKVPairs1);
+  public static final ArgSpec appArg1A = new ArgSpec("value1A", "appArg1A", "App arg 1A", inputModeRequired);
+  public static final ArgSpec appArg1B = new ArgSpec("value1B", "appArg1B", "App arg 1B", inputModeOptional);
   public static final List<ArgSpec> appArgList1 = new ArrayList<>(List.of(appArg1A, appArg1B));
-  public static final ArgSpec appArg2A = new ArgSpec("value2A", "appArg2A", "App arg 2A", inputModeRequired, metaKVPairs2);
-  public static final ArgSpec appArg2B = new ArgSpec("value2B", "appArg2B", "App arg 2B", inputModeOptional, metaKVPairs2);
+  public static final ArgSpec appArg2A = new ArgSpec("value2A", "appArg2A", "App arg 2A", inputModeRequired);
+  public static final ArgSpec appArg2B = new ArgSpec("value2B", "appArg2B", "App arg 2B", inputModeOptional);
   public static final List<ArgSpec> appArgList2 = new ArrayList<>(List.of(appArg2A, appArg2B));
-  public static final ArgSpec appArg3A = new ArgSpec("value3A", "appArg3A", "App arg 3A", inputModeRequired, metaKVPairs3);
-  public static final ArgSpec appArg3B = new ArgSpec("value3B", "appArg3B", "App arg 3B", inputModeOptional, metaKVPairs3);
+  public static final ArgSpec appArg3A = new ArgSpec("value3A", "appArg3A", "App arg 3A", inputModeRequired);
+  public static final ArgSpec appArg3B = new ArgSpec("value3B", "appArg3B", "App arg 3B", inputModeOptional);
   public static final List<ArgSpec> appArgList3 = new ArrayList<>(List.of(appArg3A, appArg3B));
   public static final List<ArgSpec> appArgListNull = null;
 
   public static final ArgSpec containerArg1A = new ArgSpec("value1A", "containerArg1A", "Container arg 1A",
-          inputModeRequired, metaKVPairs1);
+          inputModeRequired);
   public static final ArgSpec containerArg1B = new ArgSpec("value1B", "containerArg1B", "Container arg 1B",
-          inputModeOptional, metaKVPairs1);
+          inputModeOptional);
   public static final List<ArgSpec> containerArgList1 = new ArrayList<>(List.of(containerArg1A, containerArg1B));
   public static final ArgSpec containerArg2A = new ArgSpec("value2A", "containerArg2A", "Container arg 2A",
-          inputModeRequired, metaKVPairs2);
+          inputModeRequired);
   public static final ArgSpec containerArg2B = new ArgSpec("value2B", "containerArg2B", "Container arg 2B",
-          inputModeOptional, metaKVPairs2);
+          inputModeOptional);
   public static final List<ArgSpec> containerArgList2 = new ArrayList<>(List.of(containerArg2A, containerArg2B));
   public static final ArgSpec containerArg3A = new ArgSpec("value3A", "containerArg3A", "Container arg 3A",
-          inputModeRequired, metaKVPairs3);
+          inputModeRequired);
   public static final ArgSpec containerArg3B = new ArgSpec("value3B", "containerArg3B", "Container arg 3B",
-          inputModeOptional, metaKVPairs3);
+          inputModeOptional);
   public static final List<ArgSpec> containerArgList3 = new ArrayList<>(List.of(containerArg3A, containerArg3B));
   public static final List<ArgSpec> containerArgListNull = null;
 
   public static final ArgSpec schedulerOption1A = new ArgSpec("value1A", "schedulerOption1A", "Scheduler option 1A",
-          inputModeRequired, metaKVPairs1);
+          inputModeRequired);
   public static final ArgSpec schedulerOption1B = new ArgSpec("value1B", "schedulerOption1B", "Scheduler option 1B",
-          inputModeOptional, metaKVPairs1);
+          inputModeOptional);
   public static final List<ArgSpec> schedulerOptionList1 = new ArrayList<>(List.of(schedulerOption1A, schedulerOption1B));
   public static final ArgSpec schedulerOption2A = new ArgSpec("value2A", "schedulerOption2A", "Scheduler option 2A",
-          inputModeRequired, metaKVPairs2);
+          inputModeRequired);
   public static final ArgSpec schedulerOption2B = new ArgSpec("value2B", "schedulerOption2B", "Scheduler option 2B",
-          inputModeOptional, metaKVPairs2);
+          inputModeOptional);
   public static final List<ArgSpec> schedulerOptionList2 = new ArrayList<>(List.of(schedulerOption2A, schedulerOption2B));
   public static final List<ArgSpec> schedulerOptionListNull = null;
 
@@ -485,7 +485,6 @@ public final class IntegrationUtils
       Assert.assertEquals(fetchedArg.getArg(), origArg.getArg());
       Assert.assertEquals(fetchedArg.getDescription(), origArg.getDescription());
       Assert.assertEquals(fetchedArg.getInputMode(), origArg.getInputMode());
-      verifyKeyValuePairs(argType, fetchedArg.getMeta(), origArg.getMeta());
     }
   }
 

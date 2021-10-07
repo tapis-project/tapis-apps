@@ -31,19 +31,17 @@ public final class ArgSpec
   private final String name;
   private final String description;
   private final InputMode inputMode;
-  private final List<KeyValuePair> meta;
 
   /* ********************************************************************** */
   /*                           Constructors                                 */
   /* ********************************************************************** */
 
-  public ArgSpec(String value1, String name1, String description1, InputMode mode1, List<KeyValuePair> meta1)
+  public ArgSpec(String value1, String name1, String description1, InputMode mode1)
   {
     arg = value1;
     name = name1;
     description = description1;
     inputMode = mode1;
-    meta = meta1;
   }
 
   /* ********************************************************************** */
@@ -53,7 +51,6 @@ public final class ArgSpec
   public String getName() { return name; }
   public String getDescription() { return description; }
   public InputMode getInputMode() { return inputMode; }
-  public List<KeyValuePair> getMeta() { return meta; }
 
   @Override
   public String toString() {return TapisUtils.toString(this);}
