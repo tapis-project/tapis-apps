@@ -132,7 +132,8 @@ public final class App
   //   Without an initial entry the prefix SINGULARITY_ gets stripped off the other 2 entries.
   //   See also https://github.com/tapis-project/openapi-apps/blob/dev/AppsAPI.yaml
   public enum RuntimeOption {NONE, SINGULARITY_START, SINGULARITY_RUN}
-  public enum InputMode {OPTIONAL, REQUIRED, FIXED}
+  public enum FileInputMode {OPTIONAL, REQUIRED, FIXED}
+  public enum ArgInputMode {REQUIRED, FIXED, INCLUDE_ON_DEMAND, INCLUDE_BY_DEFAULT}
 
   // ************************************************************************
   // *********************** Fields *****************************************

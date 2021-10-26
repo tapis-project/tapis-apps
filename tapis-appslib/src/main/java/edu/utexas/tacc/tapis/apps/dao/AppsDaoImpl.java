@@ -1289,6 +1289,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
   /**
    * getAppIDs
+   * Fetch all resource IDs in a tenant
    * @param tenant - tenant name
    * @param showDeleted - whether or not to included resources that have been marked as deleted.
    * @return - List of app names

@@ -503,6 +503,31 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
+   * Hard delete all resources in the "test" tenant.
+   * Also remove artifacts from the Security Kernel.
+   * NOTE: This is package-private. Only test code should ever use it.
+   *
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @return Number of items deleted
+   * @throws TapisException - for Tapis related exceptions
+   * @throws NotAuthorizedException - unauthorized
+   */
+  int hardDeleteAllTestTenantResources(ResourceRequestUser rUser)
+          throws TapisException, TapisClientException, NotAuthorizedException
+  {
+    // For safety hard code the tenant name
+    String resourceTenantId = "test";
+    // Fetch all resource Ids including deleted items
+    if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+    var resourceIdSet = dao.getAppIDs(resourceTenantId, true);
+    for (String id : resourceIdSet)
+    {
+      hardDeleteApp(rUser, resourceTenantId, id);
+    }
+    return resourceIdSet.size();
+  }
+
+  /**
    * Initialize the service:
    *   init service context
    *   migrate DB
@@ -792,14 +817,14 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Get list of app IDs
+   * Get list of all app IDs that an rUser is authorized to view
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param showDeleted - whether or not to included resources that have been marked as deleted.
-   * @return - list of apps
+   * @return - set of application IDs
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
-  public Set<String> getAppIDs(ResourceRequestUser rUser, boolean showDeleted) throws TapisException
+  public Set<String> getAllowedAppIDs(ResourceRequestUser rUser, boolean showDeleted) throws TapisException
   {
     AppOperation op = AppOperation.read;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));

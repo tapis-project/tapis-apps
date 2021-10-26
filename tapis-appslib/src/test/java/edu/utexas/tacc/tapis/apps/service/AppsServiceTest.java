@@ -32,7 +32,6 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -491,7 +490,7 @@ public class AppsServiceTest
     svc.createApp(rUser1, app0, scrubbedJson);
     app0 = apps[3];
     svc.createApp(rUser1, app0, scrubbedJson);
-    Set<String> appIDs = svc.getAppIDs(rUser1, showDeletedFalse);
+    Set<String> appIDs = svc.getAllowedAppIDs(rUser1, showDeletedFalse);
     for (String name : appIDs)
     {
       System.out.println("Found item: " + name);

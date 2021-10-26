@@ -2,6 +2,12 @@ package edu.utexas.tacc.tapis.apps;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.App.AppType;
+import edu.utexas.tacc.tapis.apps.model.App.ArgInputMode;
+import edu.utexas.tacc.tapis.apps.model.App.FileInputMode;
+import edu.utexas.tacc.tapis.apps.model.App.Runtime;
+import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 import edu.utexas.tacc.tapis.apps.model.ArgSpec;
 import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
@@ -16,11 +22,6 @@ import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
-import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.App.AppType;
-import edu.utexas.tacc.tapis.apps.model.App.Runtime;
-import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
-import edu.utexas.tacc.tapis.apps.model.App.InputMode;
 import org.testng.Assert;
 
 import java.time.Instant;
@@ -60,9 +61,11 @@ public final class IntegrationUtils
   public static final Boolean strictFileInputsNull = null;
   public static final boolean autoMountLocalTrue = true;
   public static final boolean autoMountLocalFalse = false;
-  public static final InputMode inputModeRequired = InputMode.REQUIRED;
-  public static final InputMode inputModeOptional = InputMode.OPTIONAL;
-  public static final InputMode inputModeFixed = InputMode.FIXED;
+  public static final FileInputMode fileInputModeRequired = FileInputMode.REQUIRED;
+  public static final FileInputMode fileInputModeOptional = FileInputMode.OPTIONAL;
+  public static final FileInputMode fileInputModeFixed = FileInputMode.FIXED;
+  public static final ArgInputMode argInputModeRequired = ArgInputMode.REQUIRED;
+  public static final ArgInputMode argInputModeFixed = ArgInputMode.FIXED;
   public static final Runtime runtime1 = Runtime.DOCKER;
   public static final Runtime runtime2 = Runtime.SINGULARITY;
   public static final Runtime runtimeNull = null;
@@ -181,38 +184,38 @@ public final class IntegrationUtils
   public static final String scrubbedJson = "{}";
 
   // FileInputs
-  public static final FileInput fin1A = new FileInput("fin1A", "File input 1A", inputModeRequired, autoMountLocalTrue,
+  public static final FileInput fin1A = new FileInput("fin1A", "File input 1A", fileInputModeRequired, autoMountLocalTrue,
                                                       "/src1A", "/target1A");
-  public static final FileInput fin1B = new FileInput("fin1B", "File input 1B", inputModeOptional, autoMountLocalFalse,
+  public static final FileInput fin1B = new FileInput("fin1B", "File input 1B", fileInputModeOptional, autoMountLocalFalse,
                                                       "/src1B", "/target1B");
   public static final List<FileInput> finList1 = new ArrayList<>(List.of(fin1A, fin1B));
-  public static final FileInput fin2A = new FileInput("fin2A", "File input 2A", inputModeRequired, autoMountLocalTrue,
+  public static final FileInput fin2A = new FileInput("fin2A", "File input 2A", fileInputModeRequired, autoMountLocalTrue,
           "/src2A", "/target2A");
-  public static final FileInput fin2B = new FileInput("fin2B", "File input 2B", inputModeOptional, autoMountLocalFalse,
+  public static final FileInput fin2B = new FileInput("fin2B", "File input 2B", fileInputModeOptional, autoMountLocalFalse,
           "/src2B", "/targetBA");
   public static final List<FileInput> finList2 = new ArrayList<>(List.of(fin2A, fin2B));
-  public static final FileInput fin3A = new FileInput("fin3A", "File input 3A", inputModeOptional, autoMountLocalTrue,
+  public static final FileInput fin3A = new FileInput("fin3A", "File input 3A", fileInputModeOptional, autoMountLocalTrue,
           "/src3A", "/target3A");
-  public static final FileInput fin3B = new FileInput("fin3B", "File input 3B", inputModeFixed, autoMountLocalFalse,
+  public static final FileInput fin3B = new FileInput("fin3B", "File input 3B", fileInputModeFixed, autoMountLocalFalse,
           "/src3B", "/target3B");
   public static final List<FileInput> finList3 = new ArrayList<>(List.of(fin3A, fin3B));
   public static final List<FileInput> finListNull = null;
 
   // FileInputArrays
-  public static final FileInputArray fia1A = new FileInputArray("fia1A", "File input array 1A", inputModeRequired,
+  public static final FileInputArray fia1A = new FileInputArray("fia1A", "File input array 1A", fileInputModeRequired,
           List.of("/src1Aa","/src1Ab"), "/targetDir1A");
-  public static final FileInputArray fia1B = new FileInputArray("fia1B", "File input array 1B", inputModeOptional,
+  public static final FileInputArray fia1B = new FileInputArray("fia1B", "File input array 1B", fileInputModeOptional,
           List.of("/src1Ba","/src1Bb"), "/targetDir1B");
   public static final List<FileInputArray> fiaList1 = new ArrayList<>(List.of(fia1A, fia1B));
-  public static final FileInputArray fia2A = new FileInputArray("fia2A", "File input array 2A", inputModeRequired,
+  public static final FileInputArray fia2A = new FileInputArray("fia2A", "File input array 2A", fileInputModeRequired,
           List.of("/src2Aa","/src2Ab"), "/targetDir2A");
-  public static final FileInputArray fia2B = new FileInputArray("fia2B", "File input array 2B", inputModeOptional,
+  public static final FileInputArray fia2B = new FileInputArray("fia2B", "File input array 2B", fileInputModeOptional,
           List.of("/src2Ba","/src2Bb"), "/targetDir2B");
   public static final List<FileInputArray> fiaList2 = new ArrayList<>(List.of(fia2A, fia2B));
 
-  public static final FileInputArray fia3A = new FileInputArray("fia3A", "File input array 3A", inputModeRequired,
+  public static final FileInputArray fia3A = new FileInputArray("fia3A", "File input array 3A", fileInputModeRequired,
           List.of("/src3Aa","/src3Ab"), "/targetDir3A");
-  public static final FileInputArray fia3B = new FileInputArray("fia3B", "File input array 3B", inputModeOptional,
+  public static final FileInputArray fia3B = new FileInputArray("fia3B", "File input array 3B", fileInputModeOptional,
           List.of("/src3Ba","/src3Bb"), "/targetDir3B");
   public static final List<FileInputArray> fiaList3 = new ArrayList<>(List.of(fia3A, fia3B));
 
@@ -249,43 +252,43 @@ public final class IntegrationUtils
   public static final List<NotificationSubscription> notifListNull = null;
 
   // AppArgs, ContainerArgs, SchedulerOptions
-  public static final ArgSpec appArg1A = new ArgSpec("value1A", "appArg1A", "App arg 1A", inputModeRequired);
-  public static final ArgSpec appArg1B = new ArgSpec("value1B", "appArg1B", "App arg 1B", inputModeOptional);
+  public static final ArgSpec appArg1A = new ArgSpec("value1A", "appArg1A", "App arg 1A", argInputModeRequired);
+  public static final ArgSpec appArg1B = new ArgSpec("value1B", "appArg1B", "App arg 1B", argInputModeRequired);
   public static final List<ArgSpec> appArgList1 = new ArrayList<>(List.of(appArg1A, appArg1B));
-  public static final ArgSpec appArg2A = new ArgSpec("value2A", "appArg2A", "App arg 2A", inputModeRequired);
-  public static final ArgSpec appArg2B = new ArgSpec("value2B", "appArg2B", "App arg 2B", inputModeOptional);
+  public static final ArgSpec appArg2A = new ArgSpec("value2A", "appArg2A", "App arg 2A", argInputModeRequired);
+  public static final ArgSpec appArg2B = new ArgSpec("value2B", "appArg2B", "App arg 2B", argInputModeFixed);
   public static final List<ArgSpec> appArgList2 = new ArrayList<>(List.of(appArg2A, appArg2B));
-  public static final ArgSpec appArg3A = new ArgSpec("value3A", "appArg3A", "App arg 3A", inputModeRequired);
-  public static final ArgSpec appArg3B = new ArgSpec("value3B", "appArg3B", "App arg 3B", inputModeOptional);
+  public static final ArgSpec appArg3A = new ArgSpec("value3A", "appArg3A", "App arg 3A", argInputModeRequired);
+  public static final ArgSpec appArg3B = new ArgSpec("value3B", "appArg3B", "App arg 3B", argInputModeFixed);
   public static final List<ArgSpec> appArgList3 = new ArrayList<>(List.of(appArg3A, appArg3B));
   public static final List<ArgSpec> appArgListNull = null;
 
   public static final ArgSpec containerArg1A = new ArgSpec("value1A", "containerArg1A", "Container arg 1A",
-          inputModeRequired);
+          argInputModeRequired);
   public static final ArgSpec containerArg1B = new ArgSpec("value1B", "containerArg1B", "Container arg 1B",
-          inputModeOptional);
+          argInputModeFixed);
   public static final List<ArgSpec> containerArgList1 = new ArrayList<>(List.of(containerArg1A, containerArg1B));
   public static final ArgSpec containerArg2A = new ArgSpec("value2A", "containerArg2A", "Container arg 2A",
-          inputModeRequired);
+          argInputModeRequired);
   public static final ArgSpec containerArg2B = new ArgSpec("value2B", "containerArg2B", "Container arg 2B",
-          inputModeOptional);
+          argInputModeFixed);
   public static final List<ArgSpec> containerArgList2 = new ArrayList<>(List.of(containerArg2A, containerArg2B));
   public static final ArgSpec containerArg3A = new ArgSpec("value3A", "containerArg3A", "Container arg 3A",
-          inputModeRequired);
+          argInputModeRequired);
   public static final ArgSpec containerArg3B = new ArgSpec("value3B", "containerArg3B", "Container arg 3B",
-          inputModeOptional);
+          argInputModeFixed);
   public static final List<ArgSpec> containerArgList3 = new ArrayList<>(List.of(containerArg3A, containerArg3B));
   public static final List<ArgSpec> containerArgListNull = null;
 
   public static final ArgSpec schedulerOption1A = new ArgSpec("value1A", "schedulerOption1A", "Scheduler option 1A",
-          inputModeRequired);
+          argInputModeRequired);
   public static final ArgSpec schedulerOption1B = new ArgSpec("value1B", "schedulerOption1B", "Scheduler option 1B",
-          inputModeOptional);
+          argInputModeFixed);
   public static final List<ArgSpec> schedulerOptionList1 = new ArrayList<>(List.of(schedulerOption1A, schedulerOption1B));
   public static final ArgSpec schedulerOption2A = new ArgSpec("value2A", "schedulerOption2A", "Scheduler option 2A",
-          inputModeRequired);
+          argInputModeRequired);
   public static final ArgSpec schedulerOption2B = new ArgSpec("value2B", "schedulerOption2B", "Scheduler option 2B",
-          inputModeOptional);
+          argInputModeFixed);
   public static final List<ArgSpec> schedulerOptionList2 = new ArrayList<>(List.of(schedulerOption2A, schedulerOption2B));
   public static final List<ArgSpec> schedulerOptionListNull = null;
 

@@ -68,7 +68,7 @@ public interface AppsService
                                      List<OrderBy> orderByList, int skip, String startAfter, boolean showDeleted)
           throws TapisException, TapisClientException;
 
-  Set<String> getAppIDs(ResourceRequestUser rUser, boolean showDeleted)
+  Set<String> getAllowedAppIDs(ResourceRequestUser rUser, boolean showDeleted)
           throws TapisException;
 
   String getAppOwner(ResourceRequestUser rUser, String appId)
