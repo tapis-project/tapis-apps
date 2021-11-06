@@ -64,8 +64,11 @@ public final class IntegrationUtils
   public static final FileInputMode fileInputModeRequired = FileInputMode.REQUIRED;
   public static final FileInputMode fileInputModeOptional = FileInputMode.OPTIONAL;
   public static final FileInputMode fileInputModeFixed = FileInputMode.FIXED;
+  public static final FileInputMode fileInputModeDefault = FileInputMode.OPTIONAL;
   public static final ArgInputMode argInputModeRequired = ArgInputMode.REQUIRED;
   public static final ArgInputMode argInputModeFixed = ArgInputMode.FIXED;
+  public static final ArgInputMode argInputModeDefault = ArgInputMode.INCLUDE_ON_DEMAND;
+
   public static final Runtime runtime1 = Runtime.DOCKER;
   public static final Runtime runtime2 = Runtime.SINGULARITY;
   public static final Runtime runtimeNull = null;
