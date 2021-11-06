@@ -131,9 +131,9 @@ public final class IntegrationUtils
   public static final int coresPerNode1 = 10; // from tapisv3-exec3 dsnormal LogicalQueue minCoresPerNode
   public static final int coresPerNode2 = 20; // from tapisv3-exec3 dsnormal LogicalQueue maxCoresPerNode
   public static final Integer coresPerNodeNull = null;
-  public static final int memoryMb1 = 32; // from tapisv3-exec3 dsnormal LogicalQueue minMemoryMB
-  public static final int memoryMb2 = 64; // from tapisv3-exec3 dsnormal LogicalQueue maxMemoryMB
-  public static final Integer memoryMbNull = null;
+  public static final int memoryMB1 = 32; // from tapisv3-exec3 dsnormal LogicalQueue minMemoryMB
+  public static final int memoryMB2 = 64; // from tapisv3-exec3 dsnormal LogicalQueue maxMemoryMB
+  public static final Integer memoryMBNull = null;
   public static final int maxMinutes1 = 10; // from tapisv3-exec3 dsnormal LogicalQueue minMinutes
   public static final int maxMinutes2 = 20; // from tapisv3-exec3 dsnormal LogicalQueue maxMinutes
   public static final Integer maxMinutesNull = null;
@@ -353,7 +353,7 @@ public final class IntegrationUtils
                  jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
                  execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
                  execSystemLogicalQueue1, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
-                 parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, notifList1, jobTags1,
+                 parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMB1, maxMinutes1, notifList1, jobTags1,
                  tags1, notes1, uuidNull, deletedFalse, createdNull, updatedNull);
     }
     return apps;
@@ -373,7 +373,7 @@ public final class IntegrationUtils
             strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
             execSystemId1, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
-            parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, notifList1, jobTagsNull,
+            parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMB1, maxMinutes1, notifList1, jobTagsNull,
             tagsNull, notesNull, uuidNull, deletedFalse, createdNull, updatedNull);
   }
 
@@ -389,7 +389,7 @@ public final class IntegrationUtils
             jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
             execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
             archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse,
-            parameterSet2, finList2, fiaList2, nodeCount2, coresPerNode2, memoryMb2, maxMinutes2, notifList2, jobTags2,
+            parameterSet2, finList2, fiaList2, nodeCount2, coresPerNode2, memoryMB2, maxMinutes2, notifList2, jobTags2,
             tags2, notes2, uuidNull, deletedFalse, createdNull, updatedNull);
     return putApp;
   }
@@ -403,7 +403,7 @@ public final class IntegrationUtils
     JobAttributes jobAttributes = new JobAttributes(jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
             execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
             archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse, parameterSet2, finList2, fiaList2, nodeCount2,
-            coresPerNode2, memoryMb2, maxMinutes2, notifList2, jobTags2);
+            coresPerNode2, memoryMB2, maxMinutes2, notifList2, jobTags2);
 
     return new PatchApp(description2, runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
              maxJobs2, maxJobsPerUser2, strictFileInputsTrue, jobAttributes, tags2, notes2);
@@ -418,7 +418,7 @@ public final class IntegrationUtils
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSetNull, finListNull, fiaListNull, nodeCountNull,
-            coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull);
+            coresPerNodeNull, memoryMBNull, maxMinutesNull, notifListNull, jobTagsNull);
 
     return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull, jobAttributes, tagsNull, notesNull);
@@ -436,7 +436,7 @@ public final class IntegrationUtils
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSet, finList3, fiaList3, nodeCountNull,
-            coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull);
+            coresPerNodeNull, memoryMBNull, maxMinutesNull, notifListNull, jobTagsNull);
     return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull, jobAttributes, tagsNull, notesNull);
   }
@@ -452,7 +452,7 @@ public final class IntegrationUtils
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSet, finListNull, fiaListNull, nodeCountNull,
-            coresPerNodeNull, memoryMbNull, maxMinutesNull, notifListNull, jobTagsNull);
+            coresPerNodeNull, memoryMBNull, maxMinutesNull, notifListNull, jobTagsNull);
     return new PatchApp(descriptionNull, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImageNull,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull, jobAttributes, tagsNull, notesNull);
   }

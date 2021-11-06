@@ -1688,7 +1688,7 @@ public class AppsServiceImpl implements AppsService
       if (jobAttrs.getFileInputArrays() != null) app1.setFileInputArrays(jobAttrs.getFileInputArrays());
       if (jobAttrs.getNodeCount() != null) app1.setNodeCount(jobAttrs.getNodeCount());
       if (jobAttrs.getCoresPerNode() != null) app1.setCoresPerNode(jobAttrs.getCoresPerNode());
-      if (jobAttrs.getMemoryMb() != null) app1.setMemoryMb(jobAttrs.getMemoryMb());
+      if (jobAttrs.getMemoryMB() != null) app1.setMemoryMB(jobAttrs.getMemoryMB());
       if (jobAttrs.getMaxMinutes() != null) app1.setMaxMinutes(jobAttrs.getMaxMinutes());
       if (jobAttrs.getSubscriptions() != null) app1.setSubscriptions(jobAttrs.getSubscriptions());
       if (jobAttrs.getTags() != null) app1.setJobTags(jobAttrs.getTags());
@@ -1795,7 +1795,7 @@ public class AppsServiceImpl implements AppsService
     Integer minMinutes = execQ.getMinMinutes();
     int appNodeCount = app.getNodeCount();
     int appCoresPerNode = app.getCoresPerNode();
-    int appMemoryMb = app.getMemoryMb();
+    int appMemoryMb = app.getMemoryMB();
     int appMaxMinutes = app.getMaxMinutes();
 
     // If queue defines limit and app specifies limit and app limit out of range then add error

@@ -263,7 +263,7 @@ public class AppsServiceTest
     app0.setFileInputArrays(fiaList2);
     app0.setNodeCount(nodeCount2);
     app0.setCoresPerNode(coresPerNode2);
-    app0.setMemoryMb(memoryMb2);
+    app0.setMemoryMB(memoryMB2);
     app0.setMaxMinutes(maxMinutes2);
     app0.setSubscriptions(notifList2);
     app0.setJobTags(jobTags2);
@@ -329,7 +329,7 @@ public class AppsServiceTest
     app0.setFileInputArrays(fiaList2);
     app0.setNodeCount(nodeCount2);
     app0.setCoresPerNode(coresPerNode2);
-    app0.setMemoryMb(memoryMb2);
+    app0.setMemoryMB(memoryMB2);
     app0.setMaxMinutes(maxMinutes2);
     app0.setSubscriptions(notifList2);
     app0.setJobTags(jobTags2);
@@ -717,7 +717,7 @@ public class AppsServiceTest
     String tmpExecSystemLogicalQueue = app0.getExecSystemLogicalQueue();
     int tmpNodeCount =  app0.getNodeCount();
     int tmpCoresPerNode =  app0.getCoresPerNode();
-    int tmpMemoryMB =  app0.getMemoryMb();
+    int tmpMemoryMB =  app0.getMemoryMB();
     int tmpMaxMinutes =  app0.getMaxMinutes();
     // Update logical queue
     app0.setExecSystemLogicalQueue(execSystemLogicalQueue1); // queue defined on execSystemId (id: tapisv3-exec3, queue dsnormal)
@@ -744,7 +744,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
 
-    app0.setMemoryMb(memoryMb2 + 1);
+    app0.setMemoryMB(memoryMB2 + 1);
     pass = false;
     try { svc.createApp(rUser1, app0, scrubbedJson); }
     catch (Exception e)
@@ -772,7 +772,7 @@ public class AppsServiceTest
     // Reset in prep for continued checking
     app0.setNodeCount(tmpNodeCount);
     app0.setCoresPerNode(tmpCoresPerNode);
-    app0.setMemoryMb(tmpMemoryMB);
+    app0.setMemoryMB(tmpMemoryMB);
     app0.setMaxMinutes(tmpMaxMinutes);
 
     // Check Min limits: nodeCount, coresPerNode, memoryMB, maxMinutes
@@ -797,7 +797,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
 
-    app0.setMemoryMb(memoryMb1 - 1);
+    app0.setMemoryMB(memoryMB1 - 1);
     pass = false;
     try { svc.createApp(rUser1, app0, scrubbedJson); }
     catch (Exception e)
@@ -825,7 +825,7 @@ public class AppsServiceTest
     // Reset in prep for continued checking
     app0.setNodeCount(tmpNodeCount);
     app0.setCoresPerNode(tmpCoresPerNode);
-    app0.setMemoryMb(tmpMemoryMB);
+    app0.setMemoryMB(tmpMemoryMB);
     app0.setMaxMinutes(tmpMaxMinutes);
 
     // Reset in prep for continued checking
@@ -833,7 +833,7 @@ public class AppsServiceTest
     // Reset app attribute values
     app0.setNodeCount(tmpNodeCount);
     app0.setCoresPerNode(tmpCoresPerNode);
-    app0.setMemoryMb(tmpMemoryMB);
+    app0.setMemoryMB(tmpMemoryMB);
     app0.setMaxMinutes(tmpMaxMinutes);
     app0.setExecSystemLogicalQueue(tmpExecSystemLogicalQueue);
   }
@@ -1298,7 +1298,7 @@ public class AppsServiceTest
 
     Assert.assertEquals(tmpApp.getNodeCount(), app0.getNodeCount());
     Assert.assertEquals(tmpApp.getCoresPerNode(), app0.getCoresPerNode());
-    Assert.assertEquals(tmpApp.getMemoryMb(), app0.getMemoryMb());
+    Assert.assertEquals(tmpApp.getMemoryMB(), app0.getMemoryMB());
     Assert.assertEquals(tmpApp.getMaxMinutes(), app0.getMaxMinutes());
 
     // Verify notification subscriptions

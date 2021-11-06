@@ -28,7 +28,7 @@ public final class JobAttributes
   private final List<FileInputArray> fileInputArrays;
   private final Integer nodeCount;
   private final Integer coresPerNode;
-  private final Integer memoryMb;
+  private final Integer memoryMB;
   private final Integer maxMinutes;
   private final List<NotificationSubscription> subscriptions;
   private final String[] tags;
@@ -44,7 +44,7 @@ public final class JobAttributes
                        String execSystemId1, String execSystemExecDir1, String execSystemInputDir1, String execSystemOutputDir1,
                        String execSystemLogicalQueue1, String archiveSystemId1, String archiveSystemDir1,
                        Boolean archiveOnAppError1, ParameterSet parameterSet1, List<FileInput> fileInputs1,
-                       List<FileInputArray> fileInputArrays1, Integer nodeCount1, Integer coresPerNode1, Integer memoryMb1,
+                       List<FileInputArray> fileInputArrays1, Integer nodeCount1, Integer coresPerNode1, Integer memoryMB1,
                        Integer maxMinutes1, List<NotificationSubscription> subscriptions1, String[] tags1)
   {
     description = description1;
@@ -63,7 +63,7 @@ public final class JobAttributes
     fileInputArrays = (fileInputArrays1 == null) ? null: new ArrayList<>(fileInputArrays1);
     nodeCount = nodeCount1;
     coresPerNode = coresPerNode1;
-    memoryMb = memoryMb1;
+    memoryMB = memoryMB1;
     maxMinutes = maxMinutes1;
     subscriptions = subscriptions1;
     tags = (tags1 == null) ? null : tags1.clone();
@@ -88,7 +88,7 @@ public final class JobAttributes
   public List<FileInputArray> getFileInputArrays() { return fileInputArrays; }
   public Integer getNodeCount() { return nodeCount; }
   public Integer getCoresPerNode() { return coresPerNode; }
-  public Integer getMemoryMb() { return memoryMb; }
+  public Integer getMemoryMB() { return memoryMB; }
   public Integer getMaxMinutes() { return maxMinutes; }
   public List<NotificationSubscription> getSubscriptions() { return subscriptions; }
   public String[] getTags() {

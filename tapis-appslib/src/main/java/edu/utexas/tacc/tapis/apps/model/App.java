@@ -179,7 +179,7 @@ public final class App
   private List<FileInputArray> fileInputArrays;
   private int nodeCount = DEFAULT_NODE_COUNT;
   private int coresPerNode = DEFAULT_CORES_PER_NODE;
-  private int memoryMb = DEFAULT_MEMORY_MB;
+  private int memoryMB = DEFAULT_MEMORY_MB;
   private int maxMinutes = DEFAULT_MAX_MINUTES;
   private List<NotificationSubscription> subscriptions;
   private String[] jobTags;
@@ -266,7 +266,7 @@ public final class App
     fileInputArrays = a.getFileInputArrays();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
-    memoryMb = a.getMemoryMb();
+    memoryMB = a.getMemoryMB();
     maxMinutes = a.getMaxMinutes();
     subscriptions = a.getSubscriptions();
     jobTags = a.getJobTags();
@@ -290,7 +290,7 @@ public final class App
              String execSystemInputDir1, String execSystemOutputDir1, String execSystemLogicalQueue1,
              String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1,
              ParameterSet parameterSet1, List<FileInput> fileInputs1, List<FileInputArray> fileInputArrays1,
-             int nodeCount1, int coresPerNode1, int memoryMb1, int maxMinutes1,
+             int nodeCount1, int coresPerNode1, int memoryMB1, int maxMinutes1,
              List<NotificationSubscription> subscriptions1, String[] jobTags1,
              // == End jobAttributes
              String[] tags1, Object notes1, UUID uuid1, boolean deleted1, Instant created1, Instant updated1)
@@ -328,7 +328,7 @@ public final class App
     fileInputArrays = (fileInputArrays1 == null) ? null : new ArrayList<>(fileInputArrays1);
     nodeCount = nodeCount1;
     coresPerNode = coresPerNode1;
-    memoryMb = memoryMb1;
+    memoryMB = memoryMB1;
     maxMinutes = maxMinutes1;
     subscriptions = subscriptions1;
     jobTags = (jobTags1 == null) ? null : jobTags1.clone();
@@ -380,7 +380,7 @@ public final class App
     fileInputArrays = a.getFileInputArrays();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
-    memoryMb = a.getMemoryMb();
+    memoryMB = a.getMemoryMB();
     maxMinutes = a.getMaxMinutes();
     subscriptions = a.getSubscriptions();
     jobTags = a.getJobTags();
@@ -720,11 +720,11 @@ public final class App
   }
   public void setCoresPerNode(int i) { coresPerNode = i;  }
 
-  public int getMemoryMb()
+  public int getMemoryMB()
   {
-    return memoryMb;
+    return memoryMB;
   }
-  public void setMemoryMb(int i) { memoryMb = i;  }
+  public void setMemoryMB(int i) { memoryMB = i;  }
 
   public int getMaxMinutes() { return maxMinutes; }
   public void setMaxMinutes(int i) { maxMinutes = i;  }

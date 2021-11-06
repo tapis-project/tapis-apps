@@ -65,7 +65,7 @@ public final class JobAttributes
     fileInputArrays = a.getFileInputArrays();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
-    memoryMB = a.getMemoryMb();
+    memoryMB = a.getMemoryMB();
     maxMinutes = a.getMaxMinutes();
     subscriptions = a.getSubscriptions();
     tags = a.getJobTags();
