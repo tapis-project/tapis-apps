@@ -1,5 +1,7 @@
 package edu.utexas.tacc.tapis.apps.utils;
 
+import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
@@ -11,8 +13,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /*
    Utility class containing general use static methods.
@@ -194,5 +200,25 @@ public class LibUtils
       String msg = MsgUtils.getMsg("DB_FAILED_CONNECTION_CLOSE");
       _log.error(msg, e);
     }
+  }
+
+  /**
+   * Return String[] array of key=value given list of KeyValuePair
+   */
+  public static String[] getKeyValuesAsArray(List<KeyValuePair> kvList)
+  {
+    if (kvList == null) return null;
+    if (kvList.size() == 0) return App.EMPTY_STR_ARRAY;
+    return kvList.stream().map(KeyValuePair::toString).toArray(String[]::new);
+  }
+
+  /**
+   * Return list of KeyValuePair given String[] array of key=value
+   */
+  public static List<KeyValuePair> getKeyValuesAsList(String[] kvArray)
+  {
+    if (kvArray == null || kvArray.length == 0) return Collections.emptyList();
+    List<KeyValuePair> kvList = Arrays.stream(kvArray).map(KeyValuePair::fromString).collect(Collectors.toList());
+    return kvList;
   }
 }

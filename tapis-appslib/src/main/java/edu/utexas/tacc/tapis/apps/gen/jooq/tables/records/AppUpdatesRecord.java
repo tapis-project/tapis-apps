@@ -25,7 +25,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppUpdatesRecord extends UpdatableRecordImpl<AppUpdatesRecord> implements Record13<Integer, Integer, Integer, String, String, String, String, String, AppOperation, JsonElement, String, UUID, LocalDateTime> {
 
-    private static final long serialVersionUID = -1962751700;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Setter for <code>tapis_app.app_updates.seq_id</code>. Application update request id
@@ -540,18 +540,18 @@ public class AppUpdatesRecord extends UpdatableRecordImpl<AppUpdatesRecord> impl
     public AppUpdatesRecord(Integer seqId, Integer appSeqId, Integer appVerSeqId, String appTenant, String appId, String appVersion, String userTenant, String userName, AppOperation operation, JsonElement updJson, String updText, UUID uuid, LocalDateTime created) {
         super(AppUpdates.APP_UPDATES);
 
-        set(0, seqId);
-        set(1, appSeqId);
-        set(2, appVerSeqId);
-        set(3, appTenant);
-        set(4, appId);
-        set(5, appVersion);
-        set(6, userTenant);
-        set(7, userName);
-        set(8, operation);
-        set(9, updJson);
-        set(10, updText);
-        set(11, uuid);
-        set(12, created);
+        setSeqId(seqId);
+        setAppSeqId(appSeqId);
+        setAppVerSeqId(appVerSeqId);
+        setAppTenant(appTenant);
+        setAppId(appId);
+        setAppVersion(appVersion);
+        setUserTenant(userTenant);
+        setUserName(userName);
+        setOperation(operation);
+        setUpdJson(updJson);
+        setUpdText(updText);
+        setUuid(uuid);
+        setCreated(created);
     }
 }

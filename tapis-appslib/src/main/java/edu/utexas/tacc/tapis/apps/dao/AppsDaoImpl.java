@@ -30,13 +30,12 @@ import org.slf4j.LoggerFactory;
 
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
+import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
-import edu.utexas.tacc.tapis.apps.model.AppArg;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
-import edu.utexas.tacc.tapis.apps.model.NotifMechanism;
-import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
+import edu.utexas.tacc.tapis.apps.model.FileInputArray;
+import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.search.parser.ASTBinaryExpression;
 import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
@@ -74,7 +73,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   private static final Logger _log = LoggerFactory.getLogger(AppsDaoImpl.class);
 
   private static final String VERS_ANY = "%";
-  private static final String EMPTY_JSON = "{}";
+  private static final String EMPTY_JSON_OBJ = "{}";
+  private static final String EMPTY_JSON_ARRAY = "[]";
   private static final String[] EMPTY_STR_ARRAY = {};
 
   // Create a static Set of column names for tables APPS and APPS_VERSIONS
@@ -116,6 +116,41 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (StringUtils.isBlank(app.getId())) LibUtils.logAndThrowNullParmException(opName, "appId");
     if (StringUtils.isBlank(app.getVersion())) LibUtils.logAndThrowNullParmException(opName, "appVersion");
 
+    // Make sure owner, runtime, notes, tags etc are set
+    String owner = App.DEFAULT_OWNER;
+    Runtime runtime = App.DEFAULT_RUNTIME;
+    String[] runtimeOptionsStrArray = null;
+    String[] execSystemConstraintsStrArray = null;
+    JsonElement parameterSetJson = App.DEFAULT_PARAMETER_SET;
+    JsonElement fileInputsJson = App.DEFAULT_FILE_INPUTS;
+    JsonElement fileInputArraysJson = App.DEFAULT_FILE_INPUT_ARRAYS;
+    JsonElement subscriptionsJson = App.DEFAULT_SUBSCRIPTIONS;
+    String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
+    String[] tagsStrArray = App.EMPTY_STR_ARRAY;
+    JsonObject notesObj = App.DEFAULT_NOTES;
+
+    if (StringUtils.isNotBlank(app.getOwner())) owner = app.getOwner();
+    if (app.getRuntime() != null) runtime = app.getRuntime();
+    // Convert runtimeOptions array from enum to string
+    if (app.getRuntimeOptions() != null)
+    {
+      runtimeOptionsStrArray = app.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
+    }
+    if (app.getExecSystemConstraints() != null) execSystemConstraintsStrArray = app.getExecSystemConstraints();
+    if (app.getParameterSet() != null) parameterSetJson = TapisGsonUtils.getGson().toJsonTree(app.getParameterSet());
+    if (app.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(app.getFileInputs());
+    if (app.getFileInputArrays() != null) fileInputArraysJson = TapisGsonUtils.getGson().toJsonTree(app.getFileInputArrays());
+    if (app.getSubscriptions() != null) subscriptionsJson = TapisGsonUtils.getGson().toJsonTree(app.getSubscriptions());
+    if (app.getJobTags() != null) jobTagsStrArray = app.getJobTags();
+    if (app.getTags() != null) tagsStrArray = app.getTags();
+    if (app.getNotes() != null) notesObj = (JsonObject) app.getNotes();
+
+    // Generated sequence IDs
+    int appSeqId = -1;
+    int appVerSeqId = -1;
+    // Generate uuid for the new app version
+    app.setUuid(UUID.randomUUID());
+
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
     try
@@ -132,37 +167,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (checkIfAppExists(db, app.getTenant(), app.getId(), app.getVersion(), false))
         throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_EXISTS", rUser, app.getId(),
                                                             app.getVersion()));
-      // Make sure owner, runtime, notes, tags etc are set
-      String owner = App.DEFAULT_OWNER;
-      Runtime runtime = App.DEFAULT_RUNTIME;
-      String[] runtimeOptionsStrArray = null;
-      String[] execSystemConstraintsStrArray = null;
-      String[] envVariablesStrArray = null;
-      String[] archiveIncludesStrArray = null;
-      String[] archiveExcludesStrArray = null;
-      String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
-      String[] tagsStrArray = App.EMPTY_STR_ARRAY;
-      JsonObject notesObj = App.DEFAULT_NOTES;
-      if (StringUtils.isNotBlank(app.getOwner())) owner = app.getOwner();
-      if (app.getRuntime() != null) runtime = app.getRuntime();
-      // Convert runtimeOptions array from enum to string
-      if (app.getRuntimeOptions() != null)
-      {
-        runtimeOptionsStrArray = app.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
-      }
-      if (app.getExecSystemConstraints() != null) execSystemConstraintsStrArray = app.getExecSystemConstraints();
-      if (app.getEnvVariables() != null) envVariablesStrArray = app.getEnvVariables();
-      if (app.getArchiveIncludes() != null) archiveIncludesStrArray = app.getArchiveIncludes();
-      if (app.getArchiveExcludes() != null) archiveExcludesStrArray = app.getArchiveExcludes();
-      if (app.getJobTags() != null) jobTagsStrArray = app.getJobTags();
-      if (app.getTags() != null) tagsStrArray = app.getTags();
-      if (app.getNotes() != null) notesObj = (JsonObject) app.getNotes();
-
-      // Generated sequence IDs
-      int appSeqId = -1;
-      int appVerSeqId = -1;
-      // Generate uuid for the new app version
-      app.setUuid(UUID.randomUUID());
       // If no top level app entry this is the first version. Create the initial top level record
       if (!checkIfAppExists(db, app.getTenant(), app.getId(), null, false))
       {
@@ -187,6 +191,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Insert new record into APPS_VERSIONS
       Record record = db.insertInto(APPS_VERSIONS)
               .set(APPS_VERSIONS.APP_SEQ_ID, appSeqId)
+              .set(APPS_VERSIONS.TENANT, app.getTenant())
+              .set(APPS_VERSIONS.ID, app.getId())
               .set(APPS_VERSIONS.VERSION, app.getVersion())
               .set(APPS_VERSIONS.DESCRIPTION, app.getDescription())
               .set(APPS_VERSIONS.RUNTIME, runtime)
@@ -206,14 +212,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, app.getArchiveSystemId())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, app.getArchiveSystemDir())
               .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, app.isArchiveOnAppError())
-              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, app.getArchiveIncludeLaunchFiles())
+              .set(APPS_VERSIONS.PARAMETER_SET, parameterSetJson)
+              .set(APPS_VERSIONS.FILE_INPUTS, fileInputsJson)
+              .set(APPS_VERSIONS.FILE_INPUT_ARRAYS, fileInputArraysJson)
               .set(APPS_VERSIONS.NODE_COUNT, app.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, app.getCoresPerNode())
-              .set(APPS_VERSIONS.MEMORY_MB, app.getMemoryMb())
+              .set(APPS_VERSIONS.MEMORY_MB, app.getMemoryMB())
               .set(APPS_VERSIONS.MAX_MINUTES, app.getMaxMinutes())
+              .set(APPS_VERSIONS.SUBSCRIPTIONS, subscriptionsJson)
               .set(APPS_VERSIONS.JOB_TAGS, jobTagsStrArray)
               .set(APPS_VERSIONS.TAGS, tagsStrArray)
               .set(APPS_VERSIONS.NOTES, notesObj)
@@ -228,13 +234,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       }
 
       appVerSeqId = record.getValue(APPS_VERSIONS.SEQ_ID);
-
-      // Persist data to aux tables
-      persistFileInputs(db, app, appVerSeqId);
-      persistAppArgs(db, app, appVerSeqId);
-      persistContainerArgs(db, app, appVerSeqId);
-      persistSchedulerOptions(db, app, appVerSeqId);
-      persistNotificationSubscriptions(db, app, appVerSeqId);
 
       // Update top level table APPS
       db.update(APPS).set(APPS.LATEST_VERSION, app.getVersion()).where(APPS.ID.eq(app.getId())).execute();
@@ -285,12 +284,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // Make sure runtime, notes, tags, etc are all set
     Runtime runtime = App.DEFAULT_RUNTIME;
     String[] execSystemConstraintsStrArray = null;
-    String[] envVariablesStrArray = null;
-    String[] archiveIncludesStrArray = null;
-    String[] archiveExcludesStrArray = null;
+    JsonElement parameterSetJson = App.DEFAULT_PARAMETER_SET;
+    JsonElement fileInputsJson = App.DEFAULT_FILE_INPUTS;
+    JsonElement fileInputArraysJson = App.DEFAULT_FILE_INPUT_ARRAYS;
+    JsonElement subscriptionsJson = App.DEFAULT_SUBSCRIPTIONS;
     String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
     String[] tagsStrArray = App.EMPTY_STR_ARRAY;
     JsonObject notesObj =  App.DEFAULT_NOTES;
+
     if (putApp.getRuntime() != null) runtime = putApp.getRuntime();
     String[] runtimeOptionsStrArray = null;
     // Convert runtimeOptions array from enum to string
@@ -299,9 +300,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       runtimeOptionsStrArray = putApp.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
     }
     if (putApp.getExecSystemConstraints() != null) execSystemConstraintsStrArray = putApp.getExecSystemConstraints();
-    if (putApp.getEnvVariables() != null) envVariablesStrArray = putApp.getEnvVariables();
-    if (putApp.getArchiveIncludes() != null) archiveIncludesStrArray = putApp.getArchiveIncludes();
-    if (putApp.getArchiveExcludes() != null) archiveExcludesStrArray = putApp.getArchiveExcludes();
+    if (putApp.getParameterSet() != null) parameterSetJson = TapisGsonUtils.getGson().toJsonTree(putApp.getParameterSet());
+    if (putApp.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(putApp.getFileInputs());
+    if (putApp.getFileInputArrays() != null) fileInputArraysJson = TapisGsonUtils.getGson().toJsonTree(putApp.getFileInputArrays());
+    if (putApp.getSubscriptions() != null) subscriptionsJson = TapisGsonUtils.getGson().toJsonTree(putApp.getSubscriptions());
     if (putApp.getJobTags() != null) jobTagsStrArray = putApp.getJobTags();
     if (putApp.getTags() != null) tagsStrArray = putApp.getTags();
     if (putApp.getNotes() != null) notesObj = (JsonObject) putApp.getNotes();
@@ -344,14 +346,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, putApp.getArchiveSystemId())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, putApp.getArchiveSystemDir())
               .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, putApp.isArchiveOnAppError())
-              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, putApp.getArchiveIncludeLaunchFiles())
+              .set(APPS_VERSIONS.PARAMETER_SET, parameterSetJson)
+              .set(APPS_VERSIONS.FILE_INPUTS, fileInputsJson)
+              .set(APPS_VERSIONS.FILE_INPUT_ARRAYS, fileInputArraysJson)
               .set(APPS_VERSIONS.NODE_COUNT, putApp.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, putApp.getCoresPerNode())
-              .set(APPS_VERSIONS.MEMORY_MB, putApp.getMemoryMb())
+              .set(APPS_VERSIONS.MEMORY_MB, putApp.getMemoryMB())
               .set(APPS_VERSIONS.MAX_MINUTES, putApp.getMaxMinutes())
+              .set(APPS_VERSIONS.SUBSCRIPTIONS, subscriptionsJson)
               .set(APPS_VERSIONS.JOB_TAGS, jobTagsStrArray)
               .set(APPS_VERSIONS.TAGS, tagsStrArray)
               .set(APPS_VERSIONS.NOTES, notesObj)
@@ -367,18 +369,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       }
 
       appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
-
-      // Persist data to aux tables
-      db.deleteFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-      persistFileInputs(db, putApp, appVerSeqId);
-      db.deleteFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-      persistAppArgs(db, putApp, appVerSeqId);
-      db.deleteFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-      persistContainerArgs(db, putApp, appVerSeqId);
-      db.deleteFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-      persistSchedulerOptions(db, putApp, appVerSeqId);
-      db.deleteFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-      persistNotificationSubscriptions(db, putApp, appVerSeqId);
 
       // Persist update record
       addUpdate(db, rUser, tenantId, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
@@ -405,24 +395,47 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @throws IllegalStateException - if app already exists
    */
   @Override
-  public void patchApp(ResourceRequestUser rUser, App patchedApp, PatchApp patchApp,
+  public void patchApp(ResourceRequestUser rUser, String appId, String appVersion, App patchedApp,
                        String updateJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException {
-    String opName = "updateApp";
+    String opName = "patchApp";
     // ------------------------- Check Input -------------------------
     if (patchedApp == null) LibUtils.logAndThrowNullParmException(opName, "patchedApp");
-    if (patchApp == null) LibUtils.logAndThrowNullParmException(opName, "patchApp");
     if (rUser == null) LibUtils.logAndThrowNullParmException(opName, "resourceRequestUser");
 
-    // Pull out some values for convenience
-    String tenant = patchedApp.getTenant();
-    String appId = patchedApp.getId();
-    String appVersion = patchedApp.getVersion();
+    String tenant = rUser.getOboTenantId();
     // Check required attributes have been provided
     if (StringUtils.isBlank(updateJsonStr)) LibUtils.logAndThrowNullParmException(opName, "updateJson");
     if (StringUtils.isBlank(tenant)) LibUtils.logAndThrowNullParmException(opName, "tenant");
     if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
     if (StringUtils.isBlank(appVersion)) LibUtils.logAndThrowNullParmException(opName, "appVersion");
+
+    // Make sure runtime, notes, tags, etc are all set
+    Runtime runtime = App.DEFAULT_RUNTIME;
+    String[] execSystemConstraintsStrArray = null;
+    JsonElement parameterSetJson = App.DEFAULT_PARAMETER_SET;
+    JsonElement fileInputsJson = App.DEFAULT_FILE_INPUTS;
+    JsonElement fileInputArraysJson = App.DEFAULT_FILE_INPUT_ARRAYS;
+    JsonElement subscriptionsJson = App.DEFAULT_SUBSCRIPTIONS;
+    String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
+    String[] tagsStrArray = App.EMPTY_STR_ARRAY;
+    JsonObject notesObj =  App.DEFAULT_NOTES;
+
+    if (patchedApp.getRuntime() != null) runtime = patchedApp.getRuntime();
+    String[] runtimeOptionsStrArray = null;
+    // Convert runtimeOptions array from enum to string
+    if (patchedApp.getRuntimeOptions() != null)
+    {
+      runtimeOptionsStrArray = patchedApp.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
+    }
+    if (patchedApp.getExecSystemConstraints() != null) execSystemConstraintsStrArray = patchedApp.getExecSystemConstraints();
+    if (patchedApp.getParameterSet() != null) parameterSetJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getParameterSet());
+    if (patchedApp.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getFileInputs());
+    if (patchedApp.getFileInputArrays() != null) fileInputArraysJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getFileInputArrays());
+    if (patchedApp.getSubscriptions() != null) subscriptionsJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getSubscriptions());
+    if (patchedApp.getJobTags() != null) jobTagsStrArray = patchedApp.getJobTags();
+    if (patchedApp.getTags() != null) tagsStrArray = patchedApp.getTags();
+    if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -435,30 +448,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Check to see if app exists and has not been marked as deleted. If no then throw IllegalStateException
       boolean doesExist = checkIfAppExists(db, tenant, appId, appVersion, false);
       if (!doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", rUser, appId));
-
-      // Make sure runtime, string arrays and json objects are set
-      Runtime runtime = App.DEFAULT_RUNTIME;
-      String[] runtimeOptionsStrArray = null;
-      String[] execSystemConstraintsStrArray = null;
-      String[] envVariablesStrArray = null;
-      String[] archiveIncludesStrArray = null;
-      String[] archiveExcludesStrArray = null;
-      String[] jobTagsStrArray = App.EMPTY_STR_ARRAY;
-      String[] tagsStrArray = App.EMPTY_STR_ARRAY;
-      JsonObject notesObj = App.DEFAULT_NOTES;
-      if (patchedApp.getRuntime() != null) runtime = patchedApp.getRuntime();
-      // Convert runtimeOptions array from enum to string
-      if (patchedApp.getRuntimeOptions() != null)
-      {
-        runtimeOptionsStrArray = patchedApp.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
-      }
-      if (patchedApp.getExecSystemConstraints() != null) execSystemConstraintsStrArray = patchedApp.getExecSystemConstraints();
-      if (patchedApp.getEnvVariables() != null) envVariablesStrArray = patchedApp.getEnvVariables();
-      if (patchedApp.getArchiveIncludes() != null) archiveIncludesStrArray = patchedApp.getArchiveIncludes();
-      if (patchedApp.getArchiveExcludes() != null) archiveExcludesStrArray = patchedApp.getArchiveExcludes();
-      if (patchedApp.getJobTags() != null) jobTagsStrArray = patchedApp.getJobTags();
-      if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
-      if (patchedApp.getTags() != null) tagsStrArray = patchedApp.getTags();
 
       int appSeqId = getAppSeqIdUsingDb(db, tenant, appId);
       int appVerSeqId = -1;
@@ -482,14 +471,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, patchedApp.getArchiveSystemId())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, patchedApp.getArchiveSystemDir())
               .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, patchedApp.isArchiveOnAppError())
-              .set(APPS_VERSIONS.ENV_VARIABLES, envVariablesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_INCLUDES, archiveIncludesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_EXCLUDES, archiveExcludesStrArray)
-              .set(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES, patchedApp.getArchiveIncludeLaunchFiles())
+              .set(APPS_VERSIONS.PARAMETER_SET, parameterSetJson)
+              .set(APPS_VERSIONS.FILE_INPUTS, fileInputsJson)
+              .set(APPS_VERSIONS.FILE_INPUT_ARRAYS, fileInputArraysJson)
               .set(APPS_VERSIONS.NODE_COUNT, patchedApp.getNodeCount())
               .set(APPS_VERSIONS.CORES_PER_NODE, patchedApp.getCoresPerNode())
-              .set(APPS_VERSIONS.MEMORY_MB, patchedApp.getMemoryMb())
+              .set(APPS_VERSIONS.MEMORY_MB, patchedApp.getMemoryMB())
               .set(APPS_VERSIONS.MAX_MINUTES, patchedApp.getMaxMinutes())
+              .set(APPS_VERSIONS.SUBSCRIPTIONS, subscriptionsJson)
               .set(APPS_VERSIONS.JOB_TAGS, jobTagsStrArray)
               .set(APPS_VERSIONS.TAGS, tagsStrArray)
               .set(APPS_VERSIONS.NOTES, notesObj)
@@ -505,33 +494,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       }
 
       appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
-
-      // Persist data to aux tables as needed
-      if (patchedApp.getFileInputs() != null)
-      {
-        db.deleteFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-        persistFileInputs(db, patchedApp, appVerSeqId);
-      }
-      if (patchedApp.getAppArgs() != null)
-      {
-        db.deleteFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-        persistAppArgs(db, patchedApp, appVerSeqId);
-      }
-      if (patchedApp.getContainerArgs() != null)
-      {
-        db.deleteFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-        persistContainerArgs(db, patchedApp, appVerSeqId);
-      }
-      if (patchedApp.getSchedulerOptions() != null)
-      {
-        db.deleteFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-        persistSchedulerOptions(db, patchedApp, appVerSeqId);
-      }
-      if (patchedApp.getNotificationSubscriptions() != null)
-      {
-        db.deleteFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId)).execute();
-        persistNotificationSubscriptions(db, patchedApp, appVerSeqId);
-      }
 
       // Persist update record
       addUpdate(db, rUser, tenant, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
@@ -990,7 +952,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (appRecord == null) return null;
 
       // Create an App object using the appRecord
-      app = getAppFromJoinRecord(db, appRecord);
+      app = getAppFromJoinRecord(appRecord);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -1305,7 +1267,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       for (Record appRecord : results)
       {
         // Create App from appRecord using appVersion=null to use the latest app version
-        App a = getAppFromJoinRecord(db, appRecord);
+        App a = getAppFromJoinRecord(appRecord);
         retList.add(a);
       }
 
@@ -1327,6 +1289,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
   /**
    * getAppIDs
+   * Fetch all resource IDs in a tenant
    * @param tenant - tenant name
    * @param showDeleted - whether or not to included resources that have been marked as deleted.
    * @return - List of app names
@@ -1462,7 +1425,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
                                 String version, int appSeqId, int appVerSeqId, AppOperation op,
                                 String upd_json, String upd_text, UUID uuid)
   {
-    String updJsonStr = (StringUtils.isBlank(upd_json)) ? EMPTY_JSON : upd_json;
+    String updJsonStr = (StringUtils.isBlank(upd_json)) ? EMPTY_JSON_OBJ : upd_json;
     if (appSeqId < 1)
     {
       appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(id)).fetchOne(APPS.SEQ_ID);
@@ -1552,10 +1515,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   }
 
   /**
-   * Given an sql connection and an appRecord from a JOIN, create an App object
+   * Given an appRecord from a JOIN, create an App object
    *
    */
-  private static App getAppFromJoinRecord(DSLContext db, Record r)
+  private static App getAppFromJoinRecord(Record r)
   {
     App app;
     int appSeqId = r.get(APPS.SEQ_ID);
@@ -1574,6 +1537,15 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       runtimeOptions = Arrays.stream(runtimeOptionsStrArray).map(RuntimeOption::valueOf).collect(Collectors.toList());
     }
 
+    JsonElement parmSetJsonElement = r.get(APPS_VERSIONS.PARAMETER_SET);
+    ParameterSet parmSet = TapisGsonUtils.getGson().fromJson(parmSetJsonElement, ParameterSet.class);
+    JsonElement fiJsonElement = r.get(APPS_VERSIONS.FILE_INPUTS);
+    List<FileInput> fileInputs = Arrays.asList(TapisGsonUtils.getGson().fromJson(fiJsonElement, FileInput[].class));
+    JsonElement fiaJsonElement = r.get(APPS_VERSIONS.FILE_INPUT_ARRAYS);
+    List<FileInputArray> fileInputArrays = Arrays.asList(TapisGsonUtils.getGson().fromJson(fiaJsonElement, FileInputArray[].class));
+    JsonElement subscriptionsJsonElement = r.get(APPS_VERSIONS.SUBSCRIPTIONS);
+    List<NotificationSubscription> subscriptions =
+            Arrays.asList(TapisGsonUtils.getGson().fromJson(subscriptionsJsonElement, NotificationSubscription[].class));
     app = new App(appSeqId, appVerSeqId, r.get(APPS.TENANT), r.get(APPS.ID), r.get(APPS_VERSIONS.VERSION),
             r.get(APPS_VERSIONS.DESCRIPTION), r.get(APPS.APP_TYPE), r.get(APPS.OWNER), r.get(APPS.ENABLED),
             r.get(APPS.CONTAINERIZED), r.get(APPS_VERSIONS.RUNTIME), r.get(APPS_VERSIONS.RUNTIME_VERSION),
@@ -1585,246 +1557,237 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             r.get(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR), r.get(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR),
             r.get(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE), r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_ID),
             r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR), r.get(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR),
-            r.get(APPS_VERSIONS.ENV_VARIABLES), r.get(APPS_VERSIONS.ARCHIVE_INCLUDES), r.get(APPS_VERSIONS.ARCHIVE_EXCLUDES),
-            r.get(APPS_VERSIONS.ARCHIVE_INCLUDE_LAUNCH_FILES),
-            r.get(APPS_VERSIONS.NODE_COUNT), r.get(APPS_VERSIONS.CORES_PER_NODE), r.get(APPS_VERSIONS.MEMORY_MB),
-            r.get(APPS_VERSIONS.MAX_MINUTES), r.get(APPS_VERSIONS.JOB_TAGS),
-            r.get(APPS_VERSIONS.TAGS), r.get(APPS_VERSIONS.NOTES), r.get(APPS_VERSIONS.UUID),
-            r.get(APPS.DELETED), created, updated);
-    // Fill in data from aux tables
-    app.setFileInputs(retrieveFileInputs(db, appVerSeqId));
-    app.setAppArgs(retrieveAppArgs(db, appVerSeqId));
-    app.setContainerArgs(retrieveContainerArgs(db, appVerSeqId));
-    app.setSchedulerOptions(retrieveSchedulerOptions(db, appVerSeqId));
-    app.setNotificationSubscriptions(retrieveNotificationSubscriptions(db, appVerSeqId));
-
+            parmSet, fileInputs, fileInputArrays, r.get(APPS_VERSIONS.NODE_COUNT), r.get(APPS_VERSIONS.CORES_PER_NODE),
+            r.get(APPS_VERSIONS.MEMORY_MB), r.get(APPS_VERSIONS.MAX_MINUTES), subscriptions,
+            r.get(APPS_VERSIONS.JOB_TAGS), r.get(APPS_VERSIONS.TAGS), r.get(APPS_VERSIONS.NOTES),
+            r.get(APPS_VERSIONS.UUID), r.get(APPS.DELETED), created, updated);
     return app;
   }
 
-  /**
-   * Persist file inputs given an sql connection and an app
-   */
-  private static void persistFileInputs(DSLContext db, App app, int appVerSeqId)
-  {
-    var fileInputs = app.getFileInputs();
-    if (fileInputs == null || fileInputs.isEmpty()) return;
+//  /**
+//   * Persist file inputs given an sql connection and an app
+//   */
+//  private static void persistFileInputs(DSLContext db, App app, int appVerSeqId)
+//  {
+//    var fileInputs = app.getFileInputs();
+//    if (fileInputs == null || fileInputs.isEmpty()) return;
+//
+//    for (FileInput fileInput : fileInputs) {
+//      String nameStr = "";
+//      if (fileInput.getName() != null ) nameStr = fileInput.getName();
+//      String[] kvPairs = EMPTY_STR_ARRAY;
+//      if (fileInput.getMeta() != null ) kvPairs = fileInput.getMeta();
+//      db.insertInto(FILE_INPUTS)
+//              .set(FILE_INPUTS.APP_VER_SEQ_ID, appVerSeqId)
+//              .set(FILE_INPUTS.SOURCE_URL, fileInput.getSourceUrl())
+//              .set(FILE_INPUTS.TARGET_PATH, fileInput.getTargetPath())
+//              .set(FILE_INPUTS.IN_PLACE, fileInput.isInPlace())
+//              .set(FILE_INPUTS.NAME, nameStr)
+//              .set(FILE_INPUTS.DESCRIPTION, fileInput.getDescription())
+//              .set(FILE_INPUTS.INPUT_MODE, fileInput.getMode())
+//              .set(FILE_INPUTS.META, kvPairs)
+//              .execute();
+//    }
+//  }
+//
+//  /**
+//   * Persist app args given an sql connection and an app
+//   */
+//  private static void persistAppArgs(DSLContext db, App app, int appVerSeqId)
+//  {
+//    var appArgs = app.getAppArgs();
+//    if (appArgs == null || appArgs.isEmpty()) return;
+//
+//    for (AppArg appArg : appArgs) {
+//      String valStr = "";
+//      if (appArg.getArgValue() != null ) valStr = appArg.getArgValue();
+//      String[] kvPairs = EMPTY_STR_ARRAY;
+//      if (appArg.getMeta() != null ) kvPairs = appArg.getMeta();
+//      db.insertInto(APP_ARGS)
+//              .set(APP_ARGS.APP_VER_SEQ_ID, appVerSeqId)
+//              .set(APP_ARGS.ARG_VAL, valStr)
+//              .set(APP_ARGS.NAME, appArg.getName())
+//              .set(APP_ARGS.DESCRIPTION, appArg.getDescription())
+//              .set(APP_ARGS.INPUT_MODE, appArg.getMode())
+//              .set(APP_ARGS.META, kvPairs)
+//              .execute();
+//    }
+//  }
+//
+//  /**
+//   * Persist container args given an sql connection and an app
+//   */
+//  private static void persistContainerArgs(DSLContext db, App app, int appVerSeqId)
+//  {
+//    var containerArgs = app.getContainerArgs();
+//    if (containerArgs == null || containerArgs.isEmpty()) return;
+//
+//    for (AppArg containerArg : containerArgs) {
+//      String valStr = "";
+//      if (containerArg.getArgValue() != null ) valStr = containerArg.getArgValue();
+//      String[] kvPairs = EMPTY_STR_ARRAY;
+//      if (containerArg.getMeta() != null ) kvPairs = containerArg.getMeta();
+//      db.insertInto(CONTAINER_ARGS)
+//              .set(CONTAINER_ARGS.APP_VER_SEQ_ID, appVerSeqId)
+//              .set(CONTAINER_ARGS.ARG_VAL, valStr)
+//              .set(CONTAINER_ARGS.NAME, containerArg.getName())
+//              .set(CONTAINER_ARGS.DESCRIPTION, containerArg.getDescription())
+//              .set(CONTAINER_ARGS.INPUT_MODE, containerArg.getMode())
+//              .set(CONTAINER_ARGS.META, kvPairs)
+//              .execute();
+//    }
+//  }
+//
+//  /**
+//   * Persist scheduler options given an sql connection and an app
+//   */
+//  private static void persistSchedulerOptions(DSLContext db, App app, int appVerSeqId)
+//  {
+//    var schedulerOptions = app.getSchedulerOptions();
+//    if (schedulerOptions == null || schedulerOptions.isEmpty()) return;
+//
+//    for (AppArg schedulerOption : schedulerOptions) {
+//      String valStr = "";
+//      if (schedulerOption.getArgValue() != null ) valStr = schedulerOption.getArgValue();
+//      String[] kvPairs = EMPTY_STR_ARRAY;
+//      if (schedulerOption.getMeta() != null ) kvPairs = schedulerOption.getMeta();
+//      db.insertInto(SCHEDULER_OPTIONS)
+//              .set(SCHEDULER_OPTIONS.APP_VER_SEQ_ID, appVerSeqId)
+//              .set(SCHEDULER_OPTIONS.ARG_VAL, valStr)
+//              .set(SCHEDULER_OPTIONS.NAME, schedulerOption.getName())
+//              .set(SCHEDULER_OPTIONS.DESCRIPTION, schedulerOption.getDescription())
+//              .set(SCHEDULER_OPTIONS.INPUT_MODE, schedulerOption.getMode())
+//              .set(SCHEDULER_OPTIONS.META, kvPairs)
+//              .execute();
+//    }
+//  }
+//
+//  /**
+//   * Persist notification subscriptions given an sql connection and an app
+//   */
+//  private static void persistNotificationSubscriptions(DSLContext db, App app, int appVerSeqId)
+//  {
+//    var subscriptions = app.getSubscriptions();
+//    if (subscriptions == null || subscriptions.isEmpty()) return;
+//
+//    for (NotificationSubscription subscription : subscriptions) {
+//      Record record = db.insertInto(NOTIFICATION_SUBSCRIPTIONS)
+//              .set(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID, appVerSeqId)
+//              .set(NOTIFICATION_SUBSCRIPTIONS.FILTER, subscription.getFilter())
+//              .returningResult(NOTIFICATION_SUBSCRIPTIONS.SEQ_ID)
+//              .fetchOne();
+//      int subSeqId = record.getValue(APPS.SEQ_ID);
+//      persistNotificationMechanisms(db, subscription, subSeqId);
+//    }
+//  }
+//
+//  /**
+//   * Persist notification mechanisms given an sql connection and a NotificationSubscription
+//   */
+//  private static void persistNotificationMechanisms(DSLContext db, NotificationSubscription subscription, int subSeqId)
+//  {
+//    var mechanisms = subscription.getNotificationMechanisms();
+//    if (mechanisms == null || mechanisms.isEmpty()) return;
+//
+//    for (NotificationMechanism mechanism : mechanisms) {
+//      db.insertInto(NOTIFICATION_MECHANISMS)
+//              .set(NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID, subSeqId)
+//              .set(NOTIFICATION_MECHANISMS.MECHANISM, mechanism.getMechanism())
+//              .set(NOTIFICATION_MECHANISMS.WEBHOOK_URL, mechanism.getWebhookUrl())
+//              .set(NOTIFICATION_MECHANISMS.EMAIL_ADDRESS, mechanism.getEmailAddress())
+//              .execute();
+//    }
+//  }
+//
+//  /**
+//   * Get file inputs for an app from an auxiliary table
+//   * @param db - DB connection
+//   * @param appVerSeqId - app
+//   * @return list of file inputs
+//   */
+//  private static List<FileInput> retrieveFileInputs(DSLContext db, int appVerSeqId)
+//  {
+//    List<FileInput> fileInputs = db.selectFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(FileInput.class);
+//    if (fileInputs == null || fileInputs.isEmpty()) return null;
+//    return fileInputs;
+//  }
 
-    for (FileInput fileInput : fileInputs) {
-      String nameStr = "";
-      if (fileInput.getMetaName() != null ) nameStr = fileInput.getMetaName();
-      String[] kvPairs = EMPTY_STR_ARRAY;
-      if (fileInput.getMetaKeyValuePairs() != null ) kvPairs = fileInput.getMetaKeyValuePairs();
-      db.insertInto(FILE_INPUTS)
-              .set(FILE_INPUTS.APP_VER_SEQ_ID, appVerSeqId)
-              .set(FILE_INPUTS.SOURCE_URL, fileInput.getSourceUrl())
-              .set(FILE_INPUTS.TARGET_PATH, fileInput.getTargetPath())
-              .set(FILE_INPUTS.IN_PLACE, fileInput.isInPlace())
-              .set(FILE_INPUTS.META_NAME, nameStr)
-              .set(FILE_INPUTS.META_DESCRIPTION, fileInput.getMetaDescription())
-              .set(FILE_INPUTS.META_REQUIRED, fileInput.isMetaRequired())
-              .set(FILE_INPUTS.META_KEY_VALUE_PAIRS, kvPairs)
-              .execute();
-    }
-  }
-
-  /**
-   * Persist app args given an sql connection and an app
-   */
-  private static void persistAppArgs(DSLContext db, App app, int appVerSeqId)
-  {
-    var appArgs = app.getAppArgs();
-    if (appArgs == null || appArgs.isEmpty()) return;
-
-    for (AppArg appArg : appArgs) {
-      String valStr = "";
-      if (appArg.getArgValue() != null ) valStr = appArg.getArgValue();
-      String[] kvPairs = EMPTY_STR_ARRAY;
-      if (appArg.getMetaKeyValuePairs() != null ) kvPairs = appArg.getMetaKeyValuePairs();
-      db.insertInto(APP_ARGS)
-              .set(APP_ARGS.APP_VER_SEQ_ID, appVerSeqId)
-              .set(APP_ARGS.ARG_VAL, valStr)
-              .set(APP_ARGS.META_NAME, appArg.getMetaName())
-              .set(APP_ARGS.META_DESCRIPTION, appArg.getMetaDescription())
-              .set(APP_ARGS.META_REQUIRED, appArg.isMetaRequired())
-              .set(APP_ARGS.META_KEY_VALUE_PAIRS, kvPairs)
-              .execute();
-    }
-  }
-
-  /**
-   * Persist container args given an sql connection and an app
-   */
-  private static void persistContainerArgs(DSLContext db, App app, int appVerSeqId)
-  {
-    var containerArgs = app.getContainerArgs();
-    if (containerArgs == null || containerArgs.isEmpty()) return;
-
-    for (AppArg containerArg : containerArgs) {
-      String valStr = "";
-      if (containerArg.getArgValue() != null ) valStr = containerArg.getArgValue();
-      String[] kvPairs = EMPTY_STR_ARRAY;
-      if (containerArg.getMetaKeyValuePairs() != null ) kvPairs = containerArg.getMetaKeyValuePairs();
-      db.insertInto(CONTAINER_ARGS)
-              .set(CONTAINER_ARGS.APP_VER_SEQ_ID, appVerSeqId)
-              .set(CONTAINER_ARGS.ARG_VAL, valStr)
-              .set(CONTAINER_ARGS.META_NAME, containerArg.getMetaName())
-              .set(CONTAINER_ARGS.META_DESCRIPTION, containerArg.getMetaDescription())
-              .set(CONTAINER_ARGS.META_REQUIRED, containerArg.isMetaRequired())
-              .set(CONTAINER_ARGS.META_KEY_VALUE_PAIRS, kvPairs)
-              .execute();
-    }
-  }
-
-  /**
-   * Persist scheduler options given an sql connection and an app
-   */
-  private static void persistSchedulerOptions(DSLContext db, App app, int appVerSeqId)
-  {
-    var schedulerOptions = app.getSchedulerOptions();
-    if (schedulerOptions == null || schedulerOptions.isEmpty()) return;
-
-    for (AppArg schedulerOption : schedulerOptions) {
-      String valStr = "";
-      if (schedulerOption.getArgValue() != null ) valStr = schedulerOption.getArgValue();
-      String[] kvPairs = EMPTY_STR_ARRAY;
-      if (schedulerOption.getMetaKeyValuePairs() != null ) kvPairs = schedulerOption.getMetaKeyValuePairs();
-      db.insertInto(SCHEDULER_OPTIONS)
-              .set(SCHEDULER_OPTIONS.APP_VER_SEQ_ID, appVerSeqId)
-              .set(SCHEDULER_OPTIONS.ARG_VAL, valStr)
-              .set(SCHEDULER_OPTIONS.META_NAME, schedulerOption.getMetaName())
-              .set(SCHEDULER_OPTIONS.META_DESCRIPTION, schedulerOption.getMetaDescription())
-              .set(SCHEDULER_OPTIONS.META_REQUIRED, schedulerOption.isMetaRequired())
-              .set(SCHEDULER_OPTIONS.META_KEY_VALUE_PAIRS, kvPairs)
-              .execute();
-    }
-  }
-
-  /**
-   * Persist notification subscriptions given an sql connection and an app
-   */
-  private static void persistNotificationSubscriptions(DSLContext db, App app, int appVerSeqId)
-  {
-    var subscriptions = app.getNotificationSubscriptions();
-    if (subscriptions == null || subscriptions.isEmpty()) return;
-
-    for (NotifSubscription subscription : subscriptions) {
-      Record record = db.insertInto(NOTIFICATION_SUBSCRIPTIONS)
-              .set(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID, appVerSeqId)
-              .set(NOTIFICATION_SUBSCRIPTIONS.FILTER, subscription.getFilter())
-              .returningResult(NOTIFICATION_SUBSCRIPTIONS.SEQ_ID)
-              .fetchOne();
-      int subSeqId = record.getValue(APPS.SEQ_ID);
-      persistNotificationMechanisms(db, subscription, subSeqId);
-    }
-  }
-
-  /**
-   * Persist notification mechanisms given an sql connection and a NotificationSubscription
-   */
-  private static void persistNotificationMechanisms(DSLContext db, NotifSubscription subscription, int subSeqId)
-  {
-    var mechanisms = subscription.getNotificationMechanisms();
-    if (mechanisms == null || mechanisms.isEmpty()) return;
-
-    for (NotifMechanism mechanism : mechanisms) {
-      db.insertInto(NOTIFICATION_MECHANISMS)
-              .set(NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID, subSeqId)
-              .set(NOTIFICATION_MECHANISMS.MECHANISM, mechanism.getMechanism())
-              .set(NOTIFICATION_MECHANISMS.WEBHOOK_URL, mechanism.getWebhookUrl())
-              .set(NOTIFICATION_MECHANISMS.EMAIL_ADDRESS, mechanism.getEmailAddress())
-              .execute();
-    }
-  }
-
-  /**
-   * Get file inputs for an app from an auxiliary table
-   * @param db - DB connection
-   * @param appVerSeqId - app
-   * @return list of file inputs
-   */
-  private static List<FileInput> retrieveFileInputs(DSLContext db, int appVerSeqId)
-  {
-    List<FileInput> fileInputs = db.selectFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(FileInput.class);
-    if (fileInputs == null || fileInputs.isEmpty()) return null;
-    return fileInputs;
-  }
-
-  /**
-   * Get notification subscriptions for an app from an auxiliary table
-   * @param db - DB connection
-   * @param appVerSeqId - app
-   * @return list of subscriptions
-   */
-  private static List<NotifSubscription> retrieveNotificationSubscriptions(DSLContext db, int appVerSeqId)
-  {
-    List<NotifSubscription> subscriptions =
-            db.selectFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId))
-                    .fetchInto(NotifSubscription.class);
-    if (subscriptions == null || subscriptions.isEmpty()) return null;
-    for (NotifSubscription subscription : subscriptions)
-    {
-      subscription.setNotificationMechanisms(retrieveNotificationMechanisms(db, subscription.getSeqId()));
-    }
-    return subscriptions;
-  }
-
-  /**
-   * Get notification mechanisms for a subscription from an auxiliary table
-   * @param db - DB connection
-   * @param subSeqId - subscription seq id
-   * @return list of mechanisms
-   */
-  private static List<NotifMechanism> retrieveNotificationMechanisms(DSLContext db, int subSeqId)
-  {
-    List<NotifMechanism> mechanisms =
-            db.selectFrom(NOTIFICATION_MECHANISMS).where(NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID.eq(subSeqId))
-                    .fetchInto(NotifMechanism.class);
-    return mechanisms;
-  }
-
-  /**
-   * Get app args for an app from an auxiliary table
-   * @param db - DB connection
-   * @param appVerSeqId - app
-   * @return list of app args
-   */
-  private static List<AppArg> retrieveAppArgs(DSLContext db, int appVerSeqId)
-  {
-    List<AppArg> appArgs =
-            db.selectFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
-    if (appArgs == null || appArgs.isEmpty()) return null;
-    return appArgs;
-  }
-
-  /**
-   * Get container args for an app from an auxiliary table
-   * @param db - DB connection
-   * @param appVerSeqId - app
-   * @return list of container args
-   */
-  private static List<AppArg> retrieveContainerArgs(DSLContext db, int appVerSeqId)
-  {
-    List<AppArg> containerArgs =
-            db.selectFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
-    if (containerArgs == null || containerArgs.isEmpty()) return null;
-    return containerArgs;
-  }
-
-  /**
-   * Get scheduler options for an app from an auxiliary table
-   * @param db - DB connection
-   * @param appVerSeqId - app
-   * @return list of scheduler options
-   */
-  private static List<AppArg> retrieveSchedulerOptions(DSLContext db, int appVerSeqId)
-  {
-    List<AppArg> schedulerOptions =
-            db.selectFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId))
-                    .fetchInto(AppArg.class);
-    if (schedulerOptions == null || schedulerOptions.isEmpty()) return null;
-    return schedulerOptions;
-  }
-
+//  /**
+//   * Get notification subscriptions for an app from an auxiliary table
+//   * @param db - DB connection
+//   * @param appVerSeqId - app
+//   * @return list of subscriptions
+//   */
+//  private static List<NotificationSubscription> retrieveNotificationSubscriptions(DSLContext db, int appVerSeqId)
+//  {
+//    List<NotificationSubscription> subscriptions =
+//            db.selectFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId))
+//                    .fetchInto(NotificationSubscription.class);
+//    if (subscriptions == null || subscriptions.isEmpty()) return null;
+//    for (NotificationSubscription subscription : subscriptions)
+//    {
+//      subscription.setNotificationMechanisms(retrieveNotificationMechanisms(db, subscription.getSeqId()));
+//    }
+//    return subscriptions;
+//  }
+//
+//  /**
+//   * Get notification mechanisms for a subscription from an auxiliary table
+//   * @param db - DB connection
+//   * @param subSeqId - subscription seq id
+//   * @return list of mechanisms
+//   */
+//  private static List<NotificationMechanism> retrieveNotificationMechanisms(DSLContext db, int subSeqId)
+//  {
+//    List<NotificationMechanism> mechanisms =
+//            db.selectFrom(NOTIFICATION_MECHANISMS).where(NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID.eq(subSeqId))
+//                    .fetchInto(NotificationMechanism.class);
+//    return mechanisms;
+//  }
+//
+//  /**
+//   * Get app args for an app from an auxiliary table
+//   * @param db - DB connection
+//   * @param appVerSeqId - app
+//   * @return list of app args
+//   */
+//  private static List<AppArg> retrieveAppArgs(DSLContext db, int appVerSeqId)
+//  {
+//    List<AppArg> appArgs =
+//            db.selectFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
+//    if (appArgs == null || appArgs.isEmpty()) return null;
+//    return appArgs;
+//  }
+//
+//  /**
+//   * Get container args for an app from an auxiliary table
+//   * @param db - DB connection
+//   * @param appVerSeqId - app
+//   * @return list of container args
+//   */
+//  private static List<AppArg> retrieveContainerArgs(DSLContext db, int appVerSeqId)
+//  {
+//    List<AppArg> containerArgs =
+//            db.selectFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
+//    if (containerArgs == null || containerArgs.isEmpty()) return null;
+//    return containerArgs;
+//  }
+//
+//  /**
+//   * Get scheduler options for an app from an auxiliary table
+//   * @param db - DB connection
+//   * @param appVerSeqId - app
+//   * @return list of scheduler options
+//   */
+//  private static List<AppArg> retrieveSchedulerOptions(DSLContext db, int appVerSeqId)
+//  {
+//    List<AppArg> schedulerOptions =
+//            db.selectFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId))
+//                    .fetchInto(AppArg.class);
+//    if (schedulerOptions == null || schedulerOptions.isEmpty()) return null;
+//    return schedulerOptions;
+//  }
+//
   /**
    * Given an sql connection retrieve the app_ver uuid.
    * @param db - jooq context

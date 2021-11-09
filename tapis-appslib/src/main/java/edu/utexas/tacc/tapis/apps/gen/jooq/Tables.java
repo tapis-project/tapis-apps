@@ -4,28 +4,17 @@
 package edu.utexas.tacc.tapis.apps.gen.jooq;
 
 
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppArgs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppUpdates;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.Apps;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.AppsVersions;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.ContainerArgs;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FileInputs;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationMechanisms;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.NotificationSubscriptions;
-import edu.utexas.tacc.tapis.apps.gen.jooq.tables.SchedulerOptions;
 
 
 /**
- * Convenience access to all tables in tapis_app
+ * Convenience access to all tables in tapis_app.
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Tables {
-
-    /**
-     * The table <code>tapis_app.app_args</code>.
-     */
-    public static final AppArgs APP_ARGS = AppArgs.APP_ARGS;
 
     /**
      * The table <code>tapis_app.app_updates</code>.
@@ -43,32 +32,7 @@ public class Tables {
     public static final AppsVersions APPS_VERSIONS = AppsVersions.APPS_VERSIONS;
 
     /**
-     * The table <code>tapis_app.container_args</code>.
-     */
-    public static final ContainerArgs CONTAINER_ARGS = ContainerArgs.CONTAINER_ARGS;
-
-    /**
-     * The table <code>tapis_app.file_inputs</code>.
-     */
-    public static final FileInputs FILE_INPUTS = FileInputs.FILE_INPUTS;
-
-    /**
      * The table <code>tapis_app.flyway_schema_history</code>.
      */
     public static final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
-
-    /**
-     * The table <code>tapis_app.notification_mechanisms</code>.
-     */
-    public static final NotificationMechanisms NOTIFICATION_MECHANISMS = NotificationMechanisms.NOTIFICATION_MECHANISMS;
-
-    /**
-     * The table <code>tapis_app.notification_subscriptions</code>.
-     */
-    public static final NotificationSubscriptions NOTIFICATION_SUBSCRIPTIONS = NotificationSubscriptions.NOTIFICATION_SUBSCRIPTIONS;
-
-    /**
-     * The table <code>tapis_app.scheduler_options</code>.
-     */
-    public static final SchedulerOptions SCHEDULER_OPTIONS = SchedulerOptions.SCHEDULER_OPTIONS;
 }

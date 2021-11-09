@@ -1,10 +1,11 @@
-package edu.utexas.tacc.tapis.apps.api.model;
+package edu.utexas.tacc.tapis.apps.model;
 
 import org.apache.commons.lang3.StringUtils;
 
 /*
- * Class for KeyValuePair in an App definition contained in a request.
- * Key should not contain the character "="
+ * Class for KeyValuePair in an App definition.
+ * Key should not contain the character "=" because it would change the value
+ * TODO/TBD: Make immutable? Check for use of setters
  */
 public final class KeyValuePair
 {

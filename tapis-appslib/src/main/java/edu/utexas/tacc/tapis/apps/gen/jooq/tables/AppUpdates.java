@@ -15,7 +15,6 @@ import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
@@ -29,6 +28,8 @@ import org.jooq.TableField;
 import org.jooq.TableOptions;
 import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
+import org.jooq.impl.EnumConverter;
+import org.jooq.impl.SQLDataType;
 import org.jooq.impl.TableImpl;
 
 
@@ -38,7 +39,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppUpdates extends TableImpl<AppUpdatesRecord> {
 
-    private static final long serialVersionUID = 911775196;
+    private static final long serialVersionUID = 1L;
 
     /**
      * The reference instance of <code>tapis_app.app_updates</code>
@@ -56,73 +57,74 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     /**
      * The column <code>tapis_app.app_updates.seq_id</code>. Application update request id
      */
-    public final TableField<AppUpdatesRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), org.jooq.impl.SQLDataType.INTEGER.nullable(false).defaultValue(org.jooq.impl.DSL.field("nextval('app_updates_seq_id_seq'::regclass)", org.jooq.impl.SQLDataType.INTEGER)), this, "Application update request id");
+    public final TableField<AppUpdatesRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), SQLDataType.INTEGER.nullable(false).identity(true), this, "Application update request id");
 
     /**
      * The column <code>tapis_app.app_updates.app_seq_id</code>. Sequence id of application being updated
      */
-    public final TableField<AppUpdatesRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "Sequence id of application being updated");
+    public final TableField<AppUpdatesRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), SQLDataType.INTEGER, this, "Sequence id of application being updated");
 
     /**
      * The column <code>tapis_app.app_updates.app_ver_seq_id</code>. Sequence id of application version being updated
      */
-    public final TableField<AppUpdatesRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), org.jooq.impl.SQLDataType.INTEGER, this, "Sequence id of application version being updated");
+    public final TableField<AppUpdatesRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), SQLDataType.INTEGER, this, "Sequence id of application version being updated");
 
     /**
      * The column <code>tapis_app.app_updates.app_tenant</code>. Tenant of application being updated
      */
-    public final TableField<AppUpdatesRecord, String> APP_TENANT = createField(DSL.name("app_tenant"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Tenant of application being updated");
+    public final TableField<AppUpdatesRecord, String> APP_TENANT = createField(DSL.name("app_tenant"), SQLDataType.CLOB.nullable(false), this, "Tenant of application being updated");
 
     /**
      * The column <code>tapis_app.app_updates.app_id</code>. Id of application being updated
      */
-    public final TableField<AppUpdatesRecord, String> APP_ID = createField(DSL.name("app_id"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Id of application being updated");
+    public final TableField<AppUpdatesRecord, String> APP_ID = createField(DSL.name("app_id"), SQLDataType.CLOB.nullable(false), this, "Id of application being updated");
 
     /**
      * The column <code>tapis_app.app_updates.app_version</code>. Version of application being updated
      */
-    public final TableField<AppUpdatesRecord, String> APP_VERSION = createField(DSL.name("app_version"), org.jooq.impl.SQLDataType.CLOB, this, "Version of application being updated");
+    public final TableField<AppUpdatesRecord, String> APP_VERSION = createField(DSL.name("app_version"), SQLDataType.CLOB, this, "Version of application being updated");
 
     /**
      * The column <code>tapis_app.app_updates.user_tenant</code>. Tenant of user who requested the update
      */
-    public final TableField<AppUpdatesRecord, String> USER_TENANT = createField(DSL.name("user_tenant"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Tenant of user who requested the update");
+    public final TableField<AppUpdatesRecord, String> USER_TENANT = createField(DSL.name("user_tenant"), SQLDataType.CLOB.nullable(false), this, "Tenant of user who requested the update");
 
     /**
      * The column <code>tapis_app.app_updates.user_name</code>. Name of user who requested the update
      */
-    public final TableField<AppUpdatesRecord, String> USER_NAME = createField(DSL.name("user_name"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Name of user who requested the update");
+    public final TableField<AppUpdatesRecord, String> USER_NAME = createField(DSL.name("user_name"), SQLDataType.CLOB.nullable(false), this, "Name of user who requested the update");
 
     /**
      * The column <code>tapis_app.app_updates.operation</code>. Type of update operation
      */
-    public final TableField<AppUpdatesRecord, AppOperation> OPERATION = createField(DSL.name("operation"), org.jooq.impl.SQLDataType.CLOB.nullable(false), this, "Type of update operation", new org.jooq.impl.EnumConverter<java.lang.String, edu.utexas.tacc.tapis.apps.model.App.AppOperation>(java.lang.String.class, edu.utexas.tacc.tapis.apps.model.App.AppOperation.class));
+    public final TableField<AppUpdatesRecord, AppOperation> OPERATION = createField(DSL.name("operation"), SQLDataType.CLOB.nullable(false), this, "Type of update operation", new EnumConverter<String, AppOperation>(String.class, AppOperation.class));
 
     /**
      * The column <code>tapis_app.app_updates.upd_json</code>. JSON representing the update - with secrets scrubbed
      */
-    public final TableField<AppUpdatesRecord, JsonElement> UPD_JSON = createField(DSL.name("upd_json"), org.jooq.impl.SQLDataType.JSONB.nullable(false), this, "JSON representing the update - with secrets scrubbed", new JSONBToJsonElementBinding());
+    public final TableField<AppUpdatesRecord, JsonElement> UPD_JSON = createField(DSL.name("upd_json"), SQLDataType.JSONB.nullable(false), this, "JSON representing the update - with secrets scrubbed", new JSONBToJsonElementBinding());
 
     /**
      * The column <code>tapis_app.app_updates.upd_text</code>. Text data supplied by client - secrets should be scrubbed
      */
-    public final TableField<AppUpdatesRecord, String> UPD_TEXT = createField(DSL.name("upd_text"), org.jooq.impl.SQLDataType.CLOB, this, "Text data supplied by client - secrets should be scrubbed");
+    public final TableField<AppUpdatesRecord, String> UPD_TEXT = createField(DSL.name("upd_text"), SQLDataType.CLOB, this, "Text data supplied by client - secrets should be scrubbed");
 
     /**
      * The column <code>tapis_app.app_updates.uuid</code>.
      */
-    public final TableField<AppUpdatesRecord, UUID> UUID = createField(DSL.name("uuid"), org.jooq.impl.SQLDataType.UUID.nullable(false), this, "");
+    public final TableField<AppUpdatesRecord, java.util.UUID> UUID = createField(DSL.name("uuid"), SQLDataType.UUID.nullable(false), this, "");
 
     /**
      * The column <code>tapis_app.app_updates.created</code>. UTC time for when record was created
      */
-    public final TableField<AppUpdatesRecord, LocalDateTime> CREATED = createField(DSL.name("created"), org.jooq.impl.SQLDataType.LOCALDATETIME.nullable(false).defaultValue(org.jooq.impl.DSL.field("timezone('utc'::text, now())", org.jooq.impl.SQLDataType.LOCALDATETIME)), this, "UTC time for when record was created");
+    public final TableField<AppUpdatesRecord, LocalDateTime> CREATED = createField(DSL.name("created"), SQLDataType.LOCALDATETIME(6).nullable(false).defaultValue(DSL.field("timezone('utc'::text, now())", SQLDataType.LOCALDATETIME)), this, "UTC time for when record was created");
 
-    /**
-     * Create a <code>tapis_app.app_updates</code> table reference
-     */
-    public AppUpdates() {
-        this(DSL.name("app_updates"), null);
+    private AppUpdates(Name alias, Table<AppUpdatesRecord> aliased) {
+        this(alias, aliased, null);
+    }
+
+    private AppUpdates(Name alias, Table<AppUpdatesRecord> aliased, Field<?>[] parameters) {
+        super(alias, null, aliased, parameters, DSL.comment(""), TableOptions.table());
     }
 
     /**
@@ -139,12 +141,11 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
         this(alias, APP_UPDATES);
     }
 
-    private AppUpdates(Name alias, Table<AppUpdatesRecord> aliased) {
-        this(alias, aliased, null);
-    }
-
-    private AppUpdates(Name alias, Table<AppUpdatesRecord> aliased, Field<?>[] parameters) {
-        super(alias, null, aliased, parameters, DSL.comment(""), TableOptions.table());
+    /**
+     * Create a <code>tapis_app.app_updates</code> table reference
+     */
+    public AppUpdates() {
+        this(DSL.name("app_updates"), null);
     }
 
     public <O extends Record> AppUpdates(Table<O> child, ForeignKey<O, AppUpdatesRecord> key) {
@@ -158,7 +159,7 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
 
     @Override
     public Identity<AppUpdatesRecord, Integer> getIdentity() {
-        return Keys.IDENTITY_APP_UPDATES;
+        return (Identity<AppUpdatesRecord, Integer>) super.getIdentity();
     }
 
     @Override
@@ -176,8 +177,13 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
         return Arrays.<ForeignKey<AppUpdatesRecord, ?>>asList(Keys.APP_UPDATES__APP_UPDATES_APP_SEQ_ID_FKEY);
     }
 
+    private transient Apps _apps;
+
     public Apps apps() {
-        return new Apps(this, Keys.APP_UPDATES__APP_UPDATES_APP_SEQ_ID_FKEY);
+        if (_apps == null)
+            _apps = new Apps(this, Keys.APP_UPDATES__APP_UPDATES_APP_SEQ_ID_FKEY);
+
+        return _apps;
     }
 
     @Override
@@ -211,7 +217,7 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     // -------------------------------------------------------------------------
 
     @Override
-    public Row13<Integer, Integer, Integer, String, String, String, String, String, AppOperation, JsonElement, String, UUID, LocalDateTime> fieldsRow() {
+    public Row13<Integer, Integer, Integer, String, String, String, String, String, AppOperation, JsonElement, String, java.util.UUID, LocalDateTime> fieldsRow() {
         return (Row13) super.fieldsRow();
     }
 }

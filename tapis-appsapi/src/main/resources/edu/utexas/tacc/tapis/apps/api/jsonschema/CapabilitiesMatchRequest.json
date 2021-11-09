@@ -32,26 +32,31 @@
     "AND": {
       "type": "object",
       "required": ["AND"],
+      "additionalProperties": false,
       "properties": { "AND": { "$ref": "#/definitions/ConditionList" } }
     },
     "OR": {
       "type": "object",
       "required": ["OR"],
+      "additionalProperties": false,
       "properties": { "OR": { "$ref": "#/definitions/ConditionList" } }
     },
     "EQ": {
       "type": "object",
       "required": ["EQ"],
+      "additionalProperties": false,
       "properties": { "EQ": { "$ref": "#/definitions/StringPair" } }
     },
     "NEQ": {
       "type": "object",
       "required": ["NEQ"],
+      "additionalProperties": false,
       "properties": { "NEQ": { "$ref": "#/definitions/StringPair" } }
     },
     "StringPair": {
       "type": "object",
       "required": ["Attribute", "Value"],
+      "additionalProperties": false,
       "properties": {
         "Attribute": { "type": "string" },
         "Value": { "type": "string" }

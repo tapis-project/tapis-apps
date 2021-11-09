@@ -12,6 +12,8 @@
   "RuntimeEnum": { "type": "string", "enum": [ "SINGULARITY", "DOCKER" ] },
   "RuntimeOptionEnum": { "type": "string", "enum": [ "NONE", "SINGULARITY_START", "SINGULARITY_RUN" ] },
   "NotificationMechanismEnum": { "type": "string", "enum": [ "WEBHOOK", "EMAIL", "QUEUE", "ACTOR" ] },
+  "FileInputModeEnum": { "type": "string", "enum": [ "OPTIONAL", "REQUIRED", "FIXED" ], "default": "OPTIONAL" },
+  "ArgInputModeEnum": { "type": "string", "enum": [ "REQUIRED", "FIXED", "INCLUDE_ON_DEMAND", "INCLUDE_BY_DEFAULT" ], "default": "INCLUDE_ON_DEMAND" },
   "RuntimeOptions": {
     "type": ["array", "null"],
     "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/RuntimeOptionEnum" }
@@ -27,6 +29,7 @@
   },
   "JobAttributes": {
     "type": ["object"],
+    "additionalProperties": false,
     "properties": {
       "description": { "type": ["string", "null"], "maxLength": 2048 },
       "dynamicExecSystem": { "type": "boolean", "default": false },
@@ -41,12 +44,16 @@
       "execSystemOutputDir": { "$ref": "#/DirPath" },
       "execSystemLogicalQueue": { "type": ["string", "null"], "minLength": 1, "maxLength": 128 },
       "archiveSystemId": { "$ref": "#/SystemId" },
-      "archiveDir": { "$ref": "#/DirPath" },
+      "archiveSystemDir": { "$ref": "#/DirPath" },
       "archiveOnAppError": { "type": "boolean", "default": true },
       "parameterSet": { "$ref": "#/ParameterSet" },
       "fileInputs": {
         "type": ["array", "null"],
         "items":  { "$ref": "#/FileInput" }
+      },
+      "fileInputArrays": {
+        "type": ["array", "null"],
+        "items":  { "$ref": "#/FileInputArray" }
       },
       "nodeCount": { "type": "integer", "default": -1 },
       "coresPerNode": { "type": "integer", "default": -1 },
@@ -61,6 +68,7 @@
   },
   "ParameterSet": {
     "type": "object",
+    "additionalProperties": false,
     "properties": {
       "appArgs": {
         "type": ["array", "null"], "items":  { "$ref": "#/ArgSpec" }
@@ -79,17 +87,33 @@
   },
   "FileInput": {
     "type": "object",
-    "required": [ "meta" ],
+    "required": [ "name", "targetPath" ],
+    "additionalProperties": false,
     "properties": {
-      "sourceUrl": { "type": "string", "format": "uri" },
-      "targetPath": { "type": "string" },
-      "inPlace": { "type": "boolean", "default": false },
-      "meta": { "$ref": "#/ArgMetaSpec" }
+      "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+      "description": { "type": "string", "maxLength": 8096 },
+      "inputMode": { "$ref": "#/FileInputModeEnum" },
+      "autoMountLocal": { "type": "boolean", "default": true },
+      "sourceUrl": { "type": "string", "minLength": 1, "format": "uri" },
+      "targetPath": { "type": "string", "minLength": 1 }
+    }
+  },
+  "FileInputArray": {
+    "type": "object",
+    "required": [ "name", "targetDir" ],
+    "additionalProperties": false,
+    "properties": {
+      "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+      "description": { "type": "string", "maxLength": 8096 },
+      "inputMode": { "$ref": "#/FileInputModeEnum" },
+      "sourceUrls": { "type": ["array", "null"], "items": { "type": "string", "format": "uri" } },
+      "targetDir": {"type": "string", "minLength": 1 }
     }
   },
   "NotificationSubscription": {
     "type": "object",
     "required": [ "notificationMechanisms" ],
+    "additionalProperties": false,
     "properties": {
       "filter":  { "type": "string", "minLength": 1 },
       "notificationMechanisms": {
@@ -106,6 +130,7 @@
   },
   "ArchiveFilter" : {
     "type": "object",
+    "additionalProperties": false,
     "properties": {
       "includes": { "type": ["array", "null"], "items": { "type": "string", "minLength": 1 } },
       "excludes": { "type": ["array", "null"], "items": { "type": "string", "minLength": 1 } },
@@ -114,30 +139,22 @@
   },
   "ArgSpec": {
     "type": "object",
-    "required": [ "arg" ],
-    "properties": {
-      "arg": { "type":  "string" },
-      "meta": { "$ref": "#/ArgMetaSpec" }
-    }
-  },
-  "ArgMetaSpec": {
-    "type": "object",
     "required": [ "name" ],
+    "additionalProperties": false,
     "properties": {
-      "name": { "type": "string", "minLength": 1 },
-      "description": { "type": "string" },
-      "required": { "type": "boolean", "default": false },
-      "keyValuePairs": {
-        "type": ["array", "null"], "items": { "$ref": "#/KeyValuePair" }
-      }
+      "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+      "description": { "type": "string", "minLength": 1, "maxLength": 8096 },
+      "inputMode": { "$ref": "#/ArgInputModeEnum" },
+      "arg": { "type": "string", "minLength": 1 }
     }
   },
   "KeyValuePair": {
     "type": "object",
     "required": [ "key" ],
+    "additionalProperties": false,
     "properties": {
       "key": { "type":  "string", "minLength": 1 },
-      "value": { "type":  "string" }
+      "value": { "type":  "string", "default": "" }
     }
   }
 }

@@ -10,6 +10,9 @@ import javax.inject.Inject;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
+import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
+import edu.utexas.tacc.tapis.apps.model.JobAttributes;
+import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
@@ -219,7 +222,7 @@ public class AppsServiceImpl implements AppsService
    * @throws NotFoundException - Resource not found
    */
   @Override
-  public void patchApp(ResourceRequestUser rUser, PatchApp patchApp, String scrubbedText)
+  public void patchApp(ResourceRequestUser rUser, String appId, String appVersion, PatchApp patchApp, String scrubbedText)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException,
                  NotAuthorizedException, NotFoundException
   {
@@ -227,9 +230,9 @@ public class AppsServiceImpl implements AppsService
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (patchApp == null) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
-    String resourceTenantId = patchApp.getTenant();
-    String resourceId = patchApp.getId();
-    String resourceVersion = patchApp.getVersion();
+    String resourceTenantId = rUser.getOboTenantId();
+    String resourceId = appId;
+    String resourceVersion = appVersion;
 
     // ---------------------------- Check inputs ------------------------------------
     if (StringUtils.isBlank(resourceTenantId) || StringUtils.isBlank(resourceId) ||
@@ -260,7 +263,7 @@ public class AppsServiceImpl implements AppsService
     // ----------------- Create all artifacts --------------------
     // No distributed transactions so no distributed rollback needed
     // ------------------- Make Dao call to persist the app -----------------------------------
-    dao.patchApp(rUser, patchedApp, patchApp, updateJsonStr, scrubbedText);
+    dao.patchApp(rUser, appId, appVersion, patchedApp, updateJsonStr, scrubbedText);
   }
 
   /**
@@ -305,7 +308,7 @@ public class AppsServiceImpl implements AppsService
       throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, resourceId, resourceVersion));
     }
 
-    // Retrieve the app being patched and create fully populated App with changes merged in
+    // Retrieve the app being updated and create fully populated App with changes merged in
     App origApp = dao.getApp(resourceTenantId, resourceId, resourceVersion);
     App updatedApp = createUpdatedApp(origApp, putApp);
 
@@ -315,7 +318,7 @@ public class AppsServiceImpl implements AppsService
     // ---------------- Check constraints on App attributes ------------------------
     validateApp(rUser, updatedApp);
 
-    // Construct Json string representing the PatchApp about to be used to update the app
+    // Construct Json string representing the App about to be used to update
     String updateJsonStr = TapisGsonUtils.getGson().toJson(putApp);
 
     // ----------------- Create all artifacts --------------------
@@ -497,6 +500,31 @@ public class AppsServiceImpl implements AppsService
 
     // Delete the app
     return dao.hardDeleteApp(resourceTenantId, appId);
+  }
+
+  /**
+   * Hard delete all resources in the "test" tenant.
+   * Also remove artifacts from the Security Kernel.
+   * NOTE: This is package-private. Only test code should ever use it.
+   *
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @return Number of items deleted
+   * @throws TapisException - for Tapis related exceptions
+   * @throws NotAuthorizedException - unauthorized
+   */
+  int hardDeleteAllTestTenantResources(ResourceRequestUser rUser)
+          throws TapisException, TapisClientException, NotAuthorizedException
+  {
+    // For safety hard code the tenant name
+    String resourceTenantId = "test";
+    // Fetch all resource Ids including deleted items
+    if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+    var resourceIdSet = dao.getAppIDs(resourceTenantId, true);
+    for (String id : resourceIdSet)
+    {
+      hardDeleteApp(rUser, resourceTenantId, id);
+    }
+    return resourceIdSet.size();
   }
 
   /**
@@ -789,14 +817,14 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Get list of app IDs
+   * Get list of all app IDs that an rUser is authorized to view
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param showDeleted - whether or not to included resources that have been marked as deleted.
-   * @return - list of apps
+   * @return - set of application IDs
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
-  public Set<String> getAppIDs(ResourceRequestUser rUser, boolean showDeleted) throws TapisException
+  public Set<String> getAllowedAppIDs(ResourceRequestUser rUser, boolean showDeleted) throws TapisException
   {
     AppOperation op = AppOperation.read;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -1612,7 +1640,9 @@ public class AppsServiceImpl implements AppsService
    */
   private App createPatchedApp(App o, PatchApp p)
   {
+    // Start off with the current up
     App app1 = new App(o);
+    // Now update fields that are being patched
     if (p.getDescription() != null) app1.setDescription(p.getDescription());
     if (p.getRuntime() != null) app1.setRuntime(p.getRuntime());
     if (p.getRuntimeVersion() != null) app1.setRuntimeVersion(p.getRuntimeVersion());
@@ -1622,35 +1652,48 @@ public class AppsServiceImpl implements AppsService
     if (p.getMaxJobsPerUser() != null) app1.setMaxJobsPerUser(p.getMaxJobsPerUser());
     if (p.isStrictFileInputs() != null) app1.setStrictFileInputs(p.isStrictFileInputs());
     // Start JobAttributes
-    if (p.getJobDescription() != null) app1.setJobDescription(p.getJobDescription());
-    if (p.isDynamicExecSystem() != null) app1.setDynamicExecSystem(p.isDynamicExecSystem());
-    if (p.getExecSystemConstraints() != null) app1.setExecSystemConstraints(p.getExecSystemConstraints());
-    if (p.getExecSystemId() != null) app1.setExecSystemId(p.getExecSystemId());
-    if (p.getExecSystemExecDir() != null) app1.setExecSystemExecDir(p.getExecSystemExecDir());
-    if (p.getExecSystemInputDir() != null) app1.setExecSystemInputDir(p.getExecSystemInputDir());
-    if (p.getExecSystemOutputDir() != null) app1.setExecSystemOutputDir(p.getExecSystemOutputDir());
-    if (p.getExecSystemLogicalQueue() != null) app1.setExecSystemLogicalQueue(p.getExecSystemLogicalQueue());
-    if (p.getArchiveSystemId() != null) app1.setArchiveSystemId(p.getArchiveSystemId());
-    if (p.getArchiveSystemDir() != null) app1.setArchiveSystemDir(p.getArchiveSystemDir());
-    if (p.getArchiveOnAppError() != null) app1.setArchiveOnAppError(p.getArchiveOnAppError());
-    // Start parameterSet
-    if (p.getAppArgs() != null) app1.setAppArgs(p.getAppArgs());
-    if (p.getContainerArgs() != null) app1.setContainerArgs(p.getContainerArgs());
-    if (p.getSchedulerOptions() != null) app1.setSchedulerOptions(p.getSchedulerOptions());
-    if (p.getEnvVariables() != null) app1.setEnvVariables(p.getEnvVariables());
-    if (p.getArchiveIncludes() != null) app1.setArchiveIncludes(p.getArchiveIncludes());
-    if (p.getArchiveExcludes() != null) app1.setArchiveExcludes(p.getArchiveExcludes());
-    if (p.getArchiveIncludeLaunchFiles() != null) app1.setArchiveIncludeLaunchFiles(p.getArchiveIncludeLaunchFiles());
-    // End parameterSet
-    if (p.getFileInputs() != null) app1.setFileInputs(p.getFileInputs());
-    if (p.getNodeCount() != null) app1.setNodeCount(p.getNodeCount());
-    if (p.getCoresPerNode() != null) app1.setCoresPerNode(p.getCoresPerNode());
-    if (p.getMemoryMb() != null) app1.setMemoryMb(p.getMemoryMb());
-    if (p.getMaxMinutes() != null) app1.setMaxMinutes(p.getMaxMinutes());
-    if (p.getNotifSubscriptions() != null) app1.setNotificationSubscriptions(p.getNotifSubscriptions());
-    if (p.getJobTags() != null) app1.setJobTags(p.getJobTags());
-    // End JobAttributes
-
+    if (p.getJobAttributes() != null)
+    {
+      JobAttributes jobAttrs = p.getJobAttributes();
+      if (jobAttrs.getDescription() != null) app1.setJobDescription(jobAttrs.getDescription());
+      if (jobAttrs.isDynamicExecSystem() != null) app1.setDynamicExecSystem(jobAttrs.isDynamicExecSystem());
+      if (jobAttrs.getExecSystemConstraints() != null) app1.setExecSystemConstraints(jobAttrs.getExecSystemConstraints());
+      if (jobAttrs.getExecSystemId() != null) app1.setExecSystemId(jobAttrs.getExecSystemId());
+      if (jobAttrs.getExecSystemExecDir() != null) app1.setExecSystemExecDir(jobAttrs.getExecSystemExecDir());
+      if (jobAttrs.getExecSystemInputDir() != null) app1.setExecSystemInputDir(jobAttrs.getExecSystemInputDir());
+      if (jobAttrs.getExecSystemOutputDir() != null) app1.setExecSystemOutputDir(jobAttrs.getExecSystemOutputDir());
+      if (jobAttrs.getExecSystemLogicalQueue() != null) app1.setExecSystemLogicalQueue(jobAttrs.getExecSystemLogicalQueue());
+      if (jobAttrs.getArchiveSystemId() != null) app1.setArchiveSystemId(jobAttrs.getArchiveSystemId());
+      if (jobAttrs.getArchiveSystemDir() != null) app1.setArchiveSystemDir(jobAttrs.getArchiveSystemDir());
+      if (jobAttrs.getArchiveOnAppError() != null) app1.setArchiveOnAppError(jobAttrs.getArchiveOnAppError());
+      // If parameterSet is being updated then we need to include it
+      if (jobAttrs.getParameterSet() != null)
+      {
+        ParameterSet pParmSet = jobAttrs.getParameterSet();
+        if (pParmSet.getAppArgs() != null) app1.getParameterSet().setAppArgs(pParmSet.getAppArgs());
+        if (pParmSet.getContainerArgs() != null) app1.getParameterSet().setContainerArgs(pParmSet.getContainerArgs());
+        if (pParmSet.getSchedulerOptions() != null) app1.getParameterSet().setSchedulerOptions(pParmSet.getSchedulerOptions());
+        if (pParmSet.getEnvVariables() != null) app1.getParameterSet().setEnvVariables(pParmSet.getEnvVariables());
+        // If ArchiveFilter in ParameterSet is being updated then process it
+        if (pParmSet.getArchiveFilter() != null)
+        {
+          ArchiveFilter af = pParmSet.getArchiveFilter();
+          if (af.getIncludes() != null) app1.getParameterSet().getArchiveFilter().setIncludes(af.getIncludes());
+          if (af.getExcludes() != null) app1.getParameterSet().getArchiveFilter().setExcludes(af.getExcludes());
+          if (af.isIncludeLaunchFiles() != null)
+            app1.getParameterSet().getArchiveFilter().setIncludeLaunchFiles(af.isIncludeLaunchFiles());
+        }
+      }
+      if (jobAttrs.getFileInputs() != null) app1.setFileInputs(jobAttrs.getFileInputs());
+      if (jobAttrs.getFileInputArrays() != null) app1.setFileInputArrays(jobAttrs.getFileInputArrays());
+      if (jobAttrs.getNodeCount() != null) app1.setNodeCount(jobAttrs.getNodeCount());
+      if (jobAttrs.getCoresPerNode() != null) app1.setCoresPerNode(jobAttrs.getCoresPerNode());
+      if (jobAttrs.getMemoryMB() != null) app1.setMemoryMB(jobAttrs.getMemoryMB());
+      if (jobAttrs.getMaxMinutes() != null) app1.setMaxMinutes(jobAttrs.getMaxMinutes());
+      if (jobAttrs.getSubscriptions() != null) app1.setSubscriptions(jobAttrs.getSubscriptions());
+      if (jobAttrs.getTags() != null) app1.setJobTags(jobAttrs.getTags());
+      // End JobAttributes
+    }
     if (p.getTags() != null) app1.setTags(p.getTags());
     if (p.getNotes() != null) app1.setNotes(p.getNotes());
     return app1;
@@ -1752,7 +1795,7 @@ public class AppsServiceImpl implements AppsService
     Integer minMinutes = execQ.getMinMinutes();
     int appNodeCount = app.getNodeCount();
     int appCoresPerNode = app.getCoresPerNode();
-    int appMemoryMb = app.getMemoryMb();
+    int appMemoryMb = app.getMemoryMB();
     int appMaxMinutes = app.getMaxMinutes();
 
     // If queue defines limit and app specifies limit and app limit out of range then add error
