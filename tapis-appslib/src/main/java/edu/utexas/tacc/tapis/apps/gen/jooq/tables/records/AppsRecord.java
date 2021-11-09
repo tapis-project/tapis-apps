@@ -22,7 +22,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppsRecord extends UpdatableRecordImpl<AppsRecord> implements Record11<Integer, String, String, String, AppType, String, Boolean, Boolean, Boolean, LocalDateTime, LocalDateTime> {
 
-    private static final long serialVersionUID = 1276642761;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Setter for <code>tapis_app.apps.seq_id</code>. Application sequence id
@@ -465,16 +465,16 @@ public class AppsRecord extends UpdatableRecordImpl<AppsRecord> implements Recor
     public AppsRecord(Integer seqId, String tenant, String id, String latestVersion, AppType appType, String owner, Boolean enabled, Boolean containerized, Boolean deleted, LocalDateTime created, LocalDateTime updated) {
         super(Apps.APPS);
 
-        set(0, seqId);
-        set(1, tenant);
-        set(2, id);
-        set(3, latestVersion);
-        set(4, appType);
-        set(5, owner);
-        set(6, enabled);
-        set(7, containerized);
-        set(8, deleted);
-        set(9, created);
-        set(10, updated);
+        setSeqId(seqId);
+        setTenant(tenant);
+        setId(id);
+        setLatestVersion(latestVersion);
+        setAppType(appType);
+        setOwner(owner);
+        setEnabled(enabled);
+        setContainerized(containerized);
+        setDeleted(deleted);
+        setCreated(created);
+        setUpdated(updated);
     }
 }

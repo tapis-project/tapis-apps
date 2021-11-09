@@ -1,19 +1,16 @@
 package edu.utexas.tacc.tapis.apps.dao;
 
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.apps.model.AppArg;
-import edu.utexas.tacc.tapis.apps.model.FileInput;
-import edu.utexas.tacc.tapis.apps.model.NotifSubscription;
+import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
+import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.apps.IntegrationUtils;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -75,7 +72,7 @@ public class AppsDaoTest
     App app0 = apps[0];
     boolean appCreated = dao.createApp(rUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
-    System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
+    System.out.println("Created ictem, id: " + app0.getId() + " version: " + app0.getVersion());
   }
 
   // Test retrieving a single item
@@ -88,7 +85,7 @@ public class AppsDaoTest
     Assert.assertNotNull(tmpApp, "Failed to get item, id: " + app0.getId() + " version: " + app0.getVersion());
     System.out.println("Found item, id: " + app0.getId() + " version: " + app0.getVersion());
 
-    // Verify data in main table
+    // Verify data in main tables
     // ===========================
     Assert.assertEquals(tmpApp.getId(), app0.getId());
     Assert.assertEquals(tmpApp.getVersion(), app0.getVersion());
@@ -131,19 +128,25 @@ public class AppsDaoTest
     Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
     Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
     Assert.assertEquals(tmpApp.isArchiveOnAppError(), app0.isArchiveOnAppError());
-    Assert.assertEquals(tmpApp.getArchiveIncludeLaunchFiles(), app0.getArchiveIncludeLaunchFiles());
+
+   // Verify parameterSet
+    ParameterSet parmSet = tmpApp.getParameterSet();
+    ParameterSet parmSet0 = app0.getParameterSet();
+    Assert.assertNotNull(parmSet, "parameterSet was null");
+    verifyAppArgs("App Arg", parmSet0.getAppArgs(), parmSet.getAppArgs());
+    verifyAppArgs("Container Arg", parmSet0.getContainerArgs(), parmSet.getContainerArgs());
+    verifyAppArgs("Scheduler Option Arg", parmSet0.getSchedulerOptions(), parmSet.getSchedulerOptions());
+
     // Verify envVariables
-    String[] tmpEnvVariables = tmpApp.getEnvVariables();
-    Assert.assertNotNull(tmpEnvVariables, "envVariables value was null");
-    var envVariablesList = Arrays.asList(tmpEnvVariables);
-    Assert.assertEquals(tmpEnvVariables.length, envVariables1.length, "Wrong number of envVariables");
-    for (String envVariableStr : envVariables1)
-    {
-      Assert.assertTrue(envVariablesList.contains(envVariableStr));
-      System.out.println("Found envVariable: " + envVariableStr);
-    }
+    verifyKeyValuePairs("Env Var", parmSet0.getEnvVariables(), parmSet.getEnvVariables());
+
+    // Verify archiveFilter in parameterSet
+    ArchiveFilter archiveFilter = parmSet.getArchiveFilter();
+    ArchiveFilter archiveFilter0 = parmSet0.getArchiveFilter();
+    Assert.assertNotNull(archiveFilter, "archiveFilter was null");
+    Assert.assertEquals(archiveFilter.isIncludeLaunchFiles(), archiveFilter0.isIncludeLaunchFiles());
     // Verify archiveIncludes
-    String[] tmpArchiveIncludes = tmpApp.getArchiveIncludes();
+    String[] tmpArchiveIncludes = archiveFilter.getIncludes();
     Assert.assertNotNull(tmpArchiveIncludes, "archiveIncludes value was null");
     var archiveIncludesList = Arrays.asList(tmpArchiveIncludes);
     Assert.assertEquals(tmpArchiveIncludes.length, archiveIncludes1.length, "Wrong number of archiveIncludes");
@@ -153,7 +156,7 @@ public class AppsDaoTest
       System.out.println("Found archiveInclude: " + archiveIncludeStr);
     }
     // Verify archiveExcludes
-    String[] tmpArchiveExcludes = tmpApp.getArchiveExcludes();
+    String[] tmpArchiveExcludes = archiveFilter.getExcludes();
     Assert.assertNotNull(tmpArchiveExcludes, "archiveExcludes value was null");
     var archiveExcludesList = Arrays.asList(tmpArchiveExcludes);
     Assert.assertEquals(tmpArchiveExcludes.length, archiveExcludes1.length, "Wrong number of archiveExcludes");
@@ -162,10 +165,20 @@ public class AppsDaoTest
       Assert.assertTrue(archiveExcludesList.contains(archiveExcludeStr));
       System.out.println("Found archiveExclude: " + archiveExcludeStr);
     }
+
+    // Verify file inputs
+    verifyFileInputs(app0.getFileInputs(), tmpApp.getFileInputs());
+
+    // Verify file input arrays
+    verifyFileInputArrays(app0.getFileInputArrays(), tmpApp.getFileInputArrays());
+
     Assert.assertEquals(tmpApp.getNodeCount(), app0.getNodeCount());
     Assert.assertEquals(tmpApp.getCoresPerNode(), app0.getCoresPerNode());
-    Assert.assertEquals(tmpApp.getMemoryMb(), app0.getMemoryMb());
+    Assert.assertEquals(tmpApp.getMemoryMB(), app0.getMemoryMB());
     Assert.assertEquals(tmpApp.getMaxMinutes(), app0.getMaxMinutes());
+
+    // Verify notification subscriptions
+    verifySubscriptions(app0.getSubscriptions(), tmpApp.getSubscriptions());
     // Verify jobTags
     String[] tmpJobTags = tmpApp.getJobTags();
     Assert.assertNotNull(tmpJobTags, "JobTags value was null");
@@ -193,74 +206,6 @@ public class AppsDaoTest
     Assert.assertEquals(obj.get("project").getAsString(), notes1Obj.get("project").getAsString());
     Assert.assertTrue(obj.has("testdata"));
     Assert.assertEquals(obj.get("testdata").getAsString(), notes1Obj.get("testdata").getAsString());
-    // ===============================================================================================
-    // Verify data in aux tables: file_inputs, notification_subscriptions, app_args, container_args, scheduler_options
-    // ===============================================================================================
-    // Verify file inputs
-    List<FileInput> origFileInputs = app0.getFileInputs();
-    List<FileInput> tmpInputs = tmpApp.getFileInputs();
-    Assert.assertNotNull(origFileInputs, "Orig fileInputs was null");
-    Assert.assertNotNull(tmpInputs, "Fetched fileInputs was null");
-    Assert.assertEquals(tmpInputs.size(), origFileInputs.size());
-    var metaNamesFound = new ArrayList<String>();
-    for (FileInput itemFound : tmpInputs) {metaNamesFound.add(itemFound.getMetaName());}
-    for (FileInput itemSeedItem : origFileInputs)
-    {
-      Assert.assertTrue(metaNamesFound.contains(itemSeedItem.getMetaName()),
-              "List of fileInputs did not contain an item with metaName: " + itemSeedItem.getMetaName());
-    }
-    // Verify app args
-    List<AppArg> origArgs = app0.getAppArgs();
-    List<AppArg> tmpArgs = tmpApp.getAppArgs();
-    Assert.assertNotNull(origArgs, "Orig appArgs was null");
-    Assert.assertNotNull(tmpArgs, "Fetched appArgs was null");
-    Assert.assertEquals(tmpArgs.size(), origArgs.size());
-    var argValuesFound = new ArrayList<String>();
-    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getArgValue());}
-    for (AppArg itemSeedItem : origArgs)
-    {
-      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getArgValue()),
-              "List of appArgs did not contain an item with value: " + itemSeedItem.getArgValue());
-    }
-    // Verify container args
-    origArgs = app0.getContainerArgs();
-    tmpArgs = tmpApp.getAppArgs();
-    Assert.assertNotNull(origArgs, "Orig containerArgs was null");
-    Assert.assertNotNull(tmpArgs, "Fetched containerArgs was null");
-    Assert.assertEquals(tmpArgs.size(), origArgs.size());
-    argValuesFound = new ArrayList<>();
-    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getArgValue());}
-    for (AppArg itemSeedItem : origArgs)
-    {
-      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getArgValue()),
-              "List of containerArgs did not contain an item with value: " + itemSeedItem.getArgValue());
-    }
-    // Verify scheduler options
-    origArgs = app0.getSchedulerOptions();
-    tmpArgs = tmpApp.getSchedulerOptions();
-    Assert.assertNotNull(origArgs, "Orig schedulerOptions was null");
-    Assert.assertNotNull(tmpArgs, "Fetched schedulerOptions was null");
-    Assert.assertEquals(tmpArgs.size(), origArgs.size());
-    argValuesFound = new ArrayList<>();
-    for (AppArg itemFound : tmpArgs) {argValuesFound.add(itemFound.getArgValue());}
-    for (AppArg itemSeedItem : origArgs)
-    {
-      Assert.assertTrue(argValuesFound.contains(itemSeedItem.getArgValue()),
-              "List of schedulerOptions did not contain an item with value: " + itemSeedItem.getArgValue());
-    }
-    // Verify notification subscriptions
-    List<NotifSubscription> origNotificationSubs = app0.getNotificationSubscriptions();
-    List<NotifSubscription> tmpSubs = tmpApp.getNotificationSubscriptions();
-    Assert.assertNotNull(origNotificationSubs, "Orig notificationSubscriptions was null");
-    Assert.assertNotNull(tmpSubs, "Fetched notificationSubscriptions was null");
-    Assert.assertEquals(tmpSubs.size(), origNotificationSubs.size());
-    var filtersFound = new ArrayList<String>();
-    for (NotifSubscription itemFound : tmpSubs) {filtersFound.add(itemFound.getFilter());}
-    for (NotifSubscription itemSeedItem : origNotificationSubs)
-    {
-      Assert.assertTrue(filtersFound.contains(itemSeedItem.getFilter()),
-              "List of notificationSubscriptions did not contain an item with filter: " + itemSeedItem.getFilter());
-    }
   }
 
   // Test retrieving all app IDs
@@ -454,21 +399,19 @@ public class AppsDaoTest
   public void testMissingApp() throws Exception {
     String fakeAppId = "AMissingAppId";
     String fakeAppVersion = "AMissingAppVersion";
-    PatchApp patchApp = IntegrationUtils.makePatchAppFull(fakeAppId, fakeAppVersion);
     App patchedApp = new App(1, 1, tenantName, fakeAppId, fakeAppVersion, "description", AppType.BATCH, owner2, enabledTrue,
             containerizedTrue, runtime1, runtimeVersion1, runtimeOptions1, containerImage1,
             maxJobs1, maxJobsPerUser1, strictFileInputsFalse, IntegrationUtils.jobDescription1, dynamicExecSystemTrue,
             execSystemConstraints1, execSystemId1, execSystemExecDir1, execSystemInputDir1, execSystemOutputDir1,
             execSystemLogicalQueue1, archiveSystemIdNull, archiveSystemDir1, archiveOnAppErrorTrue,
-            envVariables1, archiveIncludes1, archiveExcludes1, archiveIncludeLaunchFilesTrue,
-            nodeCount1, coresPerNode1, memoryMb1, maxMinutes1, jobTags1,
+            parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMB1, maxMinutes1, notifList1, jobTags1,
             tags1, notes1, uuidNull, isDeletedFalse, createdNull, updatedNull);
     // Make sure app does not exist
     Assert.assertFalse(dao.checkForApp(tenantName, fakeAppId, true));
     Assert.assertFalse(dao.checkForApp(tenantName, fakeAppId, false));
     // update should throw not found exception
     boolean pass = false;
-    try { dao.patchApp(rUser, patchedApp, patchApp, scrubbedJson, null); }
+    try { dao.patchApp(rUser, fakeAppId, fakeAppVersion, patchedApp, scrubbedJson, null); }
     catch (IllegalStateException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_NOT_FOUND"));

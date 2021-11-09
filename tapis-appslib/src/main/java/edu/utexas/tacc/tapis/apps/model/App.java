@@ -7,11 +7,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.artifact.versioning.VersionRange;
 
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
@@ -55,6 +54,10 @@ public final class App
   public static final boolean DEFAULT_CONTAINERIZED = true;
   public static final boolean DEFAULT_STRICT_FILE_INPUTS = false;
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
+  public static final JsonElement DEFAULT_PARAMETER_SET = TapisGsonUtils.getGson().fromJson("{}", JsonElement.class);
+  public static final JsonElement DEFAULT_FILE_INPUTS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
+  public static final JsonElement DEFAULT_FILE_INPUT_ARRAYS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
+  public static final JsonElement DEFAULT_SUBSCRIPTIONS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
   public static final JsonObject DEFAULT_NOTES = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
   public static final int DEFAULT_NODE_COUNT = 1;
   public static final int DEFAULT_CORES_PER_NODE = 1;
@@ -129,23 +132,29 @@ public final class App
   //   Without an initial entry the prefix SINGULARITY_ gets stripped off the other 2 entries.
   //   See also https://github.com/tapis-project/openapi-apps/blob/dev/AppsAPI.yaml
   public enum RuntimeOption {NONE, SINGULARITY_START, SINGULARITY_RUN}
+  public enum FileInputMode {OPTIONAL, REQUIRED, FIXED}
+  public enum ArgInputMode {REQUIRED, FIXED, INCLUDE_ON_DEMAND, INCLUDE_BY_DEFAULT}
 
   // ************************************************************************
   // *********************** Fields *****************************************
   // ************************************************************************
 
   // NOTE: In order to use jersey's SelectableEntityFilteringFeature fields cannot be final.
-  // === Start fields in main table =============================================
-  private int seqId;           // Unique database sequence number
-  private int verSeqId;
+  // === Start fields in table apps =============================================
   private String tenant;     // Name of the tenant for which the app is defined
   private final String id;       // Name of the app
-  private final String version;    // Version of the app
-  private String description; // Full description of the app
   private final AppType appType; // Type of app, e.g. BATCH, DIRECT
   private String owner;      // User who owns the app and has full privileges
   private boolean enabled; // Indicates if app is currently enabled
   private boolean containerized;
+  private boolean deleted;
+  // === End fields in table apps =============================================
+
+  // === Start fields in table apps_versions =============================================
+  private int seqId;           // Unique database sequence number
+  private int verSeqId;
+  private final String version;    // Version of the app
+  private String description; // Full description of the app
   private Runtime runtime;
   private String runtimeVersion;
   private List<RuntimeOption> runtimeOptions;
@@ -165,31 +174,22 @@ public final class App
   private String archiveSystemId;
   private String archiveSystemDir;
   private boolean archiveOnAppError;
-  private String[] envVariables;
-  private String[] archiveIncludes;
-  private String[] archiveExcludes;
-  private boolean archiveIncludeLaunchFiles;
+  private ParameterSet parameterSet;
+  private List<FileInput> fileInputs;
+  private List<FileInputArray> fileInputArrays;
   private int nodeCount = DEFAULT_NODE_COUNT;
   private int coresPerNode = DEFAULT_CORES_PER_NODE;
-  private int memoryMb = DEFAULT_MEMORY_MB;
+  private int memoryMB = DEFAULT_MEMORY_MB;
   private int maxMinutes = DEFAULT_MAX_MINUTES;
+  private List<NotificationSubscription> subscriptions;
   private String[] jobTags;
   // === End jobAttributes ==========
-  // === End fields in main table =============================================
-
-  // Aux tables
-  private List<FileInput> fileInputs;
-  private List<NotifSubscription> notificationSubscriptions;
-  private List<AppArg> appArgs;  // parameterSet
-  private List<AppArg> containerArgs; // parameterSet
-  private List<AppArg> schedulerOptions; // parameterSet
-
   private String[] tags;       // List of arbitrary tags as strings
   private Object notes;      // Simple metadata as json
   private UUID uuid;
-  private boolean deleted;
   private Instant created; // UTC time for when record was created
   private Instant updated; // UTC time for when record was last updated
+  // === End fields in table apps_versions =============================================
 
   // ************************************************************************
   // *********************** Constructors ***********************************
@@ -261,20 +261,15 @@ public final class App
     archiveSystemId = a.getArchiveSystemId();
     archiveSystemDir = a.getArchiveSystemDir();
     archiveOnAppError = a.isArchiveOnAppError();
+    parameterSet = a.getParameterSet();
+    fileInputs = a.getFileInputs();
+    fileInputArrays = a.getFileInputArrays();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
-    memoryMb = a.getMemoryMb();
+    memoryMB = a.getMemoryMB();
     maxMinutes = a.getMaxMinutes();
-    envVariables = a.getEnvVariables();
-    archiveIncludes = a.getArchiveIncludes();
-    archiveExcludes = a.getArchiveExcludes();
-    archiveIncludeLaunchFiles = a.getArchiveIncludeLaunchFiles();
+    subscriptions = a.getSubscriptions();
     jobTags = a.getJobTags();
-    fileInputs = a.getFileInputs();
-    notificationSubscriptions = a.getNotificationSubscriptions();
-    appArgs = a.getAppArgs();
-    containerArgs = a.getContainerArgs();
-    schedulerOptions = a.getSchedulerOptions();
     tags = (a.getTags() == null) ? EMPTY_STR_ARRAY : a.getTags().clone();
     notes = a.getNotes();
     uuid = a.getUuid();
@@ -284,7 +279,6 @@ public final class App
   /**
    * Constructor for jOOQ with input parameter matching order of columns in DB
    * Also useful for testing
-   * Note that FileInputs, AppArgs, ContainerArgs, SchedulerOptions and Subscriptions must be set separately.
    */
   public App(int seqId1, int verSeqId1, String tenant1, String id1, String version1, String description1,
              AppType appType1, String owner1, boolean enabled1, boolean containerized1,
@@ -294,10 +288,10 @@ public final class App
              String jobDescription1, boolean dynamicExecSystem1,
              String[] execSystemConstraints1, String execSystemId1, String execSystemExecDir1,
              String execSystemInputDir1, String execSystemOutputDir1, String execSystemLogicalQueue1,
-             String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1, String[] envVariables1,
-             String[] archiveIncludes1, String[] archiveExcludes1, boolean archiveIncludeLaunchFiles1,
-             int nodeCount1, int coresPerNode1, int memoryMb1, int maxMinutes1,
-             String[] jobTags1,
+             String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1,
+             ParameterSet parameterSet1, List<FileInput> fileInputs1, List<FileInputArray> fileInputArrays1,
+             int nodeCount1, int coresPerNode1, int memoryMB1, int maxMinutes1,
+             List<NotificationSubscription> subscriptions1, String[] jobTags1,
              // == End jobAttributes
              String[] tags1, Object notes1, UUID uuid1, boolean deleted1, Instant created1, Instant updated1)
   {
@@ -329,14 +323,14 @@ public final class App
     archiveSystemId = archiveSystemId1;
     archiveSystemDir = archiveSystemDir1;
     archiveOnAppError = archiveOnAppError1;
+    parameterSet = parameterSet1;
+    fileInputs = (fileInputs1 == null) ? null : new ArrayList<>(fileInputs1);
+    fileInputArrays = (fileInputArrays1 == null) ? null : new ArrayList<>(fileInputArrays1);
     nodeCount = nodeCount1;
     coresPerNode = coresPerNode1;
-    memoryMb = memoryMb1;
+    memoryMB = memoryMB1;
     maxMinutes = maxMinutes1;
-    envVariables = (envVariables1 == null) ? null : envVariables1.clone();
-    archiveIncludes = (archiveIncludes1 == null) ? null : archiveIncludes1.clone();
-    archiveExcludes = (archiveExcludes1 == null) ? null : archiveExcludes1.clone();
-    archiveIncludeLaunchFiles = archiveIncludeLaunchFiles1;
+    subscriptions = subscriptions1;
     jobTags = (jobTags1 == null) ? null : jobTags1.clone();
     tags = (tags1 == null) ? null : tags1.clone();
     notes = notes1;
@@ -381,20 +375,15 @@ public final class App
     archiveSystemId = a.getArchiveSystemId();
     archiveSystemDir = a.getArchiveSystemDir();
     archiveOnAppError = a.isArchiveOnAppError();
+    parameterSet = a.getParameterSet();
+    fileInputs = a.getFileInputs();
+    fileInputArrays = a.getFileInputArrays();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
-    memoryMb = a.getMemoryMb();
+    memoryMB = a.getMemoryMB();
     maxMinutes = a.getMaxMinutes();
-    envVariables = a.getEnvVariables();
-    archiveIncludes = a.getArchiveIncludes();
-    archiveExcludes = a.getArchiveExcludes();
-    archiveIncludeLaunchFiles = a.getArchiveIncludeLaunchFiles();
+    subscriptions = a.getSubscriptions();
     jobTags = a.getJobTags();
-    fileInputs = a.getFileInputs();
-    notificationSubscriptions = a.getNotificationSubscriptions();
-    appArgs = a.getAppArgs();
-    containerArgs = a.getContainerArgs();
-    schedulerOptions = a.getSchedulerOptions();
     tags = a.getTags();
     notes = a.getNotes();
     uuid = a.getUuid();
@@ -642,196 +631,155 @@ public final class App
   public AppType getAppType() { return appType; }
 
   public String getDescription() { return description; }
-  public App setDescription(String d) { description = d; return this; }
+  public void setDescription(String d) { description = d;  }
 
   public String getOwner() { return owner; }
-  public App setOwner(String s) { owner = s;  return this;}
+  public void setOwner(String s) { owner = s;  }
 
   public boolean isEnabled() { return enabled; }
-  public App setEnabled(boolean b) { enabled = b;  return this; }
+  public void setEnabled(boolean b) { enabled = b;   }
 
   public boolean isContainerized() { return containerized; }
-  public App setContainerized(boolean b) { containerized = b;  return this; }
+  public void setContainerized(boolean b) { containerized = b;   }
 
   public Runtime getRuntime() { return runtime; }
   public void setRuntime(Runtime r) { runtime = r; }
 
   public String getRuntimeVersion() { return runtimeVersion; }
-  public App setRuntimeVersion(String s) { runtimeVersion = s; return this; }
+  public void setRuntimeVersion(String s) { runtimeVersion = s;  }
 
   public List<RuntimeOption> getRuntimeOptions()
   {
     return (runtimeOptions == null) ? null : new ArrayList<>(runtimeOptions);
   }
-  public App setRuntimeOptions(List<RuntimeOption> rol)
+  public void setRuntimeOptions(List<RuntimeOption> rol)
   {
     runtimeOptions = (rol == null) ? null : new ArrayList<>(rol);
-    return this;
   }
 
   public String getContainerImage() { return containerImage; }
-  public App setContainerImage(String s) { containerImage = s; return this; }
+  public void setContainerImage(String s) { containerImage = s;  }
 
   public boolean isDynamicExecSystem() { return dynamicExecSystem; }
-  public App setDynamicExecSystem(boolean b) {dynamicExecSystem = b; return this; }
+  public void setDynamicExecSystem(boolean b) {dynamicExecSystem = b;  }
 
   public String[] getExecSystemConstraints() { return (execSystemConstraints == null) ? null : execSystemConstraints.clone(); }
-  public App setExecSystemConstraints(String[] sa)
+  public void setExecSystemConstraints(String[] sa)
   {
     execSystemConstraints = (sa == null) ? null : sa.clone();
-    return this;
   }
 
   public String getExecSystemId() { return execSystemId; }
-  public App setExecSystemId(String s) { execSystemId = s; return this; }
+  public void setExecSystemId(String s) { execSystemId = s;  }
 
   public String getExecSystemExecDir() { return execSystemExecDir; }
-  public App setExecSystemExecDir(String s) { execSystemExecDir = s; return this; }
+  public void setExecSystemExecDir(String s) { execSystemExecDir = s;  }
 
   public String getExecSystemInputDir() { return execSystemInputDir; }
-  public App setExecSystemInputDir(String s) { execSystemInputDir = s; return this; }
+  public void setExecSystemInputDir(String s) { execSystemInputDir = s;  }
 
   public String getExecSystemOutputDir() { return execSystemOutputDir; }
-  public App setExecSystemOutputDir(String s) { execSystemOutputDir = s; return this; }
+  public void setExecSystemOutputDir(String s) { execSystemOutputDir = s;  }
 
   public String getExecSystemLogicalQueue() { return execSystemLogicalQueue; }
-  public App setExecSystemLogicalQueue(String s) { execSystemLogicalQueue = s; return this; }
+  public void setExecSystemLogicalQueue(String s) { execSystemLogicalQueue = s;  }
 
   public String getArchiveSystemId() { return archiveSystemId; }
-  public App setArchiveSystemId(String s) { archiveSystemId = s; return this; }
+  public void setArchiveSystemId(String s) { archiveSystemId = s;  }
 
   public String getArchiveSystemDir() { return archiveSystemDir; }
-  public App setArchiveSystemDir(String s) { archiveSystemDir = s; return this; }
+  public void setArchiveSystemDir(String s) { archiveSystemDir = s;  }
 
   public boolean isArchiveOnAppError() { return archiveOnAppError; }
-  public App setArchiveOnAppError(boolean b) { archiveOnAppError = b; return this; }
+  public void setArchiveOnAppError(boolean b) { archiveOnAppError = b;  }
 
   public String getJobDescription() { return jobDescription; }
-  public App setJobDescription(String s) { jobDescription = s; return this; }
+  public void setJobDescription(String s) { jobDescription = s;  }
 
   public int getMaxJobs()
   {
     return maxJobs;
   }
-  public App setMaxJobs(int i) { maxJobs = i; return this; }
+  public void setMaxJobs(int i) { maxJobs = i;  }
 
   public int getMaxJobsPerUser()
   {
     return maxJobsPerUser;
   }
-  public App setMaxJobsPerUser(int i) { maxJobsPerUser = i; return this; }
+  public void setMaxJobsPerUser(int i) { maxJobsPerUser = i;  }
 
   public int getNodeCount()
   {
     return nodeCount;
   }
-  public App setNodeCount(int i) { nodeCount = i; return this; }
+  public void setNodeCount(int i) { nodeCount = i;  }
 
   public int getCoresPerNode()
   {
     return coresPerNode;
   }
-  public App setCoresPerNode(int i) { coresPerNode = i; return this; }
+  public void setCoresPerNode(int i) { coresPerNode = i;  }
 
-  public int getMemoryMb()
+  public int getMemoryMB()
   {
-    return memoryMb;
+    return memoryMB;
   }
-  public App setMemoryMb(int i) { memoryMb = i; return this; }
+  public void setMemoryMB(int i) { memoryMB = i;  }
 
   public int getMaxMinutes() { return maxMinutes; }
-  public App setMaxMinutes(int i) { maxMinutes = i; return this; }
+  public void setMaxMinutes(int i) { maxMinutes = i;  }
 
   public boolean isStrictFileInputs() { return strictFileInputs; }
-  public App setStrictFileInputs(boolean b) { strictFileInputs = b;  return this; }
+  public void setStrictFileInputs(boolean b) { strictFileInputs = b;   }
 
   public List<FileInput> getFileInputs() {
     return (fileInputs == null) ? null : new ArrayList<>(fileInputs);
   }
-  public App setFileInputs(List<FileInput> fi) {
+  public void setFileInputs(List<FileInput> fi)
+  {
     fileInputs = (fi == null) ? null : new ArrayList<>(fi);
-    return this;
   }
 
-  public List<NotifSubscription> getNotificationSubscriptions()
+  public List<FileInputArray> getFileInputArrays() {
+    return (fileInputArrays == null) ? null : new ArrayList<>(fileInputArrays);
+  }
+  public void setFileInputArrays(List<FileInputArray> fia) { fileInputArrays = (fia == null) ? null : new ArrayList<>(fia);
+  }
+
+  public List<NotificationSubscription> getSubscriptions()
   {
-    return (notificationSubscriptions == null) ? null : new ArrayList<>(notificationSubscriptions);
+    return (subscriptions == null) ? null : new ArrayList<>(subscriptions);
   }
-  public App setNotificationSubscriptions(List<NotifSubscription> ns) {
-    notificationSubscriptions = (ns == null) ? null : new ArrayList<>(ns);
-    return this;
-  }
-
-  public List<AppArg> getAppArgs() {
-    return (appArgs == null) ? null : new ArrayList<>(appArgs);
-  }
-  public App setAppArgs(List<AppArg> al) {
-    appArgs = (al == null) ? null : new ArrayList<>(al);
-    return this;
-  }
-
-  public List<AppArg> getContainerArgs() {
-    return (containerArgs == null) ? null : new ArrayList<>(containerArgs);
-  }
-  public App setContainerArgs(List<AppArg> al) {
-    containerArgs = (al == null) ? null : new ArrayList<>(al);
-    return this;
-  }
-
-  public List<AppArg> getSchedulerOptions()
+  public void setSubscriptions(List<NotificationSubscription> ns)
   {
-    return (schedulerOptions == null) ? null : new ArrayList<>(schedulerOptions);
-  }
-  public App setSchedulerOptions(List<AppArg> al) {
-    schedulerOptions = (al == null) ? null : new ArrayList<>(al);
-    return this;
+    subscriptions = (ns == null) ? null : new ArrayList<>(ns);
   }
 
-  public String[] getEnvVariables() { return (envVariables == null) ? null : envVariables.clone(); }
-  public App setEnvVariables(String[] sa)
+  public ParameterSet getParameterSet() { return parameterSet; }
+  public void setParameterSet(ParameterSet ps) { parameterSet = ps; }
+
+  public String[] getJobTags()
   {
-    envVariables = (sa == null) ? null : sa.clone();
-    return this;
-  }
-
-  public String[] getArchiveIncludes() { return (archiveIncludes == null) ? null : archiveIncludes.clone(); }
-  public App setArchiveIncludes(String[] sa)
-  {
-    archiveIncludes = (sa == null) ? null : sa.clone();
-    return this;
-  }
-
-  public String[] getArchiveExcludes() { return (archiveExcludes == null) ? null : archiveExcludes.clone(); }
-  public App setArchiveExcludes(String[] sa)
-  {
-    archiveExcludes = (sa == null) ? null : sa.clone();
-    return this;
-  }
-
-  public boolean getArchiveIncludeLaunchFiles() { return archiveIncludeLaunchFiles; }
-  public App setArchiveIncludeLaunchFiles(boolean b) { archiveIncludeLaunchFiles = b; return this; }
-
-  public String[] getJobTags() {
     return (jobTags == null) ? null : jobTags.clone();
   }
-  public App setJobTags(String[] jt) {
+  public void setJobTags(String[] jt)
+  {
     jobTags = (jt == null) ? null : jt.clone();
-    return this;
   }
 
   public String[] getTags() {
     return (tags == null) ? null : tags.clone();
   }
-  public App setTags(String[] t) {
+  public void setTags(String[] t)
+  {
     tags = (t == null) ? null : t.clone();
-    return this;
   }
 
   public Object getNotes() { return notes; }
-  public App setNotes(Object n) { notes = n; return this; }
+  public void setNotes(Object n) { notes = n;  }
 
   public UUID getUuid() { return uuid; }
-  public App setUuid(UUID u) { uuid = u; return this; }
+  public void setUuid(UUID u) { uuid = u;  }
 
   public boolean isDeleted() { return deleted; }
 }

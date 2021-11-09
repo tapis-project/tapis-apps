@@ -1,7 +1,10 @@
 package edu.utexas.tacc.tapis.apps.api.model;
 
-import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.FileInput;
+import edu.utexas.tacc.tapis.apps.model.FileInputArray;
+import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
+import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 
 import java.util.List;
 
@@ -29,6 +32,7 @@ public final class JobAttributes
   public boolean archiveOnAppError;
   public ParameterSet parameterSet;
   public List<FileInput> fileInputs;
+  public List<FileInputArray> fileInputArrays;
   public int nodeCount = DEFAULT_NODE_COUNT;
   public int coresPerNode = DEFAULT_CORES_PER_NODE;
   public int memoryMB = DEFAULT_MEMORY_MB;
@@ -56,13 +60,14 @@ public final class JobAttributes
     archiveSystemId = a.getArchiveSystemId();
     archiveSystemDir = a.getArchiveSystemDir();
     archiveOnAppError = a.isArchiveOnAppError();
-    parameterSet = new ParameterSet(a);
-    fileInputs = ApiUtils.buildApiFileInputs(a.getFileInputs());
+    parameterSet = new ParameterSet(a.getParameterSet());
+    fileInputs = a.getFileInputs();
+    fileInputArrays = a.getFileInputArrays();
     nodeCount = a.getNodeCount();
     coresPerNode = a.getCoresPerNode();
-    memoryMB = a.getMemoryMb();
+    memoryMB = a.getMemoryMB();
     maxMinutes = a.getMaxMinutes();
-    subscriptions = ApiUtils.buildApiNotifSubscriptions(a.getNotificationSubscriptions());
+    subscriptions = a.getSubscriptions();
     tags = a.getJobTags();
   }
 }
