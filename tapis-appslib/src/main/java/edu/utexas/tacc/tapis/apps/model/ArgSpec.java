@@ -41,6 +41,15 @@ public final class ArgSpec
   /*                           Constructors                                 */
   /* ********************************************************************** */
 
+  // Default constructor to set defaults. This appears to be needed for when object is created from json using gson.
+  public ArgSpec()
+  {
+    name = null;
+    description = null;
+    arg = null;
+    setInputMode(null);
+  }
+
   public ArgSpec(String value1, String name1, String description1, ArgInputMode mode1)
   {
     arg = value1;

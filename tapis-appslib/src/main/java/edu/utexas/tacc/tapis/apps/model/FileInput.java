@@ -41,6 +41,17 @@ public final class FileInput
   /*                           Constructors                                 */
   /* ********************************************************************** */
 
+  // Default constructor to set defaults. This appears to be needed for when object is created from json using gson.
+  public FileInput()
+  {
+    name = null;
+    description = null;
+    setInputMode(null);
+    setAutoMountLocal(null);
+    sourceUrl = null;
+    targetPath = null;
+  }
+
   public FileInput(String name1, String description1, FileInputMode inputMode1, Boolean autoMountLocal1,
                    String sourceUrl1, String targetPath1)
   {
