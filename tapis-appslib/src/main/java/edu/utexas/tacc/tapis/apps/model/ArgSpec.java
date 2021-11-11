@@ -46,7 +46,7 @@ public final class ArgSpec
     arg = value1;
     name = name1;
     description = description1;
-    inputMode = (mode1 == null) ? DEFAULT_INPUT_MODE : mode1;
+    setInputMode(mode1);
   }
 
   /* ********************************************************************** */

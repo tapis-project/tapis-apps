@@ -46,8 +46,8 @@ public final class FileInput
   {
     name = name1;
     description = description1;
-    inputMode = (inputMode1 == null) ? DEFAULT_INPUT_MODE : inputMode1;
-    autoMountLocal = (autoMountLocal1 == null) ? DEFAULT_AUTO_MOUNT_LOCAL : autoMountLocal1;
+    setInputMode(inputMode1);
+    setAutoMountLocal(autoMountLocal1);
     sourceUrl = sourceUrl1;
     targetPath = targetPath1;
   }
