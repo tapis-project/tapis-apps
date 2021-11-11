@@ -46,8 +46,7 @@ public final class FileInputArray
   {
     name = name1;
     description = description1;
-    inputMode = (inputMode1 == null) ? DEFAULT_INPUT_MODE : inputMode1;
-// TODO/TBD do we need to preserve null?    sourceUrls = (sourceUrls1 == null) ? null : new ArrayList<>(sourceUrls1);
+    setInputMode(inputMode1);
     sourceUrls = sourceUrls1;
     targetDir = targetDir1;
   }

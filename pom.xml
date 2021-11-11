@@ -102,7 +102,11 @@
     <!-- Profile for building using TACC repositories -->
     <profile>
       <id>tacc</id>
-      <activation> <activeByDefault>true</activeByDefault> </activation>
+      <activation>
+        <property>
+          <name>!skipTaccProfile</name>
+        </property>
+      </activation>
       <repositories>
         <repository>
           <id>tapis-local-snapshots</id>
