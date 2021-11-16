@@ -1716,7 +1716,7 @@ public class AppsServiceImpl implements AppsService
    * Check attributes related to execSystemId
    *   - verify that execSystemId exists
    *   - verify that execSystem.canExec == true
-   *   - verify that if app type is BATCH then execSystem.jobIsBatch == true
+   *   - verify that if jobType is BATCH then execSystem.canRunBatch == true
    *   - if app type is BATCH and app specifies a LogicalQueue
    *     - verify that logical queue is defined for the execSystem
    *     - verify that constraints for the queue are not violated.
@@ -1758,10 +1758,10 @@ public class AppsServiceImpl implements AppsService
     // If app type is not BATCH then we are done. Remaining checks are for BATCH apps
     if (!AppType.BATCH.equals(app.getAppType())) return;
 
-    // Verify that for a BATCH app then execSystem.jobIsBatch == true
+    // Verify that for a BATCH app then execSystem.canRunBatch == true
     // NOTE: Constraints for Systems requires that this means there is at least one logical queue for the system
     //       so if app does not specify an execQ then should still be OK.
-    if (execSystem.getJobIsBatch() == null || !execSystem.getJobIsBatch())
+    if (execSystem.getCanRunBatch() == null || !execSystem.getCanRunBatch())
     {
       msg = LibUtils.getMsg("APPLIB_EXECSYS_NOT_BATCH", execSystemId);
       errMessages.add(msg);

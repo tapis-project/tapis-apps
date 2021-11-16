@@ -21,7 +21,6 @@ public final class ArgSpec
   /* ********************************************************************** */
   // Default values
   public static final ArgInputMode DEFAULT_INPUT_MODE = ArgInputMode.INCLUDE_ON_DEMAND;
-//  public static final Boolean DEFAULT_AUTO_MOUNT_LOCAL = true;
 
 
   /* ********************************************************************** */
@@ -33,9 +32,7 @@ public final class ArgSpec
   private final String arg;
   private final String name;
   private final String description;
-  // For Gson serialization we do not make inputMode final.
-  //   This is so we can fill in defaults if they are ever null.
-  private ArgInputMode inputMode = DEFAULT_INPUT_MODE;
+  private final ArgInputMode inputMode;
 
   /* ********************************************************************** */
   /*                           Constructors                                 */
@@ -47,7 +44,7 @@ public final class ArgSpec
     name = null;
     description = null;
     arg = null;
-    setInputMode(null);
+    inputMode = DEFAULT_INPUT_MODE;
   }
 
   public ArgSpec(String value1, String name1, String description1, ArgInputMode mode1)
@@ -55,7 +52,7 @@ public final class ArgSpec
     arg = value1;
     name = name1;
     description = description1;
-    setInputMode(mode1);
+    inputMode = (mode1 == null) ? DEFAULT_INPUT_MODE : mode1;
   }
 
   /* ********************************************************************** */
@@ -65,7 +62,6 @@ public final class ArgSpec
   public String getName() { return name; }
   public String getDescription() { return description; }
   public ArgInputMode getInputMode() { return inputMode; }
-  public void setInputMode(ArgInputMode im) { inputMode = (im == null) ? DEFAULT_INPUT_MODE : im; }
 
   @Override
   public String toString() {return TapisUtils.toString(this);}

@@ -415,34 +415,6 @@ public final class App
     if (jobTags == null) setJobTags(EMPTY_STR_ARRAY);
     if (tags == null) setTags(EMPTY_STR_ARRAY);
     if (notes == null) setNotes(DEFAULT_NOTES);
-    // Note that for FileInput, FileInputArray and the various ArgSpec collections the setters will
-    // fill in defaults if value is null
-    // When objects are constructed from incoming json the values can end up as null even though the classes
-    //   are designed to always set them to non-null.
-    if (fileInputs != null && !fileInputs.isEmpty())
-    {
-      for (FileInput fin : fileInputs)
-      {
-        fin.setAutoMountLocal(fin.isAutoMountLocal());
-        fin.setInputMode(fin.getInputMode());
-      }
-    }
-    if (fileInputArrays != null && !fileInputArrays.isEmpty())
-    {
-      for (FileInputArray fia : fileInputArrays) { fia.setInputMode(fia.getInputMode()); }
-    }
-    if (parameterSet != null && parameterSet.getAppArgs() != null)
-    {
-      for (ArgSpec aa : parameterSet.getAppArgs()) { aa.setInputMode(aa.getInputMode()); }
-    }
-    if (parameterSet != null && parameterSet.getContainerArgs() != null)
-    {
-      for (ArgSpec ca : parameterSet.getContainerArgs()) { ca.setInputMode(ca.getInputMode()); }
-    }
-    if (parameterSet != null && parameterSet.getSchedulerOptions() != null)
-    {
-      for (ArgSpec so : parameterSet.getSchedulerOptions()) { so.setInputMode(so.getInputMode());}
-    }
   }
 
   /**

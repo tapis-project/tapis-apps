@@ -30,10 +30,8 @@ public final class FileInput
 
   private final String name;
   private final String description;
-  // For Gson serialization we do not make inputMode or autoMountLocal final.
-  //   This is so we can fill in defaults if they are ever null.
-  private FileInputMode inputMode = DEFAULT_INPUT_MODE;
-  private Boolean autoMountLocal = DEFAULT_AUTO_MOUNT_LOCAL;
+  private final FileInputMode inputMode;
+  private final Boolean autoMountLocal;
   private final String sourceUrl;
   private final String targetPath;
 
@@ -46,8 +44,8 @@ public final class FileInput
   {
     name = null;
     description = null;
-    setInputMode(null);
-    setAutoMountLocal(null);
+    inputMode = DEFAULT_INPUT_MODE;
+    autoMountLocal = DEFAULT_AUTO_MOUNT_LOCAL;
     sourceUrl = null;
     targetPath = null;
   }
@@ -57,8 +55,8 @@ public final class FileInput
   {
     name = name1;
     description = description1;
-    setInputMode(inputMode1);
-    setAutoMountLocal(autoMountLocal1);
+    inputMode = (inputMode1 == null) ? DEFAULT_INPUT_MODE : inputMode1;
+    autoMountLocal = (autoMountLocal1 == null) ? DEFAULT_AUTO_MOUNT_LOCAL : autoMountLocal1;
     sourceUrl = sourceUrl1;
     targetPath = targetPath1;
   }
@@ -69,9 +67,7 @@ public final class FileInput
   public String getName() { return name; }
   public String getDescription() { return description; }
   public FileInputMode getInputMode() { return inputMode; }
-  public void setInputMode(FileInputMode im) { inputMode = (im == null) ? DEFAULT_INPUT_MODE : im;}
   public Boolean isAutoMountLocal() { return autoMountLocal; }
-  public void setAutoMountLocal(Boolean b) { autoMountLocal = (b == null) ? DEFAULT_AUTO_MOUNT_LOCAL : b;}
   public String getSourceUrl() { return sourceUrl; }
   public String getTargetPath() { return targetPath; }
 
