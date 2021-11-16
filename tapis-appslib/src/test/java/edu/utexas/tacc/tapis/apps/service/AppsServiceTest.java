@@ -244,6 +244,7 @@ public class AppsServiceTest
     app0.setRuntimeVersion(runtimeVersion2);
     app0.setRuntimeOptions(runtimeOptions2);
     app0.setContainerImage(containerImage2);
+    app0.setJobType(jobType2);
     app0.setMaxJobs(maxJobs2);
     app0.setMaxJobsPerUser(maxJobsPerUser2);
     app0.setStrictFileInputs(strictFileInputsTrue);
@@ -310,6 +311,7 @@ public class AppsServiceTest
     app0.setRuntimeVersion(runtimeVersion2);
     app0.setRuntimeOptions(runtimeOptions2);
     app0.setContainerImage(containerImage2);
+    app0.setJobType(jobType2);
     app0.setMaxJobs(maxJobs2);
     app0.setMaxJobsPerUser(maxJobsPerUser2);
     app0.setStrictFileInputs(strictFileInputsTrue);
@@ -357,6 +359,7 @@ public class AppsServiceTest
     app0.setDescription(description2);
     app0.setContainerImage(containerImage2);
     app0.setExecSystemId(execSystemId2);
+    app0.setJobType(jobType2);
     //Check common app attributes:
     checkCommonAppAttrs(app0, tmpAppPartial);
 
@@ -380,6 +383,7 @@ public class AppsServiceTest
     app0.setDescription(description2);
     app0.setContainerImage(containerImage2);
     app0.setExecSystemId(execSystemId2);
+    app0.setJobType(jobTypeNull);
     app0.getParameterSet().setContainerArgs(containerArgList3);
     app0.setFileInputs(finList3);
     app0.setFileInputArrays(fiaList3);
@@ -403,6 +407,7 @@ public class AppsServiceTest
     tmpAppPartial = svc.getApp(rUser1, appId, appVersion, false);
     // Update original app definition with patched values
     app0.getParameterSet().setAppArgs(appArgList3);
+    app0.setJobType(jobType2);
     //Check common app attributes:
     checkCommonAppAttrs(app0, tmpAppPartial);
   }
@@ -457,31 +462,6 @@ public class AppsServiceTest
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
     }
   }
-
-//  // Check that when an app is created variable substitution is correct for:
-//  //   owner, bucketName, rootDir, ...
-//  // And when app is retrieved effectiveUserId is resolved
-//  @Test
-//  public void testGetAppVariables() throws Exception
-//  {
-//    App app0 = apps[7];//5
-//    app0.setOwner("${apiUserId}");
-//    int appVerSeqId = svc.createApp(authenticatedOwnerUser1, app0, scrubbedJson);
-//    Assert.assertTrue(appVerSeqId > 0, "Invalid appVerSeqId: " + appVerSeqId);
-//    App tmpApp = svc.getApp(authenticatedOwnerUser1, app0.getId(), app0.getVersion(), false);
-//    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
-//    System.out.println("Found item: " + app0.getId());
-//
-//// app8 = {tenantName, "Sapp8", "description 8", AppType.LINUX.name(), "${apiUserId}", "host8",
-////         "${owner}", prot1AccessMethName, "fakePassword8", "bucket8-${tenant}-${apiUserId}", "/root8/${tenant}", prot1TxfrMethods,
-////         "jobLocalWorkDir8/${owner}/${tenant}/${apiUserId}", "jobLocalArchDir8/${apiUserId}", "jobRemoteArchApp8",
-////         "jobRemoteArchDir8${owner}${tenant}${apiUserId}", tags, notes, "{}"};
-//    Assert.assertEquals(tmpApp.getId(), app0.getId());
-//    Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
-//    Assert.assertEquals(tmpApp.getAppType().name(), app0.getAppType().name());
-//    Assert.assertEquals(tmpApp.getOwner(), ownerUser);
-//    Assert.assertEquals(tmpApp.isEnabled(), app0.isEnabled());
-//  }
 
   @Test
   public void testGetAppIDs() throws Exception
@@ -1211,7 +1191,9 @@ public class AppsServiceTest
     Assert.assertEquals(tmpApp.getId(), app0.getId());
     Assert.assertEquals(tmpApp.getVersion(), app0.getVersion());
     Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
-    Assert.assertEquals(tmpApp.getAppType().name(), app0.getAppType().name());
+    // If patch set jobType to null then we should get null back.
+    if (app0.getJobType() == null) Assert.assertNull(tmpApp.getJobType());
+    else Assert.assertEquals(tmpApp.getJobType().name(), app0.getJobType().name());
     Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
     Assert.assertEquals(tmpApp.isEnabled(), app0.isEnabled());
     Assert.assertEquals(tmpApp.getRuntime().name(), app0.getRuntime().name());

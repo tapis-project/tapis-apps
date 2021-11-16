@@ -30,12 +30,12 @@ import org.slf4j.LoggerFactory;
 
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
-import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.FileInputArray;
 import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
+import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.search.parser.ASTBinaryExpression;
 import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
@@ -174,7 +174,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
                 .set(APPS.TENANT, app.getTenant())
                 .set(APPS.ID, app.getId())
                 .set(APPS.LATEST_VERSION, app.getVersion())
-                .set(APPS.APP_TYPE, app.getAppType())
                 .set(APPS.OWNER, owner)
                 .set(APPS.ENABLED, app.isEnabled())
                 .set(APPS.CONTAINERIZED, app.isContainerized())
@@ -199,6 +198,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.RUNTIME_VERSION, app.getRuntimeVersion())
               .set(APPS_VERSIONS.RUNTIME_OPTIONS, runtimeOptionsStrArray)
               .set(APPS_VERSIONS.CONTAINER_IMAGE, app.getContainerImage())
+              .set(APPS_VERSIONS.JOB_TYPE, app.getJobType())
               .set(APPS_VERSIONS.MAX_JOBS, app.getMaxJobs())
               .set(APPS_VERSIONS.MAX_JOBS_PER_USER, app.getMaxJobsPerUser())
               .set(APPS_VERSIONS.JOB_DESCRIPTION, app.getJobDescription())
@@ -279,7 +279,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (StringUtils.isBlank(tenantId)) LibUtils.logAndThrowNullParmException(opName, "tenant");
     if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
     if (StringUtils.isBlank(appVersion)) LibUtils.logAndThrowNullParmException(opName, "appVersion");
-    if (putApp.getAppType() == null) LibUtils.logAndThrowNullParmException(opName, "appType");
 
     // Make sure runtime, notes, tags, etc are all set
     Runtime runtime = App.DEFAULT_RUNTIME;
@@ -299,6 +298,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     {
       runtimeOptionsStrArray = putApp.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
     }
+
     if (putApp.getExecSystemConstraints() != null) execSystemConstraintsStrArray = putApp.getExecSystemConstraints();
     if (putApp.getParameterSet() != null) parameterSetJson = TapisGsonUtils.getGson().toJsonTree(putApp.getParameterSet());
     if (putApp.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(putApp.getFileInputs());
@@ -332,6 +332,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.RUNTIME_VERSION, putApp.getRuntimeVersion())
               .set(APPS_VERSIONS.RUNTIME_OPTIONS, runtimeOptionsStrArray)
               .set(APPS_VERSIONS.CONTAINER_IMAGE, putApp.getContainerImage())
+              .set(APPS_VERSIONS.JOB_TYPE, putApp.getJobType())
               .set(APPS_VERSIONS.MAX_JOBS, putApp.getMaxJobs())
               .set(APPS_VERSIONS.MAX_JOBS_PER_USER, putApp.getMaxJobsPerUser())
               .set(APPS_VERSIONS.STRICT_FILE_INPUTS, putApp.isStrictFileInputs())
@@ -428,6 +429,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     {
       runtimeOptionsStrArray = patchedApp.getRuntimeOptions().stream().map(RuntimeOption::name).toArray(String[]::new);
     }
+
     if (patchedApp.getExecSystemConstraints() != null) execSystemConstraintsStrArray = patchedApp.getExecSystemConstraints();
     if (patchedApp.getParameterSet() != null) parameterSetJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getParameterSet());
     if (patchedApp.getFileInputs() != null) fileInputsJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getFileInputs());
@@ -457,6 +459,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.RUNTIME_VERSION, patchedApp.getRuntimeVersion())
               .set(APPS_VERSIONS.RUNTIME_OPTIONS, runtimeOptionsStrArray)
               .set(APPS_VERSIONS.CONTAINER_IMAGE, patchedApp.getContainerImage())
+              .set(APPS_VERSIONS.JOB_TYPE, patchedApp.getJobType())
               .set(APPS_VERSIONS.MAX_JOBS, patchedApp.getMaxJobs())
               .set(APPS_VERSIONS.MAX_JOBS_PER_USER, patchedApp.getMaxJobsPerUser())
               .set(APPS_VERSIONS.STRICT_FILE_INPUTS, patchedApp.isStrictFileInputs())
@@ -1537,6 +1540,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       runtimeOptions = Arrays.stream(runtimeOptionsStrArray).map(RuntimeOption::valueOf).collect(Collectors.toList());
     }
 
+    // Build lists for ParameterSet arguments, FileInputs, FileInputArrays.
     JsonElement parmSetJsonElement = r.get(APPS_VERSIONS.PARAMETER_SET);
     ParameterSet parmSet = TapisGsonUtils.getGson().fromJson(parmSetJsonElement, ParameterSet.class);
     JsonElement fiJsonElement = r.get(APPS_VERSIONS.FILE_INPUTS);
@@ -1547,7 +1551,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     List<NotificationSubscription> subscriptions =
             Arrays.asList(TapisGsonUtils.getGson().fromJson(subscriptionsJsonElement, NotificationSubscription[].class));
     app = new App(appSeqId, appVerSeqId, r.get(APPS.TENANT), r.get(APPS.ID), r.get(APPS_VERSIONS.VERSION),
-            r.get(APPS_VERSIONS.DESCRIPTION), r.get(APPS.APP_TYPE), r.get(APPS.OWNER), r.get(APPS.ENABLED),
+            r.get(APPS_VERSIONS.DESCRIPTION), r.get(APPS_VERSIONS.JOB_TYPE), r.get(APPS.OWNER), r.get(APPS.ENABLED),
             r.get(APPS.CONTAINERIZED), r.get(APPS_VERSIONS.RUNTIME), r.get(APPS_VERSIONS.RUNTIME_VERSION),
             runtimeOptions,
             r.get(APPS_VERSIONS.CONTAINER_IMAGE), r.get(APPS_VERSIONS.MAX_JOBS), r.get(APPS_VERSIONS.MAX_JOBS_PER_USER),

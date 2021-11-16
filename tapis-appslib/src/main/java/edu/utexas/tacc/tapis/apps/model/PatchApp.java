@@ -3,6 +3,7 @@ package edu.utexas.tacc.tapis.apps.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
@@ -22,6 +23,7 @@ public final class PatchApp
   private final String runtimeVersion;
   private final List<RuntimeOption> runtimeOptions;
   private final String containerImage;
+  private JobType jobType;
   private final Integer maxJobs;
   private final Integer maxJobsPerUser;
   private final Boolean strictFileInputs;
@@ -38,7 +40,7 @@ public final class PatchApp
    * Constructor setting all attributes.
    */
   public PatchApp(String description1, Runtime runtime1, String runtimeVersion1, List<RuntimeOption> runtimeOptions1,
-                  String containerImage1, Integer maxJobs1, Integer maxJobsPerUser1, Boolean strictFileInputs1,
+                  String containerImage1, JobType jobType1, Integer maxJobs1, Integer maxJobsPerUser1, Boolean strictFileInputs1,
                   JobAttributes jobAttributes1, String[] tags1, Object notes1)
   {
     description = description1;
@@ -46,6 +48,7 @@ public final class PatchApp
     runtimeVersion = runtimeVersion1;
     runtimeOptions = (runtimeOptions1 == null) ? null : new ArrayList<>(runtimeOptions1);
     containerImage = containerImage1;
+    jobType = jobType1;
     maxJobs = maxJobs1;
     maxJobsPerUser = maxJobsPerUser1;
     strictFileInputs = strictFileInputs1;
@@ -65,6 +68,8 @@ public final class PatchApp
     return (runtimeOptions == null) ? null : new ArrayList<>(runtimeOptions);
   }
   public String getContainerImage() { return containerImage; }
+  public JobType getJobType() { return jobType; }
+  public void setJobType(JobType jt) { jobType = jt; }
   public Integer getMaxJobs() { return maxJobs; }
   public Integer getMaxJobsPerUser() { return maxJobsPerUser; }
   public Boolean isStrictFileInputs() { return strictFileInputs; }

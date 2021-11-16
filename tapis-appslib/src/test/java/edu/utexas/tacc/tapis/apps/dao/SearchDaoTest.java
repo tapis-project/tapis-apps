@@ -164,8 +164,8 @@ public class SearchDaoTest
     validCaseInputs.put(19,new CaseData(numApps-1, Arrays.asList(appIdLikeAll, "id.nlike." + app0Id)));
     validCaseInputs.put(20,new CaseData(1, Arrays.asList(appIdLikeAll, "id.in." + nameList)));
     validCaseInputs.put(21,new CaseData(numApps-1, Arrays.asList(appIdLikeAll, "id.nin." + nameList)));
-    validCaseInputs.put(22,new CaseData(numApps, Arrays.asList(appIdLikeAll, "app_type.eq.BATCH")));
-    validCaseInputs.put(23,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "app_type.eq.BATCH","owner.neq." + owner2)));
+    validCaseInputs.put(22,new CaseData(numApps, Arrays.asList(appIdLikeAll, "job_type.eq.BATCH")));
+    validCaseInputs.put(23,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "job_type.eq.BATCH","owner.neq." + owner2)));
     // Test numeric relational
     validCaseInputs.put(40,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "max_jobs.between.1," + numApps/2)));
     validCaseInputs.put(41,new CaseData(numApps/2-1, Arrays.asList(appIdLikeAll, "max_jobs.between.2," + numApps/2)));

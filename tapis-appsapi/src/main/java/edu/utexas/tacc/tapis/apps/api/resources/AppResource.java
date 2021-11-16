@@ -41,6 +41,7 @@ import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultBoolean;
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 
 import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
 
 import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
@@ -67,7 +68,6 @@ import edu.utexas.tacc.tapis.sharedapi.responses.RespResourceUrl;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultChangeCount;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultResourceUrl;
 
-import static edu.utexas.tacc.tapis.apps.model.App.APP_TYPE_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_CONTAINERIZED;
 import static edu.utexas.tacc.tapis.apps.model.App.ID_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.OWNER_FIELD;
@@ -122,7 +122,7 @@ public class AppResource
 
   // Top level summary attributes to be included by default in some cases.
   public static final List<String> SUMMARY_ATTRS =
-          new ArrayList<>(List.of(ID_FIELD, VERSION_FIELD, APP_TYPE_FIELD, OWNER_FIELD));
+          new ArrayList<>(List.of(ID_FIELD, VERSION_FIELD, OWNER_FIELD));
 
 
   // ************************************************************************
@@ -338,7 +338,14 @@ public class AppResource
 
     // ------------------------- Create a PatchApp from the json -------------------------
     PatchApp patchApp;
-    try { patchApp = TapisGsonUtils.getGson().fromJson(rawJson, PatchApp.class); }
+    try
+    {
+      patchApp = TapisGsonUtils.getGson().fromJson(rawJson, PatchApp.class);
+      // If json does not contain jobType then set jobType to a special value to indicate it was not present.
+      // Turn the request string into a json object and check
+      JsonObject topObj = TapisGsonUtils.getGson().fromJson(rawJson, JsonObject.class);
+      if (!topObj.has(App.JOB_TYPE_FIELD)) patchApp.setJobType(JobType.UNSET);
+    }
     catch (JsonSyntaxException e)
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
@@ -1095,7 +1102,7 @@ public class AppResource
     // Extract Notes from the raw json.
     Object notes = extractNotes(rawJson);
     // Create App
-    var app = new App(-1, -1, tenantId, req.id, req.version, req.description, req.appType, req.owner, req.enabled,
+    var app = new App(-1, -1, tenantId, req.id, req.version, req.description, req.jobType, req.owner, req.enabled,
           DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
@@ -1118,10 +1125,9 @@ public class AppResource
     Object notes = extractNotes(rawJson);
 
     // NOTE: Following attributes are not updatable and must be filled in on service side.
-    App.AppType appType = null;
     String owner = null;
     boolean enabled = true;
-    var app = new App(-1, -1, tenantId, id, version, req.description, appType, owner, enabled,
+    var app = new App(-1, -1, tenantId, id, version, req.description, req.jobType, owner, enabled,
           DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
           jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,

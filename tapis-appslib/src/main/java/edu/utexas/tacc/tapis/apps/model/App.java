@@ -68,7 +68,6 @@ public final class App
   public static final String TENANT_FIELD = "tenant";
   public static final String ID_FIELD = "id";
   public static final String VERSION_FIELD = "version";
-  public static final String APP_TYPE_FIELD = "appType";
   public static final String DESCRIPTION_FIELD = "description";
   public static final String OWNER_FIELD = "owner";
   public static final String ENABLED_FIELD = "enabled";
@@ -77,6 +76,7 @@ public final class App
   public static final String RUNTIMEVER_FIELD = "runtimeVersion";
   public static final String RUNTIMEOPTS_FIELD = "runtimeOptions";
   public static final String CONTAINERIMG_FIELD = "containerImage";
+  public static final String JOB_TYPE_FIELD = "jobType";
   public static final String MAX_JOBS_FIELD = "maxJobs";
   public static final String MAX_JOBS_PER_USER_FIELD = "maxJobsPerUser";
   public static final String STRICT_FILE_INPUTS_FIELD = "strictFileInputs";
@@ -123,7 +123,9 @@ public final class App
   // ************************************************************************
   // *********************** Enums ******************************************
   // ************************************************************************
-  public enum AppType {BATCH, FORK}
+  // NOTE: For jobType UNSET indicates it value was not specified in a patch request.
+  //       UNSET should never be returned to caller.
+  public enum JobType  {BATCH, FORK, UNSET}
   public enum AppOperation {create, read, modify, execute, delete, undelete, hardDelete, changeOwner,
                             enable, disable, getPerms, grantPerms, revokePerms}
   public enum Permission {READ, MODIFY, EXECUTE}
@@ -143,7 +145,6 @@ public final class App
   // === Start fields in table apps =============================================
   private String tenant;     // Name of the tenant for which the app is defined
   private final String id;       // Name of the app
-  private final AppType appType; // Type of app, e.g. BATCH, DIRECT
   private String owner;      // User who owns the app and has full privileges
   private boolean enabled; // Indicates if app is currently enabled
   private boolean containerized;
@@ -159,6 +160,7 @@ public final class App
   private String runtimeVersion;
   private List<RuntimeOption> runtimeOptions;
   private String containerImage;
+  private JobType jobType; // Type of app, e.g. BATCH, FORK
   private int maxJobs;
   private int maxJobsPerUser;
   private boolean strictFileInputs;
@@ -198,24 +200,23 @@ public final class App
   /**
    * Constructor using only required attributes.
    */
-  public App(String id1, String version1, AppType appType1)
+  public App(String id1, String version1, String containerImage1)
   {
     id = id1;
     version = version1;
-    appType = appType1;
+    containerImage = containerImage1;
   }
 
   /**
    * Constructor using top level attributes
    */
-  public App(int seqId1, String tenant1, String id1, String version1, AppType appType1,
+  public App(int seqId1, String tenant1, String id1, String version1,
              String owner1, boolean enabled1, boolean containerized1, boolean deleted1)
   {
     seqId = seqId1;
     tenant = tenant1;
     id = id1;
     version = version1;
-    appType = appType1;
     owner = owner1;
     enabled = enabled1;
     containerized = containerized1;
@@ -226,15 +227,13 @@ public final class App
    * Constructor using non-updatable attributes.
    * Rather than exposing otherwise unnecessary setters we use a special constructor.
    */
-  public App(App a, String tenant1, String id1, String version1, AppType appType1)
+  public App(App a, String tenant1, String id1, String version1)
   {
-    if (a==null || StringUtils.isBlank(tenant1) || StringUtils.isBlank(id1) || StringUtils.isBlank(version1)
-                || appType1 == null )
+    if (a==null || StringUtils.isBlank(tenant1) || StringUtils.isBlank(id1) || StringUtils.isBlank(version1))
       throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT"));
     tenant = tenant1;
     id = id1;
     version = version1;
-    appType = appType1;
 
     seqId = a.getSeqId();
     created = a.getCreated();
@@ -247,6 +246,7 @@ public final class App
     runtimeVersion = a.getRuntimeVersion();
     runtimeOptions = a.getRuntimeOptions();
     containerImage = a.getContainerImage();
+    jobType = a.getJobType();
     maxJobs = a.getMaxJobs();
     maxJobsPerUser = a.getMaxJobsPerUser();
     strictFileInputs = a.isStrictFileInputs();
@@ -281,7 +281,7 @@ public final class App
    * Also useful for testing
    */
   public App(int seqId1, int verSeqId1, String tenant1, String id1, String version1, String description1,
-             AppType appType1, String owner1, boolean enabled1, boolean containerized1,
+             JobType jobType1, String owner1, boolean enabled1, boolean containerized1,
              Runtime runtime1, String runtimeVersion1, List<RuntimeOption> runtimeOptions1, String containerImage1,
              int maxJobs1, int maxJobsPerUser1, boolean strictFileInputs1,
              // == Start jobAttributes
@@ -301,7 +301,7 @@ public final class App
     id = id1;
     version = version1;
     description = description1;
-    appType = appType1;
+    jobType = jobType1;
     owner = owner1;
     enabled = enabled1;
     containerized = containerized1;
@@ -353,7 +353,6 @@ public final class App
     id = a.getId();
     version = a.getVersion();
     description = a.getDescription();
-    appType = a.getAppType();
     owner = a.getOwner();
     enabled = a.isEnabled();
     containerized = a.isContainerized();
@@ -361,6 +360,7 @@ public final class App
     runtimeVersion = a.getRuntimeVersion();
     runtimeOptions = a.getRuntimeOptions();
     containerImage = a.getContainerImage();
+    jobType = a.getJobType();
     maxJobs = a.getMaxJobs();
     maxJobsPerUser = a.getMaxJobsPerUser();
     strictFileInputs = a.isStrictFileInputs();
@@ -440,13 +440,12 @@ public final class App
 
   /**
    * Check for missing required attributes
-   *   Id, version, appType
+   *   Id, version, containerImage
    */
   private void checkAttrRequired(List<String> errMessages)
   {
     if (StringUtils.isBlank(id)) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, ID_FIELD));
     if (StringUtils.isBlank(version)) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, VERSION_FIELD));
-    if (appType == null) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, APP_TYPE_FIELD));
     if (StringUtils.isBlank(containerImage)) errMessages.add(LibUtils.getMsg(CREATE_MISSING_ATTR, CONTAINERIMG_FIELD));
   }
 
@@ -632,7 +631,8 @@ public final class App
 
   public String getVersion() { return version; }
 
-  public AppType getAppType() { return appType; }
+  public JobType getJobType() { return jobType; }
+  public void setJobType(JobType jt) { jobType = jt;  }
 
   public String getDescription() { return description; }
   public void setDescription(String d) { description = d;  }

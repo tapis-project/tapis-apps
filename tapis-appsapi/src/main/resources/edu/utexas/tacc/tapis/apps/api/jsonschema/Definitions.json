@@ -8,7 +8,7 @@
   "SystemId": { "type": ["string", "null"], "minLength": 1, "maxLength": 80 },
   "UserName": { "type": "string", "minLength": 1, "maxLength": 60 },
   "DirPath": { "type": ["string", "null"], "minLength": 1, "maxLength": 4096 },
-  "AppTypeEnum": { "type": "string", "enum": [ "BATCH", "FORK" ] },
+  "JobTypeEnum": { "type": ["string", "null"], "enum": [ "BATCH", "FORK", null ] },
   "RuntimeEnum": { "type": "string", "enum": [ "SINGULARITY", "DOCKER" ] },
   "RuntimeOptionEnum": { "type": "string", "enum": [ "NONE", "SINGULARITY_START", "SINGULARITY_RUN" ] },
   "NotificationMechanismEnum": { "type": "string", "enum": [ "WEBHOOK", "EMAIL", "QUEUE", "ACTOR" ] },
@@ -91,7 +91,7 @@
     "additionalProperties": false,
     "properties": {
       "name": { "type": "string", "minLength": 1, "maxLength": 80 },
-      "description": { "type": "string", "maxLength": 8096 },
+      "description": { "type":  ["string", "null"], "maxLength": 8096 },
       "inputMode": { "$ref": "#/FileInputModeEnum" },
       "autoMountLocal": { "type": "boolean", "default": true },
       "sourceUrl": { "type": "string", "minLength": 1, "format": "uri" },
@@ -104,7 +104,7 @@
     "additionalProperties": false,
     "properties": {
       "name": { "type": "string", "minLength": 1, "maxLength": 80 },
-      "description": { "type": "string", "maxLength": 8096 },
+      "description": { "type":  ["string", "null"], "maxLength": 8096 },
       "inputMode": { "$ref": "#/FileInputModeEnum" },
       "sourceUrls": { "type": ["array", "null"], "items": { "type": "string", "format": "uri" } },
       "targetDir": {"type": "string", "minLength": 1 }
@@ -154,7 +154,7 @@
     "additionalProperties": false,
     "properties": {
       "key": { "type":  "string", "minLength": 1 },
-      "value": { "type":  "string", "default": "" }
+      "value": { "type":  ["string", "null"], "default": "" }
     }
   }
 }

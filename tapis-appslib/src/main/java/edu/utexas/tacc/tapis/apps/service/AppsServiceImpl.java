@@ -26,7 +26,7 @@ import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.App.AppType;
+import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
@@ -141,7 +141,7 @@ public class AppsServiceImpl implements AppsService
     // ---------------------------- Check inputs ------------------------------------
     // Required app attributes: id, version
     if (StringUtils.isBlank(resourceTenantId) || StringUtils.isBlank(resourceId) ||
-        StringUtils.isBlank(resourceVersion) || app.getAppType() == null)
+        StringUtils.isBlank(resourceVersion))
     {
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", rUser, resourceId));
     }
@@ -271,7 +271,7 @@ public class AppsServiceImpl implements AppsService
    * Incoming App must contain the tenantId, appId and appVersion.
    * Secrets in the text should be masked.
    * Attributes that cannot be updated and so will be looked up and filled in:
-   *   tenant, id, version, appType, owner, enabled
+   *   tenant, id, version, owner, enabled
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param putApp - Pre-populated App object (including tenantId, appId, appVersion)
    * @param scrubbedText - Text used to create the App object - secrets should be scrubbed. Saved in update record.
@@ -1621,12 +1621,12 @@ public class AppsServiceImpl implements AppsService
   /**
    * Create an updated App based on the app created from a PUT request.
    * Attributes that cannot be updated and must be filled in from the original system:
-   *   tenant, id, appType, owner, enabled
+   *   tenant, id, owner, enabled
    */
   private App createUpdatedApp(App origApp, App putApp)
   {
     // Rather than exposing otherwise unnecessary setters we use a special constructor.
-    App updatedApp = new App(putApp, origApp.getTenant(), origApp.getId(), origApp.getVersion(), origApp.getAppType());
+    App updatedApp = new App(putApp, origApp.getTenant(), origApp.getId(), origApp.getVersion());
     updatedApp.setOwner(origApp.getOwner());
     updatedApp.setEnabled(origApp.isEnabled());
     return updatedApp;
@@ -1648,6 +1648,8 @@ public class AppsServiceImpl implements AppsService
     if (p.getRuntimeVersion() != null) app1.setRuntimeVersion(p.getRuntimeVersion());
     if (p.getRuntimeOptions() != null) app1.setRuntimeOptions(p.getRuntimeOptions());
     if (p.getContainerImage() != null) app1.setContainerImage(p.getContainerImage());
+    // In PatchApp jobType is set to a special value to indicate it was not part of the patch
+    if (p.getJobType() != JobType.UNSET) app1.setJobType(p.getJobType());
     if (p.getMaxJobs() != null) app1.setMaxJobs(p.getMaxJobs());
     if (p.getMaxJobsPerUser() != null) app1.setMaxJobsPerUser(p.getMaxJobsPerUser());
     if (p.isStrictFileInputs() != null) app1.setStrictFileInputs(p.isStrictFileInputs());
@@ -1756,12 +1758,12 @@ public class AppsServiceImpl implements AppsService
     }
 
     // If app type is not BATCH then we are done. Remaining checks are for BATCH apps
-    if (!AppType.BATCH.equals(app.getAppType())) return;
+    if (!JobType.BATCH.equals(app.getJobType())) return;
 
     // Verify that for a BATCH app then execSystem.canRunBatch == true
     // NOTE: Constraints for Systems requires that this means there is at least one logical queue for the system
     //       so if app does not specify an execQ then should still be OK.
-    if (execSystem.getCanRunBatch() == null || !execSystem.getCanRunBatch())
+    if (app.getJobType() != null && (execSystem.getCanRunBatch() == null || !execSystem.getCanRunBatch()))
     {
       msg = LibUtils.getMsg("APPLIB_EXECSYS_NOT_BATCH", execSystemId);
       errMessages.add(msg);

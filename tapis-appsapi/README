@@ -43,10 +43,10 @@ In general enumeration defintions may exist in up to three places
 Here are the current enumerations and the locations where they are defined. Note that this list may not be up to date.
   Enumeration      Json Schema               Model class       Init SQL
   ===========      ================          ==============    =============
-  AppType          Definitions.json          model.App         Yes
-  AppOperation     <N/A>                     model.App         Yes
+  JobType          Definitions.json          model.App         No
+  AppOperation     <N/A>                     model.App         No
   Permission       PermsRequest.json         model.App         No
-  Capability       Definitions.json          model.Capability  Yes
+  Capability       Definitions.json          model.Capability  No
 
 ------------
 Server Usage
