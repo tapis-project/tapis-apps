@@ -2,7 +2,7 @@ package edu.utexas.tacc.tapis.apps.api.responses.results;
 
 import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.App.AppType;
+import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
@@ -19,7 +19,7 @@ import static edu.utexas.tacc.tapis.apps.model.App.DELETED_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.TENANT_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.ID_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.VERSION_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.APP_TYPE_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.JOB_TYPE_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.DESCRIPTION_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.OWNER_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.ENABLED_FIELD;
@@ -27,7 +27,6 @@ import static edu.utexas.tacc.tapis.apps.model.App.TAGS_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.NOTES_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.UUID_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.CONTAINERIMG_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.CONTAINERIZED_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.RUNTIME_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.RUNTIMEVER_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.RUNTIMEOPTS_FIELD;
@@ -49,7 +48,6 @@ public final class TapisAppDTO
   public String id;
   public String version;
   public String description;
-  public AppType appType;
   public String owner;
   public boolean enabled;
 //  public boolean containerized;
@@ -57,6 +55,7 @@ public final class TapisAppDTO
   public String runtimeVersion;
   public List<RuntimeOption> runtimeOptions;
   public String containerImage;
+  public JobType jobType;
   public int maxJobs;
   public int maxJobsPerUser;
   public boolean strictFileInputs;
@@ -74,7 +73,6 @@ public final class TapisAppDTO
     id = a.getId();
     version = a.getVersion();
     description = a.getDescription();
-    appType = a.getAppType();
     owner = a.getOwner();
     enabled = a.isEnabled();
 //    containerized = a.isContainerized();
@@ -82,6 +80,7 @@ public final class TapisAppDTO
     runtimeVersion = a.getRuntimeVersion();
     runtimeOptions = a.getRuntimeOptions();
     containerImage = a.getContainerImage();
+    jobType = a.getJobType();
     maxJobs = a.getMaxJobs();
     maxJobsPerUser = a.getMaxJobsPerUser();
     strictFileInputs = a.isStrictFileInputs();
@@ -160,7 +159,6 @@ public final class TapisAppDTO
       case ID_FIELD -> jsonObject.addProperty(ID_FIELD, id);
       case VERSION_FIELD -> jsonObject.addProperty(VERSION_FIELD, version);
       case DESCRIPTION_FIELD ->jsonObject.addProperty(DESCRIPTION_FIELD, description);
-      case APP_TYPE_FIELD -> jsonObject.addProperty(APP_TYPE_FIELD, appType.name());
       case OWNER_FIELD -> jsonObject.addProperty(OWNER_FIELD, owner);
       case ENABLED_FIELD -> jsonObject.addProperty(ENABLED_FIELD, Boolean.toString(enabled));
 //      case CONTAINERIZED_FIELD -> jsonObject.addProperty(CONTAINERIZED_FIELD, Boolean.toString(containerized));
@@ -168,9 +166,10 @@ public final class TapisAppDTO
       case RUNTIMEVER_FIELD -> jsonObject.addProperty(RUNTIMEVER_FIELD, runtimeVersion);
       case RUNTIMEOPTS_FIELD -> jsonObject.add(RUNTIMEOPTS_FIELD, gson.toJsonTree(runtimeOptions));
       case CONTAINERIMG_FIELD -> jsonObject.addProperty(CONTAINERIMG_FIELD, containerImage);
+      case JOB_TYPE_FIELD -> jsonObject.addProperty(JOB_TYPE_FIELD, String.valueOf(jobType));
       case MAX_JOBS_FIELD -> jsonObject.addProperty(MAX_JOBS_FIELD, maxJobs);
       case MAX_JOBS_PER_USER_FIELD -> jsonObject.addProperty(MAX_JOBS_PER_USER_FIELD, maxJobsPerUser);
-      case STRICT_FILE_INPUTS_FIELD -> jsonObject.addProperty(STRICT_FILE_INPUTS_FIELD, Boolean.toString(strictFileInputs));
+      case STRICT_FILE_INPUTS_FIELD -> jsonObject.addProperty(STRICT_FILE_INPUTS_FIELD, String.valueOf(strictFileInputs));
       case JOB_ATTRS_FIELD -> {
         jsonStr = gson.toJson(jobAttributes);
         jsonObject.add(JOB_ATTRS_FIELD, gson.fromJson(jsonStr, JsonObject.class));

@@ -6,7 +6,7 @@
   <parent>
     <groupId>edu.utexas.tacc.tapis</groupId>
     <artifactId>tapis-apps</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
   </parent>
   
   <artifactId>tapis-appslib</artifactId>
@@ -253,9 +253,9 @@
                     <includeTypes>.*</includeTypes>
                   </forcedType>
                   <forcedType>
-                    <userType>edu.utexas.tacc.tapis.apps.model.App.AppType</userType>
+                    <userType>edu.utexas.tacc.tapis.apps.model.App.JobType</userType>
                     <enumConverter>true</enumConverter>
-                    <includeExpression>apps\.app_type</includeExpression>
+                    <includeExpression>apps_versions\.job_type</includeExpression>
                     <includeTypes>.*</includeTypes>
                   </forcedType>
                   <forcedType>

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.App.AppType;
+import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
@@ -90,7 +90,7 @@ public class AppsDaoTest
     Assert.assertEquals(tmpApp.getId(), app0.getId());
     Assert.assertEquals(tmpApp.getVersion(), app0.getVersion());
     Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
-    Assert.assertEquals(tmpApp.getAppType().name(), app0.getAppType().name());
+    Assert.assertEquals(tmpApp.getJobType().name(), app0.getJobType().name());
     Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
     Assert.assertEquals(tmpApp.isEnabled(), app0.isEnabled());
     Assert.assertEquals(tmpApp.getRuntime().name(), app0.getRuntime().name());
@@ -331,7 +331,7 @@ public class AppsDaoTest
     var appVerList = new HashSet<String>();
     // Create 2 versions of 2 apps
     App app1a = apps[10];
-    App app1b = new App(app1a, tenantName, app1a.getId(), appVersion2, appType);
+    App app1b = new App(app1a, tenantName, app1a.getId(), appVersion2);
     boolean appCreated = dao.createApp(rUser, app1a, gson.toJson(app1a), scrubbedJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app1a.getId() + " version: " + app1a.getVersion());
     System.out.println("Created item, id: " + app1a.getId() + " version: " + app1a.getVersion());
@@ -345,7 +345,7 @@ public class AppsDaoTest
     appIdList.add(app1b.getId());
 
     App app2a = apps[11];
-    App app2b = new App(app2a, tenantName, app2a.getId(), appVersion2, appType);
+    App app2b = new App(app2a, tenantName, app2a.getId(), appVersion2);
     appCreated = dao.createApp(rUser, app2a, gson.toJson(app2a), scrubbedJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app2a.getId() + " version: " + app2a.getVersion());
     System.out.println("Created item, id: " + app2a.getId() + " version: " + app2a.getVersion());
@@ -399,7 +399,7 @@ public class AppsDaoTest
   public void testMissingApp() throws Exception {
     String fakeAppId = "AMissingAppId";
     String fakeAppVersion = "AMissingAppVersion";
-    App patchedApp = new App(1, 1, tenantName, fakeAppId, fakeAppVersion, "description", AppType.BATCH, owner2, enabledTrue,
+    App patchedApp = new App(1, 1, tenantName, fakeAppId, fakeAppVersion, "description", JobType.BATCH, owner2, enabledTrue,
             containerizedTrue, runtime1, runtimeVersion1, runtimeOptions1, containerImage1,
             maxJobs1, maxJobsPerUser1, strictFileInputsFalse, IntegrationUtils.jobDescription1, dynamicExecSystemTrue,
             execSystemConstraints1, execSystemId1, execSystemExecDir1, execSystemInputDir1, execSystemOutputDir1,

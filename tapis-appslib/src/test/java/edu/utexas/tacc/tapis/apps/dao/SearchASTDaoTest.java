@@ -159,8 +159,8 @@ public class SearchASTDaoTest
 ////    validCaseInputs.put(19,new CaseData(numApps-1, "id LIKE " + appNameLikeAll + " AND id NLIKE " + app0Name)); // TODO support NLIKE
 ////    validCaseInputs.put(20,new CaseData(1, "id LIKE " + appNameLikeAll + " AND id IN " + nameList)); // TODO
 ////    validCaseInputs.put(21,new CaseData(numApps-1, "id LIKE " + appNameLikeAll, "name.nin." + nameList));
-////    validCaseInputs.put(22,new CaseData(numApps, "id LIKE " + appNameLikeAll, "app_type = LINUX"));
-////    validCaseInputs.put(23,new CaseData(numApps/2, "id LIKE " + appNameLikeAll, "app_type = LINUX","owner <> " + sq(ownerUser2)));
+////    validCaseInputs.put(22,new CaseData(numApps, "id LIKE " + appNameLikeAll, "job_type = LINUX"));
+////    validCaseInputs.put(23,new CaseData(numApps/2, "id LIKE " + appNameLikeAll, "job_type = LINUX","owner <> " + sq(ownerUser2)));
 ////    // Test numeric relational
 ////    validCaseInputs.put(50,new CaseData(numApps/2, "id LIKE " + appNameLikeAll, "max_jobs.between.1," + numApps/2));
 ////    validCaseInputs.put(51,new CaseData(numApps/2-1, "id LIKE " + appNameLikeAll, "max_jobs.between.2," + numApps/2));

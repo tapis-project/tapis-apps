@@ -1,6 +1,7 @@
 package edu.utexas.tacc.tapis.apps.api.requests;
 
 import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
+import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
@@ -21,6 +22,7 @@ public final class ReqPutApp
   public String runtimeVersion;
   public List<RuntimeOption> runtimeOptions;
   public String containerImage;
+  public JobType jobType;
   public int maxJobs;
   public int maxJobsPerUser;
   public boolean strictFileInputs = DEFAULT_STRICT_FILE_INPUTS;

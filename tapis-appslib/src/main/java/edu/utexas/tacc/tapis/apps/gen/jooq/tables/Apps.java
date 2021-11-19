@@ -8,7 +8,6 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.Indexes;
 import edu.utexas.tacc.tapis.apps.gen.jooq.Keys;
 import edu.utexas.tacc.tapis.apps.gen.jooq.TapisApp;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsRecord;
-import edu.utexas.tacc.tapis.apps.model.App.AppType;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -20,14 +19,13 @@ import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row11;
+import org.jooq.Row10;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableOptions;
 import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
-import org.jooq.impl.EnumConverter;
 import org.jooq.impl.SQLDataType;
 import org.jooq.impl.TableImpl;
 
@@ -72,11 +70,6 @@ public class Apps extends TableImpl<AppsRecord> {
      * The column <code>tapis_app.apps.latest_version</code>.
      */
     public final TableField<AppsRecord, String> LATEST_VERSION = createField(DSL.name("latest_version"), SQLDataType.CLOB.nullable(false), this, "");
-
-    /**
-     * The column <code>tapis_app.apps.app_type</code>. Type of application
-     */
-    public final TableField<AppsRecord, AppType> APP_TYPE = createField(DSL.name("app_type"), SQLDataType.CLOB.nullable(false), this, "Type of application", new EnumConverter<String, AppType>(String.class, AppType.class));
 
     /**
      * The column <code>tapis_app.apps.owner</code>. User name of application owner
@@ -193,11 +186,11 @@ public class Apps extends TableImpl<AppsRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row11 type methods
+    // Row10 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row11<Integer, String, String, String, AppType, String, Boolean, Boolean, Boolean, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row11) super.fieldsRow();
+    public Row10<Integer, String, String, String, String, Boolean, Boolean, Boolean, LocalDateTime, LocalDateTime> fieldsRow() {
+        return (Row10) super.fieldsRow();
     }
 }

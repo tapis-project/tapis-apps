@@ -11,6 +11,7 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.Indexes;
 import edu.utexas.tacc.tapis.apps.gen.jooq.Keys;
 import edu.utexas.tacc.tapis.apps.gen.jooq.TapisApp;
 import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsVersionsRecord;
+import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 
 import java.time.LocalDateTime;
@@ -104,6 +105,11 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
      * The column <code>tapis_app.apps_versions.container_image</code>.
      */
     public final TableField<AppsVersionsRecord, String> CONTAINER_IMAGE = createField(DSL.name("container_image"), SQLDataType.CLOB, this, "");
+
+    /**
+     * The column <code>tapis_app.apps_versions.job_type</code>.
+     */
+    public final TableField<AppsVersionsRecord, JobType> JOB_TYPE = createField(DSL.name("job_type"), SQLDataType.CLOB, this, "", new EnumConverter<String, JobType>(String.class, JobType.class));
 
     /**
      * The column <code>tapis_app.apps_versions.max_jobs</code>.

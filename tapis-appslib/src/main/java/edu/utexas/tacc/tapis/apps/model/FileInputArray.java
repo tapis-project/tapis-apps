@@ -31,9 +31,7 @@ public final class FileInputArray
 
   private final String name;
   private final String description;
-  // For Gson serialization we do not make inputMode final.
-  //   This is so we can fill in defaults if they are ever null.
-  private FileInputMode inputMode = DEFAULT_INPUT_MODE;
+  private FileInputMode inputMode;
   private final List<String> sourceUrls;
   private final String targetDir;
 
@@ -41,12 +39,22 @@ public final class FileInputArray
   /*                           Constructors                                 */
   /* ********************************************************************** */
 
+  // Default constructor to set defaults. This appears to be needed for when object is created from json using gson.
+  public FileInputArray()
+  {
+    name = null;
+    description = null;
+    inputMode = DEFAULT_INPUT_MODE;
+    sourceUrls = null;
+    targetDir = null;
+  }
+
   public FileInputArray(String name1, String description1, FileInputMode inputMode1, List<String> sourceUrls1,
                         String targetDir1)
   {
     name = name1;
     description = description1;
-    setInputMode(inputMode1);
+    inputMode = (inputMode1 == null) ? DEFAULT_INPUT_MODE : inputMode1;
     sourceUrls = sourceUrls1;
     targetDir = targetDir1;
   }
@@ -57,7 +65,6 @@ public final class FileInputArray
   public String getName() { return name; }
   public String getDescription() { return description; }
   public FileInputMode getInputMode() { return inputMode; }
-  public void setInputMode(FileInputMode im) { inputMode = (im == null) ? DEFAULT_INPUT_MODE : im;}
   public List<String> getSourceUrls() { return (sourceUrls == null) ? null : new ArrayList<>(sourceUrls); }
   public String getTargetDir() { return targetDir; }
 

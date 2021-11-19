@@ -46,7 +46,6 @@ CREATE TABLE apps
   tenant  TEXT NOT NULL,
   id      TEXT NOT NULL,
   latest_version TEXT NOT NULL,
-  app_type TEXT NOT NULL,
   owner    TEXT NOT NULL,
   enabled  BOOLEAN NOT NULL DEFAULT true,
   containerized BOOLEAN NOT NULL DEFAULT true,
@@ -60,7 +59,6 @@ CREATE INDEX app_tenant_id_idx ON apps (tenant, id);
 COMMENT ON COLUMN apps.seq_id IS 'Application sequence id';
 COMMENT ON COLUMN apps.tenant IS 'Tenant name associated with the application';
 COMMENT ON COLUMN apps.id IS 'Unique name for the application';
-COMMENT ON COLUMN apps.app_type IS 'Type of application';
 COMMENT ON COLUMN apps.owner IS 'User name of application owner';
 COMMENT ON COLUMN apps.enabled IS 'Indicates if application is currently active and available for use';
 COMMENT ON COLUMN apps.deleted IS 'Indicates if application has been soft deleted';
@@ -81,6 +79,7 @@ CREATE TABLE apps_versions
     runtime_version TEXT,
     runtime_options TEXT[],
     container_image TEXT,
+    job_type TEXT,
     max_jobs INTEGER NOT NULL DEFAULT -1,
     max_jobs_per_user INTEGER NOT NULL DEFAULT -1,
     strict_file_inputs BOOLEAN NOT NULL DEFAULT false,

@@ -3,7 +3,7 @@ package edu.utexas.tacc.tapis.apps;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.App.AppType;
+import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.ArgInputMode;
 import edu.utexas.tacc.tapis.apps.model.App.FileInputMode;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
@@ -50,7 +50,9 @@ public final class IntegrationUtils
   public static final String description1 = "App description 1";
   public static final String description2 = "App description 2";
   public static final String descriptionNull = null;
-  public static final AppType appType = AppType.BATCH;
+  public static final JobType jobType1 = JobType.BATCH;
+  public static final JobType jobType2 = JobType.FORK;
+  public static final JobType jobTypeNull = null;
   public static final String ownerNull = null;
   public static final boolean enabledTrue = true;
   public static final boolean enabledFalse = false;
@@ -304,14 +306,14 @@ public final class IntegrationUtils
   public static final List<OrderBy> orderByListNull = null;
   public static final List<OrderBy> orderByListAsc = Collections.singletonList(OrderBy.fromString("id(asc)"));
   public static final List<OrderBy> orderByListDesc = Collections.singletonList(OrderBy.fromString("id(desc)"));
-  public static final List<OrderBy> orderByList2Asc = new ArrayList<>(List.of(OrderBy.fromString("app_type(asc)"),
+  public static final List<OrderBy> orderByList2Asc = new ArrayList<>(List.of(OrderBy.fromString("job_type(asc)"),
                                                                               OrderBy.fromString("container_image(asc)")));
-  public static final List<OrderBy> orderByList2Desc = new ArrayList<>(List.of(OrderBy.fromString("app_type(asc)"),
+  public static final List<OrderBy> orderByList2Desc = new ArrayList<>(List.of(OrderBy.fromString("job_type(asc)"),
                                                                                OrderBy.fromString("container_image(desc)")));
   public static final List<OrderBy> orderByList3Asc = new ArrayList<>(List.of(OrderBy.fromString("id(asc)"),
                                                                               OrderBy.fromString("owner(asc)")));
   public static final List<OrderBy> orderByList3Desc = new ArrayList<>(List.of(OrderBy.fromString("container_image(desc)"),
-                                                                               OrderBy.fromString("app_type(desc)")));
+                                                                               OrderBy.fromString("job_type(desc)")));
   public static final String startAfterNull = null;
 
   public static final Boolean versionSpecifiedNull = null;
@@ -347,7 +349,7 @@ public final class IntegrationUtils
       String appId = appIdPrefix + "_" + suffix;
 
       // Constructor initializes all attributes except for JobCapabilities
-      apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, description1 + suffix, appType, owner1,
+      apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, description1 + suffix, jobType1, owner1,
                  enabledTrue, containerizedTrue, runtime1, runtimeVersion1 +suffix, runtimeOptions1,
                  containerImage1 +suffix, maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
                  jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
@@ -361,14 +363,14 @@ public final class IntegrationUtils
 
   /**
    * Create App in memory with minimal attributes set based on App given
-   *   id, version, appType
+   *   id, version
    *   containerized==true -> containterImage
    *   dynamicExec==false -> execSystemId
    * NOTE: many args to constructor are primitives so cannot be set to null.
    */
   public static App makeMinimalApp(App app, String id)
   {
-    return new App(-1, -1, tenantName, id, app.getVersion(), descriptionNull, appType, ownerNull, enabledTrue,
+    return new App(-1, -1, tenantName, id, app.getVersion(), descriptionNull, jobType1, ownerNull, enabledTrue,
             containerizedTrue, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage1, maxJobs1, maxJobsPerUser1,
             strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
             execSystemId1, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
@@ -383,7 +385,7 @@ public final class IntegrationUtils
    */
   public static App makePutAppFull(App app)
   {
-    App putApp = new App(-1, -1, tenantName, app.getId(), app.getVersion(), description2, app.getAppType(), app.getOwner(),
+    App putApp = new App(-1, -1, tenantName, app.getId(), app.getVersion(), description2, jobType2, app.getOwner(),
             app.isEnabled(), app.isContainerized(), runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
             maxJobs2, maxJobsPerUser2, strictFileInputsTrue,
             jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
@@ -405,7 +407,7 @@ public final class IntegrationUtils
             archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse, parameterSet2, finList2, fiaList2, nodeCount2,
             coresPerNode2, memoryMB2, maxMinutes2, notifList2, jobTags2);
 
-    return new PatchApp(description2, runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
+    return new PatchApp(description2, runtime2, runtimeVersion2, runtimeOptions2, containerImage2, jobType2,
              maxJobs2, maxJobsPerUser2, strictFileInputsTrue, jobAttributes, tags2, notes2);
   }
 
@@ -420,7 +422,7 @@ public final class IntegrationUtils
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSetNull, finListNull, fiaListNull, nodeCountNull,
             coresPerNodeNull, memoryMBNull, maxMinutesNull, notifListNull, jobTagsNull);
 
-    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
+    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2, jobType2,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull, jobAttributes, tagsNull, notesNull);
   }
 
@@ -437,7 +439,7 @@ public final class IntegrationUtils
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSet, finList3, fiaList3, nodeCountNull,
             coresPerNodeNull, memoryMBNull, maxMinutesNull, notifListNull, jobTagsNull);
-    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2,
+    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2, jobTypeNull,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull, jobAttributes, tagsNull, notesNull);
   }
 
@@ -453,7 +455,7 @@ public final class IntegrationUtils
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, parameterSet, finListNull, fiaListNull, nodeCountNull,
             coresPerNodeNull, memoryMBNull, maxMinutesNull, notifListNull, jobTagsNull);
-    return new PatchApp(descriptionNull, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImageNull,
+    return new PatchApp(descriptionNull, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImageNull, jobType2,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull, jobAttributes, tagsNull, notesNull);
   }
 
