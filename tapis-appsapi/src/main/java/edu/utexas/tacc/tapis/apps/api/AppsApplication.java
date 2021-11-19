@@ -45,6 +45,8 @@ import javax.ws.rs.ApplicationPath;
  *     path set at the class level. See AppResource.java, PermsResource.java, etc.
  *     This has been found to be a more robust scheme for keeping startup working for both
  *     running in an IDE and standalone.
+ *
+ * For all logging use println or similar so we do not have a dependency on a logging subsystem.
  */
 @ApplicationPath("/")
 public class AppsApplication extends ResourceConfig
@@ -55,7 +57,6 @@ public class AppsApplication extends ResourceConfig
   private static String siteAdminTenantId;
   public static String getSiteAdminTenantId() {return siteAdminTenantId;}
 
-  // For all logging use println or similar so we do not have a dependency on a logging subsystem.
   public AppsApplication()
   {
     // Log our existence.

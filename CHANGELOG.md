@@ -8,8 +8,7 @@ https://tapis.readthedocs.io/en/latest/technical/systems.html
 You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
-?????????????????????????????
-## 1.?.? - 2021-??-??
+## 1.0.1 - 2021-11-19
 
 Incremental improvements and bug fixes.
 
@@ -22,17 +21,9 @@ Incremental improvements and bug fixes.
 ### Bug fixes:
 - Fix problems with setting of defaults for FileInputs and ParameterSet arguments.
 
-?????????????????????????????
-
 ## 1.0.0 - 2021-07-16
 
 Initial release supporting basic CRUD operations on Tapis Application resources.
-
-Please find documentation here:
-https://tapis.readthedocs.io/en/latest/technical/apps.html
-
-You may also reference live-docs based on the openapi specification here:
-https://tapis-project.github.io/live-docs
 
 ### Breaking Changes:
 - Initial release.
