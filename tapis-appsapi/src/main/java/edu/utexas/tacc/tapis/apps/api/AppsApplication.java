@@ -32,7 +32,7 @@ import javax.ws.rs.ApplicationPath;
 /*
  * Main startup class for the web application. Uses Jersey and Grizzly frameworks.
  *   Performs setup for HK2 dependency injection.
- *   Registers packages and features for Jersey.
+ *   Register packages and features for Jersey.
  *   Gets runtime parameters from the environment.
  *   Initializes the service:
  *     Init service context.
@@ -70,8 +70,6 @@ public class AppsApplication extends ResourceConfig
     // Register classes needed for returning a standard Tapis response for non-Tapis exceptions.
     register(TapisExceptionMapper.class);
     register(ValidationExceptionMapper.class);
-    // Register service class for calling init method during application startup
-    register(AppsServiceImpl.class);
 
     // We specify what packages JAX-RS should recursively scan to find annotations. By setting the value to the
     // top-level directory in all projects, we can use JAX-RS annotations in any tapis class. In particular, the filter
