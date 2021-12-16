@@ -176,6 +176,9 @@ public final class App
   private String archiveSystemId;
   private String archiveSystemDir;
   private boolean archiveOnAppError;
+  private boolean isMpi;
+  private String mpiCmd;
+  private String cmdPrefix;
   private ParameterSet parameterSet;
   private List<FileInput> fileInputs;
   private List<FileInputArray> fileInputArrays;
@@ -261,6 +264,9 @@ public final class App
     archiveSystemId = a.getArchiveSystemId();
     archiveSystemDir = a.getArchiveSystemDir();
     archiveOnAppError = a.isArchiveOnAppError();
+    isMpi = a.getIsMpi();
+    mpiCmd = a.getMpiCmd();
+    cmdPrefix = a.getCmdPrefix();
     parameterSet = a.getParameterSet();
     fileInputs = a.getFileInputs();
     fileInputArrays = a.getFileInputArrays();
@@ -289,6 +295,7 @@ public final class App
              String[] execSystemConstraints1, String execSystemId1, String execSystemExecDir1,
              String execSystemInputDir1, String execSystemOutputDir1, String execSystemLogicalQueue1,
              String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1,
+             boolean isMpi1, String mpiCmd1, String cmdPrefix1,
              ParameterSet parameterSet1, List<FileInput> fileInputs1, List<FileInputArray> fileInputArrays1,
              int nodeCount1, int coresPerNode1, int memoryMB1, int maxMinutes1,
              List<NotificationSubscription> subscriptions1, String[] jobTags1,
@@ -323,6 +330,9 @@ public final class App
     archiveSystemId = archiveSystemId1;
     archiveSystemDir = archiveSystemDir1;
     archiveOnAppError = archiveOnAppError1;
+    isMpi = isMpi1;
+    mpiCmd = mpiCmd1;
+    cmdPrefix = cmdPrefix1;
     parameterSet = parameterSet1;
     fileInputs = (fileInputs1 == null) ? null : new ArrayList<>(fileInputs1);
     fileInputArrays = (fileInputArrays1 == null) ? null : new ArrayList<>(fileInputArrays1);
@@ -375,6 +385,9 @@ public final class App
     archiveSystemId = a.getArchiveSystemId();
     archiveSystemDir = a.getArchiveSystemDir();
     archiveOnAppError = a.isArchiveOnAppError();
+    isMpi = a.getIsMpi();
+    mpiCmd = a.getMpiCmd();
+    cmdPrefix = a.getCmdPrefix();
     parameterSet = a.getParameterSet();
     fileInputs = a.getFileInputs();
     fileInputArrays = a.getFileInputArrays();
@@ -392,6 +405,10 @@ public final class App
     updated = a.getUpdated();
   }
 
+  // ************************************************************************
+  // *********************** Public methods *********************************
+  // ************************************************************************
+
   /**
    * Resolve variables for App attributes
    */
@@ -401,10 +418,6 @@ public final class App
     // Note that for a user request oboUser and apiUserId are the same and for a service request we want oboUser here.
     if (StringUtils.isBlank(owner) || owner.equalsIgnoreCase(APIUSERID_VAR)) setOwner(apiUserId);
   }
-
-  // ************************************************************************
-  // *********************** Public methods *********************************
-  // ************************************************************************
 
   /**
    * Fill in defaults
@@ -435,7 +448,7 @@ public final class App
   }
 
   // ************************************************************************
-  // *********************** Private methods *********************************
+  // ******************** Private methods ***********************************
   // ************************************************************************
 
   /**
@@ -696,6 +709,15 @@ public final class App
 
   public boolean isArchiveOnAppError() { return archiveOnAppError; }
   public void setArchiveOnAppError(boolean b) { archiveOnAppError = b;  }
+
+  public boolean getIsMpi() { return isMpi; }
+  public void setIsMpi(boolean b) { isMpi = b;  }
+
+  public String getMpiCmd() { return mpiCmd; }
+  public void setMpiCmd(String s) { mpiCmd = s; }
+
+  public String getCmdPrefix() { return cmdPrefix; }
+  public void setCmdPrefix(String s) { cmdPrefix = s; }
 
   public String getJobDescription() { return jobDescription; }
   public void setJobDescription(String s) { jobDescription = s;  }

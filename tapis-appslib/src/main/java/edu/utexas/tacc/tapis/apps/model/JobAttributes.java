@@ -23,6 +23,9 @@ public final class JobAttributes
   private final String archiveSystemId;
   private final String archiveSystemDir;
   private final Boolean archiveOnAppError;
+  private final Boolean isMpi;
+  private final String mpiCmd;
+  private final String cmdPrefix;
   private final ParameterSet parameterSet;
   private final List<FileInput> fileInputs;
   private final List<FileInputArray> fileInputArrays;
@@ -43,7 +46,8 @@ public final class JobAttributes
   public JobAttributes(String description1, Boolean dynamicExecSystem1, String[] execSystemConstraints1,
                        String execSystemId1, String execSystemExecDir1, String execSystemInputDir1, String execSystemOutputDir1,
                        String execSystemLogicalQueue1, String archiveSystemId1, String archiveSystemDir1,
-                       Boolean archiveOnAppError1, ParameterSet parameterSet1, List<FileInput> fileInputs1,
+                       Boolean archiveOnAppError1, Boolean isMpi1, String mpiCmd1, String cmdPrefix1,
+                       ParameterSet parameterSet1, List<FileInput> fileInputs1,
                        List<FileInputArray> fileInputArrays1, Integer nodeCount1, Integer coresPerNode1, Integer memoryMB1,
                        Integer maxMinutes1, List<NotificationSubscription> subscriptions1, String[] tags1)
   {
@@ -58,6 +62,9 @@ public final class JobAttributes
     archiveSystemId = archiveSystemId1;
     archiveSystemDir = archiveSystemDir1;
     archiveOnAppError = archiveOnAppError1;
+    isMpi = isMpi1;
+    mpiCmd = mpiCmd1;
+    cmdPrefix = cmdPrefix1;
     parameterSet = (parameterSet1 == null) ? null : new ParameterSet(parameterSet1);
     fileInputs = (fileInputs1 == null) ? null: new ArrayList<>(fileInputs1);
     fileInputArrays = (fileInputArrays1 == null) ? null: new ArrayList<>(fileInputArrays1);
@@ -83,6 +90,9 @@ public final class JobAttributes
   public String getArchiveSystemId() { return archiveSystemId; }
   public String getArchiveSystemDir() { return archiveSystemDir; }
   public Boolean getArchiveOnAppError() { return archiveOnAppError; }
+  public Boolean getIsMpi() { return isMpi; }
+  public String getMpiCmd() { return mpiCmd; }
+  public String getCmdPrefix() { return cmdPrefix; }
   public ParameterSet getParameterSet() { return parameterSet; }
   public List<FileInput> getFileInputs() { return fileInputs; }
   public List<FileInputArray> getFileInputArrays() { return fileInputArrays; }
