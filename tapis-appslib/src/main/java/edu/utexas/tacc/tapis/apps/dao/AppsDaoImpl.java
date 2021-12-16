@@ -1570,6 +1570,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             r.get(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR), r.get(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR),
             r.get(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE), r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_ID),
             r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR), r.get(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR),
+            r.get(APPS_VERSIONS.IS_MPI), r.get(APPS_VERSIONS.MPI_CMD), r.get(APPS_VERSIONS.CMD_PREFIX),
             parmSet, fileInputs, fileInputArrays, r.get(APPS_VERSIONS.NODE_COUNT), r.get(APPS_VERSIONS.CORES_PER_NODE),
             r.get(APPS_VERSIONS.MEMORY_MB), r.get(APPS_VERSIONS.MAX_MINUTES), subscriptions,
             r.get(APPS_VERSIONS.JOB_TAGS), r.get(APPS_VERSIONS.TAGS), r.get(APPS_VERSIONS.NOTES),

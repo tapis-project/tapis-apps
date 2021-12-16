@@ -259,6 +259,9 @@ public class AppsServiceTest
     app0.setArchiveSystemId(archiveSystemId2);
     app0.setArchiveSystemDir(archiveSystemDir2);
     app0.setArchiveOnAppError(archiveOnAppErrorFalse);
+    app0.setIsMpi(isMpiFalse);
+    app0.setMpiCmd(mpiCmd2);
+    app0.setCmdPrefix(cmdPrefix2);
     app0.setParameterSet(parameterSet2);
     app0.setFileInputs(finList2);
     app0.setFileInputArrays(fiaList2);
@@ -326,6 +329,9 @@ public class AppsServiceTest
     app0.setArchiveSystemId(archiveSystemId2);
     app0.setArchiveSystemDir(archiveSystemDir2);
     app0.setArchiveOnAppError(archiveOnAppErrorFalse);
+    app0.setIsMpi(isMpiFalse);
+    app0.setMpiCmd(mpiCmd2);
+    app0.setCmdPrefix(cmdPrefix2);
     app0.setParameterSet(parameterSet2);
     app0.setFileInputs(finList2);
     app0.setFileInputArrays(fiaList2);
@@ -1234,6 +1240,9 @@ public class AppsServiceTest
     Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
     Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
     Assert.assertEquals(tmpApp.isArchiveOnAppError(), app0.isArchiveOnAppError());
+    Assert.assertEquals(tmpApp.getIsMpi(), app0.getIsMpi());
+    Assert.assertEquals(tmpApp.getMpiCmd(), app0.getMpiCmd());
+    Assert.assertEquals(tmpApp.getCmdPrefix(), app0.getCmdPrefix());
 
     // Verify parameterSet
     ParameterSet parmSet = tmpApp.getParameterSet();
