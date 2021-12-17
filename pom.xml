@@ -15,7 +15,7 @@
     </parent>
 
     <artifactId>tapis-apps</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>pom</packaging>
 
     <name>TACC Tapis Applications Parent POM</name>
@@ -33,6 +33,9 @@
       <!-- Skip integration tests by default -->
       <!-- Use mvn verify -DskipIntegrationTests=false to run integration tests -->
       <skipIntegrationTests>true</skipIntegrationTests>
+      <!-- Explictly set java version to avoid occasional IDE issues -->
+      <maven.compiler.source>15</maven.compiler.source>
+      <maven.compiler.target>15</maven.compiler.target>
     </properties>
 
   <build>

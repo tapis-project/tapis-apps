@@ -36,27 +36,11 @@ public class LibUtils
   private static final Logger _log = LoggerFactory.getLogger(LibUtils.class);
 
   // Location of message bundle files
-  private static final String MESSAGE_BUNDLE = "edu.utexas.tacc.tapis.apps.lib.AppLibMessages";
+  private static final String MESSAGE_BUNDLE = "edu.utexas.tacc.tapis.apps.AppLibMessages";
 
   /* **************************************************************************** */
   /*                                Public Methods                                */
   /* **************************************************************************** */
-
-  // TODO: always use oboTenant?
-//  /**
-//   * Get tenant name associated with the resources that the service manages.
-//    * For user request use authUser jwtTenant and for service request use oboTenant.
-//   *
-//   * @param authenticatedUser - principal user containing tenant and user info
-//   * @return tenant name for resources
-//   */
-//  public static String getResourceTenantId(AuthenticatedUser authenticatedUser)
-//  {
-//    if (TapisThreadContext.AccountType.service.name().equals(authenticatedUser.getAccountType()))
-//      return authenticatedUser.getOboTenantId();
-//    else
-//      return authenticatedUser.getTenantId();
-//  }
 
   /**
    * Get a localized message using the specified key and parameters. Locale is null.

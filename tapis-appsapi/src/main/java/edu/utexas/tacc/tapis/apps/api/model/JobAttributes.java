@@ -30,6 +30,9 @@ public final class JobAttributes
   public String archiveSystemId;
   public String archiveSystemDir;
   public boolean archiveOnAppError;
+  public boolean isMpi;
+  public String mpiCmd;
+  public String cmdPrefix;
   public ParameterSet parameterSet;
   public List<FileInput> fileInputs;
   public List<FileInputArray> fileInputArrays;
@@ -60,6 +63,9 @@ public final class JobAttributes
     archiveSystemId = a.getArchiveSystemId();
     archiveSystemDir = a.getArchiveSystemDir();
     archiveOnAppError = a.isArchiveOnAppError();
+    isMpi = a.getIsMpi();
+    mpiCmd = a.getMpiCmd();
+    cmdPrefix = a.getCmdPrefix();
     parameterSet = new ParameterSet(a.getParameterSet());
     fileInputs = a.getFileInputs();
     fileInputArrays = a.getFileInputArrays();

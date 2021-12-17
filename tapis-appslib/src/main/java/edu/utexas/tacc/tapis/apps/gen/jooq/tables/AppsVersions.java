@@ -182,6 +182,21 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     public final TableField<AppsVersionsRecord, Boolean> ARCHIVE_ON_APP_ERROR = createField(DSL.name("archive_on_app_error"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("true", SQLDataType.BOOLEAN)), this, "");
 
     /**
+     * The column <code>tapis_app.apps_versions.is_mpi</code>.
+     */
+    public final TableField<AppsVersionsRecord, Boolean> IS_MPI = createField(DSL.name("is_mpi"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("false", SQLDataType.BOOLEAN)), this, "");
+
+    /**
+     * The column <code>tapis_app.apps_versions.mpi_cmd</code>.
+     */
+    public final TableField<AppsVersionsRecord, String> MPI_CMD = createField(DSL.name("mpi_cmd"), SQLDataType.CLOB, this, "");
+
+    /**
+     * The column <code>tapis_app.apps_versions.cmd_prefix</code>.
+     */
+    public final TableField<AppsVersionsRecord, String> CMD_PREFIX = createField(DSL.name("cmd_prefix"), SQLDataType.CLOB, this, "");
+
+    /**
      * The column <code>tapis_app.apps_versions.parameter_set</code>.
      */
     public final TableField<AppsVersionsRecord, JsonElement> PARAMETER_SET = createField(DSL.name("parameter_set"), SQLDataType.JSONB.nullable(false), this, "", new JSONBToJsonElementBinding());

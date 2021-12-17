@@ -46,6 +46,9 @@
       "archiveSystemId": { "$ref": "#/SystemId" },
       "archiveSystemDir": { "$ref": "#/DirPath" },
       "archiveOnAppError": { "type": "boolean", "default": true },
+      "isMpi": { "type": "boolean", "default": false },
+      "mpiCmd": { "type": ["string", "null"], "minLength": 1, "maxLength": 126 },
+      "cmdPrefix": { "type": ["string", "null"], "minLength": 1, "maxLength": 126 },
       "parameterSet": { "$ref": "#/ParameterSet" },
       "fileInputs": {
         "type": ["array", "null"],
@@ -94,7 +97,7 @@
       "description": { "type":  ["string", "null"], "maxLength": 8096 },
       "inputMode": { "$ref": "#/FileInputModeEnum" },
       "autoMountLocal": { "type": "boolean", "default": true },
-      "sourceUrl": { "type": "string", "minLength": 1, "format": "uri" },
+      "sourceUrl": { "type": ["string", "null"], "minLength": 1, "format": "uri" },
       "targetPath": { "type": "string", "minLength": 1 }
     }
   },
@@ -115,7 +118,7 @@
     "required": [ "notificationMechanisms" ],
     "additionalProperties": false,
     "properties": {
-      "filter":  { "type": "string", "minLength": 1 },
+      "filter":  { "type": ["string", "null"], "minLength": 1 },
       "notificationMechanisms": {
         "type": "array", "minItems": 1, "items": { "$ref": "#/NotificationMechanism" }
       }
@@ -125,8 +128,8 @@
     "type": "object",
     "required": [ "mechanism" ],
     "mechanism": { "$ref": "#/NotificationMechanismEnum" },
-    "webhookURL": { "type": "string" },
-    "emailAddress": { "type":  "string" }
+    "webhookURL": { "type": ["string", "null"] },
+    "emailAddress": { "type":  ["string", "null"] }
   },
   "ArchiveFilter" : {
     "type": "object",
@@ -143,9 +146,9 @@
     "additionalProperties": false,
     "properties": {
       "name": { "type": "string", "minLength": 1, "maxLength": 80 },
-      "description": { "type": "string", "minLength": 1, "maxLength": 8096 },
+      "description": { "type": ["string", "null"], "minLength": 1, "maxLength": 8096 },
       "inputMode": { "$ref": "#/ArgInputModeEnum" },
-      "arg": { "type": "string", "minLength": 1 }
+      "arg": { "type": ["string", "null"], "minLength": 1 }
     }
   },
   "KeyValuePair": {

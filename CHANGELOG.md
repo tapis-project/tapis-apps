@@ -8,6 +8,16 @@ https://tapis.readthedocs.io/en/latest/technical/systems.html
 You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
+## 1.0.2 - 2021-12-16
+
+Incremental improvements and bug fixes.
+
+### New features:
+- Add isMpi, mpiCmd and cmdPrefix attributes to jobAttributes.
+
+### Bug fixes:
+- Allow nulls for additional attributes in order to support GET + PUT.
+
 ## 1.0.1 - 2021-11-19
 
 Incremental improvements and bug fixes.

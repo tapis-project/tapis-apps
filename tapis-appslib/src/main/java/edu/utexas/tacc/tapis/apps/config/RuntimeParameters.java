@@ -61,7 +61,7 @@ public final class RuntimeParameters
     private static final String DEFAULT_EMAIL_FROM_ADDRESS = "no-reply@nowhere.com";
     
     // Support defaults.
-    private static final String DEFAULT_SUPPORT_NAME = "Oracle of Delphi";
+    private static final String DEFAULT_SUPPORT_NAME = "TACC";
      
     /* ********************************************************************** */
     /*                                 Fields                                 */

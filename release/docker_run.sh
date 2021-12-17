@@ -2,7 +2,7 @@
 # Start up local docker image for tapis/apps service.
 # Environment value must be passed in as first argument: dev, staging, prod
 # Special argument "dev_local" means use a special tag that should only be available
-#   locally and use services from dev enviornment
+#   locally and use services from dev environment
 # Service password must be set as the env variable TAPIS_SERVICE_PASSWORD
 # Following services from a running tapis3 are required: tenants, tokens, security-kernel
 # Base URL for remote services is determined by environment value passed in.

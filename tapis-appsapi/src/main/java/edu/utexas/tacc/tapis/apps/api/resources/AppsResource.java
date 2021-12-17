@@ -1,7 +1,6 @@
 package edu.utexas.tacc.tapis.apps.api.resources;
 
 import java.util.concurrent.atomic.AtomicLong;
-
 import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
