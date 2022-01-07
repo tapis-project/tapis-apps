@@ -111,6 +111,21 @@ public class AppsServiceImpl implements AppsService
   // *********************** Public Methods *********************************
   // ************************************************************************
 
+  /**
+   * Initialize the service:
+   *   init service context
+   *   migrate DB
+   */
+  public void initService(String siteId1, String siteAdminTenantId1, String svcPassword) throws TapisException, TapisClientException
+  {
+    // Initialize service context and site info
+    siteId = siteId1;
+    siteAdminTenantId = siteAdminTenantId1;
+    serviceContext.initServiceJWT(siteId, APPS_SERVICE, svcPassword);
+    // Make sure DB is present and updated to latest version using flyway
+    dao.migrateDB();
+  }
+
   // -----------------------------------------------------------------------
   // ------------------------- Apps -------------------------------------
   // -----------------------------------------------------------------------
@@ -525,21 +540,6 @@ public class AppsServiceImpl implements AppsService
       hardDeleteApp(rUser, resourceTenantId, id);
     }
     return resourceIdSet.size();
-  }
-
-  /**
-   * Initialize the service:
-   *   init service context
-   *   migrate DB
-   */
-  public void initService(String siteId1, String siteAdminTenantId1, String svcPassword) throws TapisException, TapisClientException
-  {
-    // Initialize service context and site info
-    siteId = siteId1;
-    siteAdminTenantId = siteAdminTenantId1;
-    serviceContext.initServiceJWT(siteId, APPS_SERVICE, svcPassword);
-    // Make sure DB is present and updated to latest version using flyway
-    dao.migrateDB();
   }
 
   /**
