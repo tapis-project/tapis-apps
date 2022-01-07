@@ -701,7 +701,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     {
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      // execute SELECT to_regclass('tapis_sys.apps');
+      // execute SELECT to_regclass('tapis_app.apps');
       // Build and execute a simple postgresql statement to check for the table
       String sql = "SELECT to_regclass('" + APPS.getName() + "')";
       Result<Record> ret = db.resultQuery(sql).fetch();
@@ -714,10 +714,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     catch (Exception e)
     {
       result = e;
-      // Rollback always logs msg and throws exception.
-      // In this case of a simple check we ignore the exception, we just want the log msg
-      try { LibUtils.rollbackDB(conn, e,"DB_DELETE_FAILURE", "apps"); }
-      catch (Exception e1) { }
     }
     finally
     {
