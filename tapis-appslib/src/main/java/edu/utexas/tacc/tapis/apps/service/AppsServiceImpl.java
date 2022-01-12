@@ -107,6 +107,7 @@ public class AppsServiceImpl implements AppsService
   public static String getSiteId() {return siteId;}
   public static String getServiceTenantId() {return siteAdminTenantId;}
   public static String getServiceUserId() {return SERVICE_NAME;}
+
   // ************************************************************************
   // *********************** Public Methods *********************************
   // ************************************************************************
