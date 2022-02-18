@@ -15,6 +15,7 @@ Incremental improvements and bug fixes.
 
 ### New features:
 - Update readyCheck to check for expired service JWT.
+- Update for JDK 17
 
 ### Bug fixes:
 - ???.
