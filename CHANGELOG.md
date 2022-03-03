@@ -9,16 +9,16 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 1.1.? - 2022-??-??
+## 1.1.1 - 2022-03-03
 
 Incremental improvements and bug fixes.
 
 ### New features:
 - Update readyCheck to check for expired service JWT.
-- Update for JDK 17
+- Updates for JDK 17
 
 ### Bug fixes:
-- ???.
+- None
 
 ---------------------------------------------------------------------------
 ## 1.1.0 - 2022-01-07
