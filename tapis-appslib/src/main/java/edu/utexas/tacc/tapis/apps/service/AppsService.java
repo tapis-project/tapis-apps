@@ -7,6 +7,8 @@ import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
+import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
+
 import org.jvnet.hk2.annotations.Contract;
 
 import javax.ws.rs.NotAuthorizedException;
@@ -82,4 +84,7 @@ public interface AppsService
 
   Set<Permission> getUserPermissions(ResourceRequestUser rUser, String appId, String userName)
           throws TapisException, TapisClientException, NotAuthorizedException;
+
+  List<AppHistoryItem> getAppHistory(ResourceRequestUser rUser, String appId) 
+      throws TapisException, TapisClientException, NotAuthorizedException;
 }

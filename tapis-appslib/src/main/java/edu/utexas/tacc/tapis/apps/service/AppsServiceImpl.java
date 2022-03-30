@@ -28,6 +28,7 @@ import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
+import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
@@ -1876,5 +1877,39 @@ public class AppsServiceImpl implements AppsService
       msg = LibUtils.getMsg("APPLIB_ARCHSYS_NO_SYSTEM", archiveSystemId);
       errMessages.add(msg);
     }
+  }
+  
+  /**
+   * Retrieves App History list from given user and app name.
+   * 
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param appId - name of app
+   * @return - System history list as the result
+   * @throws TapisException - for Tapis related exceptions
+   * @throws TapisClientException - for Tapis Client related exceptions
+   * @throws NotAuthorizedException - unauthorized
+   */
+  @Override
+  public List<AppHistoryItem> getAppHistory(ResourceRequestUser rUser, String appId) 
+      throws TapisException, TapisClientException, NotAuthorizedException {
+    // ---------------------------- Check inputs ------------------------------------
+    // Required app attributes: rUser, id
+    AppOperation op = AppOperation.read;
+    if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+    if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
+    // Extract various names for convenience
+    String resourceTenantId = rUser.getOboTenantId();
+
+    // We need owner to check auth and if app not there cannot find owner, so
+    // if app does not exist then return null
+    if (!dao.checkForApp(resourceTenantId, appId, true)) return null;
+
+    // ------------------------- Check service level authorization -------------------------
+    checkAuth(rUser, op, appId, null, null, null);
+
+    // ------------------- Make Dao call to retrieve the app history -----------------------
+    List<AppHistoryItem> result = dao.getAppHistory(resourceTenantId, appId);
+    
+    return result;
   }
 }

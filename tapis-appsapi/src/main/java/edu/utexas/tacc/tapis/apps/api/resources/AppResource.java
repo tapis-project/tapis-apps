@@ -41,13 +41,14 @@ import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultBoolean;
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 
 import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
-
 import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqPostApp;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqPutApp;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApp;
+import edu.utexas.tacc.tapis.apps.api.responses.RespAppHistory;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApps;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
@@ -1254,5 +1255,55 @@ public class AppResource
   private static Response createSuccessResponse(Status status, String msg, RespAbstract resp)
   {
     return Response.status(status).entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp)).build();
+  }
+  
+  /**
+   * getHistory
+   * @param appId - name of the app
+   * @param securityContext - user identity
+   * @return Response with system history object as the result
+   */
+  @GET
+  @Path("{appId}/history")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getHistory(@PathParam("appId") String appId,
+                            @Context SecurityContext securityContext)
+  {
+    // Check that we have all we need from the context, the jwtTenantId and jwtUserId
+    // Utility method returns null if all OK and appropriate error response if there was a problem.
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    if (resp != null) return resp;
+
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
+
+    //RespAbstract resp1;
+    List<AppHistoryItem> appHistory;
+    
+    try
+    {
+      // Retrieve system history List
+      appHistory = appsService.getAppHistory(rUser, appId);
+    }
+    catch (Exception e)
+    {
+      String msg = ApiUtils.getMsgAuth("SYSAPI_SYS_GET_ERROR", rUser, appId, e.getMessage());
+      _log.error(msg, e);
+      return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+    }
+    
+    // System not found
+    if (appHistory == null || appHistory.size()==0) {
+     String msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
+      _log.warn(msg);
+      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+    }
+    
+    // ---------------------------- Success -------------------------------
+    // Success means we retrieved the system history information.
+    RespAppHistory resp1 = new RespAppHistory(appHistory);
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, "SystemHistory", appId), resp1);
   }
 }
