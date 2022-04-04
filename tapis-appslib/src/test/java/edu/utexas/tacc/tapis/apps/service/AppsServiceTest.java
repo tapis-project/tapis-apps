@@ -24,6 +24,8 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
+import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
@@ -78,7 +80,7 @@ public class AppsServiceTest
   private static final Set<Permission> testPermsMODIFY = new HashSet<>(Set.of(Permission.MODIFY));
 
   // Create test app definitions in memory
-  int numApps = 27;
+  int numApps = 28;
   App[] apps = IntegrationUtils.makeApps(numApps, testKey);
 
   @BeforeSuite
@@ -1330,5 +1332,27 @@ public class AppsServiceTest
     Assert.assertTrue(tmpObj.has("testdata"));
     String testdataStr = origNotes.get("testdata").getAsString();
     Assert.assertEquals(tmpObj.get("testdata").getAsString(), testdataStr);
+  }
+  // Test retrieving an app.
+  @Test
+  public void testGetAppHistory() throws Exception
+  {
+    App app0 = apps[27];
+    // Create app for app history tests
+    svc.createApp(rUser1, app0, scrubbedJson);
+    App tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false);
+    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
+    System.out.println("Found item: " + app0.getId());
+    
+    List<AppHistoryItem> appHistoryList = svc.getAppHistory(rUser1, app0.getId());
+    // Verify app history fields
+    Assert.assertEquals(appHistoryList.size(), 1);
+    for (AppHistoryItem item:appHistoryList) {
+      Assert.assertNotNull(item.getUserTenant(), "Fetched User Tenant should not be null");
+      Assert.assertNotNull(item.getUserName(), "Fetched User Name should not be null");
+      Assert.assertEquals(item.getOperation(), AppOperation.create);
+      Assert.assertNotNull(item.getUpdJson(), "Fetched Json should not be null");
+      Assert.assertNotNull(item.getCreated(), "Fetched created timestamp should not be null");
+    }
   }
 }

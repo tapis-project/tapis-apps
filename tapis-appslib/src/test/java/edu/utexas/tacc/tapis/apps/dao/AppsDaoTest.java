@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Set;
 
 import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
+import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
@@ -37,7 +39,7 @@ public class AppsDaoTest
   private ResourceRequestUser rUser;
 
   // Test data
-  int numApps = 13;
+  int numApps = 14;
   App[] apps = IntegrationUtils.makeApps(numApps, "Dao");
 
   @BeforeSuite
@@ -432,5 +434,29 @@ public class AppsDaoTest
     Assert.assertTrue(pass);
     Assert.assertNull(dao.getApp(tenantName, fakeAppId, fakeAppVersion));
     Assert.assertNull(dao.getAppOwner(tenantName, fakeAppId));
+  }
+  
+  // Test retrieving a single item
+  @Test
+  public void testGetAppHistory() throws Exception {
+    App app0 = apps[13];
+    boolean appCreated = dao.createApp(rUser, app0, gson.toJson(app0), scrubbedJson);
+    Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
+    App tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion());
+    Assert.assertNotNull(tmpApp, "Failed to get item, id: " + app0.getId() + " version: " + app0.getVersion());
+    System.out.println("Found item, id: " + app0.getId() + " version: " + app0.getVersion());
+
+    // Verify data in main tables
+    // ===========================
+    List<AppHistoryItem> appHistoryList = dao.getAppHistory(tenantName, app0.getId());
+    // Verify app history fields
+    Assert.assertEquals(appHistoryList.size(), 1);
+    for (AppHistoryItem item:appHistoryList) {
+      Assert.assertNotNull(item.getUserTenant(), "Fetched User Tenant should not be null");
+      Assert.assertNotNull(item.getUserName(), "Fetched User Name should not be null");
+      Assert.assertEquals(item.getOperation(), AppOperation.create);
+      Assert.assertNotNull(item.getUpdJson(), "Fetched Json should not be null");
+      Assert.assertNotNull(item.getCreated(), "Fetched created timestamp should not be null");
+    }
   }
 }

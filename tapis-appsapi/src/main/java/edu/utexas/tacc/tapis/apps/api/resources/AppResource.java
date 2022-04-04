@@ -1304,6 +1304,6 @@ public class AppResource
     // ---------------------------- Success -------------------------------
     // Success means we retrieved the system history information.
     RespAppHistory resp1 = new RespAppHistory(appHistory);
-    return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, "SystemHistory", appId), resp1);
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, "AppHistory", appId), resp1);
   }
 }
