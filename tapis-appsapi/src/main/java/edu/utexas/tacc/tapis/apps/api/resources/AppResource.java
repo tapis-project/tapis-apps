@@ -660,7 +660,7 @@ public class AppResource
     App app;
     try
     {
-      app = appsService.getApp(rUser, appId, null, requireExecPerm);
+      app = appsService.getApp(rUser, appId, null, requireExecPerm, false);
     }
     catch (Exception e)
     {
@@ -688,6 +688,7 @@ public class AppResource
    * @param appId - name of the app
    * @param appVersion - version of the app
    * @param requireExecPerm - check for EXECUTE permission as well as READ permission
+   * @param skipTapisAuth - skip tapis perms auth, calling service has checked.
    * @param securityContext - user identity
    * @return Response with app object as the result
    */
@@ -698,6 +699,7 @@ public class AppResource
   public Response getApp(@PathParam("appId") String appId,
                          @PathParam("appVersion") String appVersion,
                          @QueryParam("requireExecPerm") @DefaultValue("false") boolean requireExecPerm,
+                         @QueryParam("skipTapisAuthorization") @DefaultValue("false") boolean skipTapisAuth,
                          @Context SecurityContext securityContext)
   {
     String opName = "getApp";
@@ -712,14 +714,16 @@ public class AppResource
 
     // Trace this request.
     if (_log.isTraceEnabled())
-      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId,"appVersion="+appVersion,"requireExecPerm="+requireExecPerm);
+      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(),
+                          "appId="+appId, "appVersion="+appVersion,
+                          "requireExecPerm="+requireExecPerm, "skipTapisAuthorization="+skipTapisAuth);
 
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
 
     App app;
     try
     {
-      app = appsService.getApp(rUser, appId, appVersion, requireExecPerm);
+      app = appsService.getApp(rUser, appId, appVersion, requireExecPerm, skipTapisAuth);
     }
     catch (Exception e)
     {

@@ -102,7 +102,7 @@ public class AppsResource
    *    - connect to the DB and verify and that main service table exists
    *
    * It's intended as the endpoint that monitoring applications can use to check
-   * whether the application is ready to accept traffic.  In particular, kubernetes
+   * whether the service is ready to accept traffic.  In particular, kubernetes
    * can use this endpoint as part of its pod readiness check.
    *
    * Note that no JWT is required on this call.

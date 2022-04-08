@@ -68,9 +68,12 @@ public class AppsServiceImpl implements AppsService
   private static final String PERM_SPEC_TEMPLATE = "app:%s:%s:%s";
 
   private static final String SERVICE_NAME = TapisConstants.SERVICE_NAME_APPS;
-  private static final String FILES_SERVICE = "files";
-  private static final String JOBS_SERVICE = "jobs";
+  private static final String FILES_SERVICE = TapisConstants.SERVICE_NAME_FILES;
+  private static final String JOBS_SERVICE = TapisConstants.SERVICE_NAME_JOBS;
   private static final Set<String> SVCLIST_READ = new HashSet<>(Set.of(FILES_SERVICE, JOBS_SERVICE));
+  private static final Set<String> SVCLIST_SKIPAUTH = new HashSet<>(Set.of(JOBS_SERVICE));
+
+
 
   // Message keys
   private static final String ERROR_ROLLBACK = "APPLIB_ERROR_ROLLBACK";
@@ -627,12 +630,13 @@ public class AppsServiceImpl implements AppsService
    * @param appId - Name of the app
    * @param appVersion - Version of the app, null or blank for latest version
    * @param requireExecPerm - check for EXECUTE permission as well as READ permission
+   * @param skipTapisAuth - skip tapis auth, calling service has checked
    * @return populated instance of an App or null if not found or user not authorized.
    * @throws TapisException - for Tapis related exceptions
    * @throws NotAuthorizedException - unauthorized
    */
   @Override
-  public App getApp(ResourceRequestUser rUser, String appId, String appVersion, boolean requireExecPerm)
+  public App getApp(ResourceRequestUser rUser, String appId, String appVersion, boolean requireExecPerm, boolean skipTapisAuth)
           throws TapisException, NotAuthorizedException, TapisClientException
   {
     AppOperation op = AppOperation.read;
@@ -646,12 +650,22 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(resourceTenantId, appId, false)) return null;
 
     // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, null, null, null);
-    // If flag is set to also require EXECUTE perm then make a special auth call
-    if (requireExecPerm)
+    // If skipTapisAuth=true make a special check to confirm that auth can be bypassed
+    //   To bypoass must be a service request from an allowed service.
+    // else do normal auth check
+    if (skipTapisAuth)
     {
-      checkAuthUser(rUser, AppOperation.execute, resourceTenantId, rUser.getOboUserId(),
-                    appId, null, null, null);
+      checkSkipTapisAuth(rUser, op, appId);
+    }
+    else
+    {
+      checkAuth(rUser, op, appId, null, null, null);
+      // If flag is set to also require EXECUTE perm then make a special auth call
+      if (requireExecPerm)
+      {
+        checkAuthUser(rUser, AppOperation.execute, resourceTenantId, rUser.getOboUserId(),
+                      appId, null, null, null);
+      }
     }
 
     App result = dao.getApp(resourceTenantId, appId, appVersion);
@@ -1189,8 +1203,8 @@ public class AppsServiceImpl implements AppsService
     SystemsClient sysClient;
     String tenantName;
     String userName;
-    // If service request use oboTenant and oboUser in OBO headers
-    // else for user request use authenticated user name and tenant in OBO headers
+    // If service request then use oboTenant and oboUser in OBO headers
+    // else for user request use authenticated username and tenant in OBO headers
     if (rUser.isServiceRequest())
     {
       tenantName = rUser.getOboTenantId();
@@ -1876,5 +1890,23 @@ public class AppsServiceImpl implements AppsService
       msg = LibUtils.getMsg("APPLIB_ARCHSYS_NO_SYSTEM", archiveSystemId);
       errMessages.add(msg);
     }
+  }
+
+  /**
+   * Confirm that caller is allowed to skip normal tapis auth check.
+   * Must be a service request from a service allowed to bypass the check.
+   *
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param op - operation name
+   * @param appId - name of the system
+   * @throws NotAuthorizedException - apiUserId not authorized to perform operation
+   */
+  private void checkSkipTapisAuth(ResourceRequestUser rUser, AppOperation op, String appId) throws NotAuthorizedException
+  {
+    // If a service request the username will be the service name. E.g. files, jobs, streams, etc
+    String svcName = rUser.getJwtUserId();
+    if (rUser.isServiceRequest() && SVCLIST_SKIPAUTH.contains(svcName)) return;
+
+    throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_AUTH_SKIPAUTH", rUser, appId, op.name()), NO_CHALLENGE);
   }
 }
