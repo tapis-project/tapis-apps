@@ -9,6 +9,17 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.1.2 - 2022-04-05
+
+Additional information for Apps history.
+
+### New features:
+- Additional information for Apps history.
+
+### Bug fixes:
+- None
+
+---------------------------------------------------------------------------
 ## 1.1.1 - 2022-03-03
 
 Incremental improvements and bug fixes.
