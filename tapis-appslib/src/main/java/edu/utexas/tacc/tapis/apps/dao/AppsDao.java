@@ -64,5 +64,5 @@ public interface AppsDao
 
   String getAppOwner(String tenant, String id) throws TapisException;
 
-  List<AppHistoryItem> getAppHistory(String resourceTenantId, String appId) throws TapisException;
+  List<AppHistoryItem> getAppHistory(String oboTenantId, String appId) throws TapisException;
 }
