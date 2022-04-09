@@ -1385,7 +1385,7 @@ public class AppsServiceImpl implements AppsService
    * @param appId - name of the app
    * @param owner - app owner
    * @param perms - List of permissions for the revokePerm case
-   * @throws NotAuthorizedException - apiUserId not authorized to perform operation
+   * @throws NotAuthorizedException - user not authorized to perform operation
    */
   private void checkAuth(ResourceRequestUser rUser, AppOperation op, String appId,
                          String owner, String userIdToCheck, Set<Permission> perms)
@@ -1432,7 +1432,7 @@ public class AppsServiceImpl implements AppsService
    * @param appId - name of the system
    * @param owner - system owner
    * @param perms - List of permissions for the revokePerm case
-   * @throws NotAuthorizedException - apiUserId not authorized to perform operation
+   * @throws NotAuthorizedException - user not authorized to perform operation
    */
   private void checkAuthUser(ResourceRequestUser rUser, AppOperation op,
                              String tenantIdToCheck, String userIdToCheck,
@@ -1899,7 +1899,7 @@ public class AppsServiceImpl implements AppsService
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param op - operation name
    * @param appId - name of the system
-   * @throws NotAuthorizedException - apiUserId not authorized to perform operation
+   * @throws NotAuthorizedException - user not authorized to perform operation
    */
   private void checkSkipTapisAuth(ResourceRequestUser rUser, AppOperation op, String appId) throws NotAuthorizedException
   {

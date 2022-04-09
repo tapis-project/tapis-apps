@@ -106,7 +106,7 @@ public class PermsResource
   {
     String opName = "grantUserPerms";
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    // Check that we have all we need from the context, tenant name and apiUserId
+    // Check that we have all we need from the context
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
@@ -176,7 +176,7 @@ public class PermsResource
   {
     String opName = "getUserPerms";
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    // Check that we have all we need from the context, the tenant name and apiUserId
+    // Check that we have all we need from the context
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
@@ -231,7 +231,7 @@ public class PermsResource
   {
     String opName = "revokeUserPerm";
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    // Check that we have all we need from the context, tenant name and apiUserId
+    // Check that we have all we need from the context
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
@@ -297,7 +297,7 @@ public class PermsResource
     String opName = "revokeUserPerms";
     // ------------------------- Retrieve and validate thread context -------------------------
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    // Check that we have all we need from the context, tenant name and apiUserId
+    // Check that we have all we need from the context
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;

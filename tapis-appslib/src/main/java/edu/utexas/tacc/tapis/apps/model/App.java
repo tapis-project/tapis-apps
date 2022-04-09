@@ -412,11 +412,11 @@ public final class App
   /**
    * Resolve variables for App attributes
    */
-  public void resolveVariables(String apiUserId)
+  public void resolveVariables(String oboUser)
   {
-    // Resolve owner if necessary. If empty or "${apiUserId}" then fill in with apiUser.
-    // Note that for a user request oboUser and apiUserId are the same and for a service request we want oboUser here.
-    if (StringUtils.isBlank(owner) || owner.equalsIgnoreCase(APIUSERID_VAR)) setOwner(apiUserId);
+    // Resolve owner if necessary. If empty or "${apiUserId}" then fill in with oboUser.
+    // Note that for a user request oboUser and jwtUser are the same and for a service request we want oboUser here.
+    if (StringUtils.isBlank(owner) || owner.equalsIgnoreCase(APIUSERID_VAR)) setOwner(oboUser);
   }
 
   /**
