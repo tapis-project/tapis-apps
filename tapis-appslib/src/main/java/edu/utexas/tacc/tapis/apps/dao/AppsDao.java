@@ -6,6 +6,7 @@ import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
+import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
 
 import java.util.List;
 import java.util.Set;
@@ -62,4 +63,6 @@ public interface AppsDao
   Set<String> getAppIDs(String tenant, boolean showDeleted) throws TapisException;
 
   String getAppOwner(String tenant, String id) throws TapisException;
+
+  List<AppHistoryItem> getAppHistory(String resourceTenantId, String appId) throws TapisException;
 }

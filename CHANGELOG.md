@@ -9,11 +9,12 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 1.1.2 - 2022-04-08
+## 1.1.2 - 2022-04-??
 
 Preview of new features.
 
 ### New features:
+- Additional information for Apps history.
 - Support skipTapisAuthorization for requests from Jobs service.
 
 ### Bug fixes:

@@ -24,6 +24,7 @@ import org.jooq.Field;
 import org.jooq.OrderField;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.SelectConditionStep;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
+import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.FileInputArray;
 import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
@@ -2226,5 +2228,66 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       case NBETWEEN -> c = col.notBetween(valList.get(0), valList.get(1));
     }
     return c;
+  }
+  
+  /**
+   * Retrieves App History list from given tenant and app name.
+   * 
+   * @param resourceTenantId - The tenant ID
+   * @param appId - App name
+   * @return - App history list
+   * @throws TapisException - for Tapis related exceptions
+   */
+  @Override
+  public List<AppHistoryItem> getAppHistory(String tenant, String appId) throws TapisException {
+    // Initialize result.
+    List<AppHistoryItem> appHistoryList =  new ArrayList<AppHistoryItem>();;
+
+    // Begin where condition for the query
+    Condition whereCondition = APP_UPDATES.APP_TENANT.eq(tenant).and(APP_UPDATES.APP_ID.eq(appId));
+
+    // ------------------------- Call SQL ----------------------------
+    Connection conn = null;
+    try
+    {
+      // Get a database connection.
+      conn = getConnection();
+      DSLContext db = DSL.using(conn);
+
+
+      // Fetch all attributes by joining APPS and APPS_VERSIONS tables
+      @org.jetbrains.annotations.NotNull SelectConditionStep<Record> results;
+      results = db.selectFrom(APP_UPDATES.join(APPS_VERSIONS).on(APPS_VERSIONS.APP_SEQ_ID.eq(APP_UPDATES.APP_SEQ_ID)))
+                         .where(whereCondition);
+      if (results == null) return null;
+
+      // Create an App object using the appRecord
+      for (Record r : results) { AppHistoryItem s = getAppHistoryFromRecord(r); appHistoryList.add(s); }
+
+      // Close out and commit
+      LibUtils.closeAndCommitDB(conn, null, null);
+    }
+    catch (Exception e)
+    {
+      // Rollback transaction and throw an exception
+      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", tenant, appId, e.getMessage());
+    }
+    finally
+    {
+      // Always return the connection back to the connection pool.
+      LibUtils.finalCloseDB(conn);
+    }
+    return appHistoryList;
+  }
+
+  /**
+   * Converts App Updates record into an App History object.
+   * 
+   * @param r - App Updates record
+   * @return - App History object
+   */
+  private AppHistoryItem getAppHistoryFromRecord(Record r) {
+    return new AppHistoryItem(r.get(APP_UPDATES.APP_VERSION), r.get(APP_UPDATES.USER_TENANT), r.get(APP_UPDATES.USER_NAME),
+        r.get(APP_UPDATES.OPERATION), r.get(APP_UPDATES.UPD_JSON), r.get(APP_UPDATES.CREATED).toInstant(ZoneOffset.UTC));
   }
 }
