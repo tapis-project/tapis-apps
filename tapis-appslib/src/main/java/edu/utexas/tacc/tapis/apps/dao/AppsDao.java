@@ -13,14 +13,14 @@ import java.util.Set;
 
 public interface AppsDao
 {
-  boolean createApp(ResourceRequestUser rUser, App app, String createJsonStr, String scrubbedText)
+  boolean createApp(ResourceRequestUser rUser, App app, String changeDescription, String rawData)
           throws TapisException, IllegalStateException;
 
   void patchApp(ResourceRequestUser rUser, String appId, String appVersion, App patchedApp,
-                String updateJsonStr, String scrubbedText)
+                String changeDescription, String rawData)
           throws TapisException, IllegalStateException;
 
-  void putApp(ResourceRequestUser rUser, App putApp, String updateJsonStr, String scrubbedText)
+  void putApp(ResourceRequestUser rUser, App putApp, String changeDescription, String rawData)
           throws TapisException, IllegalStateException;
 
   void updateEnabled(ResourceRequestUser rUser, String tenantId, String id, boolean enabled) throws TapisException;
@@ -29,8 +29,8 @@ public interface AppsDao
 
   void updateAppOwner(ResourceRequestUser rUser, String tenantId, String id, String newOwnerName) throws TapisException;
 
-  void addUpdateRecord(ResourceRequestUser rUser, String tenant, String id, String version,
-                       AppOperation op, String upd_json, String upd_text) throws TapisException;
+  void addUpdateRecord(ResourceRequestUser rUser, String id, String version,
+                       AppOperation op, String changeDescription, String rawData) throws TapisException;
 
   int hardDeleteApp(String tenant, String id) throws TapisException;
 
