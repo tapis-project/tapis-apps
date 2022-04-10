@@ -26,11 +26,19 @@ import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 
+import static edu.utexas.tacc.tapis.apps.model.App.CONTAINERIMG_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.CONTAINERIZED_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.DELETED_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.DESCRIPTION_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.ENABLED_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.JOB_TYPE_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.MAX_JOBS_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.MAX_JOBS_PER_USER_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.NOTES_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.OWNER_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.RUNTIMEVER_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.RUNTIME_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.STRICT_FILE_INPUTS_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.TAGS_FIELD;
 
 /*
@@ -225,7 +233,7 @@ public class LibUtils
    * If no changes then return null.
    * NOTE that although some attributes should never change in this code path we include them here in case there is
    *   a bug or the design changes and this code path does include them.
-   * Attributes that should not change: TODO/TBD isEnabled, owner, containerized, isDeleted, isInteractive
+   * Attributes that should not change: isEnabled, owner, containerized, isDeleted
    *
    * @param o - original App
    * @param n - new App
@@ -243,57 +251,35 @@ public class LibUtils
     {noChanges=false;addChange(jo, OWNER_FIELD, o.getOwner(), n.getOwner());}
     if (!(o.isEnabled() == n.isEnabled()))
     {noChanges=false;addChange(jo, ENABLED_FIELD, o.isEnabled(), n.isEnabled());}
-//    if (!Objects.equals(o.getEffectiveUserId(),n.getEffectiveUserId()))
-//    {noChanges=false;addChange(jo, EFFECTIVE_USER_ID_FIELD, o.getEffectiveUserId(), n.getEffectiveUserId());}
-//    if (!Objects.equals(o.getDefaultAuthnMethod(),n.getDefaultAuthnMethod()))
-//    {noChanges=false;addChange(jo, DEFAULT_AUTHN_METHOD_FIELD, o.getDefaultAuthnMethod().name(), n.getDefaultAuthnMethod().name());}
-//    if (!Objects.equals(o.getBucketName(),n.getBucketName()))
-//    {noChanges=false;addChange(jo, BUCKET_NAME_FIELD, o.getBucketName(), n.getBucketName());}
-//    if (!Objects.equals(o.getRootDir(),n.getRootDir()))
-//    {noChanges=false;addChange(jo, ROOT_DIR_FIELD, o.getRootDir(), n.getRootDir());}
-//    if (!Objects.equals(o.getPort(),n.getPort()))
-//    {noChanges=false;addChange(jo, PORT_FIELD, o.getPort(), n.getPort());}
-//    if (!Objects.equals(o.isUseProxy(),n.isUseProxy()))
-//    {noChanges=false;addChange(jo, USE_PROXY_FIELD, o.isUseProxy(), n.isUseProxy());}
-//    if (!Objects.equals(o.getProxyHost(),n.getProxyHost()))
-//    {noChanges=false;addChange(jo, PROXY_HOST_FIELD, o.getProxyHost(), n.getProxyHost());}
-//    if (!Objects.equals(o.getProxyHost(),n.getProxyHost()))
-//    {noChanges=false;addChange(jo, PROXY_PORT_FIELD, o.getProxyPort(), n.getProxyPort());}
-//    if (!Objects.equals(o.getProxyPort(),n.getProxyPort()))
-//    {noChanges=false;addChange(jo, DTN_MOUNT_POINT_FIELD, o.getDtnMountPoint(), n.getDtnMountPoint());}
-//    if (!Objects.equals(o.getDtnMountPoint(),n.getDtnMountPoint()))
-//    {noChanges=false;addChange(jo, DTN_MOUNT_SOURCE_PATH_FIELD, o.getDtnMountSourcePath(), n.getDtnMountSourcePath());}
-//    if (!Objects.equals(o.getDtnMountSourcePath(),n.getDtnMountSourcePath()))
-//    {noChanges=false;addChange(jo, DTN_MOUNT_SOURCE_PATH_FIELD, o.getDtnMountSourcePath(), n.getDtnMountSourcePath());}
-//    if (!Objects.equals(o.getDtnSystemId(),n.getDtnSystemId()))
-//    {noChanges=false;addChange(jo, DTN_SYSTEM_ID_FIELD, o.getDtnSystemId(), n.getDtnSystemId());}
-//    if (!Objects.equals(o.isDtn(),n.isDtn()))
-//    {noChanges=false;addChange(jo, IS_DTN_FIELD, o.isDtn(), n.isDtn());}
-//    if (!Objects.equals(o.getCanExec(),n.getCanExec()))
-//    {noChanges=false;addChange(jo, CAN_EXEC_FIELD, o.getCanExec(), n.getCanExec());}
-//    if (!Objects.equals(o.getCanRunBatch(),n.getCanRunBatch()))
-//    {noChanges=false;addChange(jo, CAN_RUN_BATCH_FIELD, o.getCanRunBatch(), n.getCanRunBatch());}
-//    if (!Objects.equals(o.getMpiCmd(),n.getMpiCmd()))
-//    {noChanges=false;addChange(jo, MPI_CMD_FIELD, o.getMpiCmd(), n.getMpiCmd());}
-//    if (!Objects.equals(o.getJobWorkingDir(),n.getJobWorkingDir()))
-//    {noChanges=false;addChange(jo, JOB_WORKING_DIR_FIELD, o.getJobWorkingDir(), n.getJobWorkingDir());}
-//    if (!Objects.equals(o.getJobMaxJobs(),n.getJobMaxJobs()))
-//    {noChanges=false;addChange(jo, JOB_MAX_JOBS_FIELD, o.getJobMaxJobs(), n.getJobMaxJobs());}
-//    if (!Objects.equals(o.getJobMaxJobsPerUser(),n.getJobMaxJobsPerUser()))
-//    {noChanges=false;addChange(jo, JOB_MAX_JOBS_PER_USER_FIELD, o.getJobMaxJobsPerUser(), n.getJobMaxJobsPerUser());}
-//    if (!Objects.equals(o.getBatchScheduler(),n.getBatchScheduler()))
-//    {noChanges=false;addChange(jo, BATCH_SCHEDULER_FIELD, o.getBatchScheduler().name(), n.getBatchScheduler().name());}
-//    if (!Objects.equals(o.getBatchDefaultLogicalQueue(),n.getBatchDefaultLogicalQueue()))
-//    {noChanges=false;addChange(jo, BATCH_DEFAULT_LOGICAL_QUEUE_FIELD, o.getBatchDefaultLogicalQueue(), n.getBatchDefaultLogicalQueue());}
-//    if (!Objects.equals(o.getBatchSchedulerProfile(),n.getBatchSchedulerProfile()))
-//    {noChanges=false;addChange(jo, BATCH_SCHEDULER_PROFILE_FIELD, o.getBatchSchedulerProfile(), n.getBatchSchedulerProfile());}
+    if (!(o.isContainerized() == n.isContainerized()))
+    {noChanges=false;addChange(jo, CONTAINERIZED_FIELD, o.isContainerized(), n.isContainerized());}
+    if (!Objects.equals(o.getContainerImage(),n.getContainerImage()))
+    {noChanges=false;addChange(jo, CONTAINERIMG_FIELD, o.getContainerImage(), n.getContainerImage());}
+    if (!Objects.equals(o.getRuntime(),n.getRuntime()))
+    {noChanges=false;addChange(jo, RUNTIME_FIELD, o.getRuntime().name(), n.getRuntime().name());}
+    if (!Objects.equals(o.getRuntimeVersion(),n.getRuntimeVersion()))
+    {noChanges=false;addChange(jo, RUNTIMEVER_FIELD, o.getRuntimeVersion(), n.getRuntimeVersion());}
+    if (!Objects.equals(o.getJobType(),n.getJobType()))
+    {noChanges=false;addChange(jo, JOB_TYPE_FIELD, o.getJobType().name(), n.getJobType().name());}
+    if (!Objects.equals(o.getMaxJobs(),n.getMaxJobs()))
+    {noChanges=false;addChange(jo, MAX_JOBS_FIELD, o.getMaxJobs(), n.getMaxJobs());}
+    if (!Objects.equals(o.getMaxJobsPerUser(),n.getMaxJobsPerUser()))
+    {noChanges=false;addChange(jo, MAX_JOBS_PER_USER_FIELD, o.getMaxJobsPerUser(), n.getMaxJobsPerUser());}
+    if (!(o.isStrictFileInputs() == n.isStrictFileInputs()))
+    {noChanges=false;addChange(jo, STRICT_FILE_INPUTS_FIELD, o.isStrictFileInputs(), n.isStrictFileInputs());}
     if (!(o.isDeleted() == n.isDeleted()))
     {noChanges=false;addChange(jo, DELETED_FIELD, o.isDeleted(), n.isDeleted());}
 
     // ------------------------------------------------------
     // Following attributes require more complex handling
     // ------------------------------------------------------
-//    // TODO JOB_RUNTIMES - JobRuntime supports equals so Objects.equals should do something sensible,
+//    // TODO JOB_ATTRIBUTES -
+
+
+
+
+
+
 //    //  but order will be important.
 //    if (!Objects.equals(o.getJobRuntimes(),n.getJobRuntimes()))
 //    {noChanges=false;addChange(jo, JOB_RUNTIMES_FIELD, o.getJobRuntimes(), n.getJobRuntimes());}
