@@ -1450,14 +1450,15 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     db.insertInto(APP_UPDATES)
             .set(APP_UPDATES.APP_SEQ_ID, appSeqId)
             .set(APP_UPDATES.APP_VER_SEQ_ID, appVerSeqId)
-            .set(APP_UPDATES.APP_TENANT, tenant)
+            .set(APP_UPDATES.JWT_TENANT, rUser.getJwtTenantId())
+            .set(APP_UPDATES.JWT_USER, rUser.getJwtUserId())
+            .set(APP_UPDATES.OBO_TENANT, rUser.getOboTenantId())
+            .set(APP_UPDATES.OBO_USER, rUser.getOboUserId())
             .set(APP_UPDATES.APP_ID, id)
             .set(APP_UPDATES.APP_VERSION, version)
-            .set(APP_UPDATES.USER_TENANT, rUser.getOboTenantId())
-            .set(APP_UPDATES.USER_NAME, rUser.getOboUserId())
             .set(APP_UPDATES.OPERATION, op)
-            .set(APP_UPDATES.UPD_JSON, TapisGsonUtils.getGson().fromJson(updJsonStr, JsonElement.class))
-            .set(APP_UPDATES.UPD_TEXT, upd_text)
+            .set(APP_UPDATES.DESCRIPTION, TapisGsonUtils.getGson().fromJson(updJsonStr, JsonElement.class))
+            .set(APP_UPDATES.RAW_DATA, upd_text)
             .set(APP_UPDATES.UUID, uuid)
             .execute();
   }
@@ -2233,18 +2234,19 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Retrieves App History list from given tenant and app name.
    * 
-   * @param resourceTenantId - The tenant ID
+   * @param oboTenantId - The tenant ID
    * @param appId - App name
    * @return - App history list
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
-  public List<AppHistoryItem> getAppHistory(String tenant, String appId) throws TapisException {
+  public List<AppHistoryItem> getAppHistory(String oboTenantId, String appId) throws TapisException
+  {
     // Initialize result.
     List<AppHistoryItem> appHistoryList =  new ArrayList<AppHistoryItem>();;
 
     // Begin where condition for the query
-    Condition whereCondition = APP_UPDATES.APP_TENANT.eq(tenant).and(APP_UPDATES.APP_ID.eq(appId));
+    Condition whereCondition = APP_UPDATES.OBO_TENANT.eq(oboTenantId).and(APP_UPDATES.APP_ID.eq(appId));
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -2270,7 +2272,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     catch (Exception e)
     {
       // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", tenant, appId, e.getMessage());
+      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", oboTenantId, appId, e.getMessage());
     }
     finally
     {
@@ -2286,8 +2288,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @param r - App Updates record
    * @return - App History object
    */
-  private AppHistoryItem getAppHistoryFromRecord(Record r) {
-    return new AppHistoryItem(r.get(APP_UPDATES.APP_VERSION), r.get(APP_UPDATES.USER_TENANT), r.get(APP_UPDATES.USER_NAME),
-        r.get(APP_UPDATES.OPERATION), r.get(APP_UPDATES.UPD_JSON), r.get(APP_UPDATES.CREATED).toInstant(ZoneOffset.UTC));
+  private AppHistoryItem getAppHistoryFromRecord(Record r)
+  {
+    return new AppHistoryItem(r.get(APP_UPDATES.JWT_TENANT), r.get(APP_UPDATES.JWT_USER),
+                              r.get(APP_UPDATES.OBO_TENANT), r.get(APP_UPDATES.OBO_USER),
+                              r.get(APP_UPDATES.APP_VERSION), r.get(APP_UPDATES.OPERATION),
+                              r.get(APP_UPDATES.DESCRIPTION), r.get(APP_UPDATES.CREATED).toInstant(ZoneOffset.UTC));
   }
 }

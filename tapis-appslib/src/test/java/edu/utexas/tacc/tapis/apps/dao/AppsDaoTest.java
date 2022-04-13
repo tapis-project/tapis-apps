@@ -451,11 +451,15 @@ public class AppsDaoTest
     List<AppHistoryItem> appHistoryList = dao.getAppHistory(tenantName, app0.getId());
     // Verify app history fields
     Assert.assertEquals(appHistoryList.size(), 1);
-    for (AppHistoryItem item:appHistoryList) {
-      Assert.assertNotNull(item.getUserTenant(), "Fetched User Tenant should not be null");
-      Assert.assertNotNull(item.getUserName(), "Fetched User Name should not be null");
+    for (AppHistoryItem item:appHistoryList)
+    {
+      Assert.assertNotNull(item.getJwtTenant(), "Fetched API Tenant should not be null");
+      Assert.assertNotNull(item.getJwtTenant(), "Fetched API User should not be null");
+      Assert.assertNotNull(item.getOboTenant(), "Fetched OBO Tenant should not be null");
+      Assert.assertNotNull(item.getOboUser(), "Fetched OBO User should not be null");
       Assert.assertEquals(item.getOperation(), AppOperation.create);
-      Assert.assertNotNull(item.getUpdJson(), "Fetched Json should not be null");
+      Assert.assertNotNull(item.getAppVersion(), "Fetched appVersion should not be null");
+      Assert.assertNotNull(item.getDescription(), "Fetched Json should not be null");
       Assert.assertNotNull(item.getCreated(), "Fetched created timestamp should not be null");
     }
   }

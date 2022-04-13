@@ -1111,17 +1111,17 @@ public class AppsServiceImpl implements AppsService
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
-    String resourceTenantId = rUser.getOboTenantId();
+    String oboTenantId = rUser.getOboTenantId();
 
     // We need owner to check auth and if app not there cannot find owner, so
     // if app does not exist then return null
-    if (!dao.checkForApp(resourceTenantId, appId, true)) return null;
+    if (!dao.checkForApp(oboTenantId, appId, true)) return null;
 
     // ------------------------- Check service level authorization -------------------------
     checkAuth(rUser, op, appId, null, null, null);
 
     // ------------------- Make Dao call to retrieve the app history -----------------------
-    List<AppHistoryItem> result = dao.getAppHistory(resourceTenantId, appId);
+    List<AppHistoryItem> result = dao.getAppHistory(oboTenantId, appId);
 
     return result;
   }
