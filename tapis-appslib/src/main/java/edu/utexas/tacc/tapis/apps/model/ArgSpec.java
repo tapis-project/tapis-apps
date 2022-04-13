@@ -3,8 +3,7 @@ package edu.utexas.tacc.tapis.apps.model;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.apps.model.App.ArgInputMode;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Objects;
 
 /*
  * Argument with metadata
@@ -22,13 +21,9 @@ public final class ArgSpec
   // Default values
   public static final ArgInputMode DEFAULT_INPUT_MODE = ArgInputMode.INCLUDE_ON_DEMAND;
 
-
   /* ********************************************************************** */
   /*                                 Fields                                 */
   /* ********************************************************************** */
-  // Logging
-  private static final Logger _log = LoggerFactory.getLogger(ArgSpec.class);
-
   private final String arg;
   private final String name;
   private final String description;
@@ -65,4 +60,26 @@ public final class ArgSpec
 
   @Override
   public String toString() {return TapisUtils.toString(this);}
+
+  @Override
+  public boolean equals(Object o)
+  {
+    if (o == this) return true;
+    // Note: no need to check for o==null since instanceof will handle that case
+    if (!(o instanceof ArgSpec)) return false;
+    var that = (ArgSpec) o;
+    return (Objects.equals(this.arg, that.arg) && Objects.equals(this.name, that.name) &&
+            Objects.equals(this.description, that.description) && Objects.equals(this.inputMode, that.inputMode));
+  }
+
+  @Override
+  public int hashCode()
+  {
+    int retVal = (arg == null ? 1 : arg.hashCode());
+    retVal = 31 * retVal + (name == null ? 0 : name.hashCode());
+    retVal = 31 * retVal + (description == null ? 0 : description.hashCode());
+    // By inspection of this class inputMode is not null
+    retVal = 31 * retVal + inputMode.hashCode();
+    return retVal;
+  }
 }
