@@ -140,36 +140,36 @@ public class AppsServiceImpl implements AppsService
    * Secrets in the text should be masked.
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param app - Pre-populated App object
-   * @param rawData - Text used to create the App object - secrets should be scrubbed. Saved in update record.
+   * @param scrubbedText - Text used to create the App object - secrets should be scrubbed. Saved in update record.
    * @throws TapisException - for Tapis related exceptions
    * @throws IllegalStateException - app exists OR App in invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
    */
   @Override
-  public void createApp(ResourceRequestUser rUser, App app, String rawData)
+  public void createApp(ResourceRequestUser rUser, App app, String scrubbedText)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotAuthorizedException
   {
     AppOperation op = AppOperation.create;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (app == null) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
-    _log.trace(LibUtils.getMsgAuth("APPLIB_CREATE_TRACE", rUser, rawData));
-    String tenant = app.getTenant();
-    String appId = app.getId();
-    String appVersion = app.getVersion();
+    _log.trace(LibUtils.getMsgAuth("APPLIB_CREATE_TRACE", rUser, scrubbedText));
+    String resourceTenantId = app.getTenant();
+    String resourceId = app.getId();
+    String resourceVersion = app.getVersion();
 
     // ---------------------------- Check inputs ------------------------------------
     // Required app attributes: id, version
-    if (StringUtils.isBlank(tenant) || StringUtils.isBlank(appId) ||
-        StringUtils.isBlank(appVersion))
+    if (StringUtils.isBlank(resourceTenantId) || StringUtils.isBlank(resourceId) ||
+        StringUtils.isBlank(resourceVersion))
     {
-      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", rUser, appId));
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", rUser, resourceId));
     }
 
     // Check if app with id+version already exists
-    if (dao.checkForApp(tenant, appId, appVersion, true))
+    if (dao.checkForApp(resourceTenantId, resourceId, resourceVersion, true))
     {
-      throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_EXISTS", rUser, appId, appVersion));
+      throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_EXISTS", rUser, resourceId, resourceVersion));
     }
 
     // Make sure owner, notes and tags are all set
@@ -179,49 +179,48 @@ public class AppsServiceImpl implements AppsService
     app.resolveVariables(rUser.getOboUserId());
 
     // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, app.getOwner(), null, null);
+    checkAuth(rUser, op, resourceId, app.getOwner(), null, null);
 
     // ---------------- Check for reserved names ------------------------
-    checkReservedIds(rUser, appId);
+    checkReservedIds(rUser, resourceId);
 
     // ---------------- Check constraints on App attributes ------------------------
     validateApp(rUser, app);
 
     // Construct Json string representing the App about to be created
-    // This will be used as the description for the change history record
     App scrubbedApp = new App(app);
-    String changeDescription = TapisGsonUtils.getGson().toJson(scrubbedApp);
+    String createJsonStr = TapisGsonUtils.getGson().toJson(scrubbedApp);
 
     // ----------------- Create all artifacts --------------------
     // Creation of app and perms not in single DB transaction.
     // Use try/catch to rollback any writes in case of failure.
     boolean appCreated = false;
-    String appsPermSpecALL = getPermSpecAllStr(tenant, appId);
+    String appsPermSpecALL = getPermSpecAllStr(resourceTenantId, resourceId);
 
     // Get SK client now. If we cannot get this rollback not needed.
     var skClient = getSKClient();
     try {
       // ------------------- Make Dao call to persist the app -----------------------------------
-      appCreated = dao.createApp(rUser, app, changeDescription, rawData);
+      appCreated = dao.createApp(rUser, app, createJsonStr, scrubbedText);
 
       // ------------------- Add permissions -----------------------------
       // Give owner full access to the app
-      skClient.grantUserPermission(tenant, app.getOwner(), appsPermSpecALL);
+      skClient.grantUserPermission(resourceTenantId, app.getOwner(), appsPermSpecALL);
     }
     catch (Exception e0)
     {
       // Something went wrong. Attempt to undo all changes and then re-throw the exception
       // Log error
-      String msg = LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ROLLBACK", rUser, appId, e0.getMessage());
+      String msg = LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ROLLBACK", rUser, resourceId, e0.getMessage());
       _log.error(msg);
 
       // Rollback
       // Remove app from DB
-      if (appCreated) try {dao.hardDeleteApp(tenant, appId); }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "hardDelete", e.getMessage()));}
+      if (appCreated) try {dao.hardDeleteApp(resourceTenantId, resourceId); }
+      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, resourceId, "hardDelete", e.getMessage()));}
       // Remove perms
-      try { skClient.revokeUserPermission(tenant, app.getOwner(), appsPermSpecALL); }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "revokePermOwner", e.getMessage()));}
+      try { skClient.revokeUserPermission(resourceTenantId, app.getOwner(), appsPermSpecALL); }
+      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, resourceId, "revokePermOwner", e.getMessage()));}
       throw e0;
     }
   }
@@ -234,7 +233,7 @@ public class AppsServiceImpl implements AppsService
    *   all of jobAttributes (including all of parameterSet), tags, notes.
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param patchApp - Pre-populated PatchApp object
-   * @param rawData - Text used to create the PatchApp object - secrets should be scrubbed. Saved in update record.
+   * @param scrubbedText - Text used to create the PatchApp object - secrets should be scrubbed. Saved in update record.
    *
    * @throws TapisException - for Tapis related exceptions
    * @throws IllegalStateException - Resulting App would be in an invalid state
@@ -243,7 +242,7 @@ public class AppsServiceImpl implements AppsService
    * @throws NotFoundException - Resource not found
    */
   @Override
-  public void patchApp(ResourceRequestUser rUser, String appId, String appVersion, PatchApp patchApp, String rawData)
+  public void patchApp(ResourceRequestUser rUser, String appId, String appVersion, PatchApp patchApp, String scrubbedText)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException,
                  NotAuthorizedException, NotFoundException
   {
@@ -252,43 +251,39 @@ public class AppsServiceImpl implements AppsService
     if (patchApp == null) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
     String resourceTenantId = rUser.getOboTenantId();
+    String resourceId = appId;
+    String resourceVersion = appVersion;
 
     // ---------------------------- Check inputs ------------------------------------
-    if (StringUtils.isBlank(resourceTenantId) || StringUtils.isBlank(appId) ||
-        StringUtils.isBlank(appVersion) || StringUtils.isBlank(rawData))
+    if (StringUtils.isBlank(resourceTenantId) || StringUtils.isBlank(resourceId) ||
+        StringUtils.isBlank(resourceVersion) || StringUtils.isBlank(scrubbedText))
     {
-      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", rUser, appId));
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", rUser, resourceId));
     }
 
     // App with given version must already exist and not be deleted
-    if (!dao.checkForAppVersion(resourceTenantId, appId, appVersion, false))
+    if (!dao.checkForAppVersion(resourceTenantId, resourceId, resourceVersion, false))
     {
-      throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, appId));
+      throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, resourceId));
     }
 
     // Retrieve the app being patched and create fully populated App with changes merged in
-    App origApp = dao.getApp(resourceTenantId, appId, appVersion);
+    App origApp = dao.getApp(resourceTenantId, resourceId, resourceVersion);
     App patchedApp = createPatchedApp(origApp, patchApp);
 
     // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, origApp.getOwner(), null, null);
+    checkAuth(rUser, op, resourceId, origApp.getOwner(), null, null);
 
     // ---------------- Check constraints on App attributes ------------------------
     validateApp(rUser, patchedApp);
 
-    // Get a complete and succinct description of the update.
-    // If nothing has changed, then log a warning and return
-    String changeDescription = LibUtils.getChangeDescriptionAppUpdate(origApp, patchedApp, patchApp);
-    if (StringUtils.isBlank(changeDescription))
-    {
-      _log.warn(LibUtils.getMsgAuth("APPLIB_UPD_NO_CHANGE", rUser, op, appId, appVersion));
-      return;
-    }
+    // Construct Json string representing the PatchApp about to be used to update the app
+    String updateJsonStr = TapisGsonUtils.getGson().toJson(patchApp);
 
     // ----------------- Create all artifacts --------------------
     // No distributed transactions so no distributed rollback needed
     // ------------------- Make Dao call to persist the app -----------------------------------
-    dao.patchApp(rUser, appId, appVersion, patchedApp, changeDescription, rawData);
+    dao.patchApp(rUser, appId, appVersion, patchedApp, updateJsonStr, scrubbedText);
   }
 
   /**
@@ -299,7 +294,7 @@ public class AppsServiceImpl implements AppsService
    *   tenant, id, version, owner, enabled
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param putApp - Pre-populated App object (including tenantId, appId, appVersion)
-   * @param rawData - Text used to create the App object - secrets should be scrubbed. Saved in update record.
+   * @param scrubbedText - Text used to create the App object - secrets should be scrubbed. Saved in update record.
    *
    * @throws TapisException - for Tapis related exceptions
    * @throws IllegalStateException - Resulting App would be in an invalid state
@@ -308,7 +303,7 @@ public class AppsServiceImpl implements AppsService
    * @throws NotFoundException - Resource not found
    */
   @Override
-  public void putApp(ResourceRequestUser rUser, App putApp, String rawData)
+  public void putApp(ResourceRequestUser rUser, App putApp, String scrubbedText)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException,
           NotAuthorizedException, NotFoundException
   {
@@ -316,46 +311,40 @@ public class AppsServiceImpl implements AppsService
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (putApp == null) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
-    String tenant = putApp.getTenant();
-    String appId = putApp.getId();
-    String appVersion = putApp.getVersion();
+    String resourceTenantId = putApp.getTenant();
+    String resourceId = putApp.getId();
+    String resourceVersion = putApp.getVersion();
 
     // ---------------------------- Check inputs ------------------------------------
-    if (StringUtils.isBlank(tenant) || StringUtils.isBlank(appId) ||
-        StringUtils.isBlank(appVersion) || StringUtils.isBlank(rawData))
+    if (StringUtils.isBlank(resourceTenantId) || StringUtils.isBlank(resourceId) ||
+        StringUtils.isBlank(resourceVersion) || StringUtils.isBlank(scrubbedText))
     {
-      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", rUser, appId));
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", rUser, resourceId));
     }
 
     // App version must already exist and not be deleted
-    if (!dao.checkForAppVersion(tenant, appId, appVersion, false))
+    if (!dao.checkForAppVersion(resourceTenantId, resourceId, resourceVersion, false))
     {
-      throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, appId, appVersion));
+      throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, resourceId, resourceVersion));
     }
 
     // Retrieve the app being updated and create fully populated App with changes merged in
-    App origApp = dao.getApp(tenant, appId, appVersion);
+    App origApp = dao.getApp(resourceTenantId, resourceId, resourceVersion);
     App updatedApp = createUpdatedApp(origApp, putApp);
 
     // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, origApp.getOwner(), null, null);
+    checkAuth(rUser, op, resourceId, origApp.getOwner(), null, null);
 
     // ---------------- Check constraints on App attributes ------------------------
     validateApp(rUser, updatedApp);
 
-    // Get a complete and succinct description of the update.
-    // If nothing has changed, then log a warning and return
-    String changeDescription = LibUtils.getChangeDescriptionAppUpdate(origApp, putApp, null);
-    if (StringUtils.isBlank(changeDescription))
-    {
-      _log.warn(LibUtils.getMsgAuth("APPLIB_UPD_NO_CHANGE", rUser, op, appId, appVersion));
-      return;
-    }
+    // Construct Json string representing the App about to be used to update
+    String updateJsonStr = TapisGsonUtils.getGson().toJson(putApp);
 
     // ----------------- Create all artifacts --------------------
     // No distributed transactions so no distributed rollback needed
     // ------------------- Make Dao call to persist the app -----------------------------------
-    dao.putApp(rUser, updatedApp, changeDescription, rawData);
+    dao.putApp(rUser, updatedApp, updateJsonStr, scrubbedText);
   }
 
   /**
@@ -488,10 +477,6 @@ public class AppsServiceImpl implements AppsService
       skClient.grantUserPermission(resourceTenantId, newOwnerName, appsPermSpec);
       // Remove permissions from old owner
       skClient.revokeUserPermission(resourceTenantId, oldOwnerName, appsPermSpec);
-      // Get a complete and succinct description of the update.
-      String changeDescription = LibUtils.getChangeDescriptionUpdateOwner(appId, oldOwnerName, newOwnerName);
-      // Create a record of the update
-      dao.addUpdateRecord(rUser, appId, NO_APP_VERSION, op, changeDescription, null);
     }
     catch (Exception e0)
     {
@@ -911,14 +896,14 @@ public class AppsServiceImpl implements AppsService
    * @param appId - name of app
    * @param userName - Target user for operation
    * @param permissions - list of permissions to be granted
-   * @param rawData - Client provided text used to create the permissions list. Saved in update record.
+   * @param updateText - Client provided text used to create the permissions list. Saved in update record.
    * @throws TapisException - for Tapis related exceptions
    * @throws NotAuthorizedException - unauthorized
    * @throws NotFoundException - Resource not found
    */
   @Override
   public void grantUserPermissions(ResourceRequestUser rUser, String appId, String userName,
-                                   Set<Permission> permissions, String rawData)
+                                   Set<Permission> permissions, String updateText)
           throws NotFoundException, NotAuthorizedException, TapisException, TapisClientException
   {
     AppOperation op = AppOperation.grantPerms;
@@ -982,10 +967,10 @@ public class AppsServiceImpl implements AppsService
       throw new TapisException(LibUtils.getMsgAuth("APPLIB_PERM_SK_ERROR", rUser, appId, op.name()), tce);
     }
 
-    // Get a complete and succinct description of the update.
-    String changeDescription = LibUtils.getChangeDescriptionPermsUpdate(appId, userName, permissions);
+    // Construct Json string representing the update
+    String updateJsonStr = TapisGsonUtils.getGson().toJson(permissions);
     // Create a record of the update
-    dao.addUpdateRecord(rUser, appId, NO_APP_VERSION, op, changeDescription, rawData);
+    dao.addUpdateRecord(rUser, resourceTenantId, appId, NO_APP_VERSION, op, updateJsonStr, updateText);
   }
 
   /**
@@ -996,7 +981,7 @@ public class AppsServiceImpl implements AppsService
    * @param appId - name of app
    * @param userName - Target user for operation
    * @param permissions - list of permissions to be revoked
-   * @param rawData - Client provided text used to create the permissions list. Saved in update record.
+   * @param updateText - Client provided text used to create the permissions list. Saved in update record.
    * @return Number of items revoked
    *
    * @throws TapisException - for Tapis related exceptions
@@ -1004,7 +989,7 @@ public class AppsServiceImpl implements AppsService
    */
   @Override
   public int revokeUserPermissions(ResourceRequestUser rUser, String appId, String userName,
-                                   Set<Permission> permissions, String rawData)
+                                   Set<Permission> permissions, String updateText)
           throws TapisException, NotAuthorizedException, TapisClientException
   {
     AppOperation op = AppOperation.revokePerms;
@@ -1067,11 +1052,10 @@ public class AppsServiceImpl implements AppsService
       throw new TapisException(LibUtils.getMsgAuth("APPLIB_PERM_SK_ERROR", rUser, appId, op.name()), tce);
     }
 
-    // Get a complete and succinct description of the update.
-    String changeDescription = LibUtils.getChangeDescriptionPermsUpdate(appId, userName, permissions);
+    // Construct Json string representing the update
+    String updateJsonStr = TapisGsonUtils.getGson().toJson(permissions);
     // Create a record of the update
-    dao.addUpdateRecord(rUser, appId, NO_APP_VERSION, op, changeDescription, rawData);
-    // Create a record of the update
+    dao.addUpdateRecord(rUser, resourceTenantId, appId, NO_APP_VERSION, op, updateJsonStr, updateText);
     return changeCount;
   }
 
@@ -1127,17 +1111,17 @@ public class AppsServiceImpl implements AppsService
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
-    String oboTenantId = rUser.getOboTenantId();
+    String resourceTenantId = rUser.getOboTenantId();
 
     // We need owner to check auth and if app not there cannot find owner, so
     // if app does not exist then return null
-    if (!dao.checkForApp(oboTenantId, appId, true)) return null;
+    if (!dao.checkForApp(resourceTenantId, appId, true)) return null;
 
     // ------------------------- Check service level authorization -------------------------
     checkAuth(rUser, op, appId, null, null, null);
 
     // ------------------- Make Dao call to retrieve the app history -----------------------
-    List<AppHistoryItem> result = dao.getAppHistory(oboTenantId, appId);
+    List<AppHistoryItem> result = dao.getAppHistory(resourceTenantId, appId);
 
     return result;
   }

@@ -1,4 +1,13 @@
 package edu.utexas.tacc.tapis.apps.utils;
+
+import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
+import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
+import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
+import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,38 +17,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.google.gson.JsonObject;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
-import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
-import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
-import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
-
-import static edu.utexas.tacc.tapis.apps.model.App.CONTAINERIMG_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.CONTAINERIZED_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.DELETED_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.DESCRIPTION_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.ENABLED_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.JOB_TYPE_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.MAX_JOBS_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.MAX_JOBS_PER_USER_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.NOTES_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.OWNER_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.RUNTIMEVER_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.RUNTIME_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.STRICT_FILE_INPUTS_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.TAGS_FIELD;
 
 /*
    Utility class containing general use static methods.
@@ -225,213 +204,5 @@ public class LibUtils
     if (kvArray == null || kvArray.length == 0) return Collections.emptyList();
     List<KeyValuePair> kvList = Arrays.stream(kvArray).map(KeyValuePair::fromString).collect(Collectors.toList());
     return kvList;
-  }
-
-  // ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
-  /**
-   * Compare original and modified Apps to detect changes and produce a complete and succinct description of the changes.
-   * If no changes then return null.
-   * NOTE that although some attributes should never change in this code path we include them here in case there is
-   *   a bug or the design changes and this code path does include them.
-   * Attributes that should not change: isEnabled, owner, containerized, isDeleted
-   *
-   * @param o - original App
-   * @param n - new App
-   * @param p - incoming PatchApp if this was a PATCH operation
-   * @return Description of the changes or null if no changes detected.
-   */
-  public static String getChangeDescriptionAppUpdate(App o, App n, PatchApp p)
-  {
-    boolean noChanges = true;
-    boolean isPatch = (p != null);
-    var jo = new JSONObject();
-    if (!Objects.equals(o.getDescription(), n.getDescription()))
-    {noChanges=false;addChange(jo, DESCRIPTION_FIELD, o.getDescription(), n.getDescription());}
-    if (!Objects.equals(o.getOwner(),n.getOwner()))
-    {noChanges=false;addChange(jo, OWNER_FIELD, o.getOwner(), n.getOwner());}
-    if (!(o.isEnabled() == n.isEnabled()))
-    {noChanges=false;addChange(jo, ENABLED_FIELD, o.isEnabled(), n.isEnabled());}
-    if (!(o.isContainerized() == n.isContainerized()))
-    {noChanges=false;addChange(jo, CONTAINERIZED_FIELD, o.isContainerized(), n.isContainerized());}
-    if (!Objects.equals(o.getContainerImage(),n.getContainerImage()))
-    {noChanges=false;addChange(jo, CONTAINERIMG_FIELD, o.getContainerImage(), n.getContainerImage());}
-    if (!Objects.equals(o.getRuntime(),n.getRuntime()))
-    {noChanges=false;addChange(jo, RUNTIME_FIELD, o.getRuntime().name(), n.getRuntime().name());}
-    if (!Objects.equals(o.getRuntimeVersion(),n.getRuntimeVersion()))
-    {noChanges=false;addChange(jo, RUNTIMEVER_FIELD, o.getRuntimeVersion(), n.getRuntimeVersion());}
-    if (!Objects.equals(o.getJobType(),n.getJobType()))
-    {noChanges=false;addChange(jo, JOB_TYPE_FIELD, o.getJobType().name(), n.getJobType().name());}
-    if (!Objects.equals(o.getMaxJobs(),n.getMaxJobs()))
-    {noChanges=false;addChange(jo, MAX_JOBS_FIELD, o.getMaxJobs(), n.getMaxJobs());}
-    if (!Objects.equals(o.getMaxJobsPerUser(),n.getMaxJobsPerUser()))
-    {noChanges=false;addChange(jo, MAX_JOBS_PER_USER_FIELD, o.getMaxJobsPerUser(), n.getMaxJobsPerUser());}
-    if (!(o.isStrictFileInputs() == n.isStrictFileInputs()))
-    {noChanges=false;addChange(jo, STRICT_FILE_INPUTS_FIELD, o.isStrictFileInputs(), n.isStrictFileInputs());}
-    if (!(o.isDeleted() == n.isDeleted()))
-    {noChanges=false;addChange(jo, DELETED_FIELD, o.isDeleted(), n.isDeleted());}
-
-    // ------------------------------------------------------
-    // Following attributes require more complex handling
-    // ------------------------------------------------------
-//    // TODO JOB_ATTRIBUTES -
-
-
-
-
-
-
-//    //  but order will be important.
-//    if (!Objects.equals(o.getJobRuntimes(),n.getJobRuntimes()))
-//    {noChanges=false;addChange(jo, JOB_RUNTIMES_FIELD, o.getJobRuntimes(), n.getJobRuntimes());}
-////    // JOB_RUNTIMES If it is a patch and the patch value was null then no need to compare
-////    if (!isPatch || p.getJobRuntimes() != null)
-////    {
-////      if (!compareRuntimes(o.getJobRuntimes(), n.getJobRuntimes()))
-////      {
-////        noChanges = false;
-////        addChange(jo, JOB_RUNTIMES_FIELD, o.getJobRuntimes(), n.getJobRuntimes());
-////      }
-////    }
-//    // TODO JOB_ENV_VARIABLES
-//    if (!Objects.equals(o.getJobEnvVariables(),n.getJobEnvVariables()))
-//    {noChanges=false;addChange(jo, JOB_ENV_VARIABLES_FIELD, o.getJobEnvVariables(), n.getJobEnvVariables());}
-//// TODO   // JOB_ENV_VARIABLES If it is a patch and the patch value was null then no need to compare
-////    if (!isPatch || p.getJobEnvVariables() != null)
-////    {
-////      if (!compareKeyPairs(o.getJobEnvVariables(), n.getJobEnvVariables()))
-////      {
-////        noChanges = false;
-////        addChange(jo, JOB_ENV_VARIABLES_FIELD, o.getJobEnvVariables(), n.getJobEnvVariables());
-////      }
-////    }
-//
-//    // TODO BATCH_LOGICAL_QUEUES
-//    if (!Objects.equals(o.getBatchLogicalQueues(),n.getBatchLogicalQueues()))
-//    {noChanges=false;addChange(jo, BATCH_LOGICAL_QUEUES_FIELD, o.getBatchLogicalQueues(), n.getBatchLogicalQueues());}
-//
-//    // TODO JOB_CAPABILITIES
-//    if (!Objects.equals(o.getJobCapabilities(),n.getJobCapabilities()))
-//    {noChanges=false;addChange(jo, JOB_CAPABILITIES_FIELD, o.getJobCapabilities(), n.getJobCapabilities());}
-//
-    // TAGS - If it is a patch and the patch value was null then no need to compare
-    //   i.e. if not a patch or patch value was not null then do need to compare.
-    // Since TAGS are just strings we can use Objects.equals()
-    if (!isPatch || p.getTags() != null)
-    {
-      // Sort so it does not matter if order is different
-      List<String> oldSortedTags = Arrays.asList(o.getTags());
-      List<String> newSortedTags = Arrays.asList(n.getTags());
-      Collections.sort(oldSortedTags);
-      Collections.sort(newSortedTags);
-      if (!Objects.equals(oldSortedTags, newSortedTags))
-      {
-        noChanges = false;
-        addChange(jo, TAGS_FIELD, oldSortedTags, newSortedTags);
-      }
-    }
-
-    // NOTES - If it is a patch and the patch value was null then no need to compare
-    if (!isPatch || p.getNotes() != null)
-    {
-      if (!compareNotes(o.getNotes(), n.getNotes()))
-      {
-        noChanges=false;
-        addChange(jo, NOTES_FIELD, (JsonObject) o.getNotes(), (JsonObject) n.getNotes());
-      }
-    }
-
-    // If nothing has changed we are done.
-    if (noChanges) return null;
-
-    var joFinal = new JSONObject();
-    joFinal.put("AppId", o.getId());
-    joFinal.put("AppVersion", o.getVersion());
-    joFinal.put("AttributeChanges", jo);
-    return joFinal.toString();
-  }
-
-  /**
-   * Create a change description for a permissions grant or revoke.
-   */
-  public static String getChangeDescriptionPermsUpdate(String appId, String user, Set<App.Permission> permissions)
-  {
-    var o = new JSONObject();
-    o.put("AppId", appId);
-    o.put("TargetUser", user);
-    var perms = new JSONArray();
-    for (App.Permission p : permissions) { perms.put(p.toString()); }
-    o.put("Permissions", perms);
-    return o.toString();
-  }
-
-  /**
-   * Create a change description for update of owner.
-   */
-  public static String getChangeDescriptionUpdateOwner(String appId, String oldOwner, String newOwner)
-  {
-    var o = new JSONObject();
-    o.put("AppId", appId);
-    addChange(o, OWNER_FIELD, oldOwner, newOwner);
-    return o.toString();
-  }
-  /*
-   * Methods to add change entries for TSystem updates.
-   */
-  public static void addChange(JSONObject jo, String field, String o, String n)
-  {
-    var jo1 = new JSONObject();
-    jo1.put("oldValue", o);
-    jo1.put("newValue", n);
-    jo.put(field, jo1);
-  }
-  public static void addChange(JSONObject jo, String field, boolean o, boolean n)
-  {
-    var jo1 = new JSONObject();
-    jo1.put("oldValue", o);
-    jo1.put("newValue", n);
-    jo.put(field, jo1);
-  }
-  public static void addChange(JSONObject jo, String field, int o, int n)
-  {
-    var jo1 = new JSONObject();
-    jo1.put("oldValue", o);
-    jo1.put("newValue", n);
-    jo.put(field, jo1);
-  }
-  public static void addChange(JSONObject jo, String field, String[] o, String[] n)
-  {
-    var jo1 = new JSONObject();
-    // TODO/TBD how does this look?
-    jo1.put("oldValue", o);
-    jo1.put("newValue", n);
-    jo.put(field, jo1);
-  }
-  public static void addChange(JSONObject jo, String field, JsonObject o, JsonObject n)
-  {
-    var jo1 = new JSONObject();
-    // Convert gson.JsonObject to org.json.JSONObject
-    var oj = new JSONObject(o.toString());
-    var nj = new JSONObject(n.toString());
-    jo1.put("oldValue", oj);
-    jo1.put("newValue", nj);
-    jo.put(field, jo1);
-  }
-  public static void addChange(JSONObject jo, String field, List<?> o, List<?> n)
-  {
-    var jo1 = new JSONObject();
-    // TODO/TBD how does this look?
-    jo1.put("oldValue", o);
-    jo1.put("newValue", n);
-    jo.put(field, jo1);
-  }
-
-  /*
-   * To compare notes cast the Objects to gson's JsonObject and let gson do the compare
-   */
-  private static boolean compareNotes(Object o, Object n)
-  {
-    JsonObject oj = (JsonObject) o;
-    JsonObject nj = (JsonObject) n;
-    return Objects.equals(oj, nj);
   }
 }

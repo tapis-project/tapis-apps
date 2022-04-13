@@ -21,7 +21,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row14;
+import org.jooq.Row13;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -70,24 +70,9 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     public final TableField<AppUpdatesRecord, Integer> APP_VER_SEQ_ID = createField(DSL.name("app_ver_seq_id"), SQLDataType.INTEGER, this, "Sequence id of application version being updated");
 
     /**
-     * The column <code>tapis_app.app_updates.obo_tenant</code>. OBO Tenant associated with the change request
+     * The column <code>tapis_app.app_updates.app_tenant</code>. Tenant of application being updated
      */
-    public final TableField<AppUpdatesRecord, String> OBO_TENANT = createField(DSL.name("obo_tenant"), SQLDataType.CLOB.nullable(false), this, "OBO Tenant associated with the change request");
-
-    /**
-     * The column <code>tapis_app.app_updates.obo_user</code>. OBO User associated with the change request
-     */
-    public final TableField<AppUpdatesRecord, String> OBO_USER = createField(DSL.name("obo_user"), SQLDataType.CLOB.nullable(false), this, "OBO User associated with the change request");
-
-    /**
-     * The column <code>tapis_app.app_updates.jwt_tenant</code>. Tenant of user who requested the update
-     */
-    public final TableField<AppUpdatesRecord, String> JWT_TENANT = createField(DSL.name("jwt_tenant"), SQLDataType.CLOB.nullable(false), this, "Tenant of user who requested the update");
-
-    /**
-     * The column <code>tapis_app.app_updates.jwt_user</code>. Name of user who requested the update
-     */
-    public final TableField<AppUpdatesRecord, String> JWT_USER = createField(DSL.name("jwt_user"), SQLDataType.CLOB.nullable(false), this, "Name of user who requested the update");
+    public final TableField<AppUpdatesRecord, String> APP_TENANT = createField(DSL.name("app_tenant"), SQLDataType.CLOB.nullable(false), this, "Tenant of application being updated");
 
     /**
      * The column <code>tapis_app.app_updates.app_id</code>. Id of application being updated
@@ -100,24 +85,34 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     public final TableField<AppUpdatesRecord, String> APP_VERSION = createField(DSL.name("app_version"), SQLDataType.CLOB, this, "Version of application being updated");
 
     /**
+     * The column <code>tapis_app.app_updates.user_tenant</code>. Tenant of user who requested the update
+     */
+    public final TableField<AppUpdatesRecord, String> USER_TENANT = createField(DSL.name("user_tenant"), SQLDataType.CLOB.nullable(false), this, "Tenant of user who requested the update");
+
+    /**
+     * The column <code>tapis_app.app_updates.user_name</code>. Name of user who requested the update
+     */
+    public final TableField<AppUpdatesRecord, String> USER_NAME = createField(DSL.name("user_name"), SQLDataType.CLOB.nullable(false), this, "Name of user who requested the update");
+
+    /**
      * The column <code>tapis_app.app_updates.operation</code>. Type of update operation
      */
     public final TableField<AppUpdatesRecord, AppOperation> OPERATION = createField(DSL.name("operation"), SQLDataType.CLOB.nullable(false), this, "Type of update operation", new EnumConverter<String, AppOperation>(String.class, AppOperation.class));
 
     /**
-     * The column <code>tapis_app.app_updates.description</code>. JSON describing the change. Secrets scrubbed as needed.
+     * The column <code>tapis_app.app_updates.upd_json</code>. JSON representing the update - with secrets scrubbed
      */
-    public final TableField<AppUpdatesRecord, JsonElement> DESCRIPTION = createField(DSL.name("description"), SQLDataType.JSONB.nullable(false), this, "JSON describing the change. Secrets scrubbed as needed.", new JSONBToJsonElementBinding());
+    public final TableField<AppUpdatesRecord, JsonElement> UPD_JSON = createField(DSL.name("upd_json"), SQLDataType.JSONB.nullable(false), this, "JSON representing the update - with secrets scrubbed", new JSONBToJsonElementBinding());
 
     /**
-     * The column <code>tapis_app.app_updates.raw_data</code>. Raw data associated with the request, if available. Secrets scrubbed as needed.
+     * The column <code>tapis_app.app_updates.upd_text</code>. Text data supplied by client - secrets should be scrubbed
      */
-    public final TableField<AppUpdatesRecord, String> RAW_DATA = createField(DSL.name("raw_data"), SQLDataType.CLOB, this, "Raw data associated with the request, if available. Secrets scrubbed as needed.");
+    public final TableField<AppUpdatesRecord, String> UPD_TEXT = createField(DSL.name("upd_text"), SQLDataType.CLOB, this, "Text data supplied by client - secrets should be scrubbed");
 
     /**
-     * The column <code>tapis_app.app_updates.uuid</code>. UUID of app being updated
+     * The column <code>tapis_app.app_updates.uuid</code>.
      */
-    public final TableField<AppUpdatesRecord, java.util.UUID> UUID = createField(DSL.name("uuid"), SQLDataType.UUID.nullable(false), this, "UUID of app being updated");
+    public final TableField<AppUpdatesRecord, java.util.UUID> UUID = createField(DSL.name("uuid"), SQLDataType.UUID.nullable(false), this, "");
 
     /**
      * The column <code>tapis_app.app_updates.created</code>. UTC time for when record was created
@@ -218,11 +213,11 @@ public class AppUpdates extends TableImpl<AppUpdatesRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row14 type methods
+    // Row13 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row14<Integer, Integer, Integer, String, String, String, String, String, String, AppOperation, JsonElement, String, java.util.UUID, LocalDateTime> fieldsRow() {
-        return (Row14) super.fieldsRow();
+    public Row13<Integer, Integer, Integer, String, String, String, String, String, AppOperation, JsonElement, String, java.util.UUID, LocalDateTime> fieldsRow() {
+        return (Row13) super.fieldsRow();
     }
 }

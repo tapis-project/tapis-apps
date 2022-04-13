@@ -133,15 +133,14 @@ CREATE TABLE app_updates
     seq_id SERIAL PRIMARY KEY,
     app_seq_id INTEGER REFERENCES apps(seq_id) ON DELETE CASCADE,
     app_ver_seq_id INTEGER,
-    obo_tenant TEXT NOT NULL,
-    obo_user TEXT NOT NULL,
-    jwt_tenant TEXT NOT NULL,
-    jwt_user TEXT NOT NULL,
+    app_tenant TEXT NOT NULL,
     app_id TEXT NOT NULL,
     app_version TEXT,
+    user_tenant TEXT NOT NULL,
+    user_name TEXT NOT NULL,
     operation TEXT NOT NULL,
-    description JSONB NOT NULL,
-    raw_data TEXT,
+    upd_json JSONB NOT NULL,
+    upd_text TEXT,
     uuid uuid NOT NULL,
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
 );
@@ -149,14 +148,12 @@ ALTER TABLE app_updates OWNER TO tapis_app;
 COMMENT ON COLUMN app_updates.seq_id IS 'Application update request id';
 COMMENT ON COLUMN app_updates.app_seq_id IS 'Sequence id of application being updated';
 COMMENT ON COLUMN app_updates.app_ver_seq_id IS 'Sequence id of application version being updated';
-COMMENT ON COLUMN app_updates.obo_tenant IS 'OBO Tenant associated with the change request';
-COMMENT ON COLUMN app_updates.obo_user IS 'OBO User associated with the change request';
-COMMENT ON COLUMN app_updates.jwt_tenant IS 'Tenant of user who requested the update';
-COMMENT ON COLUMN app_updates.jwt_user IS 'Name of user who requested the update';
+COMMENT ON COLUMN app_updates.app_tenant IS 'Tenant of application being updated';
 COMMENT ON COLUMN app_updates.app_id IS 'Id of application being updated';
 COMMENT ON COLUMN app_updates.app_version IS 'Version of application being updated';
+COMMENT ON COLUMN app_updates.user_tenant IS 'Tenant of user who requested the update';
+COMMENT ON COLUMN app_updates.user_name IS 'Name of user who requested the update';
 COMMENT ON COLUMN app_updates.operation IS 'Type of update operation';
-COMMENT ON COLUMN app_updates.description IS 'JSON describing the change. Secrets scrubbed as needed.';
-COMMENT ON COLUMN app_updates.raw_data IS 'Raw data associated with the request, if available. Secrets scrubbed as needed.';
-COMMENT ON COLUMN app_updates.uuid IS 'UUID of app being updated';
+COMMENT ON COLUMN app_updates.upd_json IS 'JSON representing the update - with secrets scrubbed';
+COMMENT ON COLUMN app_updates.upd_text IS 'Text data supplied by client - secrets should be scrubbed';
 COMMENT ON COLUMN app_updates.created IS 'UTC time for when record was created';

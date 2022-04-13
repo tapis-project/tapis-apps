@@ -107,13 +107,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @throws IllegalStateException - if app id+version already exists or app has been marked deleted
    */
   @Override
-  public boolean createApp(ResourceRequestUser rUser, App app, String changeDescription, String rawData)
+  public boolean createApp(ResourceRequestUser rUser, App app, String createJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException {
     String opName = "createApp";
     // ------------------------- Check Input -------------------------
     if (app == null) LibUtils.logAndThrowNullParmException(opName, "app");
     if (rUser == null) LibUtils.logAndThrowNullParmException(opName, "resourceRequestUser");
-    if (StringUtils.isBlank(changeDescription)) LibUtils.logAndThrowNullParmException(opName, "changeDescription");
+    if (StringUtils.isBlank(createJsonStr)) LibUtils.logAndThrowNullParmException(opName, "createJson");
     if (StringUtils.isBlank(app.getTenant())) LibUtils.logAndThrowNullParmException(opName, "tenant");
     if (StringUtils.isBlank(app.getId())) LibUtils.logAndThrowNullParmException(opName, "appId");
     if (StringUtils.isBlank(app.getVersion())) LibUtils.logAndThrowNullParmException(opName, "appVersion");
@@ -243,9 +243,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Update top level table APPS
       db.update(APPS).set(APPS.LATEST_VERSION, app.getVersion()).where(APPS.ID.eq(app.getId())).execute();
 
-      // Persist change history record
-      addUpdate(db, rUser, app.getId(), app.getVersion(), appSeqId, appVerSeqId, AppOperation.create,
-                changeDescription, rawData, app.getUuid());
+      // Persist update record
+      addUpdate(db, rUser, app.getTenant(), app.getId(), app.getVersion(), appSeqId, appVerSeqId,
+                AppOperation.create, createJsonStr, scrubbedText, app.getUuid());
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -269,7 +269,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @throws IllegalStateException - if app already exists
    */
   @Override
-  public void putApp(ResourceRequestUser rUser, App putApp, String changeDescription, String rawData)
+  public void putApp(ResourceRequestUser rUser, App putApp, String updateJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException {
     String opName = "putApp";
     // ------------------------- Check Input -------------------------
@@ -280,7 +280,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     String appId = putApp.getId();
     String appVersion = putApp.getVersion();
     // Check required attributes have been provided
-    if (StringUtils.isBlank(changeDescription)) LibUtils.logAndThrowNullParmException(opName, "changeDescription");
+    if (StringUtils.isBlank(updateJsonStr)) LibUtils.logAndThrowNullParmException(opName, "updateJson");
     if (StringUtils.isBlank(tenantId)) LibUtils.logAndThrowNullParmException(opName, "tenant");
     if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
     if (StringUtils.isBlank(appVersion)) LibUtils.logAndThrowNullParmException(opName, "appVersion");
@@ -380,7 +380,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Persist update record
-      addUpdate(db, rUser, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify, changeDescription, rawData, uuid);
+      addUpdate(db, rUser, tenantId, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
+                updateJsonStr, scrubbedText, uuid);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -404,7 +405,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    */
   @Override
   public void patchApp(ResourceRequestUser rUser, String appId, String appVersion, App patchedApp,
-                       String changeDescription, String rawData)
+                       String updateJsonStr, String scrubbedText)
           throws TapisException, IllegalStateException {
     String opName = "patchApp";
     // ------------------------- Check Input -------------------------
@@ -413,7 +414,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     String tenant = rUser.getOboTenantId();
     // Check required attributes have been provided
-    if (StringUtils.isBlank(changeDescription)) LibUtils.logAndThrowNullParmException(opName, "updateJson");
+    if (StringUtils.isBlank(updateJsonStr)) LibUtils.logAndThrowNullParmException(opName, "updateJson");
     if (StringUtils.isBlank(tenant)) LibUtils.logAndThrowNullParmException(opName, "tenant");
     if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
     if (StringUtils.isBlank(appVersion)) LibUtils.logAndThrowNullParmException(opName, "appVersion");
@@ -509,8 +510,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       appVerSeqId = result.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Persist update record
-      addUpdate(db, rUser, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify, changeDescription, rawData,
-                patchedApp.getUuid());
+      addUpdate(db, rUser, tenant, appId, appVersion, appSeqId, appVerSeqId, AppOperation.modify,
+              updateJsonStr, scrubbedText, patchedApp.getUuid());
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -552,9 +553,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
               .where(APPS.TENANT.eq(tenantId),APPS.ID.eq(appId)).execute();
       // Persist update record
-      String changeDescription = "{\"enabled\":" +  enabled + "}";
-      addUpdate(db, rUser, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID, appOp, changeDescription,
-                null, INVALID_UUID);
+      String updateJsonStr = "{\"enabled\":" +  enabled + "}";
+      addUpdate(db, rUser, tenantId, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+                appOp, updateJsonStr , null, INVALID_UUID);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
@@ -595,9 +596,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
               .where(APPS.TENANT.eq(tenantId),APPS.ID.eq(appId)).execute();
       // Persist update record
-      String changeDescription = "{\"deleted\":" +  deleted + "}";
-      addUpdate(db, rUser, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID, appOp, changeDescription,
-                null, INVALID_UUID);
+      String updateJsonStr = "{\"deleted\":" +  deleted + "}";
+      addUpdate(db, rUser, tenantId, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+              appOp, updateJsonStr , null, INVALID_UUID);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
@@ -637,9 +638,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
               .where(APPS.TENANT.eq(tenantId),APPS.ID.eq(appId)).execute();
       // Persist update record
-      String changeDescription = "{\"owner\":\"" +  newOwnerName + "\"}";
-      addUpdate(db, rUser, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID, AppOperation.changeOwner,
-                changeDescription , null, INVALID_UUID);
+      String updateJsonStr = "{\"owner\":\"" +  newOwnerName + "\"}";
+      addUpdate(db, rUser, tenantId, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+                AppOperation.changeOwner, updateJsonStr , null, INVALID_UUID);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
@@ -1379,8 +1380,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *
    */
   @Override
-  public void addUpdateRecord(ResourceRequestUser rUser, String appId, String appVer, AppOperation op,
-                              String changeDescription, String rawData)
+  public void addUpdateRecord(ResourceRequestUser rUser, String tenant, String appId, String appVer,
+                              AppOperation op, String upd_json, String upd_text)
           throws TapisException
   {
     // ------------------------- Call SQL ----------------------------
@@ -1390,7 +1391,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      addUpdate(db, rUser, appId, appVer, INVALID_SEQ_ID, INVALID_SEQ_ID, op, changeDescription, rawData, INVALID_UUID);
+      addUpdate(db, rUser, tenant, appId, appVer, INVALID_SEQ_ID, INVALID_SEQ_ID, op,
+                upd_json, upd_text, INVALID_UUID);
 
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -1412,7 +1414,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /* ********************************************************************** */
 
   /**
-   * Given an sql connection and basic info add a change history record
+   * Given an sql connection and basic info add an update record
    * If appSeqId < 1 then appSeqId is fetched.
    * If appVerSeqId < 1 and version is provided then appVerSeqId is fetched.
    * NOTE: Both app tenant and user tenant are recorded. If a service makes an update on behalf of itself
@@ -1420,21 +1422,23 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *
    * @param db - Database connection
    * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param tenant - Tenant of the app being updated
    * @param id - Id of the app being updated
    * @param version - Version of the app being updated, may be null
    * @param appSeqId - Sequence Id of app being updated, if < 1 will be fetched
    * @param appVerSeqId - Sequence Id of version being updated, if < 1 and version given will be fetched
    * @param op - Operation, such as create, modify, etc.
-   * @param changeDescription - JSON representing the update - with secrets scrubbed
-   * @param rawData - Text data supplied by client - secrets should be scrubbed
+   * @param upd_json - JSON representing the update - with secrets scrubbed
+   * @param upd_text - Text data supplied by client - secrets should be scrubbed
    */
-  private static void addUpdate(DSLContext db, ResourceRequestUser rUser, String id, String version, int appSeqId,
-                                int appVerSeqId, AppOperation op, String changeDescription, String rawData, UUID uuid)
+  private static void addUpdate(DSLContext db, ResourceRequestUser rUser, String tenant, String id,
+                                String version, int appSeqId, int appVerSeqId, AppOperation op,
+                                String upd_json, String upd_text, UUID uuid)
   {
-    String updJsonStr = (StringUtils.isBlank(changeDescription)) ? EMPTY_JSON_OBJ : changeDescription;
+    String updJsonStr = (StringUtils.isBlank(upd_json)) ? EMPTY_JSON_OBJ : upd_json;
     if (appSeqId < 1)
     {
-      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(rUser.getOboTenantId()),APPS.ID.eq(id)).fetchOne(APPS.SEQ_ID);
+      appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(id)).fetchOne(APPS.SEQ_ID);
     }
     if (appVerSeqId < 1 && !StringUtils.isBlank(version))
     {
@@ -1446,15 +1450,14 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     db.insertInto(APP_UPDATES)
             .set(APP_UPDATES.APP_SEQ_ID, appSeqId)
             .set(APP_UPDATES.APP_VER_SEQ_ID, appVerSeqId)
-            .set(APP_UPDATES.JWT_TENANT, rUser.getJwtTenantId())
-            .set(APP_UPDATES.JWT_USER, rUser.getJwtUserId())
-            .set(APP_UPDATES.OBO_TENANT, rUser.getOboTenantId())
-            .set(APP_UPDATES.OBO_USER, rUser.getOboUserId())
+            .set(APP_UPDATES.APP_TENANT, tenant)
             .set(APP_UPDATES.APP_ID, id)
             .set(APP_UPDATES.APP_VERSION, version)
+            .set(APP_UPDATES.USER_TENANT, rUser.getOboTenantId())
+            .set(APP_UPDATES.USER_NAME, rUser.getOboUserId())
             .set(APP_UPDATES.OPERATION, op)
-            .set(APP_UPDATES.DESCRIPTION, TapisGsonUtils.getGson().fromJson(updJsonStr, JsonElement.class))
-            .set(APP_UPDATES.RAW_DATA, rawData)
+            .set(APP_UPDATES.UPD_JSON, TapisGsonUtils.getGson().fromJson(updJsonStr, JsonElement.class))
+            .set(APP_UPDATES.UPD_TEXT, upd_text)
             .set(APP_UPDATES.UUID, uuid)
             .execute();
   }
@@ -2230,19 +2233,18 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * Retrieves App History list from given tenant and app name.
    * 
-   * @param oboTenantId - The tenant ID
+   * @param resourceTenantId - The tenant ID
    * @param appId - App name
    * @return - App history list
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
-  public List<AppHistoryItem> getAppHistory(String oboTenantId, String appId) throws TapisException
-  {
+  public List<AppHistoryItem> getAppHistory(String tenant, String appId) throws TapisException {
     // Initialize result.
     List<AppHistoryItem> appHistoryList =  new ArrayList<AppHistoryItem>();;
 
     // Begin where condition for the query
-    Condition whereCondition = APP_UPDATES.OBO_TENANT.eq(oboTenantId).and(APP_UPDATES.APP_ID.eq(appId));
+    Condition whereCondition = APP_UPDATES.APP_TENANT.eq(tenant).and(APP_UPDATES.APP_ID.eq(appId));
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -2268,7 +2270,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     catch (Exception e)
     {
       // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", oboTenantId, appId, e.getMessage());
+      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", tenant, appId, e.getMessage());
     }
     finally
     {
@@ -2284,11 +2286,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @param r - App Updates record
    * @return - App History object
    */
-  private AppHistoryItem getAppHistoryFromRecord(Record r)
-  {
-    return new AppHistoryItem(r.get(APP_UPDATES.JWT_TENANT), r.get(APP_UPDATES.JWT_USER),
-                              r.get(APP_UPDATES.OBO_TENANT), r.get(APP_UPDATES.OBO_USER),
-                              r.get(APP_UPDATES.APP_VERSION), r.get(APP_UPDATES.OPERATION),
-                              r.get(APP_UPDATES.DESCRIPTION), r.get(APP_UPDATES.CREATED).toInstant(ZoneOffset.UTC));
+  private AppHistoryItem getAppHistoryFromRecord(Record r) {
+    return new AppHistoryItem(r.get(APP_UPDATES.APP_VERSION), r.get(APP_UPDATES.USER_TENANT), r.get(APP_UPDATES.USER_NAME),
+        r.get(APP_UPDATES.OPERATION), r.get(APP_UPDATES.UPD_JSON), r.get(APP_UPDATES.CREATED).toInstant(ZoneOffset.UTC));
   }
 }
