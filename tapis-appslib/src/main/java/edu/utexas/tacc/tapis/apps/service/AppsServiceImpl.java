@@ -666,7 +666,7 @@ public class AppsServiceImpl implements AppsService
         String nullOwner = null;
         String nullTargetUser = null;
         Set<Permission> nullPerms = null;
-        checkAuthUser(rUser, AppOperation.execute, appId, nullOwner, nullTargetUser, nullPerms);
+        checkAuthOboUser(rUser, AppOperation.execute, appId, nullOwner, nullTargetUser, nullPerms);
       }
     }
 
@@ -1820,44 +1820,62 @@ public class AppsServiceImpl implements AppsService
     // Check service and user requests separately to avoid confusing a service name with a user name
     if (rUser.isServiceRequest())
     {
-      // This is a service request. The user name will be the service name. E.g. files, jobs, streams, etc
-      if (op == AppOperation.read && SVCLIST_READ.contains(rUser.getJwtUserId())) return;
+      checkAuthSvc(rUser, op, appId);
     }
     else
     {
       // User check
-      checkAuthUser(rUser, op, appId, owner, targetUser, perms);
-      return;
+      checkAuthOboUser(rUser, op, appId, owner, targetUser, perms);
     }
+  }
+
+  /**
+   * Service authorization check.
+   * ONLY CALL this method when it is a service request
+   * A check should be made for app existence before calling this method.
+   *
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param op - operation name
+   * @param appId - name of the app
+   * @throws NotAuthorizedException - user not authorized to perform operation
+   */
+  private void checkAuthSvc(ResourceRequestUser rUser, AppOperation op, String appId)
+          throws NotAuthorizedException, IllegalStateException
+  {
+    // If ever called and not a svc request then fall back to denied
+    if (!rUser.isServiceRequest())
+      throw new NotAuthorizedException(LibUtils.getMsgAuth("SYSLIB_AUTH_GETCRED", rUser, appId, op.name()), NO_CHALLENGE);
+
+    if (op == AppOperation.read && SVCLIST_READ.contains(rUser.getJwtUserId())) return;
     // Not authorized, throw an exception
     throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()), NO_CHALLENGE);
   }
 
   /**
-   * OboUser based authorization check.
-   * A check should be made for app existence before calling this method.
-   * If no owner is passed in and one cannot be found then an error is logged and authorization is denied.
-   * Operations:
-   *  Create -      must be owner or have admin role
-   *  Delete -      must be owner or have admin role
-   *  ChangeOwner - must be owner or have admin role
-   *  GrantPerm -   must be owner or have admin role
-   *  Read -     must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
-   *  getPerms - must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
-   *  Modify - must be owner or have admin role or have MODIFY permission
-   *  Execute - must be owner or have admin role or have EXECUTE permission
-   *  RevokePerm -  must be owner or have admin role or apiUserId=targetUser and meet certain criteria (allowUserRevokePerm)
-   *
-   * @param rUser - ResourceRequestUser containing tenant, user and request info
-   * @param op - operation name
-   * @param appId - name of the system
-   * @param owner - system owner
-   * @param targetUser - Target user for operation
-   * @param perms - List of permissions for the revokePerm case
-   * @throws NotAuthorizedException - user not authorized to perform operation
-   */
-  private void checkAuthUser(ResourceRequestUser rUser, AppOperation op, String appId, String owner,
-                             String targetUser, Set<Permission> perms)
+     * OboUser based authorization check.
+     * A check should be made for app existence before calling this method.
+     * If no owner is passed in and one cannot be found then an error is logged and authorization is denied.
+     * Operations:
+     *  Create -      must be owner or have admin role
+     *  Delete -      must be owner or have admin role
+     *  ChangeOwner - must be owner or have admin role
+     *  GrantPerm -   must be owner or have admin role
+     *  Read -     must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
+     *  getPerms - must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
+     *  Modify - must be owner or have admin role or have MODIFY permission
+     *  Execute - must be owner or have admin role or have EXECUTE permission
+     *  RevokePerm -  must be owner or have admin role or apiUserId=targetUser and meet certain criteria (allowUserRevokePerm)
+     *
+     * @param rUser - ResourceRequestUser containing tenant, user and request info
+     * @param op - operation name
+     * @param appId - name of the system
+     * @param owner - system owner
+     * @param targetUser - Target user for operation
+     * @param perms - List of permissions for the revokePerm case
+     * @throws NotAuthorizedException - user not authorized to perform operation
+     */
+  private void checkAuthOboUser(ResourceRequestUser rUser, AppOperation op, String appId, String owner,
+                                String targetUser, Set<Permission> perms)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
     String oboTenant = rUser.getOboTenantId();
@@ -1870,7 +1888,7 @@ public class AppsServiceImpl implements AppsService
       if (hasAdminRole(rUser)) return;
     }
 
-    // Most checks require owner. If no owner specified and owner cannot be determined then log an error and deny.
+    // Remaining checks require owner. If no owner specified and owner cannot be determined then log an error and deny.
     if (StringUtils.isBlank(owner)) owner = dao.getAppOwner(oboTenant, appId);
     if (StringUtils.isBlank(owner)) {
       String msg = LibUtils.getMsgAuth("APPLIB_AUTH_NO_OWNER", rUser, appId, op.name());
