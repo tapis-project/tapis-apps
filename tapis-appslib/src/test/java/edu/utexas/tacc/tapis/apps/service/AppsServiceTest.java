@@ -450,7 +450,7 @@ public class AppsServiceTest
     {
       Assert.assertTrue(userPerms.contains(perm));
     }
-    // Original owner should no longer have the modify permission
+    // Original owner should no longer have modify permission
     userPerms = svc.getUserPermissions(newOwnerAuth, app0.getId(), origOwnerName);
     Assert.assertFalse(userPerms.contains(Permission.MODIFY));
     // Original owner should not be able to modify app

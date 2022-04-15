@@ -178,8 +178,8 @@ public class AppsServiceImpl implements AppsService
     // ----------------- Resolve variables for any attributes that might contain them --------------------
     app.resolveVariables(rUser.getOboUserId());
 
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, app.getOwner(), null, null);
+    // ------------------------- Check authorization -------------------------
+    checkAuth(rUser, op, appId, app.getOwner());
 
     // ---------------- Check for reserved names ------------------------
     checkReservedIds(rUser, appId);
@@ -270,8 +270,8 @@ public class AppsServiceImpl implements AppsService
     App origApp = dao.getApp(resourceTenantId, appId, appVersion);
     App patchedApp = createPatchedApp(origApp, patchApp);
 
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, origApp.getOwner(), null, null);
+    // ------------------------- Check authorization -------------------------
+    checkAuth(rUser, op, appId, origApp.getOwner());
 
     // ---------------- Check constraints on App attributes ------------------------
     validateApp(rUser, patchedApp);
@@ -331,8 +331,8 @@ public class AppsServiceImpl implements AppsService
     App origApp = dao.getApp(tenant, appId, appVersion);
     App updatedApp = createUpdatedApp(origApp, putApp);
 
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, origApp.getOwner(), null, null);
+    // ------------------------- Check authorization -------------------------
+    checkAuth(rUser, op, appId, origApp.getOwner());
 
     // ---------------- Check constraints on App attributes ------------------------
     validateApp(rUser, updatedApp);
@@ -457,8 +457,8 @@ public class AppsServiceImpl implements AppsService
     // Retrieve the old owner
     String oldOwnerName = dao.getAppOwner(resourceTenantId, appId);
 
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, oldOwnerName, null, null);
+    // ------------------------- Check authorization -------------------------
+    checkAuth(rUser, op, appId, oldOwnerName);
 
     // If new owner same as old owner then this is a no-op
     if (newOwnerName.equals(oldOwnerName)) return 0;
@@ -511,8 +511,8 @@ public class AppsServiceImpl implements AppsService
     // If app does not exist then 0 changes
     if (!dao.checkForApp(resourceTenantId, appId, true)) return 0;
 
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, null, null, null);
+    // ------------------------- Check authorization -------------------------
+    checkAuth(rUser, op, appId);
 
     // Remove SK artifacts
     removeSKArtifacts(resourceTenantId, appId);
@@ -589,8 +589,8 @@ public class AppsServiceImpl implements AppsService
  
     // We need owner to check auth and if app not there cannot find owner, so cannot do auth check if no app
     if (dao.checkForApp(resourceTenantId, appId, includeDeleted)) {
-      // ------------------------- Check service level authorization -------------------------
-      checkAuth(rUser, op, appId, null, null, null);
+      // ------------------------- Check authorization -------------------------
+      checkAuth(rUser, op, appId);
       return true;
     }
     return false;
@@ -618,8 +618,8 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(resourceTenantId, appId, false))
       throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
 
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, null, null, null);
+    // ------------------------- Check authorization -------------------------
+    checkAuth(rUser, op, appId);
     return dao.isEnabled(resourceTenantId, appId);
   }
 
@@ -649,7 +649,7 @@ public class AppsServiceImpl implements AppsService
     // if app does not exist then return null
     if (!dao.checkForApp(resourceTenantId, appId, false)) return null;
 
-    // ------------------------- Check service level authorization -------------------------
+    // ------------------------- Check authorization -------------------------
     // If skipTapisAuth=true make a special check to confirm that auth can be bypassed
     //   To bypoass must be a service request from an allowed service.
     // else do normal auth check
@@ -659,12 +659,14 @@ public class AppsServiceImpl implements AppsService
     }
     else
     {
-      checkAuth(rUser, op, appId, null, null, null);
+      checkAuth(rUser, op, appId);
       // If flag is set to also require EXECUTE perm then make a special auth call
       if (requireExecPerm)
       {
-        checkAuthUser(rUser, AppOperation.execute, resourceTenantId, rUser.getOboUserId(),
-                      appId, null, null, null);
+        String nullOwner = null;
+        String nullTargetUser = null;
+        Set<Permission> nullPerms = null;
+        checkAuthUser(rUser, AppOperation.execute, appId, nullOwner, nullTargetUser, nullPerms);
       }
     }
 
@@ -845,17 +847,18 @@ public class AppsServiceImpl implements AppsService
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     // Get all app names
     Set<String> appIds = dao.getAppIDs(rUser.getOboTenantId(), showDeleted);
-    var allowedNames = new HashSet<String>();
+    var allowedAppIDs = new HashSet<String>();
     // Filter based on user authorization
-    for (String name: appIds)
+    for (String appId: appIds)
     {
-      try {
-        checkAuth(rUser, op, name, null, null, null);
-        allowedNames.add(name);
+      try
+      {
+        checkAuth(rUser, op, appId);
+        allowedAppIDs.add(appId);
       }
       catch (NotAuthorizedException | TapisClientException e) { }
     }
-    return allowedNames;
+    return allowedAppIDs;
   }
 
   /**
@@ -877,8 +880,8 @@ public class AppsServiceImpl implements AppsService
     // if app does not exist then return null
     if (!dao.checkForApp(rUser.getOboTenantId(), appId, false)) return null;
 
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, null, null, null);
+    // ------------------------- Check authorization -------------------------
+    checkAuth(rUser, op, appId);
 
     return dao.getAppOwner(rUser.getOboTenantId(), appId);
   }
@@ -910,19 +913,19 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(appId) || StringUtils.isBlank(userName))
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_SYSTEM", rUser));
 
-    String resourceTenantId = rUser.getOboTenantId();
+    String oboTenant = rUser.getOboTenantId();
 
     // If system does not exist or has been deleted then throw an exception
-    if (!dao.checkForApp(resourceTenantId, appId, false))
+    if (!dao.checkForApp(oboTenant, appId, false))
       throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
 
     // Check to see if owner is trying to update permissions for themselves.
     // If so throw an exception because this would be confusing since owner always has full permissions.
     // For an owner permissions are never checked directly.
-    String owner = checkForOwnerPermUpdate(rUser, resourceTenantId, appId, userName, op.name());
+    String owner = checkForOwnerPermUpdate(rUser, appId, userName, op.name());
 
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, owner, null, null);
+    // ------------------------- Check authorization -------------------------
+    checkAuth(rUser, op, appId, owner);
 
     // Check inputs. If anything null or empty throw an exception
     if (permissions == null || permissions.isEmpty())
@@ -934,7 +937,7 @@ public class AppsServiceImpl implements AppsService
     if (permissions.contains(Permission.MODIFY)) permissions.add(Permission.READ);
 
     // Create a set of individual permSpec entries based on the list passed in
-    Set<String> permSpecSet = getPermSpecSet(resourceTenantId, appId, permissions);
+    Set<String> permSpecSet = getPermSpecSet(oboTenant, appId, permissions);
 
     // Get the Security Kernel client
     var skClient = getSKClient();
@@ -946,7 +949,7 @@ public class AppsServiceImpl implements AppsService
       // Assign perms to user. SK creates a default role for the user
       for (String permSpec : permSpecSet)
       {
-        skClient.grantUserPermission(resourceTenantId, userName, permSpec);
+        skClient.grantUserPermission(oboTenant, userName, permSpec);
       }
     }
     catch (TapisClientException tce)
@@ -959,7 +962,7 @@ public class AppsServiceImpl implements AppsService
       // Revoke permissions that may have been granted.
       for (String permSpec : permSpecSet)
       {
-        try { skClient.revokeUserPermission(resourceTenantId, userName, permSpec); }
+        try { skClient.revokeUserPermission(oboTenant, userName, permSpec); }
         catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "revokePerm", e.getMessage()));}
       }
       // Convert to TapisException and re-throw
@@ -969,7 +972,7 @@ public class AppsServiceImpl implements AppsService
     // Construct Json string representing the update
     String updateJsonStr = TapisGsonUtils.getGson().toJson(permissions);
     // Create a record of the update
-    dao.addUpdateRecord(rUser, resourceTenantId, appId, NO_APP_VERSION, op, updateJsonStr, rawData);
+    dao.addUpdateRecord(rUser, oboTenant, appId, NO_APP_VERSION, op, updateJsonStr, rawData);
   }
 
   /**
@@ -978,7 +981,7 @@ public class AppsServiceImpl implements AppsService
    * NOTE: Permissions only impact the default user role
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - name of app
-   * @param userName - Target user for operation
+   * @param targetUser - Target user for operation
    * @param permissions - list of permissions to be revoked
    * @param rawData - Client provided text used to create the permissions list. Saved in update record.
    * @return Number of items revoked
@@ -987,28 +990,28 @@ public class AppsServiceImpl implements AppsService
    * @throws NotAuthorizedException - unauthorized
    */
   @Override
-  public int revokeUserPermissions(ResourceRequestUser rUser, String appId, String userName,
+  public int revokeUserPermissions(ResourceRequestUser rUser, String appId, String targetUser,
                                    Set<Permission> permissions, String rawData)
           throws TapisException, NotAuthorizedException, TapisClientException
   {
     AppOperation op = AppOperation.revokePerms;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
-    if (StringUtils.isBlank(appId) || StringUtils.isBlank(userName))
+    if (StringUtils.isBlank(appId) || StringUtils.isBlank(targetUser))
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_SYSTEM", rUser));
 
-    String resourceTenantId = rUser.getOboTenantId();
+    String oboTenant = rUser.getOboTenantId();
 
     // We need owner to check auth and if app not there cannot find owner, so
     // if app does not exist or has been deleted then return 0 changes
-    if (!dao.checkForApp(resourceTenantId, appId, false)) return 0;
+    if (!dao.checkForApp(oboTenant, appId, false)) return 0;
 
     // Check to see if owner is trying to update permissions for themselves.
     // If so throw an exception because this would be confusing since owner always has full permissions.
     // For an owner permissions are never checked directly.
-    String owner = checkForOwnerPermUpdate(rUser, resourceTenantId, appId, userName, op.name());
+    String owner = checkForOwnerPermUpdate(rUser, appId, targetUser, op.name());
 
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, owner, userName, permissions);
+    // ------------------------- Check authorization -------------------------
+    checkAuth(rUser, op, appId, owner, targetUser, permissions);
 
     // Check inputs. If anything null or empty throw an exception
     if (permissions == null || permissions.isEmpty())
@@ -1022,12 +1025,12 @@ public class AppsServiceImpl implements AppsService
     var skClient = getSKClient();
     int changeCount;
     // Determine current set of user permissions
-    var userPermSet = getUserPermSet(skClient, userName, resourceTenantId, appId);
+    var userPermSet = getUserPermSet(skClient, targetUser, oboTenant, appId);
 
     try
     {
       // Revoke perms
-      changeCount = revokePermissions(skClient, resourceTenantId, appId, userName, permissions);
+      changeCount = revokePermissions(skClient, oboTenant, appId, targetUser, permissions);
     }
     catch (TapisClientException tce)
     {
@@ -1041,8 +1044,8 @@ public class AppsServiceImpl implements AppsService
       {
         if (userPermSet.contains(perm))
         {
-          String permSpec = getPermSpecStr(resourceTenantId, appId, perm);
-          try { skClient.grantUserPermission(resourceTenantId, userName, permSpec); }
+          String permSpec = getPermSpecStr(oboTenant, appId, perm);
+          try { skClient.grantUserPermission(oboTenant, targetUser, permSpec); }
           catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "grantPerm", e.getMessage()));}
         }
       }
@@ -1054,7 +1057,7 @@ public class AppsServiceImpl implements AppsService
     // Construct Json string representing the update
     String updateJsonStr = TapisGsonUtils.getGson().toJson(permissions);
     // Create a record of the update
-    dao.addUpdateRecord(rUser, resourceTenantId, appId, NO_APP_VERSION, op, updateJsonStr, rawData);
+    dao.addUpdateRecord(rUser, oboTenant, appId, NO_APP_VERSION, op, updateJsonStr, rawData);
     return changeCount;
   }
 
@@ -1063,18 +1066,18 @@ public class AppsServiceImpl implements AppsService
    * NOTE: This retrieves permissions from all roles.
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - name of app
-   * @param userName - Target user for operation
+   * @param targetUser - Target user for operation
    * @return List of permissions
    * @throws TapisException - for Tapis related exceptions
    * @throws NotAuthorizedException - unauthorized
    */
   @Override
-  public Set<Permission> getUserPermissions(ResourceRequestUser rUser, String appId, String userName)
+  public Set<Permission> getUserPermissions(ResourceRequestUser rUser, String appId, String targetUser)
           throws TapisException, NotAuthorizedException, TapisClientException
   {
     AppOperation op = AppOperation.getPerms;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
-    if (StringUtils.isBlank(appId) || StringUtils.isBlank(userName))
+    if (StringUtils.isBlank(appId) || StringUtils.isBlank(targetUser))
          throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
     String resourceTenantId = rUser.getOboTenantId();
@@ -1082,12 +1085,12 @@ public class AppsServiceImpl implements AppsService
     // If app does not exist or has been deleted then return null
     if (!dao.checkForApp(resourceTenantId, appId, false)) return null;
 
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, null, userName, null);
+    // ------------------------- Check authorization -------------------------
+    checkAuth(rUser, op, appId, null, targetUser, null);
 
     // Use Security Kernel client to check for each permission in the enum list
     var skClient = getSKClient();
-    return getUserPermSet(skClient, userName, resourceTenantId, appId);
+    return getUserPermSet(skClient, targetUser, resourceTenantId, appId);
   }
 
   /**
@@ -1116,8 +1119,8 @@ public class AppsServiceImpl implements AppsService
     // if app does not exist then return null
     if (!dao.checkForApp(oboTenantId, appId, true)) return null;
 
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, op, appId, null, null, null);
+    // ------------------------- Check authorization -------------------------
+    checkAuth(rUser, op, appId);
 
     // ------------------- Make Dao call to retrieve the app history -----------------------
     List<AppHistoryItem> result = dao.getAppHistory(oboTenantId, appId);
@@ -1155,8 +1158,8 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(resourceTenantId, appId, false))
       throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
 
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, appOp, appId, null, null, null);
+    // ------------------------- Check authorization -------------------------
+    checkAuth(rUser, appOp, appId);
 
     // ----------------- Make update --------------------
     if (appOp == AppOperation.enable)
@@ -1192,8 +1195,8 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(resourceTenantId, appId, true))
       throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
 
-    // ------------------------- Check service level authorization -------------------------
-    checkAuth(rUser, appOp, appId, null, null, null);
+    // ------------------------- Check authorization -------------------------
+    checkAuth(rUser, appOp, appId);
 
     // ----------------- Make update --------------------
     if (appOp == AppOperation.delete)
@@ -1381,14 +1384,12 @@ public class AppsServiceImpl implements AppsService
    * For an owner permissions are never checked directly.
    *
    * @param rUser - ResourceRequestUser containing tenant, user and request info
-   * @param tenant App tenant
    * @param id App id
-   * @param userName user for whom perms are being updated
+   * @param targetOboUser user for whom perms are being updated
    * @param opStr Operation in progress, for logging
    * @return name of owner
    */
-  private String checkForOwnerPermUpdate(ResourceRequestUser rUser, String tenant, String id,
-                                         String userName, String opStr)
+  private String checkForOwnerPermUpdate(ResourceRequestUser rUser, String id, String targetOboUser, String opStr)
           throws TapisException, NotAuthorizedException
   {
     // Look up owner. If not found then consider not authorized. Very unlikely at this point.
@@ -1396,7 +1397,7 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(owner))
       throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, id, opStr), NO_CHALLENGE);
     // If owner making the request and owner is the target user for the perm update then reject.
-    if (owner.equals(rUser.getOboUserId()) && owner.equals(userName))
+    if (owner.equals(rUser.getOboUserId()) && owner.equals(targetOboUser))
     {
       // If it is a svc making request reject with no auth, if user making request reject with special message.
       // Need this check since svc not allowed to update perms but checkAuth happens after checkForOwnerPermUpdate.
@@ -1411,125 +1412,6 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Standard service level authorization check. Check is different for service and user requests.
-   * A check should be made for app existence before calling this method.
-   * If no owner is passed in and one cannot be found then an error is logged and authorization is denied.
-   *
-   * @param rUser - ResourceRequestUser containing tenant, user and request info
-   * @param op - operation name
-   * @param appId - name of the app
-   * @param owner - app owner
-   * @param perms - List of permissions for the revokePerm case
-   * @throws NotAuthorizedException - user not authorized to perform operation
-   */
-  private void checkAuth(ResourceRequestUser rUser, AppOperation op, String appId,
-                         String owner, String userIdToCheck, Set<Permission> perms)
-      throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
-  {
-    // Check service and user requests separately to avoid confusing a service name with a user name
-    if (rUser.isServiceRequest())
-    {
-      // This is a service request. The user name will be the service name. E.g. files, jobs, streams, etc
-      if (op == AppOperation.read && SVCLIST_READ.contains(rUser.getJwtUserId())) return;
-    }
-    else
-    {
-      // User check
-      checkAuthUser(rUser, op, null, null, appId, owner, userIdToCheck, perms);
-      return;
-    }
-    // Not authorized, throw an exception
-    throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()), NO_CHALLENGE);
-  }
-
-  /**
-   * User based authorization check.
-   * Can be used for OBOUser type checks.
-   * By default use JWT tenant and user from rUser, allow for optional tenant or user.
-   * A check should be made for app existence before calling this method.
-   * If no owner is passed in and one cannot be found then an error is logged and
-   *   authorization is denied.
-   * Operations:
-   *  Create -      must be owner or have admin role
-   *  Delete -      must be owner or have admin role
-   *  ChangeOwner - must be owner or have admin role
-   *  GrantPerm -   must be owner or have admin role
-   *  Read -     must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
-   *  getPerms - must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
-   *  Modify - must be owner or have admin role or have MODIFY permission
-   *  Execute - must be owner or have admin role or have EXECUTE permission
-   *  RevokePerm -  must be owner or have admin role or apiUserId=targetUser and meet certain criteria (allowUserRevokePerm)
-   *
-   * @param rUser - ResourceRequestUser containing tenant, user and request info
-   * @param op - operation name
-   * @param tenantIdToCheck - optional name of the tenant to use. Default is to use authenticatedUser.
-   * @param userIdToCheck - optional name of the user to check. Default is to use authenticatedUser.
-   * @param appId - name of the system
-   * @param owner - system owner
-   * @param perms - List of permissions for the revokePerm case
-   * @throws NotAuthorizedException - user not authorized to perform operation
-   */
-  private void checkAuthUser(ResourceRequestUser rUser, AppOperation op,
-                             String tenantIdToCheck, String userIdToCheck,
-                             String appId, String owner, String targetUser, Set<Permission> perms)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
-  {
-    // Use JWT tenant and user from authenticatedUsr or optional provided values
-    String tenantName = (StringUtils.isBlank(tenantIdToCheck) ? rUser.getOboTenantId() : tenantIdToCheck);
-    String userName = (StringUtils.isBlank(userIdToCheck) ? rUser.getJwtUserId() : userIdToCheck);
-
-    // Some checks do not require owner
-    if (op == AppOperation.hardDelete)
-    {
-      if (hasAdminRole(rUser, tenantName, userName)) return;
-    }
-
-    // Most checks require owner. If no owner specified and owner cannot be determined then log an error and deny.
-    if (StringUtils.isBlank(owner)) owner = dao.getAppOwner(tenantName, appId);
-    if (StringUtils.isBlank(owner)) {
-      String msg = LibUtils.getMsgAuth("APPLIB_AUTH_NO_OWNER", rUser, appId, op.name());
-      _log.error(msg);
-      throw new NotAuthorizedException(msg, NO_CHALLENGE);
-    }
-    switch(op) {
-      case create:
-      case enable:
-      case disable:
-      case delete:
-      case undelete:
-      case changeOwner:
-      case grantPerms:
-        if (owner.equals(userName) || hasAdminRole(rUser, tenantName, userName))
-          return;
-        break;
-      case read:
-      case getPerms:
-        if (owner.equals(userName) || hasAdminRole(rUser, tenantName, userName) ||
-              isPermittedAny(rUser, tenantName, userName, appId, READMODIFY_PERMS))
-          return;
-        break;
-      case modify:
-        if (owner.equals(userName) || hasAdminRole(rUser, tenantName, userName) ||
-                isPermitted(rUser, tenantName, userName, appId, Permission.MODIFY))
-          return;
-        break;
-      case execute:
-        if (owner.equals(userName) || hasAdminRole(rUser, tenantName, userName) ||
-                isPermitted(rUser, tenantName, userName, appId, Permission.EXECUTE))
-          return;
-        break;
-      case revokePerms:
-        if (owner.equals(userName) || hasAdminRole(rUser, tenantName, userName) ||
-                (userName.equals(targetUser) &&
-                        allowUserRevokePerm(rUser, tenantName, userName, appId, perms)))
-          return;
-        break;
-    }
-    // Not authorized, throw an exception
-    throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()), NO_CHALLENGE);
-  }
-
-  /**
    * Determine all apps that a user is allowed to see.
    * If all apps return null else return list of app IDs
    * An empty list indicates no apps allowed.
@@ -1537,9 +1419,8 @@ public class AppsServiceImpl implements AppsService
   private Set<String> getAllowedAppIDs(ResourceRequestUser rUser)
           throws TapisException, TapisClientException
   {
-    // If requester is a service calling as itself or an admin then all systems allowed
-    if (rUser.isServiceRequest() && rUser.getJwtUserId().equals(rUser.getOboUserId()) ||
-            hasAdminRole(rUser, null, null))
+    // If requester is a service calling as itself or oboUser is an admin then all systems allowed
+    if ((rUser.isServiceRequest() && rUser.getJwtUserId().equals(rUser.getOboUserId())) || hasAdminRole(rUser))
     {
       return null;
     }
@@ -1562,19 +1443,6 @@ public class AppsServiceImpl implements AppsService
       }
     }
     return appIDs;
-  }
-
-  /**
-   * Check to see if a user has the service admin role
-   * By default use rUser, allow for optional tenant or user.
-   */
-  private boolean hasAdminRole(ResourceRequestUser rUser, String tenantToCheck, String userToCheck)
-          throws TapisException, TapisClientException
-  {
-    // Use JWT tenant and user from authenticatedUsr or optional provided values
-    String tenantName = (StringUtils.isBlank(tenantToCheck) ? rUser.getOboTenantId() : tenantToCheck);
-    String userName = (StringUtils.isBlank(userToCheck) ? rUser.getJwtUserId() : userToCheck);
-    return getSKClient().isAdmin(tenantName, userName);
   }
 
   /**
@@ -1610,24 +1478,6 @@ public class AppsServiceImpl implements AppsService
       permSpecs.add(getPermSpecStr(tenantName, appId, perm));
     }
     return skClient.isPermittedAny(tenantName, userName, permSpecs.toArray(App.EMPTY_STR_ARRAY));
-  }
-
-  /**
-   * Check to see if a user who is not owner or admin is authorized to revoke permissions
-   * By default use JWT tenant and user from rUser, allow for optional tenant or user.
-   */
-  private boolean allowUserRevokePerm(ResourceRequestUser rUser, String tenantToCheck, String userToCheck,
-                                      String appId, Set<Permission> perms)
-          throws TapisException, TapisClientException
-  {
-    // Perms should never be null. Fall back to deny as best security practice.
-    if (perms == null) return false;
-    // Use JWT tenant and user from authenticatedUsr or optional provided values
-    String tenantName = (StringUtils.isBlank(tenantToCheck) ? rUser.getOboTenantId() : tenantToCheck);
-    String userName = (StringUtils.isBlank(userToCheck) ? rUser.getJwtUserId() : userToCheck);
-    if (perms.contains(Permission.MODIFY)) return isPermitted(rUser, tenantName, userName, appId, Permission.MODIFY);
-    if (perms.contains(Permission.READ)) return isPermittedAny(rUser, tenantName, userName, appId, READMODIFY_PERMS);
-    return false;
   }
 
   /**
@@ -1927,6 +1777,143 @@ public class AppsServiceImpl implements AppsService
     }
   }
 
+  // ************************************************************************
+  // **************************  Auth checking ******************************
+  // ************************************************************************
+
+  /*
+   * Check for case when owner is not known
+   */
+  private void checkAuth(ResourceRequestUser rUser, AppOperation op, String appId)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
+  {
+    checkAuth(rUser, op, appId, null, null, null);
+  }
+
+  /*
+   * Check for case when owner is known
+   */
+  private void checkAuth(ResourceRequestUser rUser, AppOperation op, String appId, String owner)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
+  {
+    checkAuth(rUser, op, appId, owner, null, null);
+  }
+
+  /**
+   * Standard authorization check using all arguments.
+   * Check is different for service and user requests.
+   * A check should be made for app existence before calling this method.
+   * If no owner is passed in and one cannot be found then an error is logged and authorization is denied.
+   *
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param op - operation name
+   * @param appId - name of the app
+   * @param owner - app owner
+   * @param targetUser - Target user for operation
+   * @param perms - List of permissions for the revokePerm case
+   * @throws NotAuthorizedException - user not authorized to perform operation
+   */
+  private void checkAuth(ResourceRequestUser rUser, AppOperation op, String appId, String owner, String targetUser,
+                         Set<Permission> perms)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
+  {
+    // Check service and user requests separately to avoid confusing a service name with a user name
+    if (rUser.isServiceRequest())
+    {
+      // This is a service request. The user name will be the service name. E.g. files, jobs, streams, etc
+      if (op == AppOperation.read && SVCLIST_READ.contains(rUser.getJwtUserId())) return;
+    }
+    else
+    {
+      // User check
+      checkAuthUser(rUser, op, appId, owner, targetUser, perms);
+      return;
+    }
+    // Not authorized, throw an exception
+    throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()), NO_CHALLENGE);
+  }
+
+  /**
+   * OboUser based authorization check.
+   * A check should be made for app existence before calling this method.
+   * If no owner is passed in and one cannot be found then an error is logged and authorization is denied.
+   * Operations:
+   *  Create -      must be owner or have admin role
+   *  Delete -      must be owner or have admin role
+   *  ChangeOwner - must be owner or have admin role
+   *  GrantPerm -   must be owner or have admin role
+   *  Read -     must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
+   *  getPerms - must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
+   *  Modify - must be owner or have admin role or have MODIFY permission
+   *  Execute - must be owner or have admin role or have EXECUTE permission
+   *  RevokePerm -  must be owner or have admin role or apiUserId=targetUser and meet certain criteria (allowUserRevokePerm)
+   *
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param op - operation name
+   * @param appId - name of the system
+   * @param owner - system owner
+   * @param targetUser - Target user for operation
+   * @param perms - List of permissions for the revokePerm case
+   * @throws NotAuthorizedException - user not authorized to perform operation
+   */
+  private void checkAuthUser(ResourceRequestUser rUser, AppOperation op, String appId, String owner,
+                             String targetUser, Set<Permission> perms)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
+  {
+    String oboTenant = rUser.getOboTenantId();
+    String oboUser = rUser.getOboUserId();
+
+    // Some checks do not require owner
+    // Only an admin can hard delete
+    if (op == AppOperation.hardDelete)
+    {
+      if (hasAdminRole(rUser)) return;
+    }
+
+    // Most checks require owner. If no owner specified and owner cannot be determined then log an error and deny.
+    if (StringUtils.isBlank(owner)) owner = dao.getAppOwner(oboTenant, appId);
+    if (StringUtils.isBlank(owner)) {
+      String msg = LibUtils.getMsgAuth("APPLIB_AUTH_NO_OWNER", rUser, appId, op.name());
+      _log.error(msg);
+      throw new NotAuthorizedException(msg, NO_CHALLENGE);
+    }
+    switch(op) {
+      case create:
+      case enable:
+      case disable:
+      case delete:
+      case undelete:
+      case changeOwner:
+      case grantPerms:
+        if (owner.equals(oboUser) || hasAdminRole(rUser))
+          return;
+        break;
+      case read:
+      case getPerms:
+        if (owner.equals(oboUser) || hasAdminRole(rUser) ||
+                isPermittedAny(rUser, oboTenant, oboUser, appId, READMODIFY_PERMS))
+          return;
+        break;
+      case modify:
+        if (owner.equals(oboUser) || hasAdminRole(rUser) ||
+                isPermitted(rUser, oboTenant, oboUser, appId, Permission.MODIFY))
+          return;
+        break;
+      case execute:
+        if (owner.equals(oboUser) || hasAdminRole(rUser) ||
+                isPermitted(rUser, oboTenant, oboUser, appId, Permission.EXECUTE))
+          return;
+        break;
+      case revokePerms:
+        if (owner.equals(oboUser) || hasAdminRole(rUser) ||
+                (oboUser.equals(targetUser) && allowUserRevokePerm(rUser, appId, perms)))
+          return;
+        break;
+    }
+    // Not authorized, throw an exception
+    throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()), NO_CHALLENGE);
+  }
+
   /**
    * Confirm that caller is allowed to skip normal tapis auth check.
    * Must be a service request from a service allowed to bypass the check.
@@ -1943,5 +1930,29 @@ public class AppsServiceImpl implements AppsService
     if (rUser.isServiceRequest() && SVCLIST_SKIPAUTH.contains(svcName)) return;
 
     throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_AUTH_SKIPAUTH", rUser, appId, op.name()), NO_CHALLENGE);
+  }
+
+  /**
+   * Check to see if the oboUser has the admin role in the obo tenant
+   */
+  private boolean hasAdminRole(ResourceRequestUser rUser) throws TapisException, TapisClientException
+  {
+    return getSKClient().isAdmin(rUser.getOboTenantId(), rUser.getOboUserId());
+  }
+
+  /**
+   * Check to see if a user who is not owner or admin is authorized to revoke permissions
+   * If oboUser is revoking only READ then only need READ, otherwise also need MODIFY
+   */
+  private boolean allowUserRevokePerm(ResourceRequestUser rUser, String appId, Set<Permission> perms)
+          throws TapisException, TapisClientException
+  {
+    // Perms should never be null. Fall back to deny as best security practice.
+    if (perms == null) return false;
+    String oboTenant = rUser.getOboTenantId();
+    String oboUser = rUser.getOboUserId();
+    if (perms.contains(Permission.MODIFY)) return isPermitted(rUser, oboTenant, oboUser, appId, Permission.MODIFY);
+    if (perms.contains(Permission.READ)) return isPermittedAny(rUser, oboTenant, oboUser, appId, READMODIFY_PERMS);
+    return false;
   }
 }
