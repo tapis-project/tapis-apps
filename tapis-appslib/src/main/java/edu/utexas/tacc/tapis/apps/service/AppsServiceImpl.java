@@ -74,8 +74,6 @@ public class AppsServiceImpl implements AppsService
   private static final Set<String> SVCLIST_READ = new HashSet<>(Set.of(FILES_SERVICE, JOBS_SERVICE));
   private static final Set<String> SVCLIST_SKIPAUTH = new HashSet<>(Set.of(JOBS_SERVICE));
 
-
-
   // Message keys
   private static final String ERROR_ROLLBACK = "APPLIB_ERROR_ROLLBACK";
   private static final String NOT_FOUND = "APPLIB_NOT_FOUND";
@@ -85,6 +83,11 @@ public class AppsServiceImpl implements AppsService
 
   // Compiled regex for splitting around ":"
   private static final Pattern COLON_SPLIT = Pattern.compile(":");
+
+  // Named null values to make it clear what is being passed in to a method
+  private static final String nullOwner = null;
+  private static final String nullTargetUser = null;
+  private static final Set<Permission> nullPermSet = null;
 
   // ************************************************************************
   // *********************** Enums ******************************************
@@ -179,7 +182,7 @@ public class AppsServiceImpl implements AppsService
     app.resolveVariables(rUser.getOboUserId());
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId, app.getOwner());
+    checkAuthOwnerKnown(rUser, op, appId, app.getOwner());
 
     // ---------------- Check for reserved names ------------------------
     checkReservedIds(rUser, appId);
@@ -271,7 +274,7 @@ public class AppsServiceImpl implements AppsService
     App patchedApp = createPatchedApp(origApp, patchApp);
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId, origApp.getOwner());
+    checkAuthOwnerKnown(rUser, op, appId, origApp.getOwner());
 
     // ---------------- Check constraints on App attributes ------------------------
     validateApp(rUser, patchedApp);
@@ -332,7 +335,7 @@ public class AppsServiceImpl implements AppsService
     App updatedApp = createUpdatedApp(origApp, putApp);
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId, origApp.getOwner());
+    checkAuthOwnerKnown(rUser, op, appId, origApp.getOwner());
 
     // ---------------- Check constraints on App attributes ------------------------
     validateApp(rUser, updatedApp);
@@ -458,7 +461,7 @@ public class AppsServiceImpl implements AppsService
     String oldOwnerName = dao.getAppOwner(resourceTenantId, appId);
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId, oldOwnerName);
+    checkAuthOwnerKnown(rUser, op, appId, oldOwnerName);
 
     // If new owner same as old owner then this is a no-op
     if (newOwnerName.equals(oldOwnerName)) return 0;
@@ -512,7 +515,7 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(resourceTenantId, appId, true)) return 0;
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId);
+    checkAuthOwnerUnknown(rUser, op, appId);
 
     // Remove SK artifacts
     removeSKArtifacts(resourceTenantId, appId);
@@ -590,7 +593,7 @@ public class AppsServiceImpl implements AppsService
     // We need owner to check auth and if app not there cannot find owner, so cannot do auth check if no app
     if (dao.checkForApp(resourceTenantId, appId, includeDeleted)) {
       // ------------------------- Check authorization -------------------------
-      checkAuth(rUser, op, appId);
+      checkAuthOwnerUnknown(rUser, op, appId);
       return true;
     }
     return false;
@@ -619,7 +622,7 @@ public class AppsServiceImpl implements AppsService
       throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId);
+    checkAuthOwnerUnknown(rUser, op, appId);
     return dao.isEnabled(resourceTenantId, appId);
   }
 
@@ -659,14 +662,11 @@ public class AppsServiceImpl implements AppsService
     }
     else
     {
-      checkAuth(rUser, op, appId);
+      checkAuthOwnerUnknown(rUser, op, appId);
       // If flag is set to also require EXECUTE perm then make a special auth call
       if (requireExecPerm)
       {
-        String nullOwner = null;
-        String nullTargetUser = null;
-        Set<Permission> nullPerms = null;
-        checkAuthOboUser(rUser, AppOperation.execute, appId, nullOwner, nullTargetUser, nullPerms);
+        checkAuthOboUser(rUser, AppOperation.execute, appId, nullOwner, nullTargetUser, nullPermSet);
       }
     }
 
@@ -853,7 +853,7 @@ public class AppsServiceImpl implements AppsService
     {
       try
       {
-        checkAuth(rUser, op, appId);
+        checkAuthOwnerUnknown(rUser, op, appId);
         allowedAppIDs.add(appId);
       }
       catch (NotAuthorizedException | TapisClientException e) { }
@@ -881,7 +881,7 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(rUser.getOboTenantId(), appId, false)) return null;
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId);
+    checkAuthOwnerUnknown(rUser, op, appId);
 
     return dao.getAppOwner(rUser.getOboTenantId(), appId);
   }
@@ -925,7 +925,7 @@ public class AppsServiceImpl implements AppsService
     String owner = checkForOwnerPermUpdate(rUser, appId, userName, op.name());
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId, owner);
+    checkAuthOwnerKnown(rUser, op, appId, owner);
 
     // Check inputs. If anything null or empty throw an exception
     if (permissions == null || permissions.isEmpty())
@@ -1086,7 +1086,7 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(resourceTenantId, appId, false)) return null;
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId, null, targetUser, null);
+    checkAuth(rUser, op, appId, nullOwner, targetUser, nullPermSet);
 
     // Use Security Kernel client to check for each permission in the enum list
     var skClient = getSKClient();
@@ -1120,7 +1120,7 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(oboTenantId, appId, true)) return null;
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId);
+    checkAuthOwnerUnknown(rUser, op, appId);
 
     // ------------------- Make Dao call to retrieve the app history -----------------------
     List<AppHistoryItem> result = dao.getAppHistory(oboTenantId, appId);
@@ -1159,7 +1159,7 @@ public class AppsServiceImpl implements AppsService
       throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, appOp, appId);
+    checkAuthOwnerUnknown(rUser, appOp, appId);
 
     // ----------------- Make update --------------------
     if (appOp == AppOperation.enable)
@@ -1196,7 +1196,7 @@ public class AppsServiceImpl implements AppsService
       throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, appOp, appId);
+    checkAuthOwnerUnknown(rUser, appOp, appId);
 
     // ----------------- Make update --------------------
     if (appOp == AppOperation.delete)
@@ -1399,7 +1399,7 @@ public class AppsServiceImpl implements AppsService
     // If owner making the request and owner is the target user for the perm update then reject.
     if (owner.equals(rUser.getOboUserId()) && owner.equals(targetOboUser))
     {
-      // If it is a svc making request reject with no auth, if user making request reject with special message.
+      // If it is a svc making request reject with not authorized, if user making request reject with special message.
       // Need this check since svc not allowed to update perms but checkAuth happens after checkForOwnerPermUpdate.
       // Without this the op would be denied with a misleading message.
       // Unfortunately this means auth check for svc in 2 places but not clear how to avoid it.
@@ -1784,19 +1784,19 @@ public class AppsServiceImpl implements AppsService
   /*
    * Check for case when owner is not known
    */
-  private void checkAuth(ResourceRequestUser rUser, AppOperation op, String appId)
+  private void checkAuthOwnerUnknown(ResourceRequestUser rUser, AppOperation op, String appId)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
-    checkAuth(rUser, op, appId, null, null, null);
+    checkAuth(rUser, op, appId, nullOwner, nullTargetUser, nullPermSet);
   }
 
   /*
    * Check for case when owner is known
    */
-  private void checkAuth(ResourceRequestUser rUser, AppOperation op, String appId, String owner)
+  private void checkAuthOwnerKnown(ResourceRequestUser rUser, AppOperation op, String appId, String owner)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
-    checkAuth(rUser, op, appId, owner, null, null);
+    checkAuth(rUser, op, appId, owner, nullTargetUser, nullPermSet);
   }
 
   /**
@@ -1844,7 +1844,7 @@ public class AppsServiceImpl implements AppsService
   {
     // If ever called and not a svc request then fall back to denied
     if (!rUser.isServiceRequest())
-      throw new NotAuthorizedException(LibUtils.getMsgAuth("SYSLIB_AUTH_GETCRED", rUser, appId, op.name()), NO_CHALLENGE);
+      throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()), NO_CHALLENGE);
 
     if (op == AppOperation.read && SVCLIST_READ.contains(rUser.getJwtUserId())) return;
     // Not authorized, throw an exception
@@ -1891,7 +1891,7 @@ public class AppsServiceImpl implements AppsService
     // Remaining checks require owner. If no owner specified and owner cannot be determined then log an error and deny.
     if (StringUtils.isBlank(owner)) owner = dao.getAppOwner(oboTenant, appId);
     if (StringUtils.isBlank(owner)) {
-      String msg = LibUtils.getMsgAuth("APPLIB_AUTH_NO_OWNER", rUser, appId, op.name());
+      String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH_NO_OWNER", rUser, appId, op.name());
       _log.error(msg);
       throw new NotAuthorizedException(msg, NO_CHALLENGE);
     }
@@ -1947,7 +1947,7 @@ public class AppsServiceImpl implements AppsService
     String svcName = rUser.getJwtUserId();
     if (rUser.isServiceRequest() && SVCLIST_SKIPAUTH.contains(svcName)) return;
 
-    throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_AUTH_SKIPAUTH", rUser, appId, op.name()), NO_CHALLENGE);
+    throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH_SKIPAUTH", rUser, appId, op.name()), NO_CHALLENGE);
   }
 
   /**
