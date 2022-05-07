@@ -72,7 +72,7 @@ public class AppsServiceImpl implements AppsService
   private static final String FILES_SERVICE = TapisConstants.SERVICE_NAME_FILES;
   private static final String JOBS_SERVICE = TapisConstants.SERVICE_NAME_JOBS;
   private static final Set<String> SVCLIST_READ = new HashSet<>(Set.of(FILES_SERVICE, JOBS_SERVICE));
-  private static final Set<String> SVCLIST_SKIPAUTH = new HashSet<>(Set.of(JOBS_SERVICE));
+  private static final Set<String> SVCLIST_IMPERSONATE = new HashSet<>(Set.of(JOBS_SERVICE));
 
   // Message keys
   private static final String ERROR_ROLLBACK = "APPLIB_ERROR_ROLLBACK";
@@ -86,6 +86,7 @@ public class AppsServiceImpl implements AppsService
 
   // Named null values to make it clear what is being passed in to a method
   private static final String nullOwner = null;
+  private static final String nullImpersonationId = null;
   private static final String nullTargetUser = null;
   private static final Set<Permission> nullPermSet = null;
 
@@ -633,13 +634,13 @@ public class AppsServiceImpl implements AppsService
    * @param appId - Name of the app
    * @param appVersion - Version of the app, null or blank for latest version
    * @param requireExecPerm - check for EXECUTE permission as well as READ permission
-   * @param skipTapisAuth - skip tapis auth, calling service has checked
+   * @param impersonationId - use provided Tapis username instead of oboUser when checking auth
    * @return populated instance of an App or null if not found or user not authorized.
    * @throws TapisException - for Tapis related exceptions
    * @throws NotAuthorizedException - unauthorized
    */
   @Override
-  public App getApp(ResourceRequestUser rUser, String appId, String appVersion, boolean requireExecPerm, boolean skipTapisAuth)
+  public App getApp(ResourceRequestUser rUser, String appId, String appVersion, boolean requireExecPerm, String impersonationId)
           throws TapisException, NotAuthorizedException, TapisClientException
   {
     AppOperation op = AppOperation.read;
@@ -653,21 +654,15 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(resourceTenantId, appId, false)) return null;
 
     // ------------------------- Check authorization -------------------------
-    // If skipTapisAuth=true make a special check to confirm that auth can be bypassed
-    //   To bypoass must be a service request from an allowed service.
-    // else do normal auth check
-    if (skipTapisAuth)
+    // If impersonationId supplied confirm that it is allowed
+    if (!StringUtils.isBlank(impersonationId)) checkImpersonationAllowed(rUser, op, appId, impersonationId);
+
+    checkAuth(rUser, op, appId, nullOwner, impersonationId, nullTargetUser, nullPermSet);
+
+    // If flag is set to also require EXECUTE perm then make a special auth call to make sure user has exec perm
+    if (requireExecPerm)
     {
-      checkSkipTapisAuth(rUser, op, appId);
-    }
-    else
-    {
-      checkAuthOwnerUnknown(rUser, op, appId);
-      // If flag is set to also require EXECUTE perm then make a special auth call
-      if (requireExecPerm)
-      {
-        checkAuthOboUser(rUser, AppOperation.execute, appId, nullOwner, nullTargetUser, nullPermSet);
-      }
+      checkAuthOboUser(rUser, AppOperation.execute, appId, nullOwner, impersonationId, nullTargetUser, nullPermSet);
     }
 
     App result = dao.getApp(resourceTenantId, appId, appVersion);
@@ -1011,7 +1006,7 @@ public class AppsServiceImpl implements AppsService
     String owner = checkForOwnerPermUpdate(rUser, appId, targetUser, op.name());
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId, owner, targetUser, permissions);
+    checkAuth(rUser, op, appId, owner, nullImpersonationId, targetUser, permissions);
 
     // Check inputs. If anything null or empty throw an exception
     if (permissions == null || permissions.isEmpty())
@@ -1086,7 +1081,7 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(resourceTenantId, appId, false)) return null;
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId, nullOwner, targetUser, nullPermSet);
+    checkAuth(rUser, op, appId, nullOwner, nullImpersonationId, targetUser, nullPermSet);
 
     // Use Security Kernel client to check for each permission in the enum list
     var skClient = getSKClient();
@@ -1782,21 +1777,21 @@ public class AppsServiceImpl implements AppsService
   // ************************************************************************
 
   /*
-   * Check for case when owner is not known
+   * Check for case when owner is not known and no need for impersonationId, targetUser or perms
    */
   private void checkAuthOwnerUnknown(ResourceRequestUser rUser, AppOperation op, String appId)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
-    checkAuth(rUser, op, appId, nullOwner, nullTargetUser, nullPermSet);
+    checkAuth(rUser, op, appId, nullOwner, nullImpersonationId, nullTargetUser, nullPermSet);
   }
 
   /*
-   * Check for case when owner is known
+   * Check for case when owner is known and no need for impersonationId, targetUser or perms
    */
   private void checkAuthOwnerKnown(ResourceRequestUser rUser, AppOperation op, String appId, String owner)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
-    checkAuth(rUser, op, appId, owner, nullTargetUser, nullPermSet);
+    checkAuth(rUser, op, appId, owner, nullImpersonationId, nullTargetUser, nullPermSet);
   }
 
   /**
@@ -1809,23 +1804,25 @@ public class AppsServiceImpl implements AppsService
    * @param op - operation name
    * @param appId - name of the app
    * @param owner - app owner
+   * @param impersonationId - for auth check use this Id in place of oboUser
    * @param targetUser - Target user for operation
    * @param perms - List of permissions for the revokePerm case
    * @throws NotAuthorizedException - user not authorized to perform operation
    */
-  private void checkAuth(ResourceRequestUser rUser, AppOperation op, String appId, String owner, String targetUser,
-                         Set<Permission> perms)
+  private void checkAuth(ResourceRequestUser rUser, AppOperation op, String appId, String owner,
+                         String impersonationId, String targetUser, Set<Permission> perms)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
-    // Check service and user requests separately to avoid confusing a service name with a user name
-    if (rUser.isServiceRequest())
+    // Check service and user requests separately to avoid confusing a service name with a username
+    // If service is impersonating a Tapis user then perform normal user check
+    if (rUser.isServiceRequest() && StringUtils.isBlank(impersonationId))
     {
       checkAuthSvc(rUser, op, appId);
     }
     else
     {
-      // User check
-      checkAuthOboUser(rUser, op, appId, owner, targetUser, perms);
+      // This is an OboUser check
+      checkAuthOboUser(rUser, op, appId, owner, impersonationId, targetUser, perms);
     }
   }
 
@@ -1852,34 +1849,35 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-     * OboUser based authorization check.
-     * A check should be made for app existence before calling this method.
-     * If no owner is passed in and one cannot be found then an error is logged and authorization is denied.
-     * Operations:
-     *  Create -      must be owner or have admin role
-     *  Delete -      must be owner or have admin role
-     *  ChangeOwner - must be owner or have admin role
-     *  GrantPerm -   must be owner or have admin role
-     *  Read -     must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
-     *  getPerms - must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
-     *  Modify - must be owner or have admin role or have MODIFY permission
-     *  Execute - must be owner or have admin role or have EXECUTE permission
-     *  RevokePerm -  must be owner or have admin role or apiUserId=targetUser and meet certain criteria (allowUserRevokePerm)
-     *
-     * @param rUser - ResourceRequestUser containing tenant, user and request info
-     * @param op - operation name
-     * @param appId - name of the system
-     * @param owner - system owner
-     * @param targetUser - Target user for operation
-     * @param perms - List of permissions for the revokePerm case
-     * @throws NotAuthorizedException - user not authorized to perform operation
-     */
+   * OboUser based authorization check.
+   * A check should be made for app existence before calling this method.
+   * If no owner is passed in and one cannot be found then an error is logged and authorization is denied.
+   * Operations:
+   *  Create -      must be owner or have admin role
+   *  Delete -      must be owner or have admin role
+   *  ChangeOwner - must be owner or have admin role
+   *  GrantPerm -   must be owner or have admin role
+   *  Read -     must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
+   *  getPerms - must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
+   *  Modify - must be owner or have admin role or have MODIFY permission
+   *  Execute - must be owner or have admin role or have EXECUTE permission
+   *  RevokePerm -  must be owner or have admin role or apiUserId=targetUser and meet certain criteria (allowUserRevokePerm)
+   *
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param op - operation name
+   * @param appId - name of the system
+   * @param owner - system owner
+   * @param impersonationId - for auth check use this Id in place of oboUser
+   * @param targetUser - Target user for operation
+   * @param perms - List of permissions for the revokePerm case
+   * @throws NotAuthorizedException - user not authorized to perform operation
+   */
   private void checkAuthOboUser(ResourceRequestUser rUser, AppOperation op, String appId, String owner,
-                                String targetUser, Set<Permission> perms)
+                                String impersonationId, String targetUser, Set<Permission> perms)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
     String oboTenant = rUser.getOboTenantId();
-    String oboUser = rUser.getOboUserId();
+    String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
 
     // Some checks do not require owner
     // Only an admin can hard delete
@@ -1903,28 +1901,28 @@ public class AppsServiceImpl implements AppsService
       case undelete:
       case changeOwner:
       case grantPerms:
-        if (owner.equals(oboUser) || hasAdminRole(rUser))
+        if (owner.equals(oboOrImpersonatedUser) || hasAdminRole(rUser))
           return;
         break;
       case read:
       case getPerms:
-        if (owner.equals(oboUser) || hasAdminRole(rUser) ||
-                isPermittedAny(rUser, oboTenant, oboUser, appId, READMODIFY_PERMS))
+        if (owner.equals(oboOrImpersonatedUser) || hasAdminRole(rUser) ||
+                isPermittedAny(rUser, oboTenant, oboOrImpersonatedUser, appId, READMODIFY_PERMS))
           return;
         break;
       case modify:
-        if (owner.equals(oboUser) || hasAdminRole(rUser) ||
-                isPermitted(rUser, oboTenant, oboUser, appId, Permission.MODIFY))
+        if (owner.equals(oboOrImpersonatedUser) || hasAdminRole(rUser) ||
+                isPermitted(rUser, oboTenant, oboOrImpersonatedUser, appId, Permission.MODIFY))
           return;
         break;
       case execute:
-        if (owner.equals(oboUser) || hasAdminRole(rUser) ||
-                isPermitted(rUser, oboTenant, oboUser, appId, Permission.EXECUTE))
+        if (owner.equals(oboOrImpersonatedUser) || hasAdminRole(rUser) ||
+                isPermitted(rUser, oboTenant, oboOrImpersonatedUser, appId, Permission.EXECUTE))
           return;
         break;
       case revokePerms:
-        if (owner.equals(oboUser) || hasAdminRole(rUser) ||
-                (oboUser.equals(targetUser) && allowUserRevokePerm(rUser, appId, perms)))
+        if (owner.equals(oboOrImpersonatedUser) || hasAdminRole(rUser) ||
+                (oboOrImpersonatedUser.equals(targetUser) && allowUserRevokePerm(rUser, appId, perms)))
           return;
         break;
     }
@@ -1933,21 +1931,26 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Confirm that caller is allowed to skip normal tapis auth check.
-   * Must be a service request from a service allowed to bypass the check.
+   * Confirm that caller is allowed to impersonate a Tapis user.
+   * Must be a service request from a service allowed to impersonate
    *
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param op - operation name
-   * @param appId - name of the system
+   * @param appId - name of the app
    * @throws NotAuthorizedException - user not authorized to perform operation
    */
-  private void checkSkipTapisAuth(ResourceRequestUser rUser, AppOperation op, String appId) throws NotAuthorizedException
+  private void checkImpersonationAllowed(ResourceRequestUser rUser, AppOperation op, String appId, String impersonationId)
+          throws NotAuthorizedException
   {
     // If a service request the username will be the service name. E.g. files, jobs, streams, etc
     String svcName = rUser.getJwtUserId();
-    if (rUser.isServiceRequest() && SVCLIST_SKIPAUTH.contains(svcName)) return;
+    if (rUser.isServiceRequest() && SVCLIST_IMPERSONATE.contains(svcName))
+    {
+      _log.info(LibUtils.getMsgAuth("APPLIB_AUTH_IMPERSONATE", rUser, appId, op.name(), impersonationId));
+      return;
+    }
 
-    throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH_SKIPAUTH", rUser, appId, op.name()), NO_CHALLENGE);
+    throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH_IMPERSONATE", rUser, appId, op.name(), impersonationId), NO_CHALLENGE);
   }
 
   /**

@@ -661,7 +661,7 @@ public class AppResource
     App app;
     try
     {
-      app = appsService.getApp(rUser, appId, null, requireExecPerm, false);
+      app = appsService.getApp(rUser, appId, null, requireExecPerm, null);
     }
     catch (Exception e)
     {
@@ -689,7 +689,7 @@ public class AppResource
    * @param appId - name of the app
    * @param appVersion - version of the app
    * @param requireExecPerm - check for EXECUTE permission as well as READ permission
-   * @param skipTapisAuth - skip tapis perms auth, calling service has checked.
+   * @param impersonationId - use provided Tapis username instead of oboUser when checking auth
    * @param securityContext - user identity
    * @return Response with app object as the result
    */
@@ -700,7 +700,7 @@ public class AppResource
   public Response getApp(@PathParam("appId") String appId,
                          @PathParam("appVersion") String appVersion,
                          @QueryParam("requireExecPerm") @DefaultValue("false") boolean requireExecPerm,
-                         @QueryParam("skipTapisAuthorization") @DefaultValue("false") boolean skipTapisAuth,
+                         @QueryParam("impersonationId") @DefaultValue("false") String impersonationId,
                          @Context SecurityContext securityContext)
   {
     String opName = "getApp";
@@ -717,14 +717,14 @@ public class AppResource
     if (_log.isTraceEnabled())
       ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(),
                           "appId="+appId, "appVersion="+appVersion,
-                          "requireExecPerm="+requireExecPerm, "skipTapisAuthorization="+skipTapisAuth);
+                          "requireExecPerm="+requireExecPerm, "impersonationId="+impersonationId);
 
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
 
     App app;
     try
     {
-      app = appsService.getApp(rUser, appId, appVersion, requireExecPerm, skipTapisAuth);
+      app = appsService.getApp(rUser, appId, appVersion, requireExecPerm, impersonationId);
     }
     catch (Exception e)
     {

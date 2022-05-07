@@ -58,12 +58,13 @@ public class AppsServiceTest
 {
   private AppsService svc;
   private AppsServiceImpl svcImpl;
-  private ResourceRequestUser rUser0, rUser1, rUser2, rUser3, rUser4, rUser5, rAdminUser, rFilesSvc;
+  private ResourceRequestUser rUser0, rUser1, rUser2, rUser3, rUser4, rUser5, rAdminUser, rFilesSvc, rJobsSvc;
   // Test data
   private static final String testKey = "Svc";
   // Special case IDs that have caused problems.
   private static final String specialId1 = testKey + appIdPrefix + "-app";
   private static final String filesSvcName = "files";
+  private static final String jobsSvcName = "jobs";
   private static final String adminUser = "testadmin";
   private static final String siteId = "tacc";
   private static final String adminTenantName = "admin";
@@ -115,6 +116,8 @@ public class AppsServiceTest
                                           null, adminUser, tenantName, null, null, null));
     rFilesSvc = new ResourceRequestUser(new AuthenticatedUser(filesSvcName, adminTenantName, TapisThreadContext.AccountType.service.name(),
                                          null, owner2, tenantName, null, null, null));
+    rJobsSvc = new ResourceRequestUser(new AuthenticatedUser(jobsSvcName, adminTenantName, TapisThreadContext.AccountType.service.name(),
+                                         null, owner2, tenantName, null, null, null));
     rUser0 = new ResourceRequestUser(new AuthenticatedUser(testUser0, tenantName, TapisThreadContext.AccountType.user.name(),
                                       null, testUser0, tenantName, null, null, null));
     rUser1 = new ResourceRequestUser(new AuthenticatedUser(testUser1, tenantName, TapisThreadContext.AccountType.user.name(),
@@ -160,7 +163,7 @@ public class AppsServiceTest
     }
     svcImpl.hardDeleteApp(rAdminUser, tenantName, specialId1);
 
-    App tmpApp = svc.getApp(rAdminUser, apps[0].getId(), apps[0].getVersion(), false, false);
+    App tmpApp = svc.getApp(rAdminUser, apps[0].getId(), apps[0].getVersion(), false, null);
     Assert.assertNull(tmpApp, "App not deleted. App name: " + apps[0].getId());
   }
 
@@ -169,7 +172,7 @@ public class AppsServiceTest
   {
     App app0 = apps[0];
     svc.createApp(rUser1, app0, scrubbedJson);
-    App tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, false);
+    App tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, null);
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
     System.out.println("Found item: " + app0.getId());
   }
@@ -180,13 +183,13 @@ public class AppsServiceTest
   {
     App app0 = makeMinimalApp(apps[11], apps[11].getId());
     svc.createApp(rUser1, app0, scrubbedJson);
-    App tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, false);
+    App tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, null);
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
     System.out.println("Found item: " + app0.getId());
     // Make sure we can create and get an app ending with "-app"
     app0 = IntegrationUtils.makeMinimalApp(app0, specialId1);
     svc.createApp(rUser1, app0, scrubbedJson);
-    tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, false);
+    tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, null);
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
     System.out.println("Found item: " + app0.getId());
     // Verify attributes
@@ -200,11 +203,11 @@ public class AppsServiceTest
     App app0 = apps[1];
     svc.createApp(rUser1, app0, scrubbedJson);
     // Retrieve the app as filesSvc and as owner (with and without requireExecPerm)
-    App tmpApp = svc.getApp(rFilesSvc, app0.getId(), app0.getVersion(), false, false);
+    App tmpApp = svc.getApp(rFilesSvc, app0.getId(), app0.getVersion(), false, null);
     checkCommonAppAttrs(app0, tmpApp);
-    tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, false);
+    tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, null);
     checkCommonAppAttrs(app0, tmpApp);
-    tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), true, false);
+    tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), true, null);
     checkCommonAppAttrs(app0, tmpApp);
   }
 
@@ -218,7 +221,7 @@ public class AppsServiceTest
     String appVersion = app0.getVersion();
     String createText = "{\"testPut\": \"0-create1\"}";
     svc.createApp(rUser1, app0, createText);
-    App tmpApp = svc.getApp(rUser1, appId, appVersion, false, false);
+    App tmpApp = svc.getApp(rUser1, appId, appVersion, false, null);
     checkCommonAppAttrs(app0, tmpApp);
 
     // Get last updated timestamp
@@ -231,7 +234,7 @@ public class AppsServiceTest
     App putApp = IntegrationUtils.makePutAppFull(tmpApp);
     // Update using putApp
     svc.putApp(rUser1, putApp, put1Text);
-    tmpApp = svc.getApp(rUser1, appId, appVersion, false, false);
+    tmpApp = svc.getApp(rUser1, appId, appVersion, false, null);
 
     // Get last updated timestamp
     updated = LocalDateTime.ofInstant(tmpApp.getUpdated(), ZoneOffset.UTC);
@@ -291,7 +294,7 @@ public class AppsServiceTest
     String appVersion = app0.getVersion();
     String createText = "{\"testPatch\": \"0-createFull\"}";
     svc.createApp(rUser1, app0, createText);
-    App tmpApp = svc.getApp(rUser1, appId, appVersion, false, false);
+    App tmpApp = svc.getApp(rUser1, appId, appVersion, false, null);
     // Get last updated timestamp
     LocalDateTime updated = LocalDateTime.ofInstant(tmpApp.getUpdated(), ZoneOffset.UTC);
     String updatedStr1 = TapisUtils.getSQLStringFromUTCTime(updated);
@@ -303,7 +306,7 @@ public class AppsServiceTest
     PatchApp patchAppFull = IntegrationUtils.makePatchAppFull();
     // Update using patchApp
     svc.patchApp(rUser1, appId, appVersion, patchAppFull, patchFullText);
-    App tmpAppFull = svc.getApp(rUser1, appId, appVersion, false, false);
+    App tmpAppFull = svc.getApp(rUser1, appId, appVersion, false, null);
     // Get last updated timestamp
     updated = LocalDateTime.ofInstant(tmpAppFull.getUpdated(), ZoneOffset.UTC);
     String updatedStr2 = TapisUtils.getSQLStringFromUTCTime(updated);
@@ -362,7 +365,7 @@ public class AppsServiceTest
     PatchApp patchAppPartial1 = IntegrationUtils.makePatchAppPartial1();
     // Update using patchApp
     svc.patchApp(rUser1, appId, appVersion, patchAppPartial1, patchPartialText1);
-    App tmpAppPartial = svc.getApp(rUser1, appId, appVersion, false, false);
+    App tmpAppPartial = svc.getApp(rUser1, appId, appVersion, false, null);
     // Update original app definition with patched values
     app0.setDescription(description2);
     app0.setContainerImage(containerImage2);
@@ -386,7 +389,7 @@ public class AppsServiceTest
     PatchApp patchAppPartial2 = IntegrationUtils.makePatchAppPartial2();
     // Update using patchApp
     svc.patchApp(rUser1, appId, appVersion, patchAppPartial2, patchPartialText2);
-    tmpAppPartial = svc.getApp(rUser1, appId, appVersion, false, false);
+    tmpAppPartial = svc.getApp(rUser1, appId, appVersion, false, null);
     // Update original app definition with patched values
     app0.setDescription(description2);
     app0.setContainerImage(containerImage2);
@@ -412,7 +415,7 @@ public class AppsServiceTest
     PatchApp patchAppPartial3 = IntegrationUtils.makePatchAppPartial3();
     // Update using patchApp
     svc.patchApp(rUser1, appId, appVersion, patchAppPartial3, patchPartialText3);
-    tmpAppPartial = svc.getApp(rUser1, appId, appVersion, false, false);
+    tmpAppPartial = svc.getApp(rUser1, appId, appVersion, false, null);
     // Update original app definition with patched values
     app0.getParameterSet().setAppArgs(appArgList3);
     app0.setJobType(jobType2);
@@ -432,14 +435,14 @@ public class AppsServiceTest
     ResourceRequestUser newOwnerAuth = rUser3;
 
     svc.createApp(origOwnerAuth, app0, createText);
-    App tmpApp = svc.getApp(origOwnerAuth, app0.getId(), app0.getVersion(), false, false);
+    App tmpApp = svc.getApp(origOwnerAuth, app0.getId(), app0.getVersion(), false, null);
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
 
     // Change owner using api
     svc.changeAppOwner(origOwnerAuth, app0.getId(), newOwnerName);
 
     // Confirm new owner
-    tmpApp = svc.getApp(newOwnerAuth, app0.getId(), app0.getVersion(), false, false);
+    tmpApp = svc.getApp(newOwnerAuth, app0.getId(), app0.getVersion(), false, null);
     Assert.assertEquals(tmpApp.getOwner(), newOwnerName);
 
     // Check expected auxiliary updates have happened
@@ -463,7 +466,7 @@ public class AppsServiceTest
     }
     // Original owner should not be able to read system
     try {
-      svc.getApp(origOwnerAuth, app0.getId(), app0.getVersion(), false, false);
+      svc.getApp(origOwnerAuth, app0.getId(), app0.getVersion(), false, null);
       Assert.fail("Original owner should not have permission to read app after change of ownership. App name: " + app0.getId() +
               " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
     } catch (Exception e) {
@@ -539,30 +542,30 @@ public class AppsServiceTest
     String appVer = app0.getVersion();
     svc.createApp(rUser1, app0, scrubbedJson);
     // Enabled should start off true, then become false and finally true again.
-    App tmpApp = svc.getApp(rUser1, appId, appVer, false, false);
+    App tmpApp = svc.getApp(rUser1, appId, appVer, false, null);
     Assert.assertTrue(tmpApp.isEnabled());
     Assert.assertTrue(svc.isEnabled(rUser1, appId));
     int changeCount = svc.disableApp(rUser1, appId);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
-    tmpApp = svc.getApp(rUser1, appId, appVer, false, false);
+    tmpApp = svc.getApp(rUser1, appId, appVer, false, null);
     Assert.assertFalse(tmpApp.isEnabled());
     Assert.assertFalse(svc.isEnabled(rUser1, appId));
     changeCount = svc.enableApp(rUser1, appId);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
-    tmpApp = svc.getApp(rUser1, appId, appVer, false, false);
+    tmpApp = svc.getApp(rUser1, appId, appVer, false, null);
     Assert.assertTrue(tmpApp.isEnabled());
     Assert.assertTrue(svc.isEnabled(rUser1, appId));
 
     // Deleted should start off false, then become true and finally false again.
-    tmpApp = svc.getApp(rUser1, appId, appVer, false, false);
+    tmpApp = svc.getApp(rUser1, appId, appVer, false, null);
     Assert.assertFalse(tmpApp.isDeleted());
     changeCount = svc.deleteApp(rUser1, appId);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
-    tmpApp = svc.getApp(rUser1, appId, appVer, false, false);
+    tmpApp = svc.getApp(rUser1, appId, appVer, false, null);
     Assert.assertNull(tmpApp);
     changeCount = svc.undeleteApp(rUser1, appId);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
-    tmpApp = svc.getApp(rUser1, appId, appVer, false, false);
+    tmpApp = svc.getApp(rUser1, appId, appVer, false, null);
     Assert.assertFalse(tmpApp.isDeleted());
 
     // When deleted isEnabled should throw NotFound exception
@@ -906,7 +909,7 @@ public class AppsServiceTest
     Assert.assertFalse(svc.checkForApp(rUser1, fakeAppName, true));
 
     // Get App with no app should return null
-    App tmpApp = svc.getApp(rUser1, fakeAppName, fakeAppVersion, false, false);
+    App tmpApp = svc.getApp(rUser1, fakeAppName, fakeAppVersion, false, null);
     Assert.assertNull(tmpApp, "App not null for non-existent app");
 
     // Delete app with no app should throw NotFound exception
@@ -1005,6 +1008,7 @@ public class AppsServiceTest
     String app0Id = app0.getId();
     String app0Version = app0.getVersion();
     PatchApp patchApp = IntegrationUtils.makePatchAppFull();
+
     // CREATE - Deny user not owner/admin, deny service
     boolean pass = false;
     try { svc.createApp(rUser0, app0, scrubbedJson); }
@@ -1023,15 +1027,16 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
 
-    // Create an app and grant permissions
+    // In prep for following tests create an app and grant permissions
     svc.createApp(rUser1, app0, scrubbedJson);
-    // Grant User3 - READ and User4 - MODIFY
+    // Grant User3 - READ
     svc.grantUserPermissions(rUser1, app0Id, testUser3, testPermsREAD, scrubbedJson);
+    // Grant User4 - MODIFY
     svc.grantUserPermissions(rUser1, app0Id, testUser4, testPermsMODIFY, scrubbedJson);
 
     // READ - deny user not owner/admin and no READ or MODIFY access (testuser0)
     pass = false;
-    try { svc.getApp(rUser0, app0Id, app0Version, false, false); }
+    try { svc.getApp(rUser0, app0Id, app0Version, false, null); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1041,7 +1046,7 @@ public class AppsServiceTest
 
     // EXECUTE - deny user not owner/admin with READ but not EXECUTE (testuser3)
     pass = false;
-    try { svc.getApp(rUser3, app0Id, app0Version, true, false); }
+    try { svc.getApp(rUser3, app0Id, app0Version, true, null); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1156,6 +1161,26 @@ public class AppsServiceTest
       pass = true;
     }
     Assert.assertTrue(pass);
+
+    // User should not be able to impersonate another user.
+    pass = false;
+    try { svc.getApp(rUser2, app0Id, null, false, owner1); }
+    catch (NotAuthorizedException e)
+    {
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH_IMPERSONATE"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
+    // When a service impersonates another user they should be denied if that user cannot read the system.
+    pass = false;
+    try { svc.getApp(rJobsSvc, app0Id, null, false, impersonationIdTestUser9); }
+    catch (NotAuthorizedException e)
+    {
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
   }
 
   // Test Auth allow
@@ -1178,12 +1203,14 @@ public class AppsServiceTest
     svc.grantUserPermissions(rUser1, app0.getId(), testUser4, testPermsMODIFY, scrubbedJson);
 
     // READ - allow owner, service, with READ only, with MODIFY only
-    svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, false);
-    svc.getApp(rUser1, app0.getId(), app0.getVersion(), true, false);
-    svc.getApp(rFilesSvc, app0.getId(), app0.getVersion(), false, false);
-    svc.getApp(rUser3, app0.getId(), app0.getVersion(), false, false);
-    svc.getApp(rUser3, app0.getId(), app0.getVersion(), true, false);
-    svc.getApp(rUser4, app0.getId(), app0.getVersion(), false, false);
+    svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, null);
+    svc.getApp(rUser1, app0.getId(), app0.getVersion(), true, null);
+    svc.getApp(rFilesSvc, app0.getId(), app0.getVersion(), false, null);
+    svc.getApp(rUser3, app0.getId(), app0.getVersion(), false, null);
+    svc.getApp(rUser3, app0.getId(), app0.getVersion(), true, null);
+    svc.getApp(rUser4, app0.getId(), app0.getVersion(), false, null);
+    // Jobs should be allowed to impersonate another user
+    svc.getApp(rJobsSvc, app0.getId(), null, false, testUser3);
   }
 
   /**
@@ -1340,7 +1367,7 @@ public class AppsServiceTest
     App app0 = apps[27];
     // Create app for app history tests
     svc.createApp(rUser1, app0, scrubbedJson);
-    App tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, false);
+    App tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, null);
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
     System.out.println("Found item: " + app0.getId());
     

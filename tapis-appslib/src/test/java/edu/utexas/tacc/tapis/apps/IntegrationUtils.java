@@ -44,6 +44,7 @@ public final class IntegrationUtils
   public static final String owner1 = "testuser1";
   public static final String owner2 = "testuser2";
   public static final String apiUser = "testuser2";
+  public static final String impersonationIdTestUser9 = "testuser9";
   public static final String appIdPrefix = "TestApp";
   public static final String appVersion = "0.0.1";
   public static final String appVersion2 = "0.0.2";
