@@ -1944,13 +1944,12 @@ public class AppsServiceImpl implements AppsService
   {
     // If a service request the username will be the service name. E.g. files, jobs, streams, etc
     String svcName = rUser.getJwtUserId();
-    if (rUser.isServiceRequest() && SVCLIST_IMPERSONATE.contains(svcName))
+    if (!rUser.isServiceRequest() || !SVCLIST_IMPERSONATE.contains(svcName))
     {
-      _log.info(LibUtils.getMsgAuth("APPLIB_AUTH_IMPERSONATE", rUser, appId, op.name(), impersonationId));
-      return;
+      throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH_IMPERSONATE", rUser, appId, op.name(), impersonationId), NO_CHALLENGE);
     }
-
-    throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH_IMPERSONATE", rUser, appId, op.name(), impersonationId), NO_CHALLENGE);
+    // An allowed service is impersonating, log it
+    _log.info(LibUtils.getMsgAuth("APPLIB_AUTH_IMPERSONATE", rUser, appId, op.name(), impersonationId));
   }
 
   /**
