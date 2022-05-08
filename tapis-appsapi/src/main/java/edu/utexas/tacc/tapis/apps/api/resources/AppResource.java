@@ -700,7 +700,7 @@ public class AppResource
   public Response getApp(@PathParam("appId") String appId,
                          @PathParam("appVersion") String appVersion,
                          @QueryParam("requireExecPerm") @DefaultValue("false") boolean requireExecPerm,
-                         @QueryParam("impersonationId") @DefaultValue("false") String impersonationId,
+                         @QueryParam("impersonationId") String impersonationId,
                          @Context SecurityContext securityContext)
   {
     String opName = "getApp";
