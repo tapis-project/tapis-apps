@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /*
- * Notification Subscription consisting of a filter and list of notification mechanisms
+ * Notification Subscription consisting of filters and list of notification targets
  *
  * This class is intended to be as immutable as possible.
  * Please try to keep it that way.
@@ -21,29 +21,32 @@ public final class NotificationSubscription
   // ============== Fields =========================================
   private static final Logger _log = LoggerFactory.getLogger(NotificationSubscription.class);
 
-  private final String filter;
-  private List<NotificationMechanism> notificationMechanisms;
+  private final String typeFilter;
+  private final String subjectFilter;
+  private List<DeliveryTarget> deliveryTargets;
 
   /* ********************************************************************** */
   /*                           Constructors                                 */
   /* ********************************************************************** */
-    public NotificationSubscription(String filter1)
+    public NotificationSubscription(String typeFilter1, String subjectFilter1)
   {
-    filter = filter1;
+    typeFilter = typeFilter1;
+    subjectFilter = subjectFilter1;
   }
 
   /* ********************************************************************** */
   /*                               Accessors                                */
   /* ********************************************************************** */
-  public String getFilter() { return filter; }
+  public String getTypeFilter() { return typeFilter; }
+  public String getSubjectFilter() { return subjectFilter; }
 
-  public List<NotificationMechanism> getNotificationMechanisms()
+  public List<DeliveryTarget> getDeliveryTargets()
   {
-    return (notificationMechanisms == null) ? null : new ArrayList<>(notificationMechanisms);
+    return (deliveryTargets == null) ? null : new ArrayList<>(deliveryTargets);
   }
-  public void setNotificationMechanisms(List<NotificationMechanism> nmList)
+  public void setDeliveryTargets(List<DeliveryTarget> nmList)
   {
-    notificationMechanisms = (nmList == null) ? null : new ArrayList<>(nmList);
+    deliveryTargets = (nmList == null) ? null : new ArrayList<>(nmList);
   }
 
   @Override

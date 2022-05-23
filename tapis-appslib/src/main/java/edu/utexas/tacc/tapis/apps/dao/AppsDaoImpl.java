@@ -1702,7 +1702,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 //    var mechanisms = subscription.getNotificationMechanisms();
 //    if (mechanisms == null || mechanisms.isEmpty()) return;
 //
-//    for (NotificationMechanism mechanism : mechanisms) {
+//    for (DeliveryTarget mechanism : mechanisms) {
 //      db.insertInto(NOTIFICATION_MECHANISMS)
 //              .set(NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID, subSeqId)
 //              .set(NOTIFICATION_MECHANISMS.MECHANISM, mechanism.getMechanism())
@@ -1750,11 +1750,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 //   * @param subSeqId - subscription seq id
 //   * @return list of mechanisms
 //   */
-//  private static List<NotificationMechanism> retrieveNotificationMechanisms(DSLContext db, int subSeqId)
+//  private static List<DeliveryTarget> retrieveNotificationMechanisms(DSLContext db, int subSeqId)
 //  {
-//    List<NotificationMechanism> mechanisms =
+//    List<DeliveryTarget> mechanisms =
 //            db.selectFrom(NOTIFICATION_MECHANISMS).where(NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID.eq(subSeqId))
-//                    .fetchInto(NotificationMechanism.class);
+//                    .fetchInto(DeliveryTarget.class);
 //    return mechanisms;
 //  }
 //
