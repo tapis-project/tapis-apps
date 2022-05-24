@@ -3,8 +3,6 @@ package edu.utexas.tacc.tapis.apps.api.utils;
 import com.google.gson.JsonElement;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
-import edu.utexas.tacc.tapis.apps.model.NotificationMechanism;
-import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
@@ -15,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -257,10 +254,10 @@ public class ApiUtils
 //      NotificationSubscription libSubscription = new NotificationSubscription(apiSubscription.filter);
 //      var apiMechanisms = apiSubscription.notificationMechanisms;
 //      if (apiMechanisms == null || apiMechanisms.isEmpty()) apiMechanisms = new ArrayList<>();
-//      var libMechanisms = new ArrayList<NotificationMechanism>();
-//      for (NotificationMechanism apiMech : apiMechanisms)
+//      var libMechanisms = new ArrayList<DeliveryTarget>();
+//      for (DeliveryTarget apiMech : apiMechanisms)
 //      {
-//        var libMech = new NotificationMechanism(apiMech.mechanism, apiMech.webhookURL, apiMech.emailAddress);
+//        var libMech = new DeliveryTarget(apiMech.mechanism, apiMech.webhookURL, apiMech.emailAddress);
 //        libMechanisms.add(libMech);
 //      }
 //      libSubscription.setNotificationMechanisms(libMechanisms);
@@ -291,13 +288,13 @@ public class ApiUtils
 //  }
 
 //  // Build a list of api model subscriptions based on the lib model objects
-//  public static List<NotificationMechanism> buildApiNotifMechanisms(List<NotificationMechanism> libMechanisms)
+//  public static List<DeliveryTarget> buildApiNotifMechanisms(List<DeliveryTarget> libMechanisms)
 //  {
-//    var retList = new ArrayList<NotificationMechanism>();
+//    var retList = new ArrayList<DeliveryTarget>();
 //    if (libMechanisms == null || libMechanisms.isEmpty()) return retList;
-//    for (NotificationMechanism libMechanism : libMechanisms)
+//    for (DeliveryTarget libMechanism : libMechanisms)
 //    {
-//      NotificationMechanism apiMechanism = new NotificationMechanism();
+//      DeliveryTarget apiMechanism = new DeliveryTarget();
 //      apiMechanism.mechanism = libMechanism.getMechanism();
 //      apiMechanism.webhookURL = libMechanism.getWebhookUrl();
 //      apiMechanism.emailAddress = libMechanism.getEmailAddress();

@@ -10,12 +10,12 @@ import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 import edu.utexas.tacc.tapis.apps.model.ArgSpec;
 import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
+import edu.utexas.tacc.tapis.apps.model.DeliveryTarget;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.FileInputArray;
 import edu.utexas.tacc.tapis.apps.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
-import edu.utexas.tacc.tapis.apps.model.NotificationMechanism;
-import edu.utexas.tacc.tapis.apps.model.NotificationMechanism.NotifMechanismType;
+import edu.utexas.tacc.tapis.apps.model.DeliveryTarget.NotifDeliveryMethod;
 import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
@@ -237,31 +237,31 @@ public final class IntegrationUtils
   public static final List<FileInputArray> fiaListNull = null;
 
   // NotificationSubscriptions
-  public static final NotificationMechanism notifMech1Aa = new NotificationMechanism(NotifMechanismType.WEBHOOK, "webhookUrl1Aa", "emailAddress1Aa");
-  public static final NotificationMechanism notifMech1Ab = new NotificationMechanism(NotifMechanismType.ACTOR, "webhookUrl1Ab", "emailAddress1Ab");
-  public static final List<NotificationMechanism> notifMechList1A = new ArrayList<>(List.of(notifMech1Aa, notifMech1Ab));
-  public static final NotificationMechanism notifMech1Ba = new NotificationMechanism(NotifMechanismType.EMAIL, "webhookUrl1Ba", "emailAddress1Ba");
-  public static final NotificationMechanism notifMech1Bb = new NotificationMechanism(NotifMechanismType.QUEUE, "webhookUrl1Ba", "emailAddress1Bb");
-  public static final List<NotificationMechanism> notifMechList1B = new ArrayList<>(List.of(notifMech1Ba, notifMech1Bb));
-  public static final NotificationSubscription notif1A = new NotificationSubscription("filter1A");
-  public static final NotificationSubscription notif1B = new NotificationSubscription("filter1B");
+  public static final DeliveryTarget notifTarget1Aa = new DeliveryTarget(NotifDeliveryMethod.WEBHOOK, "webhookUrl1Aa");
+  public static final DeliveryTarget notifTarget1Ab = new DeliveryTarget(NotifDeliveryMethod.EMAIL, "emailAddress1Ab");
+  public static final List<DeliveryTarget> notifTargetList1A = new ArrayList<>(List.of(notifTarget1Aa, notifTarget1Ab));
+  public static final DeliveryTarget notifTarget1Ba = new DeliveryTarget(NotifDeliveryMethod.EMAIL, "emailAddress1Ba");
+  public static final DeliveryTarget notifTarget1Bb = new DeliveryTarget(NotifDeliveryMethod.WEBHOOK, "webhookUrl1Ba");
+  public static final List<DeliveryTarget> notifTargetList1B = new ArrayList<>(List.of(notifTarget1Ba, notifTarget1Bb));
+  public static final NotificationSubscription notif1A = new NotificationSubscription("typeFilter1A", "subjectFilter1A");
+  public static final NotificationSubscription notif1B = new NotificationSubscription("typeFilter1B", "subjectFilter1B");
   static {
-    notif1A.setNotificationMechanisms(notifMechList1A);
-    notif1B.setNotificationMechanisms(notifMechList1B);
+    notif1A.setDeliveryTargets(notifTargetList1A);
+    notif1B.setDeliveryTargets(notifTargetList1B);
   }
   public static final List<NotificationSubscription> notifList1 = new ArrayList<>(List.of(notif1A, notif1B));
 
-  public static final NotificationMechanism notifMech2Aa = new NotificationMechanism(NotifMechanismType.WEBHOOK, "webhookUrl2Aa", "emailAddress2Aa");
-  public static final NotificationMechanism notifMech2Ab = new NotificationMechanism(NotifMechanismType.ACTOR, "webhookUrl2Ab", "emailAddress2Ab");
-  public static final List<NotificationMechanism> notifMechList2A = new ArrayList<>(List.of(notifMech2Aa, notifMech2Ab));
-  public static final NotificationMechanism notifMech2Ba = new NotificationMechanism(NotifMechanismType.EMAIL, "webhookUrl2Ba", "emailAddress2Ba");
-  public static final NotificationMechanism notifMech2Bb = new NotificationMechanism(NotifMechanismType.QUEUE, "webhookUrl2Ba", "emailAddress2Bb");
-  public static final List<NotificationMechanism> notifMechList2B = new ArrayList<>(List.of(notifMech2Ba, notifMech2Bb));
-  public static final NotificationSubscription notif2A = new NotificationSubscription("filter2A");
-  public static final NotificationSubscription notif2B = new NotificationSubscription("filter2B");
+  public static final DeliveryTarget notifTarget2Aa = new DeliveryTarget(NotifDeliveryMethod.WEBHOOK, "webhookUrl2Aa");
+  public static final DeliveryTarget notifTarget2Ab = new DeliveryTarget(NotifDeliveryMethod.EMAIL, "emailAddress2Ab");
+  public static final List<DeliveryTarget> notifTargetList2A = new ArrayList<>(List.of(notifTarget2Aa, notifTarget2Ab));
+  public static final DeliveryTarget notifTarget2Ba = new DeliveryTarget(NotifDeliveryMethod.EMAIL, "emailAddress2Ba");
+  public static final DeliveryTarget notifTarget2Bb = new DeliveryTarget(NotifDeliveryMethod.WEBHOOK, "webhookUrl2Ba");
+  public static final List<DeliveryTarget> notifTargetList2B = new ArrayList<>(List.of(notifTarget2Ba, notifTarget2Bb));
+  public static final NotificationSubscription notif2A = new NotificationSubscription("typeFilter2A", "subjectFilter2A");
+  public static final NotificationSubscription notif2B = new NotificationSubscription("typeFilter2B", "subjectFilter2B");
   static {
-    notif2A.setNotificationMechanisms(notifMechList2A);
-    notif2B.setNotificationMechanisms(notifMechList2B);
+    notif2A.setDeliveryTargets(notifTargetList2A);
+    notif2B.setDeliveryTargets(notifTargetList2B);
   }
   public static final List<NotificationSubscription> notifList2 = new ArrayList<>(List.of(notif2A, notif2B));
   public static final List<NotificationSubscription> notifListNull = null;
@@ -600,12 +600,12 @@ public final class IntegrationUtils
     Assert.assertNotNull(fetchedSubscriptions, "Fetched Subscriptionss is null");
     Assert.assertEquals(fetchedSubscriptions.size(), origSubscriptions.size());
     var filtersFound = new ArrayList<String>();
-    for (NotificationSubscription itemFound : fetchedSubscriptions) {filtersFound.add(itemFound.getFilter());}
+    for (NotificationSubscription itemFound : fetchedSubscriptions) {filtersFound.add(itemFound.getTypeFilter());}
     for (NotificationSubscription itemSeedItem : origSubscriptions)
     {
-      Assert.assertTrue(filtersFound.contains(itemSeedItem.getFilter()),
-              "List of notificationSubscriptions did not contain an item with filter: " + itemSeedItem.getFilter());
-      System.out.println("Found fetched subscription with filter: " + itemSeedItem.getFilter());
+      Assert.assertTrue(filtersFound.contains(itemSeedItem.getTypeFilter()),
+              "List of notificationSubscriptions did not contain an item with filter: " + itemSeedItem.getTypeFilter());
+      System.out.println("Found fetched subscription with filter: " + itemSeedItem.getTypeFilter());
     }
   }
 }
