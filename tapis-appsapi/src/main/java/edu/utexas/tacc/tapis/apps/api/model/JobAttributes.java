@@ -3,7 +3,7 @@ package edu.utexas.tacc.tapis.apps.api.model;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.FileInputArray;
-import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
+import edu.utexas.tacc.tapis.apps.model.ReqSubscribe;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 
 import java.util.List;
@@ -40,7 +40,7 @@ public final class JobAttributes
   public int coresPerNode = DEFAULT_CORES_PER_NODE;
   public int memoryMB = DEFAULT_MEMORY_MB;
   public int maxMinutes = DEFAULT_MAX_MINUTES;
-  public List<NotificationSubscription> subscriptions;
+  public List<ReqSubscribe> subscriptions;
   public String[] tags;
 
   // Default constructor

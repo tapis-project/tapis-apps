@@ -33,7 +33,7 @@ public final class JobAttributes
   private final Integer coresPerNode;
   private final Integer memoryMB;
   private final Integer maxMinutes;
-  private final List<NotificationSubscription> subscriptions;
+  private final List<ReqSubscribe> subscriptions;
   private final String[] tags;
 
   // ************************************************************************
@@ -49,7 +49,7 @@ public final class JobAttributes
                        Boolean archiveOnAppError1, Boolean isMpi1, String mpiCmd1, String cmdPrefix1,
                        ParameterSet parameterSet1, List<FileInput> fileInputs1,
                        List<FileInputArray> fileInputArrays1, Integer nodeCount1, Integer coresPerNode1, Integer memoryMB1,
-                       Integer maxMinutes1, List<NotificationSubscription> subscriptions1, String[] tags1)
+                       Integer maxMinutes1, List<ReqSubscribe> subscriptions1, String[] tags1)
   {
     description = description1;
     dynamicExecSystem = dynamicExecSystem1;
@@ -100,7 +100,7 @@ public final class JobAttributes
   public Integer getCoresPerNode() { return coresPerNode; }
   public Integer getMemoryMB() { return memoryMB; }
   public Integer getMaxMinutes() { return maxMinutes; }
-  public List<NotificationSubscription> getSubscriptions() { return subscriptions; }
+  public List<ReqSubscribe> getSubscriptions() { return subscriptions; }
   public String[] getTags() {
     return tags;
   }

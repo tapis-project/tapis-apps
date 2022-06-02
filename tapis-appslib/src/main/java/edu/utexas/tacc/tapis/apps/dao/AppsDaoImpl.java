@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.apps.model.ReqSubscribe;
 import org.apache.commons.lang3.StringUtils;
 import org.flywaydb.core.Flyway;
 import org.jooq.Condition;
@@ -36,7 +37,6 @@ import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.FileInputArray;
-import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.search.parser.ASTBinaryExpression;
 import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
@@ -1556,8 +1556,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     JsonElement fiaJsonElement = r.get(APPS_VERSIONS.FILE_INPUT_ARRAYS);
     List<FileInputArray> fileInputArrays = Arrays.asList(TapisGsonUtils.getGson().fromJson(fiaJsonElement, FileInputArray[].class));
     JsonElement subscriptionsJsonElement = r.get(APPS_VERSIONS.SUBSCRIPTIONS);
-    List<NotificationSubscription> subscriptions =
-            Arrays.asList(TapisGsonUtils.getGson().fromJson(subscriptionsJsonElement, NotificationSubscription[].class));
+    List<ReqSubscribe> subscriptions =
+            Arrays.asList(TapisGsonUtils.getGson().fromJson(subscriptionsJsonElement, ReqSubscribe[].class));
     app = new App(appSeqId, appVerSeqId, r.get(APPS.TENANT), r.get(APPS.ID), r.get(APPS_VERSIONS.VERSION),
             r.get(APPS_VERSIONS.DESCRIPTION), r.get(APPS_VERSIONS.JOB_TYPE), r.get(APPS.OWNER), r.get(APPS.ENABLED),
             r.get(APPS.CONTAINERIZED), r.get(APPS_VERSIONS.RUNTIME), r.get(APPS_VERSIONS.RUNTIME_VERSION),
@@ -1577,230 +1577,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     return app;
   }
 
-//  /**
-//   * Persist file inputs given an sql connection and an app
-//   */
-//  private static void persistFileInputs(DSLContext db, App app, int appVerSeqId)
-//  {
-//    var fileInputs = app.getFileInputs();
-//    if (fileInputs == null || fileInputs.isEmpty()) return;
-//
-//    for (FileInput fileInput : fileInputs) {
-//      String nameStr = "";
-//      if (fileInput.getName() != null ) nameStr = fileInput.getName();
-//      String[] kvPairs = EMPTY_STR_ARRAY;
-//      if (fileInput.getMeta() != null ) kvPairs = fileInput.getMeta();
-//      db.insertInto(FILE_INPUTS)
-//              .set(FILE_INPUTS.APP_VER_SEQ_ID, appVerSeqId)
-//              .set(FILE_INPUTS.SOURCE_URL, fileInput.getSourceUrl())
-//              .set(FILE_INPUTS.TARGET_PATH, fileInput.getTargetPath())
-//              .set(FILE_INPUTS.IN_PLACE, fileInput.isInPlace())
-//              .set(FILE_INPUTS.NAME, nameStr)
-//              .set(FILE_INPUTS.DESCRIPTION, fileInput.getDescription())
-//              .set(FILE_INPUTS.INPUT_MODE, fileInput.getMode())
-//              .set(FILE_INPUTS.META, kvPairs)
-//              .execute();
-//    }
-//  }
-//
-//  /**
-//   * Persist app args given an sql connection and an app
-//   */
-//  private static void persistAppArgs(DSLContext db, App app, int appVerSeqId)
-//  {
-//    var appArgs = app.getAppArgs();
-//    if (appArgs == null || appArgs.isEmpty()) return;
-//
-//    for (AppArg appArg : appArgs) {
-//      String valStr = "";
-//      if (appArg.getArgValue() != null ) valStr = appArg.getArgValue();
-//      String[] kvPairs = EMPTY_STR_ARRAY;
-//      if (appArg.getMeta() != null ) kvPairs = appArg.getMeta();
-//      db.insertInto(APP_ARGS)
-//              .set(APP_ARGS.APP_VER_SEQ_ID, appVerSeqId)
-//              .set(APP_ARGS.ARG_VAL, valStr)
-//              .set(APP_ARGS.NAME, appArg.getName())
-//              .set(APP_ARGS.DESCRIPTION, appArg.getDescription())
-//              .set(APP_ARGS.INPUT_MODE, appArg.getMode())
-//              .set(APP_ARGS.META, kvPairs)
-//              .execute();
-//    }
-//  }
-//
-//  /**
-//   * Persist container args given an sql connection and an app
-//   */
-//  private static void persistContainerArgs(DSLContext db, App app, int appVerSeqId)
-//  {
-//    var containerArgs = app.getContainerArgs();
-//    if (containerArgs == null || containerArgs.isEmpty()) return;
-//
-//    for (AppArg containerArg : containerArgs) {
-//      String valStr = "";
-//      if (containerArg.getArgValue() != null ) valStr = containerArg.getArgValue();
-//      String[] kvPairs = EMPTY_STR_ARRAY;
-//      if (containerArg.getMeta() != null ) kvPairs = containerArg.getMeta();
-//      db.insertInto(CONTAINER_ARGS)
-//              .set(CONTAINER_ARGS.APP_VER_SEQ_ID, appVerSeqId)
-//              .set(CONTAINER_ARGS.ARG_VAL, valStr)
-//              .set(CONTAINER_ARGS.NAME, containerArg.getName())
-//              .set(CONTAINER_ARGS.DESCRIPTION, containerArg.getDescription())
-//              .set(CONTAINER_ARGS.INPUT_MODE, containerArg.getMode())
-//              .set(CONTAINER_ARGS.META, kvPairs)
-//              .execute();
-//    }
-//  }
-//
-//  /**
-//   * Persist scheduler options given an sql connection and an app
-//   */
-//  private static void persistSchedulerOptions(DSLContext db, App app, int appVerSeqId)
-//  {
-//    var schedulerOptions = app.getSchedulerOptions();
-//    if (schedulerOptions == null || schedulerOptions.isEmpty()) return;
-//
-//    for (AppArg schedulerOption : schedulerOptions) {
-//      String valStr = "";
-//      if (schedulerOption.getArgValue() != null ) valStr = schedulerOption.getArgValue();
-//      String[] kvPairs = EMPTY_STR_ARRAY;
-//      if (schedulerOption.getMeta() != null ) kvPairs = schedulerOption.getMeta();
-//      db.insertInto(SCHEDULER_OPTIONS)
-//              .set(SCHEDULER_OPTIONS.APP_VER_SEQ_ID, appVerSeqId)
-//              .set(SCHEDULER_OPTIONS.ARG_VAL, valStr)
-//              .set(SCHEDULER_OPTIONS.NAME, schedulerOption.getName())
-//              .set(SCHEDULER_OPTIONS.DESCRIPTION, schedulerOption.getDescription())
-//              .set(SCHEDULER_OPTIONS.INPUT_MODE, schedulerOption.getMode())
-//              .set(SCHEDULER_OPTIONS.META, kvPairs)
-//              .execute();
-//    }
-//  }
-//
-//  /**
-//   * Persist notification subscriptions given an sql connection and an app
-//   */
-//  private static void persistNotificationSubscriptions(DSLContext db, App app, int appVerSeqId)
-//  {
-//    var subscriptions = app.getSubscriptions();
-//    if (subscriptions == null || subscriptions.isEmpty()) return;
-//
-//    for (NotificationSubscription subscription : subscriptions) {
-//      Record record = db.insertInto(NOTIFICATION_SUBSCRIPTIONS)
-//              .set(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID, appVerSeqId)
-//              .set(NOTIFICATION_SUBSCRIPTIONS.FILTER, subscription.getFilter())
-//              .returningResult(NOTIFICATION_SUBSCRIPTIONS.SEQ_ID)
-//              .fetchOne();
-//      int subSeqId = record.getValue(APPS.SEQ_ID);
-//      persistNotificationMechanisms(db, subscription, subSeqId);
-//    }
-//  }
-//
-//  /**
-//   * Persist notification mechanisms given an sql connection and a NotificationSubscription
-//   */
-//  private static void persistNotificationMechanisms(DSLContext db, NotificationSubscription subscription, int subSeqId)
-//  {
-//    var mechanisms = subscription.getNotificationMechanisms();
-//    if (mechanisms == null || mechanisms.isEmpty()) return;
-//
-//    for (DeliveryTarget mechanism : mechanisms) {
-//      db.insertInto(NOTIFICATION_MECHANISMS)
-//              .set(NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID, subSeqId)
-//              .set(NOTIFICATION_MECHANISMS.MECHANISM, mechanism.getMechanism())
-//              .set(NOTIFICATION_MECHANISMS.WEBHOOK_URL, mechanism.getWebhookUrl())
-//              .set(NOTIFICATION_MECHANISMS.EMAIL_ADDRESS, mechanism.getEmailAddress())
-//              .execute();
-//    }
-//  }
-//
-//  /**
-//   * Get file inputs for an app from an auxiliary table
-//   * @param db - DB connection
-//   * @param appVerSeqId - app
-//   * @return list of file inputs
-//   */
-//  private static List<FileInput> retrieveFileInputs(DSLContext db, int appVerSeqId)
-//  {
-//    List<FileInput> fileInputs = db.selectFrom(FILE_INPUTS).where(FILE_INPUTS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(FileInput.class);
-//    if (fileInputs == null || fileInputs.isEmpty()) return null;
-//    return fileInputs;
-//  }
-
-//  /**
-//   * Get notification subscriptions for an app from an auxiliary table
-//   * @param db - DB connection
-//   * @param appVerSeqId - app
-//   * @return list of subscriptions
-//   */
-//  private static List<NotificationSubscription> retrieveNotificationSubscriptions(DSLContext db, int appVerSeqId)
-//  {
-//    List<NotificationSubscription> subscriptions =
-//            db.selectFrom(NOTIFICATION_SUBSCRIPTIONS).where(NOTIFICATION_SUBSCRIPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId))
-//                    .fetchInto(NotificationSubscription.class);
-//    if (subscriptions == null || subscriptions.isEmpty()) return null;
-//    for (NotificationSubscription subscription : subscriptions)
-//    {
-//      subscription.setNotificationMechanisms(retrieveNotificationMechanisms(db, subscription.getSeqId()));
-//    }
-//    return subscriptions;
-//  }
-//
-//  /**
-//   * Get notification mechanisms for a subscription from an auxiliary table
-//   * @param db - DB connection
-//   * @param subSeqId - subscription seq id
-//   * @return list of mechanisms
-//   */
-//  private static List<DeliveryTarget> retrieveNotificationMechanisms(DSLContext db, int subSeqId)
-//  {
-//    List<DeliveryTarget> mechanisms =
-//            db.selectFrom(NOTIFICATION_MECHANISMS).where(NOTIFICATION_MECHANISMS.SUBSCRIPTION_SEQ_ID.eq(subSeqId))
-//                    .fetchInto(DeliveryTarget.class);
-//    return mechanisms;
-//  }
-//
-//  /**
-//   * Get app args for an app from an auxiliary table
-//   * @param db - DB connection
-//   * @param appVerSeqId - app
-//   * @return list of app args
-//   */
-//  private static List<AppArg> retrieveAppArgs(DSLContext db, int appVerSeqId)
-//  {
-//    List<AppArg> appArgs =
-//            db.selectFrom(APP_ARGS).where(APP_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
-//    if (appArgs == null || appArgs.isEmpty()) return null;
-//    return appArgs;
-//  }
-//
-//  /**
-//   * Get container args for an app from an auxiliary table
-//   * @param db - DB connection
-//   * @param appVerSeqId - app
-//   * @return list of container args
-//   */
-//  private static List<AppArg> retrieveContainerArgs(DSLContext db, int appVerSeqId)
-//  {
-//    List<AppArg> containerArgs =
-//            db.selectFrom(CONTAINER_ARGS).where(CONTAINER_ARGS.APP_VER_SEQ_ID.eq(appVerSeqId)).fetchInto(AppArg.class);
-//    if (containerArgs == null || containerArgs.isEmpty()) return null;
-//    return containerArgs;
-//  }
-//
-//  /**
-//   * Get scheduler options for an app from an auxiliary table
-//   * @param db - DB connection
-//   * @param appVerSeqId - app
-//   * @return list of scheduler options
-//   */
-//  private static List<AppArg> retrieveSchedulerOptions(DSLContext db, int appVerSeqId)
-//  {
-//    List<AppArg> schedulerOptions =
-//            db.selectFrom(SCHEDULER_OPTIONS).where(SCHEDULER_OPTIONS.APP_VER_SEQ_ID.eq(appVerSeqId))
-//                    .fetchInto(AppArg.class);
-//    if (schedulerOptions == null || schedulerOptions.isEmpty()) return null;
-//    return schedulerOptions;
-//  }
-//
   /**
    * Given an sql connection retrieve the app_ver uuid.
    * @param db - jooq context

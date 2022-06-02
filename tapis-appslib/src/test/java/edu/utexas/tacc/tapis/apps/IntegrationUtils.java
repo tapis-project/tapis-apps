@@ -8,6 +8,7 @@ import edu.utexas.tacc.tapis.apps.model.App.ArgInputMode;
 import edu.utexas.tacc.tapis.apps.model.App.FileInputMode;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
+import edu.utexas.tacc.tapis.apps.model.ReqSubscribe;
 import edu.utexas.tacc.tapis.apps.model.ArgSpec;
 import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
 import edu.utexas.tacc.tapis.apps.model.DeliveryTarget;
@@ -16,9 +17,9 @@ import edu.utexas.tacc.tapis.apps.model.FileInputArray;
 import edu.utexas.tacc.tapis.apps.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
 import edu.utexas.tacc.tapis.apps.model.DeliveryTarget.NotifDeliveryMethod;
-import edu.utexas.tacc.tapis.apps.model.NotificationSubscription;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
+import edu.utexas.tacc.tapis.apps.model.ReqSubscribe.JobEventCategoryFilter;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
@@ -237,19 +238,18 @@ public final class IntegrationUtils
   public static final List<FileInputArray> fiaListNull = null;
 
   // NotificationSubscriptions
+  public static final int ttl = 0;
   public static final DeliveryTarget notifTarget1Aa = new DeliveryTarget(NotifDeliveryMethod.WEBHOOK, "webhookUrl1Aa");
   public static final DeliveryTarget notifTarget1Ab = new DeliveryTarget(NotifDeliveryMethod.EMAIL, "emailAddress1Ab");
   public static final List<DeliveryTarget> notifTargetList1A = new ArrayList<>(List.of(notifTarget1Aa, notifTarget1Ab));
   public static final DeliveryTarget notifTarget1Ba = new DeliveryTarget(NotifDeliveryMethod.EMAIL, "emailAddress1Ba");
   public static final DeliveryTarget notifTarget1Bb = new DeliveryTarget(NotifDeliveryMethod.WEBHOOK, "webhookUrl1Ba");
   public static final List<DeliveryTarget> notifTargetList1B = new ArrayList<>(List.of(notifTarget1Ba, notifTarget1Bb));
-  public static final NotificationSubscription notif1A = new NotificationSubscription("typeFilter1A", "subjectFilter1A");
-  public static final NotificationSubscription notif1B = new NotificationSubscription("typeFilter1B", "subjectFilter1B");
-  static {
-    notif1A.setDeliveryTargets(notifTargetList1A);
-    notif1B.setDeliveryTargets(notifTargetList1B);
-  }
-  public static final List<NotificationSubscription> notifList1 = new ArrayList<>(List.of(notif1A, notif1B));
+  public static final ReqSubscribe notif1A = new ReqSubscribe(null, enabledTrue, JobEventCategoryFilter.JOB_NEW_STATUS,
+                                                              notifTargetList1A, ttl);
+  public static final ReqSubscribe notif1B = new ReqSubscribe(null, enabledTrue, JobEventCategoryFilter.ALL,
+                                                              notifTargetList1B, ttl);
+  public static final List<ReqSubscribe> notifList1 = new ArrayList<>(List.of(notif1A, notif1B));
 
   public static final DeliveryTarget notifTarget2Aa = new DeliveryTarget(NotifDeliveryMethod.WEBHOOK, "webhookUrl2Aa");
   public static final DeliveryTarget notifTarget2Ab = new DeliveryTarget(NotifDeliveryMethod.EMAIL, "emailAddress2Ab");
@@ -257,14 +257,12 @@ public final class IntegrationUtils
   public static final DeliveryTarget notifTarget2Ba = new DeliveryTarget(NotifDeliveryMethod.EMAIL, "emailAddress2Ba");
   public static final DeliveryTarget notifTarget2Bb = new DeliveryTarget(NotifDeliveryMethod.WEBHOOK, "webhookUrl2Ba");
   public static final List<DeliveryTarget> notifTargetList2B = new ArrayList<>(List.of(notifTarget2Ba, notifTarget2Bb));
-  public static final NotificationSubscription notif2A = new NotificationSubscription("typeFilter2A", "subjectFilter2A");
-  public static final NotificationSubscription notif2B = new NotificationSubscription("typeFilter2B", "subjectFilter2B");
-  static {
-    notif2A.setDeliveryTargets(notifTargetList2A);
-    notif2B.setDeliveryTargets(notifTargetList2B);
-  }
-  public static final List<NotificationSubscription> notifList2 = new ArrayList<>(List.of(notif2A, notif2B));
-  public static final List<NotificationSubscription> notifListNull = null;
+  public static final ReqSubscribe notif2A = new ReqSubscribe(null, enabledTrue, JobEventCategoryFilter.JOB_ERROR_MESSAGE,
+                                                              notifTargetList2A, ttl);
+  public static final ReqSubscribe notif2B = new ReqSubscribe(null, enabledTrue, JobEventCategoryFilter.JOB_SUBSCRIPTION,
+                                                              notifTargetList2B, ttl);
+  public static final List<ReqSubscribe> notifList2 = new ArrayList<>(List.of(notif2A, notif2B));
+  public static final List<ReqSubscribe> notifListNull = null;
 
   // AppArgs, ContainerArgs, SchedulerOptions
   public static final ArgSpec appArg1A = new ArgSpec("value1A", "appArg1A", "App arg 1A", argInputModeRequired);
@@ -593,19 +591,19 @@ public final class IntegrationUtils
   }
 
   // Verify that original list of subscriptions matches the fetched list
-  public static void verifySubscriptions(List<NotificationSubscription> origSubscriptions, List<NotificationSubscription> fetchedSubscriptions)
+  public static void verifySubscriptions(List<ReqSubscribe> origSubscriptions, List<ReqSubscribe> fetchedSubscriptions)
   {
-    System.out.println("Verifying list of NotificationSubscription");
+    System.out.println("Verifying list of ReqSubscribe");
     Assert.assertNotNull(origSubscriptions, "Orig Subscriptions is null");
     Assert.assertNotNull(fetchedSubscriptions, "Fetched Subscriptionss is null");
     Assert.assertEquals(fetchedSubscriptions.size(), origSubscriptions.size());
     var filtersFound = new ArrayList<String>();
-    for (NotificationSubscription itemFound : fetchedSubscriptions) {filtersFound.add(itemFound.getTypeFilter());}
-    for (NotificationSubscription itemSeedItem : origSubscriptions)
+    for (ReqSubscribe itemFound : fetchedSubscriptions) {filtersFound.add(itemFound.getJobEventCategoryFilter().name());}
+    for (ReqSubscribe itemSeedItem : origSubscriptions)
     {
-      Assert.assertTrue(filtersFound.contains(itemSeedItem.getTypeFilter()),
-              "List of notificationSubscriptions did not contain an item with filter: " + itemSeedItem.getTypeFilter());
-      System.out.println("Found fetched subscription with filter: " + itemSeedItem.getTypeFilter());
+      Assert.assertTrue(filtersFound.contains(itemSeedItem.getJobEventCategoryFilter().name()),
+              "List of ReqSubscribe did not contain an item with jobEventCategoryFilter: " + itemSeedItem.getJobEventCategoryFilter());
+      System.out.println("Found fetched subscription with jobEventCategoryFilter: " + itemSeedItem.getJobEventCategoryFilter());
     }
   }
 }

@@ -11,7 +11,10 @@
   "JobTypeEnum": { "type": ["string", "null"], "enum": [ "BATCH", "FORK", null ] },
   "RuntimeEnum": { "type": "string", "enum": [ "SINGULARITY", "DOCKER" ] },
   "RuntimeOptionEnum": { "type": "string", "enum": [ "NONE", "SINGULARITY_START", "SINGULARITY_RUN" ] },
-  "NotificationMechanismEnum": { "type": "string", "enum": [ "WEBHOOK", "EMAIL", "QUEUE", "ACTOR" ] },
+  "DeliveryMethodEnum": { "type": "string", "enum": [ "WEBHOOK", "EMAIL" ] },
+  "JobEventCategoryFilterEnum": { "type": "string",
+    "enum": [ "ALL", "JOB_NEW_STATUS", "JOB_INPUT_TRANSACTION_ID", "JOB_ARCHIVE_TRANSACTION_ID",
+              "JOB_ERROR_MESSAGE", "JOB_SUBSCRIPTION" ] },
   "FileInputModeEnum": { "type": "string", "enum": [ "OPTIONAL", "REQUIRED", "FIXED" ], "default": "OPTIONAL" },
   "ArgInputModeEnum": { "type": "string", "enum": [ "REQUIRED", "FIXED", "INCLUDE_ON_DEMAND", "INCLUDE_BY_DEFAULT" ], "default": "INCLUDE_ON_DEMAND" },
   "RuntimeOptions": {
@@ -64,7 +67,7 @@
       "maxMinutes": { "type": "integer", "default": -1 },
       "subscriptions": {
         "type": ["array", "null"],
-        "items":  { "$ref": "#/NotificationSubscription" }
+        "items":  { "$ref": "#/ReqSubscribe" }
       },
       "tags": { "$ref": "#/TagsDefinition" }
     }
@@ -113,23 +116,25 @@
       "targetDir": {"type": "string", "minLength": 1 }
     }
   },
-  "NotificationSubscription": {
+  "ReqSubscribe": {
     "type": "object",
-    "required": [ "notificationMechanisms" ],
+    "required": [ "jobEventCategoryFilter", "deliveryTargets" ],
     "additionalProperties": false,
     "properties": {
-      "filter":  { "type": ["string", "null"], "minLength": 1 },
-      "notificationMechanisms": {
-        "type": "array", "minItems": 1, "items": { "$ref": "#/NotificationMechanism" }
+      "description": { "type":  ["string", "null"], "maxLength": 2048 },
+      "enabled": { "type": "boolean", "default": true },
+      "jobEventCategoryFilter": { "$ref": "#/JobEventCategoryFilterEnum" },
+      "ttlMinutes": { "type": "integer", "default": 10080 },
+      "deliveryTargets": {
+        "type": "array", "minItems": 1, "items": { "$ref": "#/DeliveryTarget" }
       }
     }
   },
-  "NotificationMechanism": {
+  "DeliveryTarget": {
     "type": "object",
-    "required": [ "mechanism" ],
-    "mechanism": { "$ref": "#/NotificationMechanismEnum" },
-    "webhookURL": { "type": ["string", "null"] },
-    "emailAddress": { "type":  ["string", "null"] }
+    "required": [ "deliveryMethod", "deliveryAddress" ],
+    "deliveryMethod": { "$ref": "#/DeliveryMethodEnum" },
+    "deliveryAddress": { "type":  ["string", "null"] }
   },
   "ArchiveFilter" : {
     "type": "object",

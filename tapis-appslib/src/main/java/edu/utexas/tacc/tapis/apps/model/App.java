@@ -207,7 +207,7 @@ public final class App
   private int coresPerNode = DEFAULT_CORES_PER_NODE;
   private int memoryMB = DEFAULT_MEMORY_MB;
   private int maxMinutes = DEFAULT_MAX_MINUTES;
-  private List<NotificationSubscription> subscriptions;
+  private List<ReqSubscribe> subscriptions;
   private String[] jobTags;
   // === End jobAttributes ==========
   private String[] tags;       // List of arbitrary tags as strings
@@ -319,7 +319,7 @@ public final class App
              boolean isMpi1, String mpiCmd1, String cmdPrefix1,
              ParameterSet parameterSet1, List<FileInput> fileInputs1, List<FileInputArray> fileInputArrays1,
              int nodeCount1, int coresPerNode1, int memoryMB1, int maxMinutes1,
-             List<NotificationSubscription> subscriptions1, String[] jobTags1,
+             List<ReqSubscribe> subscriptions1, String[] jobTags1,
              // == End jobAttributes
              String[] tags1, Object notes1, UUID uuid1, boolean deleted1, Instant created1, Instant updated1)
   {
@@ -793,11 +793,11 @@ public final class App
   public void setFileInputArrays(List<FileInputArray> fia) { fileInputArrays = (fia == null) ? null : new ArrayList<>(fia);
   }
 
-  public List<NotificationSubscription> getSubscriptions()
+  public List<ReqSubscribe> getSubscriptions()
   {
     return (subscriptions == null) ? null : new ArrayList<>(subscriptions);
   }
-  public void setSubscriptions(List<NotificationSubscription> ns)
+  public void setSubscriptions(List<ReqSubscribe> ns)
   {
     subscriptions = (ns == null) ? null : new ArrayList<>(ns);
   }
