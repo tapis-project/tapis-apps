@@ -1122,6 +1122,43 @@ public class AppsServiceImpl implements AppsService
 
     return result;
   }
+  
+  
+  /**
+   * Retrieves app share information from given user and app name.
+   *
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param appId - name of app
+   * @return - app share information as the result
+   * @throws TapisException - for Tapis related exceptions
+   * @throws TapisClientException - for Tapis Client related exceptions
+   * @throws NotAuthorizedException - unauthorized
+   */
+  @Override
+  public AppShareItem getAppShare(ResourceRequestUser rUser, String appId)
+          throws TapisException, TapisClientException, NotAuthorizedException
+  {
+    // ---------------------------- Check inputs ------------------------------------
+    // Required app attributes: rUser, id
+    if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+    if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
+    // Extract various names for convenience
+    String oboTenantId = rUser.getOboTenantId();
+
+    // We need owner to check auth and if app not there cannot find owner, so
+    // if app does not exist then return null
+    if (!dao.checkForApp(oboTenantId, appId, true)) return null;
+
+    // ------------------------- Check authorization -------------------------
+    checkAuthOwnerUnknown(rUser, op, appId);
+
+    // ------------------- Make Dao call to retrieve the app history -----------------------
+    AppShareItem result = new AppShareItem(true, { "jm89232" });
+
+    return result;
+  }
+  
+  
 
   // ************************************************************************
   // **************************  Private Methods  ***************************

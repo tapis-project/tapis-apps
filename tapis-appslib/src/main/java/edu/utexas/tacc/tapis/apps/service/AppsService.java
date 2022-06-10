@@ -8,6 +8,7 @@ import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
+import edu.utexas.tacc.tapis.apps.model.AppShareItem;
 
 import org.jvnet.hk2.annotations.Contract;
 
@@ -86,5 +87,8 @@ public interface AppsService
           throws TapisException, TapisClientException, NotAuthorizedException;
 
   List<AppHistoryItem> getAppHistory(ResourceRequestUser rUser, String appId)
+          throws TapisException, TapisClientException, NotAuthorizedException;
+
+  AppShareItem getAppShare(ResourceRequestUser rUser, String appId)
           throws TapisException, TapisClientException, NotAuthorizedException;
 }
