@@ -104,9 +104,9 @@ public class AppsApplication extends ResourceConfig
         @Override
         protected void configure() {
           bind(AppsServiceImpl.class).to(AppsService.class); // Used in Resource classes for most service calls
-          bind(AppsServiceImpl.class).to(AppsServiceImpl.class); // Used in AppsResource for checkDB
+          bind(AppsServiceImpl.class).to(AppsServiceImpl.class); // Used in GeneralResource for checkDB
           bind(AppsDaoImpl.class).to(AppsDao.class); // Used in service impl
-          bindFactory(ServiceContextFactory.class).to(ServiceContext.class); // Used in service impl and AppsResource
+          bindFactory(ServiceContextFactory.class).to(ServiceContext.class); // Used in service impl and GeneralResource
           bindFactory(ServiceClientsFactory.class).to(ServiceClients.class); // Used in service impl
         }
       });

@@ -36,13 +36,13 @@ import edu.utexas.tacc.tapis.apps.utils.LibUtils;
  *  NOTE: For OpenAPI spec please see file AppsApi.yaml located in repo openapi-apps.
  */
 @Path("/v3/apps")
-public class AppsResource
+public class GeneralResource
 {
   /* **************************************************************************** */
   /*                                   Constants                                  */
   /* **************************************************************************** */
   // Local logger.
-  private static final Logger _log = LoggerFactory.getLogger(AppsResource.class);
+  private static final Logger _log = LoggerFactory.getLogger(GeneralResource.class);
 
   /* **************************************************************************** */
   /*                                    Fields                                    */
