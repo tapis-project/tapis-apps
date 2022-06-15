@@ -116,9 +116,6 @@ public class AppsServiceImpl implements AppsService
   public static String getServiceTenantId() {return siteAdminTenantId;}
   public static String getServiceUserId() {return SERVICE_NAME;}
 
-  // SKClient, created when first needed.
-  private SKClient skClient = null;
-
   // ************************************************************************
   // *********************** Public Methods *********************************
   // ************************************************************************
@@ -1203,22 +1200,14 @@ public class AppsServiceImpl implements AppsService
    */
   private SKClient getSKClient() throws TapisException
   {
-    // Create skClient if necessary
-    if (skClient == null)
+    String tenantId = getServiceTenantId();
+    String userName = getServiceUserId();
+    try { return serviceClients.getClient(userName, tenantId, SKClient.class); }
+    catch (Exception e)
     {
-      String tenantId = getServiceTenantId();
-      String userName = getServiceUserId();
-      try
-      {
-        skClient = serviceClients.getClient(userName, tenantId, SKClient.class);
-      }
-      catch (Exception e)
-      {
-        String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY, tenantId, userName);
-        throw new TapisException(msg, e);
-      }
+      String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY, tenantId, userName);
+      throw new TapisException(msg, e);
     }
-    return skClient;
   }
 
   /**
