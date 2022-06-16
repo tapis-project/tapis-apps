@@ -202,15 +202,13 @@ public class AppsServiceImpl implements AppsService
     boolean appCreated = false;
     String appsPermSpecALL = getPermSpecAllStr(tenant, appId);
 
-    // Get SK client now. If we cannot get this rollback not needed.
-    var skClient = getSKClient();
     try {
       // ------------------- Make Dao call to persist the app -----------------------------------
       appCreated = dao.createApp(rUser, app, changeDescription, rawData);
 
       // ------------------- Add permissions -----------------------------
       // Give owner full access to the app
-      skClient.grantUserPermission(tenant, app.getOwner(), appsPermSpecALL);
+      getSKClient().grantUserPermission(tenant, app.getOwner(), appsPermSpecALL);
     }
     catch (Exception e0)
     {
@@ -224,7 +222,7 @@ public class AppsServiceImpl implements AppsService
       if (appCreated) try {dao.hardDeleteApp(tenant, appId); }
       catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "hardDelete", e.getMessage()));}
       // Remove perms
-      try { skClient.revokeUserPermission(tenant, app.getOwner(), appsPermSpecALL); }
+      try { getSKClient().revokeUserPermission(tenant, app.getOwner(), appsPermSpecALL); }
       catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "revokePermOwner", e.getMessage()));}
       throw e0;
     }
@@ -470,24 +468,22 @@ public class AppsServiceImpl implements AppsService
     // ----------------- Make all updates --------------------
     // Changes not in single DB transaction.
     // Use try/catch to rollback any changes in case of failure.
-    // Get SK client now. If we cannot get this rollback not needed.
-    var skClient = getSKClient();
     String appsPermSpec = getPermSpecAllStr(resourceTenantId, appId);
     try {
       // ------------------- Make Dao call to update the app owner -----------------------------------
       dao.updateAppOwner(rUser, resourceTenantId, appId, newOwnerName);
       // Add permissions for new owner
-      skClient.grantUserPermission(resourceTenantId, newOwnerName, appsPermSpec);
+      getSKClient().grantUserPermission(resourceTenantId, newOwnerName, appsPermSpec);
       // Remove permissions from old owner
-      skClient.revokeUserPermission(resourceTenantId, oldOwnerName, appsPermSpec);
+      getSKClient().revokeUserPermission(resourceTenantId, oldOwnerName, appsPermSpec);
     }
     catch (Exception e0)
     {
       // Something went wrong. Attempt to undo all changes and then re-throw the exception
       try { dao.updateAppOwner(rUser, resourceTenantId, appId, oldOwnerName); } catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "updateOwner", e.getMessage()));}
-      try { skClient.revokeUserPermission(resourceTenantId, newOwnerName, appsPermSpec); }
+      try { getSKClient().revokeUserPermission(resourceTenantId, newOwnerName, appsPermSpec); }
       catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "revokePermNewOwner", e.getMessage()));}
-      try { skClient.grantUserPermission(resourceTenantId, oldOwnerName, appsPermSpec); }
+      try { getSKClient().grantUserPermission(resourceTenantId, oldOwnerName, appsPermSpec); }
       catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "grantPermOldOwner", e.getMessage()));}
       throw e0;
     }
@@ -934,9 +930,6 @@ public class AppsServiceImpl implements AppsService
     // Create a set of individual permSpec entries based on the list passed in
     Set<String> permSpecSet = getPermSpecSet(oboTenant, appId, permissions);
 
-    // Get the Security Kernel client
-    var skClient = getSKClient();
-
     // Assign perms to user.
     // Start of updates. Will need to rollback on failure.
     try
@@ -944,7 +937,7 @@ public class AppsServiceImpl implements AppsService
       // Assign perms to user. SK creates a default role for the user
       for (String permSpec : permSpecSet)
       {
-        skClient.grantUserPermission(oboTenant, userName, permSpec);
+        getSKClient().grantUserPermission(oboTenant, userName, permSpec);
       }
     }
     catch (TapisClientException tce)
@@ -957,7 +950,7 @@ public class AppsServiceImpl implements AppsService
       // Revoke permissions that may have been granted.
       for (String permSpec : permSpecSet)
       {
-        try { skClient.revokeUserPermission(oboTenant, userName, permSpec); }
+        try { getSKClient().revokeUserPermission(oboTenant, userName, permSpec); }
         catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "revokePerm", e.getMessage()));}
       }
       // Convert to TapisException and re-throw
@@ -1017,15 +1010,14 @@ public class AppsServiceImpl implements AppsService
     // Revoke of READ implies revoke of MODIFY
     if (permissions.contains(Permission.READ)) permissions.add(Permission.MODIFY);
 
-    var skClient = getSKClient();
     int changeCount;
     // Determine current set of user permissions
-    var userPermSet = getUserPermSet(skClient, targetUser, oboTenant, appId);
+    var userPermSet = getUserPermSet(targetUser, oboTenant, appId);
 
     try
     {
       // Revoke perms
-      changeCount = revokePermissions(skClient, oboTenant, appId, targetUser, permissions);
+      changeCount = revokePermissions(oboTenant, appId, targetUser, permissions);
     }
     catch (TapisClientException tce)
     {
@@ -1040,7 +1032,7 @@ public class AppsServiceImpl implements AppsService
         if (userPermSet.contains(perm))
         {
           String permSpec = getPermSpecStr(oboTenant, appId, perm);
-          try { skClient.grantUserPermission(oboTenant, targetUser, permSpec); }
+          try { getSKClient().grantUserPermission(oboTenant, targetUser, permSpec); }
           catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "grantPerm", e.getMessage()));}
         }
       }
@@ -1084,8 +1076,7 @@ public class AppsServiceImpl implements AppsService
     checkAuth(rUser, op, appId, nullOwner, nullImpersonationId, targetUser, nullPermSet);
 
     // Use Security Kernel client to check for each permission in the enum list
-    var skClient = getSKClient();
-    return getUserPermSet(skClient, targetUser, resourceTenantId, appId);
+    return getUserPermSet(targetUser, resourceTenantId, appId);
   }
 
   /**
@@ -1240,26 +1231,20 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * Get Security Kernel client
-   * Note: The service always calls SK as itself.
+   * Note: Apps service always calls SK as itself.
    * @return SK client
    * @throws TapisException - for Tapis related exceptions
    */
   private SKClient getSKClient() throws TapisException
   {
-    SKClient skClient;
-    String tenantName = siteAdminTenantId;
-    String userName = SERVICE_NAME;
-    try
-    {
-      skClient = serviceClients.getClient(userName, tenantName, SKClient.class);
-    }
+    String tenantId = getServiceTenantId();
+    String userName = getServiceUserId();
+    try { return serviceClients.getClient(userName, tenantId, SKClient.class); }
     catch (Exception e)
     {
-      String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY, tenantName, userName);
+      String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY, tenantId, userName);
       throw new TapisException(msg, e);
     }
-
-    return skClient;
   }
 
   /**
@@ -1349,21 +1334,19 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * Retrieve set of user permissions given sk client, user, tenant, id
-   * @param skClient - SK client
    * @param userName - name of user
    * @param tenantName - name of tenant
    * @param resourceId - Id of resource
    * @return - Set of Permissions for the user
    */
-  private static Set<Permission> getUserPermSet(SKClient skClient, String userName, String tenantName,
-                                                String resourceId)
-          throws TapisClientException
+  private Set<Permission> getUserPermSet(String userName, String tenantName, String resourceId)
+          throws TapisClientException, TapisException
   {
     var userPerms = new HashSet<Permission>();
     for (Permission perm : Permission.values())
     {
       String permSpec = String.format(PERM_SPEC_TEMPLATE, tenantName, perm.name(), resourceId);
-      if (skClient.isPermitted(tenantName, userName, permSpec)) userPerms.add(perm);
+      if (getSKClient().isPermitted(tenantName, userName, permSpec)) userPerms.add(perm);
     }
     return userPerms;
   }
@@ -1488,9 +1471,8 @@ public class AppsServiceImpl implements AppsService
     // Use JWT tenant and user from authenticatedUsr or optional provided values
     String tenantName = (StringUtils.isBlank(tenantToCheck) ? rUser.getOboTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? rUser.getJwtUserId() : userToCheck);
-    var skClient = getSKClient();
     String permSpecStr = getPermSpecStr(tenantName, appId, perm);
-    return skClient.isPermitted(tenantName, userName, permSpecStr);
+    return getSKClient().isPermitted(tenantName, userName, permSpecStr);
   }
 
   /**
@@ -1504,12 +1486,11 @@ public class AppsServiceImpl implements AppsService
     // Use JWT tenant and user from authenticatedUsr or optional provided values
     String tenantName = (StringUtils.isBlank(tenantToCheck) ? rUser.getOboTenantId() : tenantToCheck);
     String userName = (StringUtils.isBlank(userToCheck) ? rUser.getJwtUserId() : userToCheck);
-    var skClient = getSKClient();
     var permSpecs = new ArrayList<String>();
     for (Permission perm : perms) {
       permSpecs.add(getPermSpecStr(tenantName, appId, perm));
     }
-    return skClient.isPermittedAny(tenantName, userName, permSpecs.toArray(App.EMPTY_STR_ARRAY));
+    return getSKClient().isPermittedAny(tenantName, userName, permSpecs.toArray(App.EMPTY_STR_ARRAY));
   }
 
   /**
@@ -1519,17 +1500,15 @@ public class AppsServiceImpl implements AppsService
   private void removeSKArtifacts(String resourceTenantId, String appId)
           throws TapisException, TapisClientException
   {
-    var skClient = getSKClient();
-
     // Use Security Kernel client to find all users with perms associated with the app.
     String permSpec = String.format(PERM_SPEC_TEMPLATE, resourceTenantId, "%", appId);
-    var userNames = skClient.getUsersWithPermission(resourceTenantId, permSpec);
+    var userNames = getSKClient().getUsersWithPermission(resourceTenantId, permSpec);
     // Revoke all perms for all users
     for (String userName : userNames)
     {
-      revokePermissions(skClient, resourceTenantId, appId, userName, ALL_PERMS);
+      revokePermissions(resourceTenantId, appId, userName, ALL_PERMS);
       // Remove wildcard perm
-      skClient.revokeUserPermission(resourceTenantId, userName, getPermSpecAllStr(resourceTenantId, appId));
+      getSKClient().revokeUserPermission(resourceTenantId, userName, getPermSpecAllStr(resourceTenantId, appId));
     }
   }
 
@@ -1537,15 +1516,15 @@ public class AppsServiceImpl implements AppsService
    * Revoke permissions
    * No checks are done for incoming arguments and the app must exist
    */
-  private static int revokePermissions(SKClient skClient, String resourceTenantId, String appId, String userName, Set<Permission> permissions)
-          throws TapisClientException
+  private int revokePermissions(String resourceTenantId, String appId, String userName, Set<Permission> permissions)
+          throws TapisClientException, TapisException
   {
     // Create a set of individual permSpec entries based on the list passed in
     Set<String> permSpecSet = getPermSpecSet(resourceTenantId, appId, permissions);
     // Remove perms from default user role
     for (String permSpec : permSpecSet)
     {
-      skClient.revokeUserPermission(resourceTenantId, userName, permSpec);
+      getSKClient().revokeUserPermission(resourceTenantId, userName, permSpec);
     }
     return permSpecSet.size();
   }
