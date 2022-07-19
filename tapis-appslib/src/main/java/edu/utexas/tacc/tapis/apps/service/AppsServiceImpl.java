@@ -1233,18 +1233,18 @@ public class AppsServiceImpl implements AppsService
    * Get Security Kernel client.
    * Need to use serviceClients.getClient() every time because it checks for expired service jwt token and
    *   refreshes it as needed.
-   * Apps service always calls SK as itself.
+   * Apps service always calls SK as itself, i.e. oboUser=apps, oboTenant=*site_admin_tenant*
    * @return SK client
    * @throws TapisException - for Tapis related exceptions
    */
   private SKClient getSKClient() throws TapisException
   {
-    String tenantId = getServiceTenantId();
-    String userName = getServiceUserId();
-    try { return serviceClients.getClient(userName, tenantId, SKClient.class); }
+    String oboTenant = getServiceTenantId();
+    String oboUser = getServiceUserId();
+    try { return serviceClients.getClient(oboUser, oboTenant, SKClient.class); }
     catch (Exception e)
     {
-      String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY, tenantId, userName);
+      String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY, oboTenant, oboUser);
       throw new TapisException(msg, e);
     }
   }
