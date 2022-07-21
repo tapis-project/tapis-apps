@@ -1,5 +1,48 @@
 package edu.utexas.tacc.tapis.apps.api.resources;
 
+import static edu.utexas.tacc.tapis.apps.model.App.ID_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.OWNER_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.VERSION_FIELD;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.servlet.ServletContext;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
+
+import org.apache.commons.lang3.StringUtils;
+import org.glassfish.grizzly.http.server.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.utexas.tacc.tapis.apps.api.responses.RespAppShare;
+import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
+import edu.utexas.tacc.tapis.apps.model.AppShare;
+import edu.utexas.tacc.tapis.apps.service.AppsService;
+import edu.utexas.tacc.tapis.shared.TapisConstants;
+import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
+import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
+import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadLocal;
+import edu.utexas.tacc.tapis.sharedapi.responses.RespAbstract;
+import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
+import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
+import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
+
 /*
  * JAX-RS REST resource for Tapis App share
  *  NOTE: For OpenAPI spec please see repo openapi-apps file AppsAPI.yaml
@@ -7,7 +50,7 @@ package edu.utexas.tacc.tapis.apps.api.resources;
  * Permissions are stored in the Security Kernel
  *
  */
-@Path("/v3/apps/share")
+@Path("/v3/apps")
 public class ShareResource {
   // ************************************************************************
   // *********************** Constants **************************************
@@ -17,33 +60,9 @@ public class ShareResource {
 
   private static final String APPLICATIONS_SVC = StringUtils.capitalize(TapisConstants.SERVICE_NAME_APPS);
 
-  // Json schema resource files.
-  private static final String FILE_APP_CREATE_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppPostRequest.json";
-  private static final String FILE_APP_PUT_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppPutRequest.json";
-  private static final String FILE_APP_UPDATE_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppPatchRequest.json";
-  private static final String FILE_APP_SEARCH_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/AppSearchRequest.json";
-
   // Message keys
-  private static final String INVALID_JSON_INPUT = "NET_INVALID_JSON_INPUT";
-  private static final String JSON_VALIDATION_ERR = "TAPIS_JSON_VALIDATION_ERROR";
-  private static final String UPDATE_ERR = "APPAPI_UPDATE_ERROR";
-  private static final String CREATE_ERR = "APPAPI_CREATE_ERROR";
-  private static final String SELECT_ERR = "APPAPI_SELECT_ERROR";
-  private static final String LIB_UNAUTH = "APPLIB_UNAUTH";
-  private static final String API_UNAUTH = "APPAPI_APP_UNAUTH";
   private static final String TAPIS_FOUND = "TAPIS_FOUND";
   private static final String NOT_FOUND = "APPAPI_NOT_FOUND";
-  private static final String UPDATED = "APPAPI_UPDATED";
-
-  // Format strings
-  private static final String APPS_CNT_STR = "%d applications";
-
-  // Operation names
-  private static final String OP_ENABLE = "enableApp";
-  private static final String OP_DISABLE = "disableApp";
-  private static final String OP_CHANGEOWNER = "changeAppOwner";
-  private static final String OP_DELETE = "deleteApp";
-  private static final String OP_UNDELETE = "undeleteApp";
 
   // Always return a nicely formatted response
   private static final boolean PRETTY = true;
@@ -71,17 +90,6 @@ public class ShareResource {
   @Inject
   private AppsService appsService;
 
-  private final String className = getClass().getSimpleName();
-
-  /*
-   * Tapis Apps share resource endpoints.
-   *
-   * NOTE: For OpenAPI spec please see file AppsApi.yaml located in repo
-   * openapi-apps.
-   */
- @Path("/v3/share")
- public class ShareResource
- {
   
   // ************************************************************************
   // *********************** Public Methods *********************************
@@ -93,10 +101,10 @@ public class ShareResource {
    * @return Response with share information object as the result
    */
   @GET
-  @Path("{appId}")
+  @Path("/share/{appId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getShare(@PathParam("appId") String appId,
+  public Response getShareApp(@PathParam("appId") String appId,
                             @Context SecurityContext securityContext)
   {
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -109,7 +117,59 @@ public class ShareResource {
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     //RespAbstract resp1;
-    AppShareItem appShare;
+    AppShare appShare;
+    
+    try
+    {
+      // Retrieve App share information
+      appShare = appsService.getAppShare(rUser, appId);
+    }
+    catch (Exception e)
+    {
+      String msg = ApiUtils.getMsgAuth("APPAPI_GET_SHR_ERR", rUser, appId, e.getMessage());
+      _log.error(msg, e);
+      return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+    }
+    
+    // Resource not found
+    if (appShare == null) {
+     String msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
+      _log.warn(msg);
+      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+    }
+    
+    // ---------------------------- Success -------------------------------
+    // Success means we retrieved the system history information.
+    RespAppShare resp1 = new RespAppShare(appShare);
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, "AppShare", appId), resp1);
+  }
+  
+  /**
+   * Create or update sharing information for an app
+   * @param appId - name of the app
+   * @param payloadStream - request body
+   * @param securityContext - user identity
+   * @return response containing reference to updated object
+   */
+  @POST
+  @Path("/share/{systemId}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response shareApp(@PathParam("appId") String appId,
+                              InputStream payloadStream,
+                              @Context SecurityContext securityContext)
+  {
+ // Check that we have all we need from the context, the jwtTenantId and jwtUserId
+    // Utility method returns null if all OK and appropriate error response if there was a problem.
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    if (resp != null) return resp;
+
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
+
+    //RespAbstract resp1;
+    AppShare appShare;
     
     try
     {
@@ -134,5 +194,16 @@ public class ShareResource {
     // Success means we retrieved the system history information.
     RespAppShare resp1 = new RespAppShare(appShare);
     return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, "AppShare", appId), resp1);
+  }
+  
+  /**
+   * Create an OK response given message and base response to put in result
+   * @param msg - message for resp.message
+   * @param resp - base response (the result)
+   * @return - Final response to return to client
+   */
+  private static Response createSuccessResponse(Status status, String msg, RespAbstract resp)
+  {
+    return Response.status(status).entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp)).build();
   }
 }

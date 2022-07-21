@@ -1,6 +1,6 @@
 package edu.utexas.tacc.tapis.apps.api.responses;
 
-import edu.utexas.tacc.tapis.apps.model.AppShareItem;
+import edu.utexas.tacc.tapis.apps.model.AppShare;
 import edu.utexas.tacc.tapis.sharedapi.responses.RespAbstract;
 
 /*
@@ -8,9 +8,9 @@ import edu.utexas.tacc.tapis.sharedapi.responses.RespAbstract;
  */
 public final class RespAppShare extends RespAbstract
 {
-  public AppShareItem result;
+  public AppShare result;
 
-  public RespAppShare(AppShareItem shItem)
+  public RespAppShare(AppShare shItem)
   {
     result = shItem;
   }

@@ -29,6 +29,7 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
+import edu.utexas.tacc.tapis.apps.model.AppShare;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
@@ -1120,17 +1121,19 @@ public class AppsServiceImpl implements AppsService
    *
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - name of app
+   * @return 
    * @return - app share information as the result
    * @throws TapisException - for Tapis related exceptions
    * @throws TapisClientException - for Tapis Client related exceptions
    * @throws NotAuthorizedException - unauthorized
    */
   @Override
-  public AppShareItem getAppShare(ResourceRequestUser rUser, String appId)
+  public AppShare getAppShare(ResourceRequestUser rUser, String appId)
           throws TapisException, TapisClientException, NotAuthorizedException
   {
-    // ---------------------------- Check inputs ------------------------------------
+ // ---------------------------- Check inputs ------------------------------------
     // Required app attributes: rUser, id
+    AppOperation op = AppOperation.read;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
@@ -1143,12 +1146,104 @@ public class AppsServiceImpl implements AppsService
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, op, appId);
 
-    // ------------------- Make Dao call to retrieve the app history -----------------------
-    AppShareItem result = new AppShareItem(true, { "jm89232" });
+    // ------------------- Make a call to retrieve the app history -----------------------
+    var appIDs = new HashSet<String>();
+    appIDs.add("testUser1");
+    appIDs.add("testUser2");
+    appIDs.add("thirdUser");
+    AppShare result = new AppShare(true, appIDs);
 
     return result;
   }
   
+  @Override
+  public void shareApp(ResourceRequestUser rUser, String appId, AppShare postShare, String rawJson)
+      throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException {
+    AppOperation op = AppOperation.modify;
+    if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+    
+    // Extract various names for convenience
+    String resourceTenantId = rUser.getOboTenantId();
+
+    if (StringUtils.isBlank(appId))
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
+
+    // App must already exist and not be deleted
+    if (!dao.checkForApp(resourceTenantId, appId, false))
+      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+
+    // ------------------------- Check authorization -------------------------
+    checkAuthOwnerUnknown(rUser, op, appId);
+
+    // ----------------- Make update --------------------
+    
+  }
+  @Override
+  public void unshareApp(ResourceRequestUser rUser, String appId, AppShare postShare, String rawJson)
+      throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException {
+    AppOperation op = AppOperation.modify;
+    if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+    
+    // Extract various names for convenience
+    String resourceTenantId = rUser.getOboTenantId();
+
+    if (StringUtils.isBlank(appId))
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
+
+    // App must already exist and not be deleted
+    if (!dao.checkForApp(resourceTenantId, appId, false))
+      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+
+    // ------------------------- Check authorization -------------------------
+    checkAuthOwnerUnknown(rUser, op, appId);
+
+    // ----------------- Make update --------------------
+    
+  }
+  @Override
+  public void shareAppPublicly(ResourceRequestUser rUser, String appId) throws TapisException,
+      NotAuthorizedException, TapisClientException, IllegalStateException {
+    AppOperation op = AppOperation.modify;
+    if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+    
+    // Extract various names for convenience
+    String resourceTenantId = rUser.getOboTenantId();
+
+    if (StringUtils.isBlank(appId))
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
+
+    // App must already exist and not be deleted
+    if (!dao.checkForApp(resourceTenantId, appId, false))
+      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+
+    // ------------------------- Check authorization -------------------------
+    checkAuthOwnerUnknown(rUser, op, appId);
+
+    // ----------------- Make update --------------------
+    
+  }
+  @Override
+  public void unshareAppPublicly(ResourceRequestUser rUser, String appId) throws TapisException,
+      NotAuthorizedException, TapisClientException, IllegalStateException {
+    AppOperation op = AppOperation.modify;
+    if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+    
+    // Extract various names for convenience
+    String resourceTenantId = rUser.getOboTenantId();
+
+    if (StringUtils.isBlank(appId))
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
+
+    // App must already exist and not be deleted
+    if (!dao.checkForApp(resourceTenantId, appId, false))
+      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+
+    // ------------------------- Check authorization -------------------------
+    checkAuthOwnerUnknown(rUser, op, appId);
+
+    // ----------------- Make update --------------------
+    
+  }
   
 
   // ************************************************************************

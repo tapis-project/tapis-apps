@@ -1249,17 +1249,6 @@ public class AppResource
 
     return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, APPLICATIONS_SVC, itemCountStr), resp1);
   }
-
-  /**
-   * Create an OK response given message and base response to put in result
-   * @param msg - message for resp.message
-   * @param resp - base response (the result)
-   * @return - Final response to return to client
-   */
-  private static Response createSuccessResponse(Status status, String msg, RespAbstract resp)
-  {
-    return Response.status(status).entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp)).build();
-  }
   
   /**
    * getHistory
@@ -1310,4 +1299,16 @@ public class AppResource
     RespAppHistory resp1 = new RespAppHistory(appHistory);
     return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, "AppHistory", appId), resp1);
   }
+  
+  /**
+   * Create an OK response given message and base response to put in result
+   * @param msg - message for resp.message
+   * @param resp - base response (the result)
+   * @return - Final response to return to client
+   */
+  private static Response createSuccessResponse(Status status, String msg, RespAbstract resp)
+  {
+    return Response.status(status).entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp)).build();
+  }
+
 }

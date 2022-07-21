@@ -1,10 +1,12 @@
 package edu.utexas.tacc.tapis.apps.model;
 
+import java.util.Set;
+
 /*
  * Apps Share
  *
  */
-public final class AppShareItem
+public final class AppShare
 {
   // ************************************************************************
   // *********************** Constants **************************************
@@ -13,8 +15,8 @@ public final class AppShareItem
   // ************************************************************************
   // *********************** Fields *****************************************
   // ************************************************************************
-  private final Boolean publicApp;
-  private final String[] userList;
+  private final boolean publicShare;
+  private final Set<String> users;
 
   // ************************************************************************
   // *********************** Constructors ***********************************
@@ -24,16 +26,16 @@ public final class AppShareItem
    * Constructor for jOOQ with input parameter matching order of columns in DB
    * Also useful for testing
    */
-  public AppShareItem(Boolean publicApp1, String[] userList1)
+  public AppShare(Boolean publicApp1, Set<String> userList1)
   {
-    publicApp = publicApp1;
-    userList = userList1;
+    publicShare = publicApp1;
+    users = userList1;
   }
 
   // ************************************************************************
   // *********************** Accessors **************************************
   // ************************************************************************
 
-  public Boolean getPublicApp() { return publicApp; }
-  public String[] getUserList() { return userList; }
+  public boolean isPublic() { return publicShare; }
+  public Set<String> getUserList() { return users; }
 }
