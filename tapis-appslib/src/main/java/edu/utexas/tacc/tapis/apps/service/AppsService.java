@@ -8,7 +8,7 @@ import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
-import edu.utexas.tacc.tapis.apps.model.AppShare;
+import edu.utexas.tacc.tapis.apps.model.AppsShare;
 
 import org.jvnet.hk2.annotations.Contract;
 
@@ -91,13 +91,13 @@ public interface AppsService
 
   //------------------- Share ---------------------------------
   // -----------------------------------------------------------------------
-  AppShare getAppShare(ResourceRequestUser rUser, String appId)
+  AppsShare getAppShare(ResourceRequestUser rUser, String appId)
       throws TapisException, TapisClientException, NotAuthorizedException;
   
-  void shareApp(ResourceRequestUser rUser, String appId, AppShare postShare, String rawJson)
+  void shareApp(ResourceRequestUser rUser, String appId, AppsShare appsShare)
       throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException;
   
-  void unshareApp(ResourceRequestUser rUser, String appId, AppShare postShare, String rawJson) 
+  void unshareApp(ResourceRequestUser rUser, String appId, AppsShare appsShare) 
       throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException;
 
   void shareAppPublicly(ResourceRequestUser rUser, String appId) 

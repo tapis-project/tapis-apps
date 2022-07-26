@@ -1,6 +1,7 @@
 package edu.utexas.tacc.tapis.apps.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +30,7 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
-import edu.utexas.tacc.tapis.apps.model.AppShare;
+import edu.utexas.tacc.tapis.apps.model.AppsShare;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
@@ -37,6 +38,10 @@ import edu.utexas.tacc.tapis.search.parser.ASTParser;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.security.client.SKClient;
+import edu.utexas.tacc.tapis.security.client.gen.model.ReqShareResource;
+import edu.utexas.tacc.tapis.security.client.gen.model.SkShare;
+import edu.utexas.tacc.tapis.security.client.model.SKShareDeleteShareParms;
+import edu.utexas.tacc.tapis.security.client.model.SKShareGetSharesParms;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
@@ -90,7 +95,14 @@ public class AppsServiceImpl implements AppsService
   private static final String nullImpersonationId = null;
   private static final String nullTargetUser = null;
   private static final Set<Permission> nullPermSet = null;
+  private static final AppsShare nullAppsShare = null;
 
+  // Sharing constants
+  private static final String OP_SHARE = "share";
+  private static final String OP_UNSHARE = "unShare";
+  private static final Set<String> publicUserSet = Collections.singleton(SKClient.PUBLIC_GRANTEE); // "~public"
+  private static final String APPS_SHR_TYPE = "apps";
+  
   // ************************************************************************
   // *********************** Enums ******************************************
   // ************************************************************************
@@ -1128,10 +1140,10 @@ public class AppsServiceImpl implements AppsService
    * @throws NotAuthorizedException - unauthorized
    */
   @Override
-  public AppShare getAppShare(ResourceRequestUser rUser, String appId)
+  public AppsShare getAppShare(ResourceRequestUser rUser, String appId)
           throws TapisException, TapisClientException, NotAuthorizedException
   {
- // ---------------------------- Check inputs ------------------------------------
+    // ---------------------------- Check inputs ------------------------------------
     // Required app attributes: rUser, id
     AppOperation op = AppOperation.read;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -1146,18 +1158,37 @@ public class AppsServiceImpl implements AppsService
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, op, appId);
 
-    // ------------------- Make a call to retrieve the app history -----------------------
-    var appIDs = new HashSet<String>();
-    appIDs.add("testUser1");
-    appIDs.add("testUser2");
-    appIDs.add("thirdUser");
-    AppShare result = new AppShare(true, appIDs);
+    // ------------------- Make a call to retrieve the app sharing -----------------------
+    // Create SKShareGetSharesParms needed for SK calls.
+    var skParms = new SKShareGetSharesParms();
+    skParms.setResourceType(APPS_SHR_TYPE);
+    skParms.setResourceId1(appId);
 
-    return result;
+    var userSet = new HashSet<String>();
+    
+    // First determine if app is publicly shared. Search for share to grantee ~public
+    skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
+    var skShares = getSKClient().getShares(skParms);
+    // Set isPublic based on result.
+    boolean isPublic = (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty());
+    // Now get all the users with whom the system has been shared
+    skParms.setGrantee(null);
+    skParms.setIncludePublicGrantees(false);
+    skShares = getSKClient().getShares(skParms);
+    if (skShares != null && skShares.getShares() != null)
+    {
+      for (SkShare skShare : skShares.getShares())
+      {
+        userSet.add(skShare.getGrantee());
+      }
+    }
+
+    var shareInfo = new AppsShare(isPublic, userSet);
+    return shareInfo;
   }
   
   @Override
-  public void shareApp(ResourceRequestUser rUser, String appId, AppShare postShare, String rawJson)
+  public void shareApp(ResourceRequestUser rUser, String appId, AppsShare postShare)
       throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException {
     AppOperation op = AppOperation.modify;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -1176,10 +1207,11 @@ public class AppsServiceImpl implements AppsService
     checkAuthOwnerUnknown(rUser, op, appId);
 
     // ----------------- Make update --------------------
+    updateUserShares(rUser, OP_SHARE, appId, postShare, false);
     
   }
   @Override
-  public void unshareApp(ResourceRequestUser rUser, String appId, AppShare postShare, String rawJson)
+  public void unshareApp(ResourceRequestUser rUser, String appId, AppsShare postShare)
       throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException {
     AppOperation op = AppOperation.modify;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -1198,6 +1230,7 @@ public class AppsServiceImpl implements AppsService
     checkAuthOwnerUnknown(rUser, op, appId);
 
     // ----------------- Make update --------------------
+    updateUserShares(rUser, OP_UNSHARE, appId, postShare, false);
     
   }
   @Override
@@ -1220,8 +1253,10 @@ public class AppsServiceImpl implements AppsService
     checkAuthOwnerUnknown(rUser, op, appId);
 
     // ----------------- Make update --------------------
+    updateUserShares(rUser, OP_SHARE, appId, nullAppsShare, true);
     
   }
+  
   @Override
   public void unshareAppPublicly(ResourceRequestUser rUser, String appId) throws TapisException,
       NotAuthorizedException, TapisClientException, IllegalStateException {
@@ -1242,6 +1277,7 @@ public class AppsServiceImpl implements AppsService
     checkAuthOwnerUnknown(rUser, op, appId);
 
     // ----------------- Make update --------------------
+    updateUserShares(rUser, OP_UNSHARE, appId, nullAppsShare, true);
     
   }
   
@@ -2087,5 +2123,80 @@ public class AppsServiceImpl implements AppsService
     if (perms.contains(Permission.MODIFY)) return isPermitted(rUser, oboTenant, oboUser, appId, Permission.MODIFY);
     if (perms.contains(Permission.READ)) return isPermittedAny(rUser, oboTenant, oboUser, appId, READMODIFY_PERMS);
     return false;
+  }
+  
+  /*
+   * Common routine to update share/unshare for a list of users.
+   * Can be used to mark a system publicly shared with all users in tenant including "~public" in the set of users.
+   * 
+   * @param rUser - Resource request user
+   * @param shareOpName - Operation type: share/unshare
+   * @param appId - App ID
+   * @param  appShare - App share object
+   * @param isPublic - Indicates if the sharing operation is public
+   * @throws TapisClientException - for Tapis client exception
+   * @throws TapisException - for Tapis exception
+   */
+  private void updateUserShares(ResourceRequestUser rUser, String shareOpName, String appId, AppsShare appsystemShare, boolean isPublic) 
+      throws TapisClientException, TapisException
+  {
+    AppOperation op = AppOperation.modify;
+    // ---------------------------- Check inputs ------------------------------------
+    if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+    if (StringUtils.isBlank(appId))
+      throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
+    
+    Set<String> userList;
+    if (!isPublic) {
+      // if is not public update userList must have items
+      if (appsystemShare == null || appsystemShare.getUserList() ==null || appsystemShare.getUserList().isEmpty())
+          throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_USER_LIST", rUser));
+      userList = appsystemShare.getUserList();
+    } else {
+      userList = publicUserSet; // "~public"
+    }
+
+    String oboTenantId = rUser.getOboTenantId();
+
+    // We need owner to check auth and if app not there cannot find owner, so
+    // if app does not exist then return null
+    if (!dao.checkForApp(oboTenantId, appId, true))
+      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+
+    // ------------------------- Check authorization -------------------------
+    checkAuthOwnerUnknown(rUser, op, appId);
+    
+    switch (shareOpName)
+    {
+      case OP_SHARE ->
+      {
+        // Create request object needed for SK calls.
+        var reqShareResource = new ReqShareResource();
+        reqShareResource.setResourceType(APPS_SHR_TYPE);
+        reqShareResource.setResourceId1(appId);
+        reqShareResource.setGrantor(rUser.getOboUserId());
+        reqShareResource.setPrivilege(Permission.READ.name());
+    
+        for (String userName : userList)
+        {
+          reqShareResource.setGrantee(userName);
+          getSKClient().shareResource(reqShareResource);
+        }
+      }
+      case OP_UNSHARE ->
+      {
+        // Create object needed for SK calls.
+        SKShareDeleteShareParms deleteShareParms = new SKShareDeleteShareParms();
+        deleteShareParms.setResourceType(APPS_SHR_TYPE);
+        deleteShareParms.setResourceId1(appId);
+        deleteShareParms.setPrivilege(Permission.READ.name());
+        
+        for (String userName : userList)
+        {
+          deleteShareParms.setGrantee(userName);
+          getSKClient().deleteShare(deleteShareParms);
+        }
+      }
+    }
   }
 }
