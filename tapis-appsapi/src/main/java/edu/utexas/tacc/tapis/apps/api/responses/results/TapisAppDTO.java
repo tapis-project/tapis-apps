@@ -16,6 +16,7 @@ import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 
 import static edu.utexas.tacc.tapis.apps.api.resources.AppResource.SUMMARY_ATTRS;
 import static edu.utexas.tacc.tapis.apps.model.App.DELETED_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.SHAREDAPPCTX_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.TENANT_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.ID_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.VERSION_FIELD;
@@ -62,6 +63,7 @@ public final class TapisAppDTO
   public JobAttributes jobAttributes;
   public String[] tags;
   public Object notes;
+  public boolean sharedAppCtx;
   public UUID uuid;
   public boolean deleted;
   public Instant created;
@@ -87,6 +89,7 @@ public final class TapisAppDTO
     jobAttributes = new JobAttributes(a);
     tags = a.getTags();
     notes = a.getNotes();
+    sharedAppCtx = a.getSharedAppCtx();
     uuid = a.getUuid();
     deleted = a.isDeleted();
     created = a.getCreated();
@@ -179,6 +182,7 @@ public final class TapisAppDTO
         jsonStr = gson.toJson(notes);
         jsonObject.add(NOTES_FIELD, gson.fromJson(jsonStr, JsonObject.class));
       }
+      case SHAREDAPPCTX_FIELD -> jsonObject.addProperty(SHAREDAPPCTX_FIELD, Boolean.toString(sharedAppCtx));
       case UUID_FIELD -> jsonObject.addProperty(UUID_FIELD, uuid.toString());
       case DELETED_FIELD -> jsonObject.addProperty(DELETED_FIELD, Boolean.toString(deleted));
       case CREATED_FIELD -> jsonObject.addProperty(CREATED_FIELD, created.toString());
