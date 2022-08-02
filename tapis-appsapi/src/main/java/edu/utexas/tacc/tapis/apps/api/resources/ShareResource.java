@@ -69,8 +69,6 @@ public class ShareResource {
   // Local logger.
   private static final Logger _log = LoggerFactory.getLogger(ShareResource.class);
 
-  private static final String APPLICATIONS_SVC = StringUtils.capitalize(TapisConstants.SERVICE_NAME_APPS);
-
   //Json schema resource files.
   private static final String SHARE_APPS_REQUEST = "/edu/utexas/tacc/tapis/apps/api/jsonschema/ShareAppsRequest.json";
   
