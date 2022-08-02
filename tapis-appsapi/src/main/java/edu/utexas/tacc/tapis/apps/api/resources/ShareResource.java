@@ -37,7 +37,7 @@ import com.google.gson.JsonSyntaxException;
 
 import edu.utexas.tacc.tapis.apps.api.responses.RespAppsShare;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
-import edu.utexas.tacc.tapis.apps.model.AppsShare;
+import edu.utexas.tacc.tapis.apps.model.AppShare;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisJSONException;
@@ -134,7 +134,7 @@ public class ShareResource {
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     //RespAbstract resp1;
-    AppsShare appShare;
+    AppShare appShare;
     
     try
     {
@@ -208,8 +208,8 @@ public class ShareResource {
 
     
     // ------------------------- Create a AppsShare from the json and validate constraints -------------------------
-    AppsShare appsShare;
-    try { appsShare = TapisGsonUtils.getGson().fromJson(rawJson, AppsShare.class); }
+    AppShare appsShare;
+    try { appsShare = TapisGsonUtils.getGson().fromJson(rawJson, AppShare.class); }
     catch (JsonSyntaxException e)
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
@@ -290,8 +290,8 @@ public class ShareResource {
 
     
     // ------------------------- Create a AppsShare from the json and validate constraints -------------------------
-    AppsShare appsShare;
-    try { appsShare = TapisGsonUtils.getGson().fromJson(rawJson, AppsShare.class); }
+    AppShare appsShare;
+    try { appsShare = TapisGsonUtils.getGson().fromJson(rawJson, AppShare.class); }
     catch (JsonSyntaxException e)
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());

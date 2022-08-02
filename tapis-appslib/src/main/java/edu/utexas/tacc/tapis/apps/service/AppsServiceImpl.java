@@ -30,7 +30,7 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
-import edu.utexas.tacc.tapis.apps.model.AppsShare;
+import edu.utexas.tacc.tapis.apps.model.AppShare;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
@@ -95,7 +95,7 @@ public class AppsServiceImpl implements AppsService
   private static final String nullImpersonationId = null;
   private static final String nullTargetUser = null;
   private static final Set<Permission> nullPermSet = null;
-  private static final AppsShare nullAppsShare = null;
+  private static final AppShare nullAppsShare = null;
 
   // Sharing constants
   private static final String OP_SHARE = "share";
@@ -1097,7 +1097,7 @@ public class AppsServiceImpl implements AppsService
    *
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - name of app
-   * @return - System history list as the result
+   * @return - App history list as the result
    * @throws TapisException - for Tapis related exceptions
    * @throws TapisClientException - for Tapis Client related exceptions
    * @throws NotAuthorizedException - unauthorized
@@ -1140,7 +1140,7 @@ public class AppsServiceImpl implements AppsService
    * @throws NotAuthorizedException - unauthorized
    */
   @Override
-  public AppsShare getAppShare(ResourceRequestUser rUser, String appId)
+  public AppShare getAppShare(ResourceRequestUser rUser, String appId)
           throws TapisException, TapisClientException, NotAuthorizedException
   {
     // ---------------------------- Check inputs ------------------------------------
@@ -1168,13 +1168,13 @@ public class AppsServiceImpl implements AppsService
     
     // First determine if app is publicly shared. Search for share to grantee ~public
     skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
-    var skShares = getSKClient().getShares(skParms);
+    var skShares = getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).getShares(skParms);
     // Set isPublic based on result.
     boolean isPublic = (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty());
     // Now get all the users with whom the system has been shared
     skParms.setGrantee(null);
     skParms.setIncludePublicGrantees(false);
-    skShares = getSKClient().getShares(skParms);
+    skShares = getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).getShares(skParms);
     if (skShares != null && skShares.getShares() != null)
     {
       for (SkShare skShare : skShares.getShares())
@@ -1183,12 +1183,12 @@ public class AppsServiceImpl implements AppsService
       }
     }
 
-    var shareInfo = new AppsShare(isPublic, userSet);
+    var shareInfo = new AppShare(isPublic, userSet);
     return shareInfo;
   }
   
   @Override
-  public void shareApp(ResourceRequestUser rUser, String appId, AppsShare postShare)
+  public void shareApp(ResourceRequestUser rUser, String appId, AppShare postShare)
       throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException {
     AppOperation op = AppOperation.modify;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -1211,7 +1211,7 @@ public class AppsServiceImpl implements AppsService
     
   }
   @Override
-  public void unshareApp(ResourceRequestUser rUser, String appId, AppsShare postShare)
+  public void unshareApp(ResourceRequestUser rUser, String appId, AppShare postShare)
       throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException {
     AppOperation op = AppOperation.modify;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -1361,6 +1361,25 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
+   * Get Security Kernel client with oboUser and oboTenant set as given.
+   * Need to use serviceClients.getClient() every time because it checks for expired service jwt token and
+   *   refreshes it as needed.
+   * @param oboUser - obo user
+   * @param oboTenant - obo tenant
+   * @return SK client
+   * @throws TapisException - for Tapis related exceptions
+   */
+  private SKClient getSKClient(String oboUser, String oboTenant) throws TapisException
+  {
+    try { return serviceClients.getClient(oboUser, oboTenant, SKClient.class); }
+    catch (Exception e)
+    {
+      String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY, oboTenant, oboUser);
+      throw new TapisException(msg, e);
+    }
+  }
+  
+  /**
    * Get Security Kernel client.
    * Need to use serviceClients.getClient() every time because it checks for expired service jwt token and
    *   refreshes it as needed.
@@ -1372,12 +1391,8 @@ public class AppsServiceImpl implements AppsService
   {
     String oboTenant = getServiceTenantId();
     String oboUser = getServiceUserId();
-    try { return serviceClients.getClient(oboUser, oboTenant, SKClient.class); }
-    catch (Exception e)
-    {
-      String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY, oboTenant, oboUser);
-      throw new TapisException(msg, e);
-    }
+    
+    return getSKClient(oboUser, oboTenant);
   }
 
   /**
@@ -2137,7 +2152,7 @@ public class AppsServiceImpl implements AppsService
    * @throws TapisClientException - for Tapis client exception
    * @throws TapisException - for Tapis exception
    */
-  private void updateUserShares(ResourceRequestUser rUser, String shareOpName, String appId, AppsShare appsystemShare, boolean isPublic) 
+  private void updateUserShares(ResourceRequestUser rUser, String shareOpName, String appId, AppShare appShare, boolean isPublic) 
       throws TapisClientException, TapisException
   {
     AppOperation op = AppOperation.modify;
@@ -2149,9 +2164,9 @@ public class AppsServiceImpl implements AppsService
     Set<String> userList;
     if (!isPublic) {
       // if is not public update userList must have items
-      if (appsystemShare == null || appsystemShare.getUserList() ==null || appsystemShare.getUserList().isEmpty())
+      if (appShare == null || appShare.getUserList() ==null || appShare.getUserList().isEmpty())
           throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_USER_LIST", rUser));
-      userList = appsystemShare.getUserList();
+      userList = appShare.getUserList();
     } else {
       userList = publicUserSet; // "~public"
     }
@@ -2180,7 +2195,7 @@ public class AppsServiceImpl implements AppsService
         for (String userName : userList)
         {
           reqShareResource.setGrantee(userName);
-          getSKClient().shareResource(reqShareResource);
+          getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).shareResource(reqShareResource);
         }
       }
       case OP_UNSHARE ->
@@ -2194,7 +2209,7 @@ public class AppsServiceImpl implements AppsService
         for (String userName : userList)
         {
           deleteShareParms.setGrantee(userName);
-          getSKClient().deleteShare(deleteShareParms);
+          getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).deleteShare(deleteShareParms);
         }
       }
     }

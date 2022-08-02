@@ -6,7 +6,7 @@ import java.util.Set;
  * Apps Share
  *
  */
-public final class AppsShare
+public final class AppShare
 {
 
   // ************************************************************************
@@ -24,7 +24,7 @@ public final class AppsShare
    * Constructor for jOOQ with input parameter matching order of columns in DB
    * Also useful for testing
    */
-  public AppsShare(boolean publicShare1, Set<String> sysIDs1)
+  public AppShare(boolean publicShare1, Set<String> sysIDs1)
   {
     publicShare = publicShare1;
     users = sysIDs1;
