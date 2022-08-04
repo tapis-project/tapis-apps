@@ -677,8 +677,11 @@ public class AppsServiceImpl implements AppsService
     }
 
     // TODO Check for shared app
+    // TODO remove hard coded value
+    boolean sharedAppCtx = false;
+
     String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
-    boolean sharedAppCtx = checkForSharedApp(rUser, appId, oboOrImpersonatedUser);
+//TODO    boolean sharedAppCtx = checkForSharedApp(rUser, appId, oboOrImpersonatedUser);
 /* TODO
      // Create SKShareGetSharesParms needed for SK calls.
     var skParms = new SKShareGetSharesParms();
