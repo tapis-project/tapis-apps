@@ -666,15 +666,62 @@ public class AppsServiceImpl implements AppsService
     // If impersonationId supplied confirm that it is allowed
     if (!StringUtils.isBlank(impersonationId)) checkImpersonationAllowed(rUser, op, appId, impersonationId);
 
-    checkAuth(rUser, op, appId, nullOwner, impersonationId, nullTargetUser, nullPermSet);
+    boolean isPermitted = true;
+    try
+    {
+      checkAuth(rUser, op, appId, nullOwner, impersonationId, nullTargetUser, nullPermSet);
+    }
+    catch (NotAuthorizedException e)
+    {
+      isPermitted = false;
+    }
+
+    // TODO Check for shared app
+    String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
+    boolean sharedAppCtx = checkForSharedApp(rUser, appId, oboOrImpersonatedUser);
+/* TODO
+     // Create SKShareGetSharesParms needed for SK calls.
+    var skParms = new SKShareGetSharesParms();
+    skParms.setResourceType(APPS_SHR_TYPE);
+    skParms.setResourceId1(appId);
+
+    var userSet = new HashSet<String>();
+
+    // First determine if app is publicly shared. Search for share to grantee ~public
+    skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
+    var skShares = getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).getShares(skParms);
+    // Set isPublic based on result.
+    boolean isPublic = (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty());
+    // Now get all the users with whom the system has been shared
+    skParms.setGrantee(null);
+    skParms.setIncludePublicGrantees(false);
+    skShares = getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).getShares(skParms);
+    if (skShares != null && skShares.getShares() != null)
+    {
+      for (SkShare skShare : skShares.getShares())
+      {
+        userSet.add(skShare.getGrantee());
+      }
+    }
+
+    var shareInfo = new AppShare(isPublic, userSet);
+    return shareInfo;
+*/
+
+    if (!isPermitted && !sharedAppCtx)
+    {
+      throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()), NO_CHALLENGE);
+    }
 
     // If flag is set to also require EXECUTE perm then make a special auth call to make sure user has exec perm
-    if (requireExecPerm)
+    if (requireExecPerm && !sharedAppCtx)
     {
       checkAuthOboUser(rUser, AppOperation.execute, appId, nullOwner, impersonationId, nullTargetUser, nullPermSet);
     }
 
     App result = dao.getApp(resourceTenantId, appId, appVersion);
+    // Set sharedAppCtx
+    result.setSharedAppCtx(sharedAppCtx);
     return result;
   }
 

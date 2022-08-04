@@ -16,6 +16,7 @@ import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 
 import static edu.utexas.tacc.tapis.apps.api.resources.AppResource.SUMMARY_ATTRS;
 import static edu.utexas.tacc.tapis.apps.model.App.DELETED_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.SHARED_APP_CTX_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.TENANT_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.ID_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.VERSION_FIELD;
@@ -43,6 +44,8 @@ import static edu.utexas.tacc.tapis.apps.model.App.UPDATED_FIELD;
 public final class TapisAppDTO
 {
   private static final Gson gson = TapisGsonUtils.getGson();
+
+  public boolean sharedAppCtx;
 
   public String tenant;
   public String id;
@@ -95,6 +98,7 @@ public final class TapisAppDTO
     //   As requested by Jobs service.
     if (maxJobs < 0) maxJobs = Integer.MAX_VALUE;
     if (maxJobsPerUser < 0) maxJobsPerUser = Integer.MAX_VALUE;
+    sharedAppCtx = a.getSharedAppCtx();
   }
 
   /**
@@ -183,6 +187,7 @@ public final class TapisAppDTO
       case DELETED_FIELD -> jsonObject.addProperty(DELETED_FIELD, Boolean.toString(deleted));
       case CREATED_FIELD -> jsonObject.addProperty(CREATED_FIELD, created.toString());
       case UPDATED_FIELD -> jsonObject.addProperty(UPDATED_FIELD, updated.toString());
+      case SHARED_APP_CTX_FIELD -> jsonObject.addProperty(SHARED_APP_CTX_FIELD, Boolean.toString(sharedAppCtx));
     }
   }
 }

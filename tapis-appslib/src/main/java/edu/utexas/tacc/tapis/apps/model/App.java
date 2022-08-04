@@ -115,6 +115,7 @@ public final class App
   public static final String DELETED_FIELD = "deleted";
   public static final String CREATED_FIELD = "created";
   public static final String UPDATED_FIELD = "updated";
+  public static final String SHARED_APP_CTX_FIELD = "sharedAppCtx";
 
   // Message keys
   private static final String CREATE_MISSING_ATTR = "APPLIB_CREATE_MISSING_ATTR";
@@ -161,6 +162,8 @@ public final class App
   // ************************************************************************
   // *********************** Fields *****************************************
   // ************************************************************************
+
+  private boolean sharedAppCtx;
 
   // NOTE: In order to use jersey's SelectableEntityFilteringFeature fields cannot be final.
   // === Start fields in table apps =============================================
@@ -829,4 +832,7 @@ public final class App
   public void setUuid(UUID u) { uuid = u;  }
 
   public boolean isDeleted() { return deleted; }
+
+  public boolean getSharedAppCtx() { return sharedAppCtx; }
+  public void setSharedAppCtx(boolean b) { sharedAppCtx = b;  }
 }
