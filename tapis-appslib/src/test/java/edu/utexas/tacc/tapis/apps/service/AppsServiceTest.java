@@ -1364,6 +1364,7 @@ public class AppsServiceTest
     Assert.assertTrue(tmpObj.has("testdata"));
     String testdataStr = origNotes.get("testdata").getAsString();
     Assert.assertEquals(tmpObj.get("testdata").getAsString(), testdataStr);
+    Assert.assertEquals(app0.getSharedAppCtx(), false);
   }
   // Test retrieving an app.
   @Test
@@ -1405,13 +1406,12 @@ public class AppsServiceTest
     
     //  Create an AppShare from the json
     AppShare appShare;
-    String TestUserName = "0-create1";
-    String rawDataShare = "{\"users\": [\"" + TestUserName + "\"]}";
+    String rawDataShare = "{\"users\": [\"" + testUser6 + "\"]}";
     Set<String> testUserList = new HashSet<String>(1);
-    testUserList.add(TestUserName);
+    testUserList.add(testUser6);
     appShare = TapisGsonUtils.getGson().fromJson(rawDataShare, AppShare.class);
    
-   
+    // **************************  Sharing app  ***************************
     // Service call
     svc.shareApp(rUser6, app0.getId(), appShare);
    
@@ -1422,14 +1422,17 @@ public class AppsServiceTest
     // Verify app share fields
 
     Assert.assertNotNull(appShareTest, "App Share information found.");
-    Assert.assertEquals(appShareTest.getUserList(), testUserList);
     // Retrieve users, test user is on the list
     boolean userFound = false;
     for (var user : appShareTest.getUserList()) {
-      if (user.equals(TestUserName)) { userFound = true; }
+      if (user.equals(testUser6)) { userFound = true; }
       System.out.printf("userName: %s%n", user);
     }
-    Assert.assertTrue(userFound);  
+    Assert.assertTrue(userFound);
+    
+    // Verify shared app context
+    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), true, null);
+    Assert.assertTrue(app0.getSharedAppCtx());
    
     // **************************  Unsharing app  ***************************
    
@@ -1446,10 +1449,14 @@ public class AppsServiceTest
     // Retrieve users, test user is not on the list
     userFound = false;
     for (var user : appShareTest.getUserList()) {
-      if (user.equals(TestUserName)) { userFound = true; }
+      if (user.equals(testUser6)) { userFound = true; }
       System.out.printf("userName: %s%n", user);
     }
-    Assert.assertFalse(userFound);  
+    Assert.assertFalse(userFound);
+    
+    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), true, null);
+    Assert.assertFalse(app0.getSharedAppCtx());
+    
     // **************************  Sharing app publicly  ***************************
     
     // Service call
@@ -1463,6 +1470,10 @@ public class AppsServiceTest
 
     Assert.assertNotNull(appShareTest, "App Share information found.");
     Assert.assertTrue(appShareTest.isPublic());
+    
+    // Verify shared app context
+    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), true, null);
+    Assert.assertTrue(app0.getSharedAppCtx());
    
     // **************************  Unsharing app publicly  ***************************
     // Service call
@@ -1477,5 +1488,9 @@ public class AppsServiceTest
     Assert.assertNotNull(appShareTest, "App Share information found.");
     // TODO: assert to False after implementing new SKClient changes
     Assert.assertFalse(appShareTest.isPublic());
+    
+    // Verify shared app context
+    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), true, null);
+    Assert.assertFalse(app0.getSharedAppCtx());
   }
 }

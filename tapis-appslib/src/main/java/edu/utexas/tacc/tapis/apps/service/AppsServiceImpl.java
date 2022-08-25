@@ -665,6 +665,7 @@ public class AppsServiceImpl implements AppsService
     // ------------------------- Check authorization -------------------------
     // If impersonationId supplied confirm that it is allowed
     if (!StringUtils.isBlank(impersonationId)) checkImpersonationAllowed(rUser, op, appId, impersonationId);
+    String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
 
     boolean isPermitted = true;
     try
@@ -675,41 +676,9 @@ public class AppsServiceImpl implements AppsService
     {
       isPermitted = false;
     }
-
-    // TODO Check for shared app
-    // TODO remove hard coded value
-    boolean sharedAppCtx = false;
-
-    String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
-//TODO    boolean sharedAppCtx = checkForSharedApp(rUser, appId, oboOrImpersonatedUser);
-/* TODO
-     // Create SKShareGetSharesParms needed for SK calls.
-    var skParms = new SKShareGetSharesParms();
-    skParms.setResourceType(APPS_SHR_TYPE);
-    skParms.setResourceId1(appId);
-
-    var userSet = new HashSet<String>();
-
-    // First determine if app is publicly shared. Search for share to grantee ~public
-    skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
-    var skShares = getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).getShares(skParms);
-    // Set isPublic based on result.
-    boolean isPublic = (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty());
-    // Now get all the users with whom the system has been shared
-    skParms.setGrantee(null);
-    skParms.setIncludePublicGrantees(false);
-    skShares = getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).getShares(skParms);
-    if (skShares != null && skShares.getShares() != null)
-    {
-      for (SkShare skShare : skShares.getShares())
-      {
-        userSet.add(skShare.getGrantee());
-      }
-    }
-
-    var shareInfo = new AppShare(isPublic, userSet);
-    return shareInfo;
-*/
+    
+    // Check shared app context
+    boolean sharedAppCtx = checkForSharedApp(rUser, appId, oboOrImpersonatedUser);
 
     if (!isPermitted && !sharedAppCtx)
     {
@@ -728,6 +697,41 @@ public class AppsServiceImpl implements AppsService
     return result;
   }
 
+  /**
+   * Check for shared app status
+   * 
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param appId - Name of the app
+   * @param oboOrImpersonatedUser - User Id, whether impersonated or OBO user
+   * @return - Boolean value that indicates if app is shared to oboOrImpersonatedUser
+   * @throws TapisClientException
+   * @throws TapisException
+   */
+  private boolean checkForSharedApp(ResourceRequestUser rUser, String appId, String oboOrImpersonatedUser) throws TapisClientException, TapisException {
+     // Create SKShareGetSharesParms needed for SK calls.
+     var skParms = new SKShareGetSharesParms();
+     skParms.setResourceType(APPS_SHR_TYPE);
+     skParms.setResourceId1(appId);
+  
+     // First determine if app is publicly shared. Search for share to grantee ~public
+     skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
+     var skShares = getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).getShares(skParms);
+     // Set isPublic based on result.
+     if (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty()) {
+       // Returns true if the app is publicly shared
+       return true;
+     }
+     // If the app is not publicly shared, get all particular the users with whom the system has been shared
+     skParms.setGrantee(oboOrImpersonatedUser);
+     skParms.setIncludePublicGrantees(false);
+     skShares = getSKClient(oboOrImpersonatedUser, rUser.getOboTenantId()).getShares(skParms);
+     if (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty()) {
+       return true;
+     } 
+     
+     return false;
+  }
+  
   /**
    * Get count of all apps matching certain criteria and for which user has READ permission
    * @param rUser - ResourceRequestUser containing tenant, user and request info
