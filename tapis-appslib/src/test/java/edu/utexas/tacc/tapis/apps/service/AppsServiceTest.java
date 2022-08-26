@@ -7,6 +7,7 @@ import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
+import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
@@ -25,6 +26,7 @@ import org.testng.annotations.Test;
 
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
+import edu.utexas.tacc.tapis.apps.model.AppShare;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
@@ -58,7 +60,7 @@ public class AppsServiceTest
 {
   private AppsService svc;
   private AppsServiceImpl svcImpl;
-  private ResourceRequestUser rUser0, rUser1, rUser2, rUser3, rUser4, rUser5, rAdminUser, rFilesSvc, rJobsSvc;
+  private ResourceRequestUser rUser0, rUser1, rUser2, rUser3, rUser4, rUser5, rUser6, rAdminUser, rFilesSvc, rJobsSvc;
   // Test data
   private static final String testKey = "Svc";
   // Special case IDs that have caused problems.
@@ -74,6 +76,7 @@ public class AppsServiceTest
   private static final String testUser3 = "testuser3";
   private static final String testUser4 = "testuser4";
   private static final String testUser5 = "testuser5";
+  private static final String testUser6 = "testuser6";
   private static final Set<Permission> testPermsALL = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY, Permission.EXECUTE));
   private static final Set<Permission> testPermsREADMODIFY = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY));
   private static final Set<Permission> testPermsREADEXECUTE = new HashSet<>(Set.of(Permission.READ, Permission.EXECUTE));
@@ -81,7 +84,7 @@ public class AppsServiceTest
   private static final Set<Permission> testPermsMODIFY = new HashSet<>(Set.of(Permission.MODIFY));
 
   // Create test app definitions in memory
-  int numApps = 28;
+  int numApps = 29;
   App[] apps = IntegrationUtils.makeApps(numApps, testKey);
 
   @BeforeSuite
@@ -130,6 +133,8 @@ public class AppsServiceTest
                                       null, testUser4, tenantName, null, null, null));
     rUser5 = new ResourceRequestUser(new AuthenticatedUser(testUser5, tenantName, TapisThreadContext.AccountType.user.name(),
                                       null, testUser5, tenantName, null, null, null));
+    rUser6 = new ResourceRequestUser(new AuthenticatedUser(testUser6, tenantName, TapisThreadContext.AccountType.user.name(),
+                                    null, testUser6, tenantName, null, null, null));
 
     // Cleanup anything leftover from previous failed run
     tearDown();
@@ -1359,6 +1364,7 @@ public class AppsServiceTest
     Assert.assertTrue(tmpObj.has("testdata"));
     String testdataStr = origNotes.get("testdata").getAsString();
     Assert.assertEquals(tmpObj.get("testdata").getAsString(), testdataStr);
+    Assert.assertEquals(app0.getSharedAppCtx(), false);
   }
   // Test retrieving an app.
   @Test
@@ -1385,5 +1391,106 @@ public class AppsServiceTest
       Assert.assertNotNull(item.getDescription(), "Fetched Json should not be null");
       Assert.assertNotNull(item.getCreated(), "Fetched created timestamp should not be null");
     }
+  }
+  
+  // Test retrieving app sharing information
+  @Test
+  public void tesShareApp() throws Exception
+  { 
+    // **************************  Create and share app  ***************************
+    
+    App app0 = apps[28];
+    app0.setOwner(rUser6.getOboUserId());
+    svc.createApp(rUser6, app0, scrubbedJson);
+    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), false, null);
+    
+    //  Create an AppShare from the json
+    AppShare appShare;
+    String rawDataShare = "{\"users\": [\"" + testUser6 + "\"]}";
+    Set<String> testUserList = new HashSet<String>(1);
+    testUserList.add(testUser6);
+    appShare = TapisGsonUtils.getGson().fromJson(rawDataShare, AppShare.class);
+   
+    // **************************  Sharing app  ***************************
+    // Service call
+    svc.shareApp(rUser6, app0.getId(), appShare);
+   
+    // Test retrieval using specified authn method
+    AppShare appShareTest = svc.getAppShare(rUser6, app0.getId());
+   
+    System.out.println("Found item: " + app0.getId());
+    // Verify app share fields
+
+    Assert.assertNotNull(appShareTest, "App Share information found.");
+    // Retrieve users, test user is on the list
+    boolean userFound = false;
+    for (var user : appShareTest.getUserList()) {
+      if (user.equals(testUser6)) { userFound = true; }
+      System.out.printf("userName: %s%n", user);
+    }
+    Assert.assertTrue(userFound);
+    
+    // Verify shared app context
+    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), true, null);
+    Assert.assertTrue(app0.getSharedAppCtx());
+   
+    // **************************  Unsharing app  ***************************
+   
+    // Service call
+    svc.unshareApp(rUser6, app0.getId(), appShare);
+   
+    // Test retrieval using specified authn method
+    appShareTest = svc.getAppShare(rUser6, app0.getId());
+   
+    System.out.println("Found item: " + app0.getId());
+    // Verify app share fields
+
+    Assert.assertNotNull(appShareTest, "App Share information found.");
+    // Retrieve users, test user is not on the list
+    userFound = false;
+    for (var user : appShareTest.getUserList()) {
+      if (user.equals(testUser6)) { userFound = true; }
+      System.out.printf("userName: %s%n", user);
+    }
+    Assert.assertFalse(userFound);
+    
+    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), true, null);
+    Assert.assertFalse(app0.getSharedAppCtx());
+    
+    // **************************  Sharing app publicly  ***************************
+    
+    // Service call
+    svc.shareAppPublicly(rUser6, app0.getId());
+    
+    // Test retrieval using specified authn method
+    appShareTest = svc.getAppShare(rUser6, app0.getId());
+    
+    System.out.println("Found item: " + app0.getId());
+    // Verify app share fields
+
+    Assert.assertNotNull(appShareTest, "App Share information found.");
+    Assert.assertTrue(appShareTest.isPublic());
+    
+    // Verify shared app context
+    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), true, null);
+    Assert.assertTrue(app0.getSharedAppCtx());
+   
+    // **************************  Unsharing app publicly  ***************************
+    // Service call
+    svc.unshareAppPublicly(rUser6, app0.getId());
+   
+    // Test retrieval using specified authn method
+    appShareTest = svc.getAppShare(rUser6, app0.getId());
+   
+    System.out.println("Found item: " + app0.getId());
+    // Verify app share fields
+
+    Assert.assertNotNull(appShareTest, "App Share information found.");
+    // TODO: assert to False after implementing new SKClient changes
+    Assert.assertFalse(appShareTest.isPublic());
+    
+    // Verify shared app context
+    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), true, null);
+    Assert.assertFalse(app0.getSharedAppCtx());
   }
 }

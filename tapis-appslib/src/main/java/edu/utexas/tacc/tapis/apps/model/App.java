@@ -117,6 +117,7 @@ public final class App
   public static final String DELETED_FIELD = "deleted";
   public static final String CREATED_FIELD = "created";
   public static final String UPDATED_FIELD = "updated";
+  public static final String SHARED_APP_CTX_FIELD = "sharedAppCtx";
 
   // Message keys
   private static final String CREATE_MISSING_ATTR = "APPLIB_CREATE_MISSING_ATTR";
@@ -163,6 +164,8 @@ public final class App
   // ************************************************************************
   // *********************** Fields *****************************************
   // ************************************************************************
+
+  private boolean sharedAppCtx = DEFAULT_SHARED_APP_CTX; // Indicates app accessible due to having been shared with requesting user.
 
   // NOTE: In order to use jersey's SelectableEntityFilteringFeature fields cannot be final.
   // === Start fields in table apps =============================================
@@ -214,7 +217,6 @@ public final class App
   // === End jobAttributes ==========
   private String[] tags;       // List of arbitrary tags as strings
   private Object notes;      // Simple metadata as json
-  private boolean sharedAppCtx = DEFAULT_SHARED_APP_CTX; // Indicates app accessible due to having been shared with requesting user.
   private UUID uuid;
   private Instant created; // UTC time for when record was created
   private Instant updated; // UTC time for when record was last updated
@@ -830,11 +832,11 @@ public final class App
   public Object getNotes() { return notes; }
   public void setNotes(Object n) { notes = n;  }
 
-  public boolean getSharedAppCtx() { return sharedAppCtx; }
-  public void setSharedAppCtx(boolean b) { sharedAppCtx = b;  }
-
   public UUID getUuid() { return uuid; }
   public void setUuid(UUID u) { uuid = u;  }
 
   public boolean isDeleted() { return deleted; }
+
+  public boolean getSharedAppCtx() { return sharedAppCtx; }
+  public void setSharedAppCtx(boolean b) { sharedAppCtx = b;  }
 }

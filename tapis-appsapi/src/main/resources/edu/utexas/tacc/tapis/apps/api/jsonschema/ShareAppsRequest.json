@@ -1,0 +1,18 @@
+{
+  "$id": "https://tapis.tacc.utexas.edu/ShareAppsRequest",
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "description": "Schema for a request to create or update share system information",
+
+  "type": "object",
+  "required": [ "users" ],
+  "additionalProperties": false,
+  "properties": {
+    "users": {
+      "type": "array",
+      "items": { 
+      	"$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/UserName",
+      	"minItems": 1
+      }
+    }
+  }
+}
