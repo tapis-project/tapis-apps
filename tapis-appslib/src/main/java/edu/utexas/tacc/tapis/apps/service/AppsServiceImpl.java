@@ -1216,6 +1216,7 @@ public class AppsServiceImpl implements AppsService
     // Create SKShareGetSharesParms needed for SK calls.
     var skParms = new SKShareGetSharesParms();
     skParms.setResourceType(APPS_SHR_TYPE);
+    skParms.setTenant(oboTenantId);
     skParms.setResourceId1(appId);
 
     var userSet = new HashSet<String>();
@@ -2242,6 +2243,7 @@ public class AppsServiceImpl implements AppsService
         // Create request object needed for SK calls.
         var reqShareResource = new ReqShareResource();
         reqShareResource.setResourceType(APPS_SHR_TYPE);
+        reqShareResource.setTenant(oboTenantId);
         reqShareResource.setResourceId1(appId);
         reqShareResource.setGrantor(rUser.getOboUserId());
         reqShareResource.setPrivilege(Permission.READ.name());
@@ -2257,6 +2259,7 @@ public class AppsServiceImpl implements AppsService
         // Create object needed for SK calls.
         SKShareDeleteShareParms deleteShareParms = new SKShareDeleteShareParms();
         deleteShareParms.setResourceType(APPS_SHR_TYPE);
+        deleteShareParms.setTenant(oboTenantId);
         deleteShareParms.setResourceId1(appId);
         deleteShareParms.setPrivilege(Permission.READ.name());
         
