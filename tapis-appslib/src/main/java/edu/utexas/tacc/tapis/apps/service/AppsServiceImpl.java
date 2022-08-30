@@ -725,7 +725,7 @@ public class AppsServiceImpl implements AppsService
      // If the app is not publicly shared, get all particular the users with whom the system has been shared
      skParms.setGrantee(oboOrImpersonatedUser);
      skParms.setIncludePublicGrantees(false);
-     skShares = getSKClient(oboOrImpersonatedUser, rUser.getOboTenantId()).getShares(skParms);
+     skShares = getSKClient().getShares(skParms);
      if (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty()) {
        return true;
      } 
@@ -1436,8 +1436,6 @@ public class AppsServiceImpl implements AppsService
       String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY, oboTenant, oboUser);
       throw new TapisException(msg, e);
     }
-    
-    return getSKClient(oboUser, oboTenant);
   }
 
   /**
@@ -2253,6 +2251,7 @@ public class AppsServiceImpl implements AppsService
         deleteShareParms.setTenant(rUser.getOboTenantId());
         deleteShareParms.setTenant(oboTenantId);
         deleteShareParms.setResourceId1(appId);
+        deleteShareParms.setGrantor(rUser.getOboUserId());
         deleteShareParms.setPrivilege(Permission.READ.name());
         
         for (String userName : userList)
