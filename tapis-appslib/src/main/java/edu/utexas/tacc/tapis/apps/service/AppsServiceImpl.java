@@ -711,11 +711,12 @@ public class AppsServiceImpl implements AppsService
      // Create SKShareGetSharesParms needed for SK calls.
      var skParms = new SKShareGetSharesParms();
      skParms.setResourceType(APPS_SHR_TYPE);
+     skParms.setTenant(rUser.getOboTenantId());
      skParms.setResourceId1(appId);
   
      // First determine if app is publicly shared. Search for share to grantee ~public
      skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
-     var skShares = getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).getShares(skParms);
+     var skShares = getSKClient().getShares(skParms);
      // Set isPublic based on result.
      if (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty()) {
        // Returns true if the app is publicly shared
@@ -1216,6 +1217,7 @@ public class AppsServiceImpl implements AppsService
     // Create SKShareGetSharesParms needed for SK calls.
     var skParms = new SKShareGetSharesParms();
     skParms.setResourceType(APPS_SHR_TYPE);
+    skParms.setTenant(rUser.getOboTenantId());
     skParms.setTenant(oboTenantId);
     skParms.setResourceId1(appId);
 
@@ -1223,13 +1225,13 @@ public class AppsServiceImpl implements AppsService
     
     // First determine if app is publicly shared. Search for share to grantee ~public
     skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
-    var skShares = getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).getShares(skParms);
+    var skShares = getSKClient().getShares(skParms);
     // Set isPublic based on result.
     boolean isPublic = (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty());
     // Now get all the users with whom the system has been shared
     skParms.setGrantee(null);
     skParms.setIncludePublicGrantees(false);
-    skShares = getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).getShares(skParms);
+    skShares = getSKClient().getShares(skParms);
     if (skShares != null && skShares.getShares() != null)
     {
       for (SkShare skShare : skShares.getShares())
@@ -1414,25 +1416,6 @@ public class AppsServiceImpl implements AppsService
       dao.updateDeleted(rUser, resourceTenantId, appId, false);
     return 1;
   }
-
-  /**
-   * Get Security Kernel client with oboUser and oboTenant set as given.
-   * Need to use serviceClients.getClient() every time because it checks for expired service jwt token and
-   *   refreshes it as needed.
-   * @param oboUser - obo user
-   * @param oboTenant - obo tenant
-   * @return SK client
-   * @throws TapisException - for Tapis related exceptions
-   */
-  private SKClient getSKClient(String oboUser, String oboTenant) throws TapisException
-  {
-    try { return serviceClients.getClient(oboUser, oboTenant, SKClient.class); }
-    catch (Exception e)
-    {
-      String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY, oboTenant, oboUser);
-      throw new TapisException(msg, e);
-    }
-  }
   
   /**
    * Get Security Kernel client.
@@ -1446,6 +1429,13 @@ public class AppsServiceImpl implements AppsService
   {
     String oboTenant = getServiceTenantId();
     String oboUser = getServiceUserId();
+    
+    try { return serviceClients.getClient(oboUser, oboTenant, SKClient.class); }
+    catch (Exception e)
+    {
+      String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY, oboTenant, oboUser);
+      throw new TapisException(msg, e);
+    }
     
     return getSKClient(oboUser, oboTenant);
   }
@@ -2243,6 +2233,7 @@ public class AppsServiceImpl implements AppsService
         // Create request object needed for SK calls.
         var reqShareResource = new ReqShareResource();
         reqShareResource.setResourceType(APPS_SHR_TYPE);
+        reqShareResource.setTenant(rUser.getOboTenantId());
         reqShareResource.setTenant(oboTenantId);
         reqShareResource.setResourceId1(appId);
         reqShareResource.setGrantor(rUser.getOboUserId());
@@ -2251,7 +2242,7 @@ public class AppsServiceImpl implements AppsService
         for (String userName : userList)
         {
           reqShareResource.setGrantee(userName);
-          getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).shareResource(reqShareResource);
+          getSKClient().shareResource(reqShareResource);
         }
       }
       case OP_UNSHARE ->
@@ -2259,6 +2250,7 @@ public class AppsServiceImpl implements AppsService
         // Create object needed for SK calls.
         SKShareDeleteShareParms deleteShareParms = new SKShareDeleteShareParms();
         deleteShareParms.setResourceType(APPS_SHR_TYPE);
+        deleteShareParms.setTenant(rUser.getOboTenantId());
         deleteShareParms.setTenant(oboTenantId);
         deleteShareParms.setResourceId1(appId);
         deleteShareParms.setPrivilege(Permission.READ.name());
@@ -2266,7 +2258,7 @@ public class AppsServiceImpl implements AppsService
         for (String userName : userList)
         {
           deleteShareParms.setGrantee(userName);
-          getSKClient(rUser.getOboUserId(), rUser.getOboTenantId()).deleteShare(deleteShareParms);
+          getSKClient().deleteShare(deleteShareParms);
         }
       }
     }
