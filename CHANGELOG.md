@@ -9,12 +9,12 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 1.2.1 - 2022-07-??
+## 1.2.1 - 2022-09-01
 
 Incremental improvements and new features.
 
 ### New features:
-- Support returning sharedAppCtx for application returned by getApp.
+- New endpoints for application sharing. getApp returns sharedAppCtx attribute.
 
 ### Bug fixes:
 - None
