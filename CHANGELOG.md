@@ -9,6 +9,14 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.2.2 - 2022-10-10
+
+Incremental improvements and bug fixes.
+
+### Bug fixes:
+- Fix issues with handling of authorization checks for service requests.
+
+---------------------------------------------------------------------------
 ## 1.2.1 - 2022-09-01
 
 Incremental improvements and new features.

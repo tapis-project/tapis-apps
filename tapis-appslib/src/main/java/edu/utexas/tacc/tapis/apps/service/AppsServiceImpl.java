@@ -14,6 +14,7 @@ import javax.ws.rs.NotFoundException;
 import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
 import edu.utexas.tacc.tapis.apps.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
+import edu.utexas.tacc.tapis.security.client.model.SKShareHasPrivilegeParms;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
@@ -77,7 +78,6 @@ public class AppsServiceImpl implements AppsService
   private static final String SERVICE_NAME = TapisConstants.SERVICE_NAME_APPS;
   private static final String FILES_SERVICE = TapisConstants.SERVICE_NAME_FILES;
   private static final String JOBS_SERVICE = TapisConstants.SERVICE_NAME_JOBS;
-  private static final Set<String> SVCLIST_READ = new HashSet<>(Set.of(FILES_SERVICE, JOBS_SERVICE));
   private static final Set<String> SVCLIST_IMPERSONATE = new HashSet<>(Set.of(JOBS_SERVICE));
 
   // Message keys
@@ -665,12 +665,14 @@ public class AppsServiceImpl implements AppsService
     // ------------------------- Check authorization -------------------------
     // If impersonationId supplied confirm that it is allowed
     if (!StringUtils.isBlank(impersonationId)) checkImpersonationAllowed(rUser, op, appId, impersonationId);
-    String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
 
+    // Access might be allowed due to permission or due to sharing, so we will need to check for both.
+    // Also, need to record if it was allowed due to sharing. Jobs needs to know.
+    // First check if allowed by permissions or ownership and record the result.
     boolean isPermitted = true;
     try
     {
-      checkAuth(rUser, op, appId, nullOwner, impersonationId, nullTargetUser, nullPermSet);
+      checkAuth(rUser, op, appId, nullOwner, nullTargetUser, nullPermSet, impersonationId);
     }
     catch (NotAuthorizedException e)
     {
@@ -678,68 +680,37 @@ public class AppsServiceImpl implements AppsService
     }
     
     // Check shared app context
-    boolean sharedAppCtx = checkForSharedApp(rUser, appId, oboOrImpersonatedUser);
+    // Note that even if allowed by permission we still need to check for sharing and set sharedAppCtx in the
+    //  returned app. Sharing implies more than permissions and Jobs needs to know that the App is being run in
+    //  a sharedAppCtx.
+    String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
+    boolean sharedAppCtx = isAppSharedWithUser(rUser, appId, oboOrImpersonatedUser, Permission.READ);
 
+    // If not permitted or shared then deny
     if (!isPermitted && !sharedAppCtx)
     {
       throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()), NO_CHALLENGE);
     }
 
-    // If flag is set to also require EXECUTE perm then make a special auth call to make sure user has exec perm
-    if (requireExecPerm && !sharedAppCtx)
+    // If flag is set to also require EXECUTE perm then make explicit auth call to make sure user has exec perm
+    if (!sharedAppCtx && requireExecPerm)
     {
-      checkAuthOboUser(rUser, AppOperation.execute, appId, nullOwner, impersonationId, nullTargetUser, nullPermSet);
+      checkAuth(rUser, AppOperation.execute, appId, nullOwner, nullTargetUser, nullPermSet, impersonationId);
     }
 
-    App result = dao.getApp(resourceTenantId, appId, appVersion);
-    // Set sharedAppCtx
-    result.setSharedAppCtx(sharedAppCtx);
-    return result;
+    // Fetch the app and set sharedAppCtx.
+    App app = dao.getApp(resourceTenantId, appId, appVersion);
+    app.setSharedAppCtx(sharedAppCtx);
+    return app;
   }
 
-  /**
-   * Check for shared app status
-   * 
-   * @param rUser - ResourceRequestUser containing tenant, user and request info
-   * @param appId - Name of the app
-   * @param oboOrImpersonatedUser - User Id, whether impersonated or OBO user
-   * @return - Boolean value that indicates if app is shared to oboOrImpersonatedUser
-   * @throws TapisClientException
-   * @throws TapisException
-   */
-  private boolean checkForSharedApp(ResourceRequestUser rUser, String appId, String oboOrImpersonatedUser) throws TapisClientException, TapisException {
-     // Create SKShareGetSharesParms needed for SK calls.
-     var skParms = new SKShareGetSharesParms();
-     skParms.setResourceType(APPS_SHR_TYPE);
-     skParms.setTenant(rUser.getOboTenantId());
-     skParms.setResourceId1(appId);
-  
-     // First determine if app is publicly shared. Search for share to grantee ~public
-     skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
-     var skShares = getSKClient().getShares(skParms);
-     // Set isPublic based on result.
-     if (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty()) {
-       // Returns true if the app is publicly shared
-       return true;
-     }
-     // If the app is not publicly shared, get all particular the users with whom the system has been shared
-     skParms.setGrantee(oboOrImpersonatedUser);
-     skParms.setIncludePublicGrantees(false);
-     skShares = getSKClient().getShares(skParms);
-     if (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty()) {
-       return true;
-     } 
-     
-     return false;
-  }
-  
   /**
    * Get count of all apps matching certain criteria and for which user has READ permission
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param searchList - optional list of conditions used for searching
    * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
    * @param startAfter - where to start when sorting, e.g. orderBy=id(asc)&startAfter=101 (may not be used with skip)
-   * @param showDeleted - whether or not to included resources that have been marked as deleted.
+   * @param showDeleted - whether to included resources that have been marked as deleted.
    * @return Count of App objects
    * @throws TapisException - for Tapis related exceptions
    */
@@ -895,7 +866,7 @@ public class AppsServiceImpl implements AppsService
   /**
    * Get list of all app IDs that an rUser is authorized to view
    * @param rUser - ResourceRequestUser containing tenant, user and request info
-   * @param showDeleted - whether or not to included resources that have been marked as deleted.
+   * @param showDeleted - whether to included resources that have been marked as deleted.
    * @return - set of application IDs
    * @throws TapisException - for Tapis related exceptions
    */
@@ -1067,7 +1038,7 @@ public class AppsServiceImpl implements AppsService
     String owner = checkForOwnerPermUpdate(rUser, appId, targetUser, op.name());
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId, owner, nullImpersonationId, targetUser, permissions);
+    checkAuth(rUser, op, appId, owner, targetUser, permissions);
 
     // Check inputs. If anything null or empty throw an exception
     if (permissions == null || permissions.isEmpty())
@@ -1141,7 +1112,7 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(resourceTenantId, appId, false)) return null;
 
     // ------------------------- Check authorization -------------------------
-    checkAuth(rUser, op, appId, nullOwner, nullImpersonationId, targetUser, nullPermSet);
+    checkAuth(rUser, op, appId, nullOwner, targetUser, nullPermSet);
 
     // Use Security Kernel client to check for each permission in the enum list
     return getUserPermSet(targetUser, resourceTenantId, appId);
@@ -1188,7 +1159,6 @@ public class AppsServiceImpl implements AppsService
    *
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - name of app
-   * @return 
    * @return - app share information as the result
    * @throws TapisException - for Tapis related exceptions
    * @throws TapisClientException - for Tapis Client related exceptions
@@ -1246,7 +1216,8 @@ public class AppsServiceImpl implements AppsService
   
   @Override
   public void shareApp(ResourceRequestUser rUser, String appId, AppShare postShare)
-      throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException {
+      throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException
+  {
     AppOperation op = AppOperation.modify;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     
@@ -1498,20 +1469,20 @@ public class AppsServiceImpl implements AppsService
    * @param app - the App to check
    * @throws IllegalStateException - if any constraints are violated
    */
-  private void validateApp(ResourceRequestUser rUser, App app)
-          throws TapisException, IllegalStateException
+  private void validateApp(ResourceRequestUser rUser, App app) throws IllegalStateException
   {
     // Make api level checks, i.e. checks that do not involve a dao or service call.
     List<String> errMessages = app.checkAttributeRestrictions();
-    var systemsClient = getSystemsClient(rUser);
+//    var systemsClient = getSystemsClient(rUser);
 
     // Now make checks that do require a dao or service call.
 
-    // If execSystemId is set verify it
-    if (!StringUtils.isBlank(app.getExecSystemId())) checkExecSystem(systemsClient, app, errMessages);
-
-    // If archiveSystemId is set verify it
-    if (!StringUtils.isBlank(app.getArchiveSystemId())) checkArchiveSystem(systemsClient, app, errMessages);
+    // TBD: Suppress system checks for now so user is free to create app before systems exist.
+//    // If execSystemId is set verify it
+//    if (!StringUtils.isBlank(app.getExecSystemId())) checkExecSystem(systemsClient, app, errMessages);
+//
+//    // If archiveSystemId is set verify it
+//    if (!StringUtils.isBlank(app.getArchiveSystemId())) checkArchiveSystem(systemsClient, app, errMessages);
 
     // If validation failed throw an exception
     if (!errMessages.isEmpty())
@@ -1989,7 +1960,7 @@ public class AppsServiceImpl implements AppsService
   private void checkAuthOwnerUnknown(ResourceRequestUser rUser, AppOperation op, String appId)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
-    checkAuth(rUser, op, appId, nullOwner, nullImpersonationId, nullTargetUser, nullPermSet);
+    checkAuth(rUser, op, appId, nullOwner, nullTargetUser, nullPermSet, nullImpersonationId);
   }
 
   /*
@@ -1998,44 +1969,75 @@ public class AppsServiceImpl implements AppsService
   private void checkAuthOwnerKnown(ResourceRequestUser rUser, AppOperation op, String appId, String owner)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
-    checkAuth(rUser, op, appId, owner, nullImpersonationId, nullTargetUser, nullPermSet);
+    checkAuth(rUser, op, appId, owner, nullTargetUser, nullPermSet, nullImpersonationId);
+  }
+
+  /**
+   * Overloaded method for callers that do not support impersonation
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param op - operation name
+   * @param systemId - name of the system
+   * @param owner - app owner
+   * @param targetUser - Target user for operation
+   * @param perms - List of permissions for the revokePerm case
+   * @throws NotAuthorizedException - user not authorized to perform operation
+   */
+  private void checkAuth(ResourceRequestUser rUser, AppOperation op, String systemId, String owner,
+                         String targetUser, Set<Permission> perms)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
+  {
+    checkAuth(rUser, op, systemId, owner, targetUser, perms, nullImpersonationId);
   }
 
   /**
    * Standard authorization check using all arguments.
    * Check is different for service and user requests.
+   *
    * A check should be made for app existence before calling this method.
    * If no owner is passed in and one cannot be found then an error is logged and authorization is denied.
+   *
+   * Auth check:
+   *  - always allow read, execute, getPerms for a service calling as itself.
+   *  - if svc not calling as itself do the normal checks using oboUserOrImpersonationId.
+   *  - Note that if svc request and no special cases apply then final standard user request type check is done.
+   *
+   * Many callers do not support impersonation, so make impersonationId the final argument and provide an overloaded
+   *   method for simplicity.
    *
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param op - operation name
    * @param appId - name of the app
    * @param owner - app owner
-   * @param impersonationId - for auth check use this Id in place of oboUser
    * @param targetUser - Target user for operation
    * @param perms - List of permissions for the revokePerm case
+   * @param impersonationId - for auth check use this user in place of oboUser
    * @throws NotAuthorizedException - user not authorized to perform operation
    */
   private void checkAuth(ResourceRequestUser rUser, AppOperation op, String appId, String owner,
-                         String impersonationId, String targetUser, Set<Permission> perms)
+                         String targetUser, Set<Permission> perms, String impersonationId)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
     // Check service and user requests separately to avoid confusing a service name with a username
-    // If service is impersonating a Tapis user then perform normal user check
-    if (rUser.isServiceRequest() && StringUtils.isBlank(impersonationId))
+    if (rUser.isServiceRequest())
     {
-      checkAuthSvc(rUser, op, appId);
+      // NOTE: This call will do a final checkAuthOboUser() if no special cases apply.
+      checkAuthSvc(rUser, op, appId, owner, targetUser, perms, impersonationId);
     }
     else
     {
       // This is an OboUser check
-      checkAuthOboUser(rUser, op, appId, owner, impersonationId, targetUser, perms);
+      checkAuthOboUser(rUser, op, appId, owner, targetUser, perms, impersonationId);
     }
   }
 
   /**
-   * Service authorization check.
+   * Service authorization check. Special auth exceptions and checks are made for service requests:
+   *  - Always allow read, execute, getPerms for a service calling as itself.
+   *
+   * If no special cases apply then final standard user request type auth check is made.
+   *
    * ONLY CALL this method when it is a service request
+   *
    * A check should be made for app existence before calling this method.
    *
    * @param rUser - ResourceRequestUser containing tenant, user and request info
@@ -2043,16 +2045,25 @@ public class AppsServiceImpl implements AppsService
    * @param appId - name of the app
    * @throws NotAuthorizedException - user not authorized to perform operation
    */
-  private void checkAuthSvc(ResourceRequestUser rUser, AppOperation op, String appId)
-          throws NotAuthorizedException, IllegalStateException
+  private void checkAuthSvc(ResourceRequestUser rUser, AppOperation op, String appId, String owner, String targetUser,
+                            Set<Permission> perms, String impersonationId)
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
     // If ever called and not a svc request then fall back to denied
     if (!rUser.isServiceRequest())
       throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()), NO_CHALLENGE);
 
-    if (op == AppOperation.read && SVCLIST_READ.contains(rUser.getJwtUserId())) return;
-    // Not authorized, throw an exception
-    throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()), NO_CHALLENGE);
+    // This is a service request. The username will be the service name. E.g. files, jobs, streams, etc
+    String svcName = rUser.getJwtUserId();
+    String svcTenant = rUser.getJwtTenantId();
+
+    // Always allow read, execute, getPerms for a service calling as itself.
+    if ((op == AppOperation.read || op == AppOperation.execute || op == AppOperation.getPerms) &&
+            (svcName.equals(rUser.getOboUserId()) && svcTenant.equals(rUser.getOboTenantId()))) return;
+
+    // No more special cases. Do the standard auth check
+    // Some services, such as Jobs, count on Apps to check auth for OboUserOrImpersonationId
+    checkAuthOboUser(rUser, op, appId, owner, targetUser, perms, impersonationId);
   }
 
   /**
@@ -2064,10 +2075,10 @@ public class AppsServiceImpl implements AppsService
    *  Delete -      must be owner or have admin role
    *  ChangeOwner - must be owner or have admin role
    *  GrantPerm -   must be owner or have admin role
-   *  Read -     must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
-   *  getPerms - must be owner or have admin role or have READ or MODIFY permission or be in list of allowed services
+   *  Read -     must be owner or have admin role or have READ or MODIFY permission or have share
+   *  getPerms - must be owner or have admin role or have READ or MODIFY permission
    *  Modify - must be owner or have admin role or have MODIFY permission
-   *  Execute - must be owner or have admin role or have EXECUTE permission
+   *  Execute - must be owner or have admin role or have EXECUTE permission or have share
    *  RevokePerm -  must be owner or have admin role or apiUserId=targetUser and meet certain criteria (allowUserRevokePerm)
    *
    * @param rUser - ResourceRequestUser containing tenant, user and request info
@@ -2080,7 +2091,7 @@ public class AppsServiceImpl implements AppsService
    * @throws NotAuthorizedException - user not authorized to perform operation
    */
   private void checkAuthOboUser(ResourceRequestUser rUser, AppOperation op, String appId, String owner,
-                                String impersonationId, String targetUser, Set<Permission> perms)
+                                String targetUser, Set<Permission> perms, String impersonationId)
           throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
   {
     String oboTenant = rUser.getOboTenantId();
@@ -2095,7 +2106,8 @@ public class AppsServiceImpl implements AppsService
 
     // Remaining checks require owner. If no owner specified and owner cannot be determined then log an error and deny.
     if (StringUtils.isBlank(owner)) owner = dao.getAppOwner(oboTenant, appId);
-    if (StringUtils.isBlank(owner)) {
+    if (StringUtils.isBlank(owner))
+    {
       String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH_NO_OWNER", rUser, appId, op.name());
       _log.error(msg);
       throw new NotAuthorizedException(msg, NO_CHALLENGE);
@@ -2112,6 +2124,11 @@ public class AppsServiceImpl implements AppsService
           return;
         break;
       case read:
+        if (owner.equals(oboOrImpersonatedUser) || hasAdminRole(rUser) ||
+                isPermittedAny(rUser, oboTenant, oboOrImpersonatedUser, appId, READMODIFY_PERMS) ||
+                isAppSharedWithUser(rUser, appId, oboOrImpersonatedUser, Permission.READ))
+          return;
+        break;
       case getPerms:
         if (owner.equals(oboOrImpersonatedUser) || hasAdminRole(rUser) ||
                 isPermittedAny(rUser, oboTenant, oboOrImpersonatedUser, appId, READMODIFY_PERMS))
@@ -2124,7 +2141,8 @@ public class AppsServiceImpl implements AppsService
         break;
       case execute:
         if (owner.equals(oboOrImpersonatedUser) || hasAdminRole(rUser) ||
-                isPermitted(rUser, oboTenant, oboOrImpersonatedUser, appId, Permission.EXECUTE))
+                isPermitted(rUser, oboTenant, oboOrImpersonatedUser, appId, Permission.EXECUTE) ||
+                isAppSharedWithUser(rUser, appId, oboOrImpersonatedUser, Permission.EXECUTE))
           return;
         break;
       case revokePerms:
@@ -2135,6 +2153,32 @@ public class AppsServiceImpl implements AppsService
     }
     // Not authorized, throw an exception
     throw new NotAuthorizedException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()), NO_CHALLENGE);
+  }
+
+  /**
+   * Check if an app is shared with a user.
+   * SK call hasPrivilege includes check for public sharing.
+   *
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param appId - system to check
+   * @param targetUser - user to check
+   * @param privilege - privilege to check
+   * @return - Boolean value that indicates if app is shared
+   * @throws TapisClientException
+   * @throws TapisException
+   */
+  private boolean isAppSharedWithUser(ResourceRequestUser rUser, String appId, String targetUser, Permission privilege)
+          throws TapisClientException, TapisException
+  {
+    String oboTenant = rUser.getOboTenantId();
+    // Create SKShareGetSharesParms needed for SK calls.
+    SKShareHasPrivilegeParms skParms = new SKShareHasPrivilegeParms();
+    skParms.setResourceType(APPS_SHR_TYPE);
+    skParms.setTenant(oboTenant);
+    skParms.setResourceId1(appId);
+    skParms.setGrantee(targetUser);
+    skParms.setPrivilege(privilege.name());
+    return getSKClient().hasPrivilege(skParms);
   }
 
   /**
@@ -2235,11 +2279,13 @@ public class AppsServiceImpl implements AppsService
         reqShareResource.setTenant(oboTenantId);
         reqShareResource.setResourceId1(appId);
         reqShareResource.setGrantor(rUser.getOboUserId());
-        reqShareResource.setPrivilege(Permission.READ.name());
-    
+
         for (String userName : userList)
         {
           reqShareResource.setGrantee(userName);
+          reqShareResource.setPrivilege(Permission.READ.name());
+          getSKClient().shareResource(reqShareResource);
+          reqShareResource.setPrivilege(Permission.EXECUTE.name());
           getSKClient().shareResource(reqShareResource);
         }
       }
@@ -2252,11 +2298,13 @@ public class AppsServiceImpl implements AppsService
         deleteShareParms.setTenant(oboTenantId);
         deleteShareParms.setResourceId1(appId);
         deleteShareParms.setGrantor(rUser.getOboUserId());
-        deleteShareParms.setPrivilege(Permission.READ.name());
-        
+
         for (String userName : userList)
         {
           deleteShareParms.setGrantee(userName);
+          deleteShareParms.setPrivilege(Permission.READ.name());
+          getSKClient().deleteShare(deleteShareParms);
+          deleteShareParms.setPrivilege(Permission.EXECUTE.name());
           getSKClient().deleteShare(deleteShareParms);
         }
       }

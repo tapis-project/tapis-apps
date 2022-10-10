@@ -95,8 +95,8 @@ public final class IntegrationUtils
   public static final String[] execSystemConstraints1 = {"Constraint1a AND", "Constraint1b"};
   public static final String[] execSystemConstraints2 = {"Constraint2a AND", "Constraint2b"};
   public static final String[] execSystemConstraintsNull = null;
-  public static final String execSystemId1 = "tapisv3-exec3"; // Exec system with most attributes populated, including LogicalQueues
-  public static final String execSystemId2 = "tapisv3-exec4"; // Exec system with most attributes populated, including LogicalQueues
+  public static final String execSystemId1 = "tapisv3-exec1-testuser1"; // Exec system with most attributes populated, including LogicalQueues
+  public static final String execSystemId2 = "tapisv3-exec4-testuser1"; // Exec system with most attributes populated, including LogicalQueues
   public static final String execSystemIdNull = null;
   public static final String execSystemExecDir1 = "execSystemExecDir1";
   public static final String execSystemExecDir2 = "execSystemExecDir2";
@@ -110,8 +110,8 @@ public final class IntegrationUtils
   public static final String execSystemLogicalQueue1 = "dsnormal"; // A LogicalQueue defined for tapisv3-exec3
   public static final String execSystemLogicalQueue2 = "dslarge";
   public static final String execSystemLogicalQueueNull = null;
-  public static final String archiveSystemId1 = "tapisv3-storage";
-  public static final String archiveSystemId2 = "tapisv3-storage-dev";
+  public static final String archiveSystemId1 = "tapisv3-storage-testuser1";
+  public static final String archiveSystemId2 = "tapisv3-storage-dev-testuser1";
   public static final String archiveSystemIdNull = null;
   public static final String archiveSystemDir1 = "archiveSystemDir1";
   public static final String archiveSystemDir2 = "archiveSystemDir2";
@@ -376,7 +376,6 @@ public final class IntegrationUtils
    * Create App in memory with minimal attributes set based on App given
    *   id, version
    *   containerized==true -> containterImage
-   *   dynamicExec==false -> execSystemId
    * NOTE: many args to constructor are primitives so cannot be set to null.
    */
   public static App makeMinimalApp(App app, String id)
@@ -384,7 +383,7 @@ public final class IntegrationUtils
     return new App(-1, -1, tenantName, id, app.getVersion(), descriptionNull, jobType1, ownerNull, enabledTrue,
             containerizedTrue, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage1, maxJobs1, maxJobsPerUser1,
             strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
-            execSystemId1, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
+            execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
             isMpiFalse, mpiCmdNull, cmdPrefixNull,
             parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMB1, maxMinutes1, notifList1, jobTagsNull,

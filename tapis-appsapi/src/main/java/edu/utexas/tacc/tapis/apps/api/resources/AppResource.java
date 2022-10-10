@@ -1160,7 +1160,7 @@ public class AppResource
     List<String> errMessages = app1.checkAttributeRestrictions();
 
     // Now validate attributes that have special handling at API level.
-    // Currently no additional checks.
+    // Currently, no additional checks.
 
     // If validation failed log error message and return response
     if (!errMessages.isEmpty())

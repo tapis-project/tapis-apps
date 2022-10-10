@@ -497,7 +497,12 @@ public final class App
   private void checkAttrValidity(List<String> errMessages)
   {
     // Check that id is not empty and contains a valid pattern
-    if (!StringUtils.isBlank(id) && !isValidId(id)) errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, ID_FIELD, id));
+    if (!StringUtils.isBlank(id) && !isValidId(id))
+      errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, ID_FIELD, id));
+    if (!StringUtils.isBlank(execSystemId) && !isValidId(execSystemId))
+      errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, EXECSYSID_FIELD, execSystemId));
+    if (!StringUtils.isBlank(archiveSystemId) && !isValidId(archiveSystemId))
+      errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, ARCHIVESYSID_FIELD, archiveSystemId));
 
 // TODO // Check that runtimeVersion is a single version, list of versions or range of versions
 //    if (!StringUtils.isBlank(runtimeVersion))

@@ -60,7 +60,8 @@ public class AppsServiceTest
 {
   private AppsService svc;
   private AppsServiceImpl svcImpl;
-  private ResourceRequestUser rUser0, rUser1, rUser2, rUser3, rUser4, rUser5, rUser6, rAdminUser, rFilesSvc, rJobsSvc;
+  private ResourceRequestUser rUser0, rUser1, rUser2, rUser3, rUser4, rUser5, rUser6, rAdminUser,
+                              rFilesSvc, rFilesSvc1, rFilesSvc3, rJobsSvc, rJobsSvc1;
   // Test data
   private static final String testKey = "Svc";
   // Special case IDs that have caused problems.
@@ -118,9 +119,15 @@ public class AppsServiceTest
     rAdminUser = new ResourceRequestUser(new AuthenticatedUser(adminUser, tenantName, TapisThreadContext.AccountType.user.name(),
                                           null, adminUser, tenantName, null, null, null));
     rFilesSvc = new ResourceRequestUser(new AuthenticatedUser(filesSvcName, adminTenantName, TapisThreadContext.AccountType.service.name(),
-                                         null, owner2, tenantName, null, null, null));
+                                         null, filesSvcName, adminTenantName, null, null, null));
+    rFilesSvc1 = new ResourceRequestUser(new AuthenticatedUser(filesSvcName, adminTenantName, TapisThreadContext.AccountType.service.name(),
+                                         null, testUser1, tenantName, null, null, null));
+    rFilesSvc3 = new ResourceRequestUser(new AuthenticatedUser(filesSvcName, adminTenantName, TapisThreadContext.AccountType.service.name(),
+            null, testUser3, tenantName, null, null, null));
     rJobsSvc = new ResourceRequestUser(new AuthenticatedUser(jobsSvcName, adminTenantName, TapisThreadContext.AccountType.service.name(),
-                                         null, owner2, tenantName, null, null, null));
+                                         null, jobsSvcName, adminTenantName, null, null, null));
+    rJobsSvc1 = new ResourceRequestUser(new AuthenticatedUser(jobsSvcName, adminTenantName, TapisThreadContext.AccountType.service.name(),
+                                        null, testUser1, tenantName, null, null, null));
     rUser0 = new ResourceRequestUser(new AuthenticatedUser(testUser0, tenantName, TapisThreadContext.AccountType.user.name(),
                                       null, testUser0, tenantName, null, null, null));
     rUser1 = new ResourceRequestUser(new AuthenticatedUser(testUser1, tenantName, TapisThreadContext.AccountType.user.name(),
@@ -208,11 +215,11 @@ public class AppsServiceTest
     App app0 = apps[1];
     svc.createApp(rUser1, app0, scrubbedJson);
     // Retrieve the app as filesSvc and as owner (with and without requireExecPerm)
-    App tmpApp = svc.getApp(rFilesSvc, app0.getId(), app0.getVersion(), false, null);
-    checkCommonAppAttrs(app0, tmpApp);
-    tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, null);
+    App tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), false, null);
     checkCommonAppAttrs(app0, tmpApp);
     tmpApp = svc.getApp(rUser1, app0.getId(), app0.getVersion(), true, null);
+    checkCommonAppAttrs(app0, tmpApp);
+    tmpApp = svc.getApp(rFilesSvc1, app0.getId(), app0.getVersion(), false, null);
     checkCommonAppAttrs(app0, tmpApp);
   }
 
@@ -636,7 +643,7 @@ public class AppsServiceTest
   // - If dynamicExecSystem then execSystemConstraints must be given
   // - If not dynamicExecSystem then execSystemId must be given
   // - If archiveSystem given then archive dir must be given
-  // - Validation of queue limits: NodeCount, CoresPerNode, MemoryMB, MaxMinutes
+  // - (SKIP Apps no longer validates execSystemId) Validation of queue limits: NodeCount, CoresPerNode, MemoryMB, MaxMinutes
   @Test
   public void testCreateInvalidMiscFail()
   {
@@ -706,132 +713,133 @@ public class AppsServiceTest
     // Reset in prep for continued checking
     app0.setArchiveSystemDir(tmpArchiveSystemDir);
 
-    // Various LogicalQueue related attributes must be in range defined for ExecSystemsLogicalQueue
-    // Start with maxNodeCount.
-    //   Each subsequent value that is out of range should be cumulative in the list of error messages.
-    // Save original values from app0 so we can reset and re-use app0 later.
-    String tmpExecSystemLogicalQueue = app0.getExecSystemLogicalQueue();
-    int tmpNodeCount =  app0.getNodeCount();
-    int tmpCoresPerNode =  app0.getCoresPerNode();
-    int tmpMemoryMB =  app0.getMemoryMB();
-    int tmpMaxMinutes =  app0.getMaxMinutes();
-    // Update logical queue
-    app0.setExecSystemLogicalQueue(execSystemLogicalQueue1); // queue defined on execSystemId (id: tapisv3-exec3, queue dsnormal)
-
-    // Check Max limits: nodeCount, coresPerNode, memoryMB, maxMinutes
-    app0.setNodeCount(nodeCount2 + 1);
-    pass = false;
-    try { svc.createApp(rUser1, app0, scrubbedJson); }
-    catch (Exception e)
-    {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: NodeCount"));
-      pass = true;
-    }
-    Assert.assertTrue(pass);
-
-    app0.setCoresPerNode(coresPerNode2 + 1);
-    pass = false;
-    try { svc.createApp(rUser1, app0, scrubbedJson); }
-    catch (Exception e)
-    {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: NodeCount"));
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: CoresPerNode"));
-      pass = true;
-    }
-    Assert.assertTrue(pass);
-
-    app0.setMemoryMB(memoryMB2 + 1);
-    pass = false;
-    try { svc.createApp(rUser1, app0, scrubbedJson); }
-    catch (Exception e)
-    {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: NodeCount"));
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: CoresPerNode"));
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: MemoryMB"));
-      pass = true;
-    }
-    Assert.assertTrue(pass);
-
-    app0.setMaxMinutes(maxMinutes2 + 1);
-    pass = false;
-    try { svc.createApp(rUser1, app0, scrubbedJson); }
-    catch (Exception e)
-    {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: NodeCount"));
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: CoresPerNode"));
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: MemoryMB"));
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: MaxMinutes"));
-      pass = true;
-    }
-    Assert.assertTrue(pass);
-
-    // Reset in prep for continued checking
-    app0.setNodeCount(tmpNodeCount);
-    app0.setCoresPerNode(tmpCoresPerNode);
-    app0.setMemoryMB(tmpMemoryMB);
-    app0.setMaxMinutes(tmpMaxMinutes);
-
-    // Check Min limits: nodeCount, coresPerNode, memoryMB, maxMinutes
-    app0.setNodeCount(nodeCount1 - 1);
-    pass = false;
-    try { svc.createApp(rUser1, app0, scrubbedJson); }
-    catch (Exception e)
-    {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: NodeCount"));
-      pass = true;
-    }
-    Assert.assertTrue(pass);
-
-    app0.setCoresPerNode(coresPerNode1 - 1);
-    pass = false;
-    try { svc.createApp(rUser1, app0, scrubbedJson); }
-    catch (Exception e)
-    {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: NodeCount"));
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: CoresPerNode"));
-      pass = true;
-    }
-    Assert.assertTrue(pass);
-
-    app0.setMemoryMB(memoryMB1 - 1);
-    pass = false;
-    try { svc.createApp(rUser1, app0, scrubbedJson); }
-    catch (Exception e)
-    {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: NodeCount"));
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: CoresPerNode"));
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: MemoryMB"));
-      pass = true;
-    }
-    Assert.assertTrue(pass);
-
-    app0.setMaxMinutes(maxMinutes1 - 1);
-    pass = false;
-    try { svc.createApp(rUser1, app0, scrubbedJson); }
-    catch (Exception e)
-    {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: NodeCount"));
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: CoresPerNode"));
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: MemoryMB"));
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: MaxMinutes"));
-      pass = true;
-    }
-    Assert.assertTrue(pass);
-
-    // Reset in prep for continued checking
-    app0.setNodeCount(tmpNodeCount);
-    app0.setCoresPerNode(tmpCoresPerNode);
-    app0.setMemoryMB(tmpMemoryMB);
-    app0.setMaxMinutes(tmpMaxMinutes);
-
-    // Reset in prep for continued checking
-    // NOTE: Below resets not necessary but if we add to this method they should be done.
-    // Reset app attribute values
-    app0.setNodeCount(tmpNodeCount);
-    app0.setCoresPerNode(tmpCoresPerNode);
-    app0.setMemoryMB(tmpMemoryMB);
-    app0.setMaxMinutes(tmpMaxMinutes);
-    app0.setExecSystemLogicalQueue(tmpExecSystemLogicalQueue);
+    // SKIP Apps no longer validates execSystemId
+//    // Various LogicalQueue related attributes must be in range defined for ExecSystemsLogicalQueue
+//    // Start with maxNodeCount.
+//    //   Each subsequent value that is out of range should be cumulative in the list of error messages.
+//    // Save original values from app0, so we can reset and re-use app0 later.
+//    String tmpExecSystemLogicalQueue = app0.getExecSystemLogicalQueue();
+//    int tmpNodeCount =  app0.getNodeCount();
+//    int tmpCoresPerNode =  app0.getCoresPerNode();
+//    int tmpMemoryMB =  app0.getMemoryMB();
+//    int tmpMaxMinutes =  app0.getMaxMinutes();
+//    // Update logical queue
+//    app0.setExecSystemLogicalQueue(execSystemLogicalQueue1); // queue defined on execSystemId (id: tapisv3-exec3, queue dsnormal)
+//
+//    // Check Max limits: nodeCount, coresPerNode, memoryMB, maxMinutes
+//    app0.setNodeCount(nodeCount2 + 1);
+//    pass = false;
+//    try { svc.createApp(rUser1, app0, scrubbedJson); }
+//    catch (Exception e)
+//    {
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: NodeCount"));
+//      pass = true;
+//    }
+//    Assert.assertTrue(pass);
+//
+//    app0.setCoresPerNode(coresPerNode2 + 1);
+//    pass = false;
+//    try { svc.createApp(rUser1, app0, scrubbedJson); }
+//    catch (Exception e)
+//    {
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: NodeCount"));
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: CoresPerNode"));
+//      pass = true;
+//    }
+//    Assert.assertTrue(pass);
+//
+//    app0.setMemoryMB(memoryMB2 + 1);
+//    pass = false;
+//    try { svc.createApp(rUser1, app0, scrubbedJson); }
+//    catch (Exception e)
+//    {
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: NodeCount"));
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: CoresPerNode"));
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: MemoryMB"));
+//      pass = true;
+//    }
+//    Assert.assertTrue(pass);
+//
+//    app0.setMaxMinutes(maxMinutes2 + 1);
+//    pass = false;
+//    try { svc.createApp(rUser1, app0, scrubbedJson); }
+//    catch (Exception e)
+//    {
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: NodeCount"));
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: CoresPerNode"));
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: MemoryMB"));
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_HIGH Value exceeds upper limit for LogicalQueue. Attribute: MaxMinutes"));
+//      pass = true;
+//    }
+//    Assert.assertTrue(pass);
+//
+//    // Reset in prep for continued checking
+//    app0.setNodeCount(tmpNodeCount);
+//    app0.setCoresPerNode(tmpCoresPerNode);
+//    app0.setMemoryMB(tmpMemoryMB);
+//    app0.setMaxMinutes(tmpMaxMinutes);
+//
+//    // Check Min limits: nodeCount, coresPerNode, memoryMB, maxMinutes
+//    app0.setNodeCount(nodeCount1 - 1);
+//    pass = false;
+//    try { svc.createApp(rUser1, app0, scrubbedJson); }
+//    catch (Exception e)
+//    {
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: NodeCount"));
+//      pass = true;
+//    }
+//    Assert.assertTrue(pass);
+//
+//    app0.setCoresPerNode(coresPerNode1 - 1);
+//    pass = false;
+//    try { svc.createApp(rUser1, app0, scrubbedJson); }
+//    catch (Exception e)
+//    {
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: NodeCount"));
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: CoresPerNode"));
+//      pass = true;
+//    }
+//    Assert.assertTrue(pass);
+//
+//    app0.setMemoryMB(memoryMB1 - 1);
+//    pass = false;
+//    try { svc.createApp(rUser1, app0, scrubbedJson); }
+//    catch (Exception e)
+//    {
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: NodeCount"));
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: CoresPerNode"));
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: MemoryMB"));
+//      pass = true;
+//    }
+//    Assert.assertTrue(pass);
+//
+//    app0.setMaxMinutes(maxMinutes1 - 1);
+//    pass = false;
+//    try { svc.createApp(rUser1, app0, scrubbedJson); }
+//    catch (Exception e)
+//    {
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: NodeCount"));
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: CoresPerNode"));
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: MemoryMB"));
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECQ_LIMIT_LOW Value exceeds lower limit for LogicalQueue. Attribute: MaxMinutes"));
+//      pass = true;
+//    }
+//    Assert.assertTrue(pass);
+//
+//    // Reset in prep for continued checking
+//    app0.setNodeCount(tmpNodeCount);
+//    app0.setCoresPerNode(tmpCoresPerNode);
+//    app0.setMemoryMB(tmpMemoryMB);
+//    app0.setMaxMinutes(tmpMaxMinutes);
+//
+//    // Reset in prep for continued checking
+//    // NOTE: Below resets not necessary but if we add to this method they should be done.
+//    // Reset app attribute values
+//    app0.setNodeCount(tmpNodeCount);
+//    app0.setCoresPerNode(tmpCoresPerNode);
+//    app0.setMemoryMB(tmpMemoryMB);
+//    app0.setMaxMinutes(tmpMaxMinutes);
+//    app0.setExecSystemLogicalQueue(tmpExecSystemLogicalQueue);
   }
 
   // Test creating, reading and deleting user permissions for an app
@@ -958,48 +966,49 @@ public class AppsServiceTest
   }
 
   // Test that app cannot be created when execSystem or archiveSystem is missing or invalid
-  @Test
-  public void testCheckSystemsInvalid()
-  {
-    String fakeSysName = "AMissingSystemName";
-    App app0 = apps[21];
-
-    // Create should fail when execSystemId does not exist
-    app0.setExecSystemId(fakeSysName);
-    boolean pass = false;
-    try { svc.createApp(rUser1, app0, scrubbedJson); }
-    catch (Exception e)
-    {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECSYS_NO_SYSTEM"));
-      pass = true;
-    }
-    Assert.assertTrue(pass);
-    app0.setExecSystemId(execSystemId1);
-
-    // Create should fail when archiveSystemId does not exist
-    app0.setArchiveSystemId(fakeSysName);
-    pass = false;
-    try { svc.createApp(rUser1, app0, scrubbedJson); }
-    catch (Exception e)
-    {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_ARCHSYS_NO_SYSTEM"));
-      pass = true;
-    }
-    Assert.assertTrue(pass);
-    app0.setArchiveSystemId(archiveSystemId1);
-
-    // Create should fail when execSystemId cannot exec
-    app0.setExecSystemId(archiveSystemId1);
-    pass = false;
-    try { svc.createApp(rUser1, app0, scrubbedJson); }
-    catch (Exception e)
-    {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECSYS_NOT_EXEC"));
-      pass = true;
-    }
-    Assert.assertTrue(pass);
-    app0.setExecSystemId(execSystemId1);
-  }
+  // Currently these checks are skipped for App creation so user can create an app before the systems exist.
+//  @Test
+//  public void testCheckSystemsInvalid()
+//  {
+//    String fakeSysName = "AMissingSystemName";
+//    App app0 = apps[21];
+//
+//    // Create should fail when execSystemId does not exist
+//    app0.setExecSystemId(fakeSysName);
+//    boolean pass = false;
+//    try { svc.createApp(rUser1, app0, scrubbedJson); }
+//    catch (Exception e)
+//    {
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECSYS_NO_SYSTEM"));
+//      pass = true;
+//    }
+//    Assert.assertTrue(pass);
+//    app0.setExecSystemId(execSystemId1);
+//
+//    // Create should fail when archiveSystemId does not exist
+//    app0.setArchiveSystemId(fakeSysName);
+//    pass = false;
+//    try { svc.createApp(rUser1, app0, scrubbedJson); }
+//    catch (Exception e)
+//    {
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_ARCHSYS_NO_SYSTEM"));
+//      pass = true;
+//    }
+//    Assert.assertTrue(pass);
+//    app0.setArchiveSystemId(archiveSystemId1);
+//
+//    // Create should fail when execSystemId cannot exec
+//    app0.setExecSystemId(archiveSystemId1);
+//    pass = false;
+//    try { svc.createApp(rUser1, app0, scrubbedJson); }
+//    catch (Exception e)
+//    {
+//      Assert.assertTrue(e.getMessage().contains("APPLIB_EXECSYS_NOT_EXEC"));
+//      pass = true;
+//    }
+//    Assert.assertTrue(pass);
+//    app0.setExecSystemId(execSystemId1);
+//  }
 
   // Test Auth denials
   // testUser1 - owner
@@ -1077,7 +1086,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.patchApp(rFilesSvc, app0Id, app0Version, patchApp, scrubbedJson); }
+    try { svc.patchApp(rFilesSvc3, app0Id, app0Version, patchApp, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1095,7 +1104,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.deleteApp(rFilesSvc, app0Id); }
+    try { svc.deleteApp(rFilesSvc3, app0Id); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1113,7 +1122,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.changeAppOwner(rFilesSvc, app0Id, testUser2); }
+    try { svc.changeAppOwner(rFilesSvc3, app0Id, testUser2); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1141,7 +1150,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.grantUserPermissions(rFilesSvc, app0Id, testUser3, testPermsREADMODIFY, scrubbedJson); }
+    try { svc.grantUserPermissions(rFilesSvc3, app0Id, testUser3, testPermsREADMODIFY, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1159,7 +1168,7 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.grantUserPermissions(rFilesSvc, app0Id, testUser4, testPermsREADMODIFY, scrubbedJson); }
+    try { svc.grantUserPermissions(rFilesSvc3, app0Id, testUser4, testPermsREADMODIFY, scrubbedJson); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1179,7 +1188,7 @@ public class AppsServiceTest
 
     // When a service impersonates another user they should be denied if that user cannot read the system.
     pass = false;
-    try { svc.getApp(rJobsSvc, app0Id, null, false, impersonationIdTestUser9); }
+    try { svc.getApp(rJobsSvc1, app0Id, null, false, impersonationIdTestUser9); }
     catch (NotAuthorizedException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
@@ -1225,7 +1234,7 @@ public class AppsServiceTest
    */
   private static void checkCommonAppAttrs(App app0, App tmpApp)
   {
-    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
+    Assert.assertNotNull(tmpApp, "Failed to get item: " + app0.getId());
     System.out.println("Found item: " + app0.getId());
     Assert.assertEquals(tmpApp.getTenant(), app0.getTenant());
     Assert.assertEquals(tmpApp.getId(), app0.getId());
@@ -1394,103 +1403,120 @@ public class AppsServiceTest
   }
   
   // Test retrieving app sharing information
+  // App owned by testUser5, shared with testUser6
   @Test
-  public void tesShareApp() throws Exception
-  { 
+  public void testShareApp() throws Exception
+  {
+    String owner = testUser5;
+    ResourceRequestUser rOwner = rUser5;
+    String shareWithUser = testUser6;
+    ResourceRequestUser rShareWithUser = rUser6;
     // **************************  Create and share app  ***************************
-    
     App app0 = apps[28];
-    app0.setOwner(rUser6.getOboUserId());
-    svc.createApp(rUser6, app0, scrubbedJson);
-    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), false, null);
+    app0.setOwner(owner);
+    svc.createApp(rOwner, app0, scrubbedJson);
+    String appId = app0.getId();
+    String appVer = app0.getVersion();
+    app0 = svc.getApp(rOwner, appId, app0.getVersion(), false, null);
     
     //  Create an AppShare from the json
     AppShare appShare;
-    String rawDataShare = "{\"users\": [\"" + testUser6 + "\"]}";
+    String rawDataShare = "{\"users\": [\"" + shareWithUser + "\"]}";
     Set<String> testUserList = new HashSet<String>(1);
-    testUserList.add(testUser6);
+    testUserList.add(shareWithUser);
     appShare = TapisGsonUtils.getGson().fromJson(rawDataShare, AppShare.class);
-   
-    // **************************  Sharing app  ***************************
-    // Service call
-    svc.shareApp(rUser6, app0.getId(), appShare);
-   
-    // Test retrieval using specified authn method
-    AppShare appShareTest = svc.getAppShare(rUser6, app0.getId());
-   
-    System.out.println("Found item: " + app0.getId());
-    // Verify app share fields
 
+    // shareWithUser should have no access yet.
+    boolean pass = false;
+    try { svc.getApp(rShareWithUser, appId, appVer, false, null); }
+    catch (NotAuthorizedException e)
+    {
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
+    // **************************  Sharing app  ***************************
+    svc.shareApp(rOwner, app0.getId(), appShare);
+   
+    // Get app and verify shareInfo
+    AppShare appShareTest = svc.getAppShare(rOwner, appId);
     Assert.assertNotNull(appShareTest, "App Share information found.");
     // Retrieve users, test user is on the list
     boolean userFound = false;
-    for (var user : appShareTest.getUserList()) {
-      if (user.equals(testUser6)) { userFound = true; }
-      System.out.printf("userName: %s%n", user);
+    for (var user : appShareTest.getUserList())
+    {
+      if (user.equals(shareWithUser)) { userFound = true; }
+      System.out.printf("Shared with userName: %s%n", user);
     }
     Assert.assertTrue(userFound);
     
-    // Verify shared app context
-    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), true, null);
+    // shareWithUser should now have access. Get app and verify shared app context
+    app0 = svc.getApp(rShareWithUser, appId, appVer, true, null);
     Assert.assertTrue(app0.getSharedAppCtx());
    
     // **************************  Unsharing app  ***************************
+    svc.unshareApp(rOwner, app0.getId(), appShare);
    
-    // Service call
-    svc.unshareApp(rUser6, app0.getId(), appShare);
-   
-    // Test retrieval using specified authn method
-    appShareTest = svc.getAppShare(rUser6, app0.getId());
-   
-    System.out.println("Found item: " + app0.getId());
-    // Verify app share fields
-
+    // Get app and verify shareInfo
+    appShareTest = svc.getAppShare(rOwner, appId);
     Assert.assertNotNull(appShareTest, "App Share information found.");
     // Retrieve users, test user is not on the list
     userFound = false;
-    for (var user : appShareTest.getUserList()) {
-      if (user.equals(testUser6)) { userFound = true; }
-      System.out.printf("userName: %s%n", user);
+    for (var user : appShareTest.getUserList())
+    {
+      if (user.equals(shareWithUser)) { userFound = true; }
+      System.out.printf("Shared with userName: %s%n", user);
     }
     Assert.assertFalse(userFound);
-    
-    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), true, null);
-    Assert.assertFalse(app0.getSharedAppCtx());
-    
+
+    // shareWithUser should no longer have access
+    pass = false;
+    try { svc.getApp(rShareWithUser, appId, appVer, false, null); }
+    catch (NotAuthorizedException e)
+    {
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
     // **************************  Sharing app publicly  ***************************
     
     // Service call
-    svc.shareAppPublicly(rUser6, app0.getId());
+    svc.shareAppPublicly(rOwner, app0.getId());
     
-    // Test retrieval using specified authn method
-    appShareTest = svc.getAppShare(rUser6, app0.getId());
-    
+    // Test retrieval
+    appShareTest = svc.getAppShare(rOwner, app0.getId());
     System.out.println("Found item: " + app0.getId());
-    // Verify app share fields
 
+    // Verify app share fields
     Assert.assertNotNull(appShareTest, "App Share information found.");
     Assert.assertTrue(appShareTest.isPublic());
     
-    // Verify shared app context
-    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), true, null);
+    // Verify shared app context when rUser0 fetches
+    app0 = svc.getApp(rUser0, app0.getId(), app0.getVersion(), true, null);
     Assert.assertTrue(app0.getSharedAppCtx());
    
     // **************************  Unsharing app publicly  ***************************
     // Service call
-    svc.unshareAppPublicly(rUser6, app0.getId());
+    svc.unshareAppPublicly(rOwner, app0.getId());
    
     // Test retrieval using specified authn method
-    appShareTest = svc.getAppShare(rUser6, app0.getId());
-   
+    appShareTest = svc.getAppShare(rOwner, app0.getId());
     System.out.println("Found item: " + app0.getId());
-    // Verify app share fields
 
+    // Verify app share fields
     Assert.assertNotNull(appShareTest, "App Share information found.");
-    // TODO: assert to False after implementing new SKClient changes
     Assert.assertFalse(appShareTest.isPublic());
-    
-    // Verify shared app context
-    app0 = svc.getApp(rUser6, app0.getId(), app0.getVersion(), true, null);
-    Assert.assertFalse(app0.getSharedAppCtx());
+
+    // rUser0 should no longer have access
+    pass = false;
+    try { svc.getApp(rUser0, appId, appVer, false, null); }
+    catch (NotAuthorizedException e)
+    {
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
   }
 }
