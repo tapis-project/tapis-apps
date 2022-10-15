@@ -1,16 +1,5 @@
 package edu.utexas.tacc.tapis.apps.api.utils;
 
-import com.google.gson.JsonElement;
-import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
-import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
-import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
-import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
-import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
-import edu.utexas.tacc.tapis.apps.service.AppsService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -19,6 +8,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.google.gson.JsonElement;
+
+import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
+import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
+import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
+import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
+import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
+import edu.utexas.tacc.tapis.apps.service.AppsService;
+
 
 /*
    Utility class containing general use static methods.
@@ -318,25 +319,26 @@ public class ApiUtils
 //    return retList;
 //  }
 
-  /**
-   * Return String[] array of key=value given list of KeyValuePair
-   */
-  public static String[] getKeyValuesAsArray(List<KeyValuePair> kvList)
-  {
-    if (kvList == null) return null;
-    if (kvList.size() == 0) return App.EMPTY_STR_ARRAY;
-    return kvList.stream().map(KeyValuePair::toString).toArray(String[]::new);
-  }
-
-  /**
-   * Return list of KeyValuePair given String[] array of key=value
-   */
-  public static List<KeyValuePair> getKeyValuesAsList(String[] kvArray)
-  {
-    if (kvArray == null || kvArray.length == 0) return Collections.emptyList();
-    List<KeyValuePair> kvList = Arrays.stream(kvArray).map(KeyValuePair::fromString).collect(Collectors.toList());
-    return kvList;
-  }
+// NOTE: If these are ever needed they may need to be updated to handle the description attribute
+//  /**
+//   * Return String[] array of key=value given list of KeyValuePair
+//   */
+//  public static String[] getKeyValuesAsArray(List<KeyValuePair> kvList)
+//  {
+//    if (kvList == null) return null;
+//    if (kvList.size() == 0) return App.EMPTY_STR_ARRAY;
+//    return kvList.stream().map(KeyValuePair::toString).toArray(String[]::new);
+//  }
+//
+//  /**
+//   * Return list of KeyValuePair given String[] array of key=value
+//   */
+//  public static List<KeyValuePair> getKeyValuesAsList(String[] kvArray)
+//  {
+//    if (kvArray == null || kvArray.length == 0) return Collections.emptyList();
+//    List<KeyValuePair> kvList = Arrays.stream(kvArray).map(KeyValuePair::fromString).collect(Collectors.toList());
+//    return kvList;
+//  }
 
   /**
    * Trace the incoming request, include info about requesting user, op name and request URL

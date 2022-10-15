@@ -1,28 +1,26 @@
 package edu.utexas.tacc.tapis.apps.dao;
 
-import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
-import edu.utexas.tacc.tapis.apps.model.ParameterSet;
-import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
-import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
-import edu.utexas.tacc.tapis.apps.IntegrationUtils;
-import org.testng.Assert;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.Test;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import com.google.gson.JsonObject;
+import org.testng.Assert;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Test;
 
+import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
+import edu.utexas.tacc.tapis.apps.model.ParameterSet;
+import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
+import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
+import edu.utexas.tacc.tapis.apps.IntegrationUtils;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
-
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 
 import static edu.utexas.tacc.tapis.apps.IntegrationUtils.*;
@@ -79,7 +77,8 @@ public class AppsDaoTest
 
   // Test retrieving a single item
   @Test
-  public void testGet() throws Exception {
+  public void testGet() throws Exception
+  {
     App app0 = apps[1];
     boolean appCreated = dao.createApp(rUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
@@ -138,6 +137,7 @@ public class AppsDaoTest
     ParameterSet parmSet = tmpApp.getParameterSet();
     ParameterSet parmSet0 = app0.getParameterSet();
     Assert.assertNotNull(parmSet, "parameterSet was null");
+
     verifyAppArgs("App Arg", parmSet0.getAppArgs(), parmSet.getAppArgs());
     verifyAppArgs("Container Arg", parmSet0.getContainerArgs(), parmSet.getContainerArgs());
     verifyAppArgs("Scheduler Option Arg", parmSet0.getSchedulerOptions(), parmSet.getSchedulerOptions());
@@ -205,7 +205,7 @@ public class AppsDaoTest
       System.out.println("Found tag: " + tagStr);
     }
     // Verify notes
-    JsonObject obj = (JsonObject) tmpApp.getNotes();
+    JsonObject obj = tmpApp.getNotes();
     Assert.assertNotNull(obj, "Notes object was null");
     Assert.assertTrue(obj.has("project"));
     Assert.assertEquals(obj.get("project").getAsString(), notes1Obj.get("project").getAsString());
@@ -215,7 +215,8 @@ public class AppsDaoTest
 
   // Test retrieving all app IDs
   @Test
-  public void testGetAppIDs() throws Exception {
+  public void testGetAppIDs() throws Exception
+  {
     // Create 2 apps
     App app0 = apps[2];
     boolean appCreated = dao.createApp(rUser, app0, gson.toJson(app0), scrubbedJson);
@@ -237,7 +238,8 @@ public class AppsDaoTest
 
   // Test retrieving all apps
   @Test
-  public void testGetApps() throws Exception {
+  public void testGetApps() throws Exception
+  {
     App app0 = apps[4];
     boolean appCreated = dao.createApp(rUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
@@ -252,7 +254,8 @@ public class AppsDaoTest
 
   // Test retrieving all apps in a list of IDs
   @Test
-  public void testGetAppsInIDList() throws Exception {
+  public void testGetAppsInIDList() throws Exception
+  {
     var appIdList = new HashSet<String>();
     // Create 2 apps
     App app0 = apps[5];
@@ -278,7 +281,8 @@ public class AppsDaoTest
 
   // Test enable/disable/delete/undelete
   @Test
-  public void testEnableDisableDeleteUndelete() throws Exception {
+  public void testEnableDisableDeleteUndelete() throws Exception
+  {
     App app0 = apps[12];
     boolean appCreated = dao.createApp(rUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
@@ -307,7 +311,8 @@ public class AppsDaoTest
 
   // Test change app owner
   @Test
-  public void testChangeAppOwner() throws Exception {
+  public void testChangeAppOwner() throws Exception
+  {
     App app0 = apps[7];
     boolean appCreated = dao.createApp(rUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
@@ -319,7 +324,8 @@ public class AppsDaoTest
 
   // Test hard deleting a single item
   @Test
-  public void testHardDelete() throws Exception {
+  public void testHardDelete() throws Exception
+  {
     App app0 = apps[9];
     boolean appCreated = dao.createApp(rUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
@@ -331,7 +337,8 @@ public class AppsDaoTest
 
   // Test retrieving apps with multiple versions
   @Test
-  public void testMultipleVersions() throws Exception {
+  public void testMultipleVersions() throws Exception
+  {
     var appIdList = new HashSet<String>();
     var appVerList = new HashSet<String>();
     // Create 2 versions of 2 apps
@@ -401,7 +408,8 @@ public class AppsDaoTest
   //  check - returns false
   //  getOwner - returns null
   @Test
-  public void testMissingApp() throws Exception {
+  public void testMissingApp() throws Exception
+  {
     String fakeAppId = "AMissingAppId";
     String fakeAppVersion = "AMissingAppVersion";
     App patchedApp = new App(1, 1, tenantName, fakeAppId, fakeAppVersion, "description", JobType.BATCH, owner2, enabledTrue,
@@ -438,7 +446,8 @@ public class AppsDaoTest
   
   // Test retrieving a single item
   @Test
-  public void testGetAppHistory() throws Exception {
+  public void testGetAppHistory() throws Exception
+  {
     App app0 = apps[13];
     boolean appCreated = dao.createApp(rUser, app0, gson.toJson(app0), scrubbedJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());

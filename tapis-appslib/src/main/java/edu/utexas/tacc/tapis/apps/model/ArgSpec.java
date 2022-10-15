@@ -1,9 +1,12 @@
 package edu.utexas.tacc.tapis.apps.model;
 
+import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.apps.model.App.ArgInputMode;
 
 import java.util.Objects;
+
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NOTES;
 
 /*
  * Argument with metadata
@@ -28,6 +31,7 @@ public final class ArgSpec
   private final String name;
   private final String description;
   private final ArgInputMode inputMode;
+  private final JsonObject notes; // metadata as json
 
   /* ********************************************************************** */
   /*                           Constructors                                 */
@@ -40,14 +44,17 @@ public final class ArgSpec
     description = null;
     arg = null;
     inputMode = DEFAULT_INPUT_MODE;
+    notes = DEFAULT_NOTES;
   }
 
-  public ArgSpec(String value1, String name1, String description1, ArgInputMode mode1)
+  // Constructer setting all attributes
+  public ArgSpec(String arg1, String name1, String description1, ArgInputMode mode1, JsonObject notes1)
   {
-    arg = value1;
+    arg = arg1;
     name = name1;
     description = description1;
     inputMode = (mode1 == null) ? DEFAULT_INPUT_MODE : mode1;
+    notes = (notes1 == null) ? DEFAULT_NOTES : notes1;
   }
 
   /* ********************************************************************** */
@@ -57,6 +64,7 @@ public final class ArgSpec
   public String getName() { return name; }
   public String getDescription() { return description; }
   public ArgInputMode getInputMode() { return inputMode; }
+  public JsonObject getNotes() { return notes; }
 
   @Override
   public String toString() {return TapisUtils.toString(this);}
@@ -69,7 +77,9 @@ public final class ArgSpec
     if (!(o instanceof ArgSpec)) return false;
     var that = (ArgSpec) o;
     return (Objects.equals(this.arg, that.arg) && Objects.equals(this.name, that.name) &&
-            Objects.equals(this.description, that.description) && Objects.equals(this.inputMode, that.inputMode));
+            Objects.equals(this.description, that.description) && Objects.equals(this.inputMode, that.inputMode) &&
+            // JsonObject overrides equals so following should be fine.
+            Objects.equals(this.notes, that.notes));
   }
 
   @Override
@@ -78,8 +88,9 @@ public final class ArgSpec
     int retVal = (arg == null ? 1 : arg.hashCode());
     retVal = 31 * retVal + (name == null ? 0 : name.hashCode());
     retVal = 31 * retVal + (description == null ? 0 : description.hashCode());
-    // By inspection of this class inputMode is not null
+    // By inspection of this class inputMode and notes are not null
     retVal = 31 * retVal + inputMode.hashCode();
+    retVal = 31 * retVal + notes.hashCode();
     return retVal;
   }
 }

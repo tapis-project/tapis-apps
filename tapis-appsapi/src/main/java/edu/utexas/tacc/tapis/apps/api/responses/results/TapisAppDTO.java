@@ -64,7 +64,7 @@ public final class TapisAppDTO
   public boolean strictFileInputs;
   public JobAttributes jobAttributes;
   public String[] tags;
-  public Object notes;
+  public JsonObject notes;
   public UUID uuid;
   public boolean deleted;
   public Instant created;
@@ -179,10 +179,7 @@ public final class TapisAppDTO
         jsonObject.add(JOB_ATTRS_FIELD, gson.fromJson(jsonStr, JsonObject.class));
       }
       case TAGS_FIELD -> jsonObject.add(TAGS_FIELD, gson.toJsonTree(tags));
-      case NOTES_FIELD -> {
-        jsonStr = gson.toJson(notes);
-        jsonObject.add(NOTES_FIELD, gson.fromJson(jsonStr, JsonObject.class));
-      }
+      case NOTES_FIELD -> jsonObject.add(NOTES_FIELD, notes);
       case UUID_FIELD -> jsonObject.addProperty(UUID_FIELD, uuid.toString());
       case DELETED_FIELD -> jsonObject.addProperty(DELETED_FIELD, Boolean.toString(deleted));
       case CREATED_FIELD -> jsonObject.addProperty(CREATED_FIELD, created.toString());

@@ -9,6 +9,18 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.2.3 - 2022-10-15
+
+Incremental improvements and new preview features.
+
+### New features:
+- Add attribute *notes* to *ArgSpec*
+- Add attribute *description* to *envVariables* in *ParameterSet*.
+
+### Bug fixes:
+- None
+
+---------------------------------------------------------------------------
 ## 1.2.2 - 2022-10-10
 
 Incremental improvements and bug fixes.

@@ -2,6 +2,7 @@ package edu.utexas.tacc.tapis.apps.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.google.gson.JsonObject;
 
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
@@ -30,7 +31,7 @@ public final class PatchApp
   private final JobAttributes jobAttributes;
 
   private final String[] tags;
-  private Object notes; // Not final since may require special handling and need to be updated. See AppResource.java
+  private JsonObject notes; // Not final since may require special handling and need to be updated. See AppResource.java
 
   // ************************************************************************
   // *********************** Constructors ***********************************
@@ -41,7 +42,7 @@ public final class PatchApp
    */
   public PatchApp(String description1, Runtime runtime1, String runtimeVersion1, List<RuntimeOption> runtimeOptions1,
                   String containerImage1, JobType jobType1, Integer maxJobs1, Integer maxJobsPerUser1, Boolean strictFileInputs1,
-                  JobAttributes jobAttributes1, String[] tags1, Object notes1)
+                  JobAttributes jobAttributes1, String[] tags1, JsonObject notes1)
   {
     description = description1;
     runtime = runtime1;
@@ -77,8 +78,6 @@ public final class PatchApp
   public String[] getTags() {
     return (tags == null) ? null : tags.clone();
   }
-  public Object getNotes() {
-    return notes;
-  }
-  public void setNotes(Object o) { notes = o; }
+  public JsonObject getNotes() { return notes; }
+  public void setNotes(JsonObject o) { notes = o; }
 }

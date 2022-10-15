@@ -216,7 +216,7 @@ public final class App
   private String[] jobTags;
   // === End jobAttributes ==========
   private String[] tags;       // List of arbitrary tags as strings
-  private Object notes;      // Simple metadata as json
+  private JsonObject notes;      // Simple metadata as json
   private UUID uuid;
   private Instant created; // UTC time for when record was created
   private Instant updated; // UTC time for when record was last updated
@@ -327,7 +327,7 @@ public final class App
              int nodeCount1, int coresPerNode1, int memoryMB1, int maxMinutes1,
              List<NotificationSubscription> subscriptions1, String[] jobTags1,
              // == End jobAttributes
-             String[] tags1, Object notes1, UUID uuid1, boolean deleted1, Instant created1, Instant updated1)
+             String[] tags1, JsonObject notes1, UUID uuid1, boolean deleted1, Instant created1, Instant updated1)
   {
     seqId = seqId1;
     verSeqId = verSeqId1;
@@ -834,8 +834,8 @@ public final class App
     tags = (t == null) ? null : t.clone();
   }
 
-  public Object getNotes() { return notes; }
-  public void setNotes(Object n) { notes = n;  }
+  public JsonObject getNotes() { return notes; }
+  public void setNotes(JsonObject n) { notes = n;  }
 
   public UUID getUuid() { return uuid; }
   public void setUuid(UUID u) { uuid = u;  }

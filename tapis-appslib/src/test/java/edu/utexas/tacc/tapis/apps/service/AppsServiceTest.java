@@ -292,7 +292,6 @@ public class AppsServiceTest
     app0.setNotes(notes2);
     //Check common app attributes:
     checkCommonAppAttrs(app0, tmpApp);
-
   }
 
   // Test updating an app using patch
@@ -1364,7 +1363,8 @@ public class AppsServiceTest
     // Verify notes
     Assert.assertNotNull(app0.getNotes(), "Orig Notes should not be null");
     Assert.assertNotNull(tmpApp.getNotes(), "Fetched Notes should not be null");
-    System.out.println("Found notes: " + app0.getNotes().toString());
+    System.out.println("Found notes. toString: " + app0.getNotes().toString());
+    System.out.println("Notes class type: " + app0.getNotes().getClass().toString());
     JsonObject tmpObj = (JsonObject) tmpApp.getNotes();
     JsonObject origNotes = (JsonObject) app0.getNotes();
     Assert.assertTrue(tmpObj.has("project"));
