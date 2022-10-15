@@ -19,7 +19,7 @@ public final class DeliveryTarget
   // ============== Fields =========================================
   private static final Logger _log = LoggerFactory.getLogger(DeliveryTarget.class);
 
-  private final NotifDeliveryMethod deliveryType;
+  private final NotifDeliveryMethod deliveryMethod;
   private final String deliveryAddress;
 
   /* ********************************************************************** */
@@ -27,14 +27,14 @@ public final class DeliveryTarget
   /* ********************************************************************** */
   public DeliveryTarget(NotifDeliveryMethod method1, String deliveryAddress1)
   {
-    deliveryType = method1;
+    deliveryMethod = method1;
     deliveryAddress = deliveryAddress1;
   }
 
   /* ********************************************************************** */
   /*                               Accessors                                */
   /* ********************************************************************** */
-  public NotifDeliveryMethod getDeliveryType() { return deliveryType; }
+  public NotifDeliveryMethod getDeliveryMethod() { return deliveryMethod; }
   public String getDeliveryAddress() { return deliveryAddress; }
 
   @Override

@@ -24,6 +24,7 @@
     "tags": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/TagsDefinition" },
     "notes": { "type": "object" },
     "tenant": { "type":  "string" },
+    "sharedAppCtx": { "type": "boolean" },
     "uuid": { "type":  "string" },
     "deleted": { "type":  "boolean" },
     "created": { "type":  "string" },

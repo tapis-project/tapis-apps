@@ -24,6 +24,7 @@
     "notes": { "type": "object" },
     "tenant": { "type":  "string" },
     "uuid": { "type":  "string" },
+    "sharedAppCtx": { "type": "boolean" },
     "deleted": { "type":  "boolean" },
     "created": { "type":  "string" },
     "updated": { "type":  "string" }
