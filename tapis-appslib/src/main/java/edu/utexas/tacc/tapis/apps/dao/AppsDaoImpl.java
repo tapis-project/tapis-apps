@@ -75,7 +75,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   private static final Logger _log = LoggerFactory.getLogger(AppsDaoImpl.class);
 
   private static final String VERS_ANY = "%";
-  private static final String EMPTY_JSON_OBJ = "{}";
+  private static final String EMPTY_JSON_OBJ_STR = "{}";
   private static final String EMPTY_JSON_ARRAY = "[]";
   private static final String[] EMPTY_STR_ARRAY = {};
 
@@ -108,7 +108,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    */
   @Override
   public boolean createApp(ResourceRequestUser rUser, App app, String changeDescription, String rawData)
-          throws TapisException, IllegalStateException {
+          throws TapisException, IllegalStateException
+  {
     String opName = "createApp";
     // ------------------------- Check Input -------------------------
     if (app == null) LibUtils.logAndThrowNullParmException(opName, "app");
@@ -118,7 +119,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (StringUtils.isBlank(app.getId())) LibUtils.logAndThrowNullParmException(opName, "appId");
     if (StringUtils.isBlank(app.getVersion())) LibUtils.logAndThrowNullParmException(opName, "appVersion");
 
-    // Make sure owner, runtime, notes, tags etc are set
+    // Make sure owner, runtime, notes, tags etc. are set
     String owner = App.DEFAULT_OWNER;
     Runtime runtime = App.DEFAULT_RUNTIME;
     String[] runtimeOptionsStrArray = null;
@@ -145,7 +146,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (app.getSubscriptions() != null) subscriptionsJson = TapisGsonUtils.getGson().toJsonTree(app.getSubscriptions());
     if (app.getJobTags() != null) jobTagsStrArray = app.getJobTags();
     if (app.getTags() != null) tagsStrArray = app.getTags();
-    if (app.getNotes() != null) notesObj = (JsonObject) app.getNotes();
+    if (app.getNotes() != null) notesObj = app.getNotes();
 
     // Generated sequence IDs
     int appSeqId = -1;
@@ -311,7 +312,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (putApp.getSubscriptions() != null) subscriptionsJson = TapisGsonUtils.getGson().toJsonTree(putApp.getSubscriptions());
     if (putApp.getJobTags() != null) jobTagsStrArray = putApp.getJobTags();
     if (putApp.getTags() != null) tagsStrArray = putApp.getTags();
-    if (putApp.getNotes() != null) notesObj = (JsonObject) putApp.getNotes();
+    if (putApp.getNotes() != null) notesObj = putApp.getNotes();
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -445,7 +446,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (patchedApp.getSubscriptions() != null) subscriptionsJson = TapisGsonUtils.getGson().toJsonTree(patchedApp.getSubscriptions());
     if (patchedApp.getJobTags() != null) jobTagsStrArray = patchedApp.getJobTags();
     if (patchedApp.getTags() != null) tagsStrArray = patchedApp.getTags();
-    if (patchedApp.getNotes() != null) notesObj = (JsonObject) patchedApp.getNotes();
+    if (patchedApp.getNotes() != null) notesObj = patchedApp.getNotes();
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -921,7 +922,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Retrieve specified or most recently created version of an application.
    * @param appId - app name
    * @param appVersion - app version, null for most recently created version
-   * @param includeDeleted - whether or not to include deleted items
+   * @param includeDeleted - whether to include deleted items
    * @return App object if found, null if not found
    * @throws TapisException - on error
    */
@@ -1435,7 +1436,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
                                 String version, int appSeqId, int appVerSeqId, AppOperation op,
                                 String changeDescription, String rawData, UUID uuid)
   {
-    String updJsonStr = (StringUtils.isBlank(changeDescription)) ? EMPTY_JSON_OBJ : changeDescription;
+    String updJsonStr = (StringUtils.isBlank(changeDescription)) ? EMPTY_JSON_OBJ_STR : changeDescription;
     if (appSeqId < 1)
     {
       appSeqId = db.selectFrom(APPS).where(APPS.TENANT.eq(tenant),APPS.ID.eq(id)).fetchOne(APPS.SEQ_ID);
@@ -1550,7 +1551,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     // Build lists for ParameterSet arguments, FileInputs, FileInputArrays.
     JsonElement parmSetJsonElement = r.get(APPS_VERSIONS.PARAMETER_SET);
+
     ParameterSet parmSet = TapisGsonUtils.getGson().fromJson(parmSetJsonElement, ParameterSet.class);
+    // NOTE: At this point all ArgSpec notes inside parmSet are of type com.google.gson.internal.LinkedTreeMap
+    //       gson has done the conversion because the embedded field is of type object.
     JsonElement fiJsonElement = r.get(APPS_VERSIONS.FILE_INPUTS);
     List<FileInput> fileInputs = Arrays.asList(TapisGsonUtils.getGson().fromJson(fiJsonElement, FileInput[].class));
     JsonElement fiaJsonElement = r.get(APPS_VERSIONS.FILE_INPUT_ARRAYS);
@@ -1572,7 +1576,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             r.get(APPS_VERSIONS.IS_MPI), r.get(APPS_VERSIONS.MPI_CMD), r.get(APPS_VERSIONS.CMD_PREFIX),
             parmSet, fileInputs, fileInputArrays, r.get(APPS_VERSIONS.NODE_COUNT), r.get(APPS_VERSIONS.CORES_PER_NODE),
             r.get(APPS_VERSIONS.MEMORY_MB), r.get(APPS_VERSIONS.MAX_MINUTES), subscriptions,
-            r.get(APPS_VERSIONS.JOB_TAGS), r.get(APPS_VERSIONS.TAGS), r.get(APPS_VERSIONS.NOTES),
+            r.get(APPS_VERSIONS.JOB_TAGS), r.get(APPS_VERSIONS.TAGS), (JsonObject) r.get(APPS_VERSIONS.NOTES),
             r.get(APPS_VERSIONS.UUID), r.get(APPS.DELETED), created, updated);
     return app;
   }

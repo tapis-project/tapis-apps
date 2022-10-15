@@ -53,6 +53,7 @@ public final class App
   public static final boolean DEFAULT_ENABLED = true;
   public static final boolean DEFAULT_CONTAINERIZED = true;
   public static final boolean DEFAULT_STRICT_FILE_INPUTS = false;
+  public static final boolean DEFAULT_SHARED_APP_CTX = false;
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
   public static final JsonElement DEFAULT_PARAMETER_SET = TapisGsonUtils.getGson().fromJson("{}", JsonElement.class);
   public static final JsonElement DEFAULT_FILE_INPUTS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
@@ -111,10 +112,12 @@ public final class App
   public static final String MAX_MINUTES_FIELD = "maxMinutes";
   public static final String TAGS_FIELD = "tags";
   public static final String NOTES_FIELD = "notes";
+  public static final String SHAREDAPPCTX_FIELD = "sharedAppCtx";
   public static final String UUID_FIELD = "uuid";
   public static final String DELETED_FIELD = "deleted";
   public static final String CREATED_FIELD = "created";
   public static final String UPDATED_FIELD = "updated";
+  public static final String SHARED_APP_CTX_FIELD = "sharedAppCtx";
 
   // Message keys
   private static final String CREATE_MISSING_ATTR = "APPLIB_CREATE_MISSING_ATTR";
@@ -161,6 +164,8 @@ public final class App
   // ************************************************************************
   // *********************** Fields *****************************************
   // ************************************************************************
+
+  private boolean sharedAppCtx = DEFAULT_SHARED_APP_CTX; // Indicates app accessible due to having been shared with requesting user.
 
   // NOTE: In order to use jersey's SelectableEntityFilteringFeature fields cannot be final.
   // === Start fields in table apps =============================================
@@ -211,7 +216,7 @@ public final class App
   private String[] jobTags;
   // === End jobAttributes ==========
   private String[] tags;       // List of arbitrary tags as strings
-  private Object notes;      // Simple metadata as json
+  private JsonObject notes;      // Simple metadata as json
   private UUID uuid;
   private Instant created; // UTC time for when record was created
   private Instant updated; // UTC time for when record was last updated
@@ -299,6 +304,7 @@ public final class App
     jobTags = a.getJobTags();
     tags = (a.getTags() == null) ? EMPTY_STR_ARRAY : a.getTags().clone();
     notes = a.getNotes();
+    sharedAppCtx = a.getSharedAppCtx();
     uuid = a.getUuid();
     deleted = a.isDeleted();
   }
@@ -321,7 +327,7 @@ public final class App
              int nodeCount1, int coresPerNode1, int memoryMB1, int maxMinutes1,
              List<ReqSubscribe> subscriptions1, String[] jobTags1,
              // == End jobAttributes
-             String[] tags1, Object notes1, UUID uuid1, boolean deleted1, Instant created1, Instant updated1)
+             String[] tags1, JsonObject notes1, UUID uuid1, boolean deleted1, Instant created1, Instant updated1)
   {
     seqId = seqId1;
     verSeqId = verSeqId1;
@@ -420,6 +426,7 @@ public final class App
     jobTags = a.getJobTags();
     tags = a.getTags();
     notes = a.getNotes();
+    sharedAppCtx = a.getSharedAppCtx();
     uuid = a.getUuid();
     deleted = a.isDeleted();
     created = a.getCreated();
@@ -490,7 +497,12 @@ public final class App
   private void checkAttrValidity(List<String> errMessages)
   {
     // Check that id is not empty and contains a valid pattern
-    if (!StringUtils.isBlank(id) && !isValidId(id)) errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, ID_FIELD, id));
+    if (!StringUtils.isBlank(id) && !isValidId(id))
+      errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, ID_FIELD, id));
+    if (!StringUtils.isBlank(execSystemId) && !isValidId(execSystemId))
+      errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, EXECSYSID_FIELD, execSystemId));
+    if (!StringUtils.isBlank(archiveSystemId) && !isValidId(archiveSystemId))
+      errMessages.add(LibUtils.getMsg(INVALID_STR_ATTR, ARCHIVESYSID_FIELD, archiveSystemId));
 
 // TODO // Check that runtimeVersion is a single version, list of versions or range of versions
 //    if (!StringUtils.isBlank(runtimeVersion))
@@ -822,11 +834,14 @@ public final class App
     tags = (t == null) ? null : t.clone();
   }
 
-  public Object getNotes() { return notes; }
-  public void setNotes(Object n) { notes = n;  }
+  public JsonObject getNotes() { return notes; }
+  public void setNotes(JsonObject n) { notes = n;  }
 
   public UUID getUuid() { return uuid; }
   public void setUuid(UUID u) { uuid = u;  }
 
   public boolean isDeleted() { return deleted; }
+
+  public boolean getSharedAppCtx() { return sharedAppCtx; }
+  public void setSharedAppCtx(boolean b) { sharedAppCtx = b;  }
 }

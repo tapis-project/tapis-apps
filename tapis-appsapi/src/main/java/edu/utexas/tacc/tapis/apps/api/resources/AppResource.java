@@ -1105,7 +1105,7 @@ public class AppResource
     var jobAttrs = req.jobAttributes;
     if (jobAttrs == null) jobAttrs = new JobAttributes();
     // Extract Notes from the raw json.
-    Object notes = extractNotes(rawJson);
+    JsonObject notes = extractNotes(rawJson);
     // Create App
     var app = new App(-1, -1, tenantId, req.id, req.version, req.description, req.jobType, req.owner, req.enabled,
           DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
@@ -1128,7 +1128,7 @@ public class AppResource
     var jobAttrs = req.jobAttributes;
     if (jobAttrs == null) jobAttrs = new JobAttributes();
     // Extract Notes from the raw json.
-    Object notes = extractNotes(rawJson);
+    JsonObject notes = extractNotes(rawJson);
 
     // NOTE: Following attributes are not updatable and must be filled in on service side.
     String owner = null;
@@ -1160,7 +1160,7 @@ public class AppResource
     List<String> errMessages = app1.checkAttributeRestrictions();
 
     // Now validate attributes that have special handling at API level.
-    // Currently no additional checks.
+    // Currently, no additional checks.
 
     // If validation failed log error message and return response
     if (!errMessages.isEmpty())
@@ -1179,9 +1179,9 @@ public class AppResource
    * approaches caused problems with the json marshalling. This method ensures notes end up as a JsonObject rather
    * than a LinkedTreeMap.
    */
-  private static Object extractNotes(String rawJson)
+  private static JsonObject extractNotes(String rawJson)
   {
-    Object notes = null;
+    JsonObject notes = null;
     // Check inputs
     if (StringUtils.isBlank(rawJson)) return notes;
     // Turn the request string into a json object and extract the notes object
@@ -1249,17 +1249,6 @@ public class AppResource
 
     return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, APPLICATIONS_SVC, itemCountStr), resp1);
   }
-
-  /**
-   * Create an OK response given message and base response to put in result
-   * @param msg - message for resp.message
-   * @param resp - base response (the result)
-   * @return - Final response to return to client
-   */
-  private static Response createSuccessResponse(Status status, String msg, RespAbstract resp)
-  {
-    return Response.status(status).entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp)).build();
-  }
   
   /**
    * getHistory
@@ -1310,4 +1299,16 @@ public class AppResource
     RespAppHistory resp1 = new RespAppHistory(appHistory);
     return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, "AppHistory", appId), resp1);
   }
+  
+  /**
+   * Create an OK response given message and base response to put in result
+   * @param msg - message for resp.message
+   * @param resp - base response (the result)
+   * @return - Final response to return to client
+   */
+  private static Response createSuccessResponse(Status status, String msg, RespAbstract resp)
+  {
+    return Response.status(status).entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp)).build();
+  }
+
 }

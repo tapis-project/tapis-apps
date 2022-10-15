@@ -155,10 +155,9 @@ public class PermsResource
     // ---------------------------- Success -------------------------------
     String permsListStr = permsList.stream().map(Enum::name).collect(Collectors.joining(","));
     RespBasic resp1 = new RespBasic();
+    msg = ApiUtils.getMsgAuth("APPAPI_PERMS_GRANTED", rUser, appId, userName, permsListStr);
     return Response.status(Status.CREATED)
-      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("APPAPI_PERMS_GRANTED", rUser, appId,
-                                                                       userName, permsListStr),
-                                                   PRETTY, resp1))
+      .entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp1))
       .build();
   }
 
@@ -273,10 +272,9 @@ public class PermsResource
 
     // ---------------------------- Success -------------------------------
     RespBasic resp1 = new RespBasic();
+    msg = ApiUtils.getMsgAuth("APPAPI_PERMS_REVOKED", rUser, appId, userName, permissionStr);
     return Response.status(Status.CREATED)
-      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("APPAPI_PERMS_REVOKED", rUser, appId,
-                                                                       userName, permissionStr),
-                                                   PRETTY, resp1))
+      .entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp1))
       .build();
   }
 
@@ -346,10 +344,9 @@ public class PermsResource
     // ---------------------------- Success -------------------------------
     String permsListStr = permsList.stream().map(Enum::name).collect(Collectors.joining(","));
     RespBasic resp1 = new RespBasic();
+    msg = ApiUtils.getMsgAuth("APPAPI_PERMS_REVOKED", rUser, appId, userName, permsListStr);
     return Response.status(Status.CREATED)
-      .entity(TapisRestUtils.createSuccessResponse(ApiUtils.getMsgAuth("APPAPI_PERMS_REVOKED", rUser, appId,
-                                                                       userName, permsListStr),
-                                                   PRETTY, resp1))
+      .entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp1))
       .build();
   }
 

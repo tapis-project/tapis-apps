@@ -96,8 +96,8 @@ public final class IntegrationUtils
   public static final String[] execSystemConstraints1 = {"Constraint1a AND", "Constraint1b"};
   public static final String[] execSystemConstraints2 = {"Constraint2a AND", "Constraint2b"};
   public static final String[] execSystemConstraintsNull = null;
-  public static final String execSystemId1 = "tapisv3-exec3"; // Exec system with most attributes populated, including LogicalQueues
-  public static final String execSystemId2 = "tapisv3-exec4"; // Exec system with most attributes populated, including LogicalQueues
+  public static final String execSystemId1 = "tapisv3-exec1-testuser1"; // Exec system with most attributes populated, including LogicalQueues
+  public static final String execSystemId2 = "tapisv3-exec4-testuser1"; // Exec system with most attributes populated, including LogicalQueues
   public static final String execSystemIdNull = null;
   public static final String execSystemExecDir1 = "execSystemExecDir1";
   public static final String execSystemExecDir2 = "execSystemExecDir2";
@@ -111,8 +111,8 @@ public final class IntegrationUtils
   public static final String execSystemLogicalQueue1 = "dsnormal"; // A LogicalQueue defined for tapisv3-exec3
   public static final String execSystemLogicalQueue2 = "dslarge";
   public static final String execSystemLogicalQueueNull = null;
-  public static final String archiveSystemId1 = "tapisv3-storage";
-  public static final String archiveSystemId2 = "tapisv3-storage-dev";
+  public static final String archiveSystemId1 = "tapisv3-storage-testuser1";
+  public static final String archiveSystemId2 = "tapisv3-storage-dev-testuser1";
   public static final String archiveSystemIdNull = null;
   public static final String archiveSystemDir1 = "archiveSystemDir1";
   public static final String archiveSystemDir2 = "archiveSystemDir2";
@@ -155,20 +155,12 @@ public final class IntegrationUtils
   public static final Instant updatedNull = null;
   public static final UUID uuidNull = null;
 
-  public static final List<KeyValuePair> metaKVPairs1 = List.of(KeyValuePair.fromString("key1A=val1A"),
-                                                                KeyValuePair.fromString("key1B=val1B"),
-                                                                KeyValuePair.fromString("key1C="));
-  public static final List<KeyValuePair> metaKVPairs2 = List.of(KeyValuePair.fromString("key2A=val2A"),
-                                                                KeyValuePair.fromString("key2B=val2B"),
-                                                                KeyValuePair.fromString("key2C="));
-  public static final List<KeyValuePair> metaKVPairs3 = List.of(KeyValuePair.fromString("key3A=val3A"),
-                                                                KeyValuePair.fromString("key3B=val3B"));
-  public static final List<KeyValuePair> envVariables1 = List.of(KeyValuePair.fromString("key1A=val1A"),
-                                                         KeyValuePair.fromString("key1B=val1B"),
-                                                         KeyValuePair.fromString("key1C="));
-  public static final List<KeyValuePair> envVariables2 = List.of(KeyValuePair.fromString("key2A=val2A"),
-                                                         KeyValuePair.fromString("key2B=val2B"),
-                                                         KeyValuePair.fromString("key2C="));
+  public static final List<KeyValuePair> envVariables1 = List.of(new KeyValuePair("a1","b1", null),
+                                                                 new KeyValuePair("HOME","/home/testuser1", ""),
+                                                                 new KeyValuePair("TMP","/tmp1", "my keyvalue pair"));
+  public static final List<KeyValuePair> envVariables2 = List.of(new KeyValuePair("a2","b2", "my 2nd key-value pair"),
+                                                                 new KeyValuePair("HOME","/home/testuser2", null),
+                                                                 new KeyValuePair("TMP","/tmp2"));
   public static final List<KeyValuePair> envVariablesNull = null;
   public static final String[] archiveIncludes1 = {"/include1A", "/include1B"};
   public static final String[] archiveIncludes2 = {"/include2A", "/include2B"};
@@ -191,12 +183,12 @@ public final class IntegrationUtils
             " [_ $ - & * % @ + = ! ^ ? < > , . ( ) { } / \\ | ]. Backslashes must be escaped."};
   public static final String[] tags2 = {"value2a", "value2b", "b"};
   public static final String[] tagsNull = null;
-  public static final Object notes1 =
-          TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj1\", \"testdata\": \"abc1\"}", JsonObject.class);
-  public static final Object notes2 =
-          TapisGsonUtils.getGson().fromJson("{\"project\": \"myproj2\", \"testdata\": \"abc2\"}", JsonObject.class);
+  public static final JsonObject notes1 =
+          TapisGsonUtils.getGson().fromJson("{\"project\": \"my proj1\", \"testdata\": \"abc1\"}", JsonObject.class);
+  public static final JsonObject notes2 =
+          TapisGsonUtils.getGson().fromJson("{\"project\": \"my proj2\", \"testdata\": \"abc2\"}", JsonObject.class);
   public static final JsonObject notes1Obj = (JsonObject) notes1;
-  public static final String[] notesNull = null;
+  public static final JsonObject notesNull = null;
   public static final String scrubbedJson = "{}";
 
   // FileInputs
@@ -265,43 +257,49 @@ public final class IntegrationUtils
   public static final List<ReqSubscribe> notifListNull = null;
 
   // AppArgs, ContainerArgs, SchedulerOptions
-  public static final ArgSpec appArg1A = new ArgSpec("value1A", "appArg1A", "App arg 1A", argInputModeRequired);
-  public static final ArgSpec appArg1B = new ArgSpec("value1B", "appArg1B", "App arg 1B", argInputModeRequired);
+  public static final JsonObject argNotes1 =
+          TapisGsonUtils.getGson().fromJson("{\"argName\": \"my arg1\", \"argType\": \"bool\"}", JsonObject.class);
+  public static final JsonObject argNotes2 =
+          TapisGsonUtils.getGson().fromJson("{\"argName\": \"my arg2\", \"argType\": \"this, _ has spaces. - testing!@#$%*()[]{}<>:;\"}", JsonObject.class);
+  public static final JsonObject argNotes3 =
+          TapisGsonUtils.getGson().fromJson("{\"argName\": \"my arg3\", \"argType\": \"int\"}", JsonObject.class);
+  public static final ArgSpec appArg1A = new ArgSpec("argValue1A", "appArg1A", "App arg 1A", argInputModeRequired, argNotes1);
+  public static final ArgSpec appArg1B = new ArgSpec("argValue1B", "appArg1B", "App arg 1B", argInputModeRequired, argNotes1);
   public static final List<ArgSpec> appArgList1 = new ArrayList<>(List.of(appArg1A, appArg1B));
-  public static final ArgSpec appArg2A = new ArgSpec("value2A", "appArg2A", "App arg 2A", argInputModeRequired);
-  public static final ArgSpec appArg2B = new ArgSpec("value2B", "appArg2B", "App arg 2B", argInputModeFixed);
+  public static final ArgSpec appArg2A = new ArgSpec("argValue2A", "appArg2A", "App arg 2A", argInputModeRequired, argNotes2);
+  public static final ArgSpec appArg2B = new ArgSpec("argValue2B", "appArg2B", "App arg 2B", argInputModeFixed, argNotes2);
   public static final List<ArgSpec> appArgList2 = new ArrayList<>(List.of(appArg2A, appArg2B));
-  public static final ArgSpec appArg3A = new ArgSpec("value3A", "appArg3A", "App arg 3A", argInputModeRequired);
-  public static final ArgSpec appArg3B = new ArgSpec("value3B", "appArg3B", "App arg 3B", argInputModeFixed);
+  public static final ArgSpec appArg3A = new ArgSpec("argValue3A", "appArg3A", "App arg 3A", argInputModeRequired, argNotes3);
+  public static final ArgSpec appArg3B = new ArgSpec("argValue3B", "appArg3B", "App arg 3B", argInputModeFixed, argNotes3);
   public static final List<ArgSpec> appArgList3 = new ArrayList<>(List.of(appArg3A, appArg3B));
   public static final List<ArgSpec> appArgListNull = null;
 
-  public static final ArgSpec containerArg1A = new ArgSpec("value1A", "containerArg1A", "Container arg 1A",
-          argInputModeRequired);
-  public static final ArgSpec containerArg1B = new ArgSpec("value1B", "containerArg1B", "Container arg 1B",
-          argInputModeFixed);
+  public static final ArgSpec containerArg1A = new ArgSpec("argValue1A", "containerArg1A", "Container arg 1A",
+          argInputModeRequired, argNotes1);
+  public static final ArgSpec containerArg1B = new ArgSpec("argValue1B", "containerArg1B", "Container arg 1B",
+          argInputModeFixed, argNotes1);
   public static final List<ArgSpec> containerArgList1 = new ArrayList<>(List.of(containerArg1A, containerArg1B));
-  public static final ArgSpec containerArg2A = new ArgSpec("value2A", "containerArg2A", "Container arg 2A",
-          argInputModeRequired);
-  public static final ArgSpec containerArg2B = new ArgSpec("value2B", "containerArg2B", "Container arg 2B",
-          argInputModeFixed);
+  public static final ArgSpec containerArg2A = new ArgSpec("argValue2A", "containerArg2A", "Container arg 2A",
+          argInputModeRequired, argNotes2);
+  public static final ArgSpec containerArg2B = new ArgSpec("argValue2B", "containerArg2B", "Container arg 2B",
+          argInputModeFixed, argNotes2);
   public static final List<ArgSpec> containerArgList2 = new ArrayList<>(List.of(containerArg2A, containerArg2B));
-  public static final ArgSpec containerArg3A = new ArgSpec("value3A", "containerArg3A", "Container arg 3A",
-          argInputModeRequired);
-  public static final ArgSpec containerArg3B = new ArgSpec("value3B", "containerArg3B", "Container arg 3B",
-          argInputModeFixed);
+  public static final ArgSpec containerArg3A = new ArgSpec("argValue3A", "containerArg3A", "Container arg 3A",
+          argInputModeRequired, argNotes3);
+  public static final ArgSpec containerArg3B = new ArgSpec("argValue3B", "containerArg3B", "Container arg 3B",
+          argInputModeFixed, argNotes3);
   public static final List<ArgSpec> containerArgList3 = new ArrayList<>(List.of(containerArg3A, containerArg3B));
   public static final List<ArgSpec> containerArgListNull = null;
 
-  public static final ArgSpec schedulerOption1A = new ArgSpec("value1A", "schedulerOption1A", "Scheduler option 1A",
-          argInputModeRequired);
-  public static final ArgSpec schedulerOption1B = new ArgSpec("value1B", "schedulerOption1B", "Scheduler option 1B",
-          argInputModeFixed);
+  public static final ArgSpec schedulerOption1A = new ArgSpec("argValue1A", "schedulerOption1A", "Scheduler option 1A",
+          argInputModeRequired, argNotes1);
+  public static final ArgSpec schedulerOption1B = new ArgSpec("argValue1B", "schedulerOption1B", "Scheduler option 1B",
+          argInputModeFixed, argNotes1);
   public static final List<ArgSpec> schedulerOptionList1 = new ArrayList<>(List.of(schedulerOption1A, schedulerOption1B));
-  public static final ArgSpec schedulerOption2A = new ArgSpec("value2A", "schedulerOption2A", "Scheduler option 2A",
-          argInputModeRequired);
-  public static final ArgSpec schedulerOption2B = new ArgSpec("value2B", "schedulerOption2B", "Scheduler option 2B",
-          argInputModeFixed);
+  public static final ArgSpec schedulerOption2A = new ArgSpec("argValue2A", "schedulerOption2A", "Scheduler option 2A",
+          argInputModeRequired, argNotes2);
+  public static final ArgSpec schedulerOption2B = new ArgSpec("argValue2B", "schedulerOption2B", "Scheduler option 2B",
+          argInputModeFixed, argNotes2);
   public static final List<ArgSpec> schedulerOptionList2 = new ArrayList<>(List.of(schedulerOption2A, schedulerOption2B));
   public static final List<ArgSpec> schedulerOptionListNull = null;
 
@@ -374,7 +372,6 @@ public final class IntegrationUtils
    * Create App in memory with minimal attributes set based on App given
    *   id, version
    *   containerized==true -> containterImage
-   *   dynamicExec==false -> execSystemId
    * NOTE: many args to constructor are primitives so cannot be set to null.
    */
   public static App makeMinimalApp(App app, String id)
@@ -382,7 +379,7 @@ public final class IntegrationUtils
     return new App(-1, -1, tenantName, id, app.getVersion(), descriptionNull, jobType1, ownerNull, enabledTrue,
             containerizedTrue, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage1, maxJobs1, maxJobsPerUser1,
             strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
-            execSystemId1, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
+            execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
             isMpiFalse, mpiCmdNull, cmdPrefixNull,
             parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMB1, maxMinutes1, notifList1, jobTagsNull,
@@ -512,6 +509,22 @@ public final class IntegrationUtils
       Assert.assertEquals(fetchedArg.getArg(), origArg.getArg());
       Assert.assertEquals(fetchedArg.getDescription(), origArg.getDescription());
       Assert.assertEquals(fetchedArg.getInputMode(), origArg.getInputMode());
+      // Verify notes
+      JsonObject fetchedNotesObj = fetchedArg.getNotes();
+      JsonObject origNotesObj = origArg.getNotes();
+      if (origNotesObj == null)
+      {
+        Assert.assertNull(fetchedNotesObj);
+        System.out.println("############################################ OrigArgNotes and FetchedArgNotes were null");
+      }
+      else
+      {
+        Assert.assertNotNull(fetchedNotesObj, "ArgSpec Notes object was null");
+        Assert.assertTrue(fetchedNotesObj.has("argName"));
+        Assert.assertEquals(fetchedNotesObj.get("argName").getAsString(), origNotesObj.get("argName").getAsString());
+        Assert.assertTrue(fetchedNotesObj.has("argType"));
+        Assert.assertEquals(fetchedNotesObj.get("argType").getAsString(), origNotesObj.get("argType").getAsString());
+      }
     }
   }
 

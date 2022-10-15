@@ -16,6 +16,7 @@ import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 
 import static edu.utexas.tacc.tapis.apps.api.resources.AppResource.SUMMARY_ATTRS;
 import static edu.utexas.tacc.tapis.apps.model.App.DELETED_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.SHARED_APP_CTX_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.TENANT_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.ID_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.VERSION_FIELD;
@@ -44,6 +45,8 @@ public final class TapisAppDTO
 {
   private static final Gson gson = TapisGsonUtils.getGson();
 
+  public boolean sharedAppCtx;
+
   public String tenant;
   public String id;
   public String version;
@@ -61,7 +64,7 @@ public final class TapisAppDTO
   public boolean strictFileInputs;
   public JobAttributes jobAttributes;
   public String[] tags;
-  public Object notes;
+  public JsonObject notes;
   public UUID uuid;
   public boolean deleted;
   public Instant created;
@@ -95,6 +98,7 @@ public final class TapisAppDTO
     //   As requested by Jobs service.
     if (maxJobs < 0) maxJobs = Integer.MAX_VALUE;
     if (maxJobsPerUser < 0) maxJobsPerUser = Integer.MAX_VALUE;
+    sharedAppCtx = a.getSharedAppCtx();
   }
 
   /**
@@ -175,14 +179,12 @@ public final class TapisAppDTO
         jsonObject.add(JOB_ATTRS_FIELD, gson.fromJson(jsonStr, JsonObject.class));
       }
       case TAGS_FIELD -> jsonObject.add(TAGS_FIELD, gson.toJsonTree(tags));
-      case NOTES_FIELD -> {
-        jsonStr = gson.toJson(notes);
-        jsonObject.add(NOTES_FIELD, gson.fromJson(jsonStr, JsonObject.class));
-      }
+      case NOTES_FIELD -> jsonObject.add(NOTES_FIELD, notes);
       case UUID_FIELD -> jsonObject.addProperty(UUID_FIELD, uuid.toString());
       case DELETED_FIELD -> jsonObject.addProperty(DELETED_FIELD, Boolean.toString(deleted));
       case CREATED_FIELD -> jsonObject.addProperty(CREATED_FIELD, created.toString());
       case UPDATED_FIELD -> jsonObject.addProperty(UPDATED_FIELD, updated.toString());
+      case SHARED_APP_CTX_FIELD -> jsonObject.addProperty(SHARED_APP_CTX_FIELD, Boolean.toString(sharedAppCtx));
     }
   }
 }
