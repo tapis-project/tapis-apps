@@ -38,6 +38,11 @@ public final class App
   // Set of reserved application names
   public static final Set<String> RESERVED_ID_SET = new HashSet<>(Set.of("HEALTHCHECK", "READYCHECK", "SEARCH"));
 
+  // Set of attributes (i.e. column names) not supported in searches
+  public static final Set<String> SEARCH_ATTRS_UNSUPPORTED =
+          new HashSet<>(Set.of("job_attributes", "runtime_options", "exec_system_constraints", "parameter_set",
+                               "file_inputs", "file_input_arrays", "subscriptions", "job_tags", "notes"));
+
   // Constants indicating app version, uuid or seq_id is not relevant.
   public static final int INVALID_SEQ_ID = -1;
   public static final UUID INVALID_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");

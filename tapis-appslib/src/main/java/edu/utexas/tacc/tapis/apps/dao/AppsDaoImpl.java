@@ -1893,6 +1893,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     String[] parsedStrArray = DOT_SPLIT.split(condStr, 3);
     // Validate column name
     String column = parsedStrArray[0];
+    // First, check to see if column is on list of unsupported attributes.
+    if (App.SEARCH_ATTRS_UNSUPPORTED.contains(DSL.name(column).toString()))
+    {
+      throw new TapisException(LibUtils.getMsg("APPLIB_DB_SRCH_ATTR_UNSUPPORTED", APPS.getName(), DSL.name(column)));
+    }
+
 
     // Column must be in either APPS table or APPS_VERSIONS table
     Field<?> col = null; //APPS.field(DSL.name(column));
