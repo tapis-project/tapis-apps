@@ -753,7 +753,7 @@ public class AppResource
    * NOTE: The query parameters search, limit, orderBy, skip, startAfter are all handled in the filter
    *       QueryParametersRequestFilter. No need to use @QueryParam here.
    * @param securityContext - user identity
-   * @param showDeleted - whether or not to included resources that have been marked as deleted.
+   * @param showDeleted - whether to included resources that have been marked as deleted.
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @GET
@@ -798,7 +798,7 @@ public class AppResource
    * searchAppsQueryParameters
    * Dedicated search endpoint for App resource. Search conditions provided as query parameters.
    * @param securityContext - user identity
-   * @param showDeleted - whether or not to included resources that have been marked as deleted.
+   * @param showDeleted - whether to included resources that have been marked as deleted.
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @GET
@@ -864,7 +864,7 @@ public class AppResource
    * Request body contains an array of strings that are concatenated to form the full SQL-like search string.
    * @param payloadStream - request body
    * @param securityContext - user identity
-   * @param showDeleted - whether or not to included resources that have been marked as deleted.
+   * @param showDeleted - whether to included resources that have been marked as deleted.
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @POST

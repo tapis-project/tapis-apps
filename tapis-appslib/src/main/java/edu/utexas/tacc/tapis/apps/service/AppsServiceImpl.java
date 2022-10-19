@@ -766,7 +766,7 @@ public class AppsServiceImpl implements AppsService
    * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
    * @param skip - number of results to skip (may not be used with startAfter)
    * @param startAfter - where to start when sorting, e.g. limit=10&orderBy=id(asc)&startAfter=101 (may not be used with skip)
-   * @param showDeleted - whether or not to included resources that have been marked as deleted.
+   * @param showDeleted - whether to included resources that have been marked as deleted.
    * @return List of App objects
    * @throws TapisException - for Tapis related exceptions
    */
@@ -815,7 +815,7 @@ public class AppsServiceImpl implements AppsService
    * Use provided string containing a valid SQL where clause for the search.
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param sqlSearchStr - string containing a valid SQL where clause
-   * @param showDeleted - whether or not to included resources that have been marked as deleted.
+   * @param showDeleted - whether to included resources that have been marked as deleted.
    * @return List of App objects
    * @throws TapisException - for Tapis related exceptions
    */

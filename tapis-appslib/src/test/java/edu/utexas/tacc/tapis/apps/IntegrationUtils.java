@@ -178,10 +178,14 @@ public final class IntegrationUtils
   public static final String[] jobTags1 = {"jobtag1a", "jobtag1b"};
   public static final String[] jobTags2 = {"jobtag2b", "jobtag2b"};
   public static final String[] jobTagsNull = null;
-  public static final String[] tags1 = {"value1a", "value1b", "a",
-            "a long tag with spaces and numbers (1 3 2) and special characters " +
-            " [_ $ - & * % @ + = ! ^ ? < > , . ( ) { } / \\ | ]. Backslashes must be escaped."};
-  public static final String[] tags2 = {"value2a", "value2b", "b"};
+  public static final String tagVal1 = "value1";
+  public static final String tagVal2 = "value2";
+  public static final String tagVal3Space = "value 3";
+  public static final String tagValNotThere = "no such tag value";
+  public static final String[] tags1 = {tagVal1, tagVal2, tagVal3Space, "a",
+    "Long tag (1 3 2) special chars [_ $ - & * % @ + = ! ^ ? < > , . ( ) { } / \\ | ]. Backslashes must be escaped."};
+  public static final String[] tags2 = {"value4", "value5"};
+  public static final String[] tags3 = {tagVal1};
   public static final String[] tagsNull = null;
   public static final JsonObject notes1 =
           TapisGsonUtils.getGson().fromJson("{\"project\": \"my proj1\", \"testdata\": \"abc1\"}", JsonObject.class);
