@@ -20,6 +20,7 @@ import edu.utexas.tacc.tapis.apps.model.DeliveryTarget.NotifDeliveryMethod;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.model.ReqSubscribe.JobEventCategoryFilter;
+import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
@@ -336,6 +337,7 @@ public final class IntegrationUtils
   public static final boolean showDeletedFalse = false;
   public static final boolean showDeletedTrue = true;
   public static final boolean versionSpecifiedFalse = false;
+  public static final AppsServiceImpl.AuthListType listTypeOwned = AppsServiceImpl.AuthListType.OWNED;
 
   /**
    * Create an array of App objects in memory

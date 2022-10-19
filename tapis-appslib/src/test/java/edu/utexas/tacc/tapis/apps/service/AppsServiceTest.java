@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.utexas.tacc.tapis.apps.IntegrationUtils.*;
+import static edu.utexas.tacc.tapis.apps.service.AppsServiceImpl.AuthListType.ALL;
+import static edu.utexas.tacc.tapis.apps.service.AppsServiceImpl.AuthListType.OWNED;
 
 /**
  * Test the AppsService implementation class against a DB running locally
@@ -506,7 +508,7 @@ public class AppsServiceTest
   {
     App app0 = apps[4];
     svc.createApp(rUser1, app0, scrubbedJson);
-    List<App> apps = svc.getApps(rUser1, null, -1, null, -1, null, showDeletedFalse);
+    List<App> apps = svc.getApps(rUser1, null, -1, null, -1, null, showDeletedFalse, ALL.name());
     for (App app : apps)
     {
       System.out.println("Found item with id: " + app.getId() + " and version: " + app.getVersion());
@@ -532,7 +534,7 @@ public class AppsServiceTest
     svc.createApp(rUser1, app0, scrubbedJson);
 
     // When retrieving apps as testUser5 only 2 should be returned
-    List<App> apps = svc.getApps(rUser5, searchListNull, -1, orderByListNull, -1, startAfterNull, showDeletedFalse);
+    List<App> apps = svc.getApps(rUser5, searchListNull, -1, orderByListNull, -1, startAfterNull, showDeletedFalse, OWNED.name());
     System.out.println("Total number of apps retrieved: " + apps.size());
     Assert.assertEquals(apps.size(), 2);
     for (App app : apps)

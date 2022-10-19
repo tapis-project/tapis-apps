@@ -38,6 +38,7 @@ import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.FileInputArray;
 import edu.utexas.tacc.tapis.apps.model.ReqSubscribe;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
+import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl.AuthListType;
 import edu.utexas.tacc.tapis.search.parser.ASTBinaryExpression;
 import edu.utexas.tacc.tapis.search.parser.ASTLeaf;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
@@ -48,6 +49,7 @@ import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy.OrderByDir;
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 
+import static edu.utexas.tacc.tapis.apps.service.AppsServiceImpl.DEFAULT_LIST_TYPE;
 import static edu.utexas.tacc.tapis.shared.threadlocal.OrderBy.DEFAULT_ORDERBY_DIRECTION;
 
 import static edu.utexas.tacc.tapis.apps.gen.jooq.Tables.*;
@@ -819,7 +821,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * checkForApp - check that the App with specified Id and version exists
    * @param appId - app name
    * @param appVersion - app version
-   * @param includeDeleted - whether or not to include deleted items
+   * @param includeDeleted - whether to include deleted items
    * @return true if found else false
    * @throws TapisException - on error
    */
@@ -990,25 +992,33 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * WARNING: If both searchList and searchAST provided only searchList is used.
    * NOTE: Use versionSpecified = null to indicate this method should determine if a search condition specifies
    *       which versions to retrieve.
-   * @param tenant - tenant name
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param searchList - optional list of conditions used for searching
    * @param searchAST - AST containing search conditions
-   * @param setOfIDs - list of IDs to consider. null indicates no restriction.
    * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
    * @param startAfter - where to start when sorting, e.g. orderBy=id(asc)&startAfter=101 (may not be used with skip)
    * @param versionSpecified - indicates (if known) if we are to get just latest version or all versions specified
    *                     by a search condition. Use null to indicate not known and this method should determine.
-   * @param showDeleted - whether or not to included resources that have been marked as deleted.
+   * @param showDeleted - whether to included resources that have been marked as deleted.
+   * @param viewableAppIDs - list of app IDs to include due to permission READ or MODIFY
+   * @param sharedAppIDs - list of app IDs shared with the requester.
    * @return - count of objects
    * @throws TapisException - on error
    */
   @Override
-  public int getAppsCount(String tenant, List<String> searchList, ASTNode searchAST, Set<String> setOfIDs,
-                          List<OrderBy> orderByList, String startAfter, Boolean versionSpecified, boolean showDeleted)
+  public int getAppsCount(ResourceRequestUser rUser, List<String> searchList, ASTNode searchAST,
+                          List<OrderBy> orderByList, String startAfter, Boolean versionSpecified, boolean showDeleted,
+                          AuthListType listType, Set<String> viewableAppIDs, Set<String> sharedAppIDs)
           throws TapisException
   {
-    // If no IDs in list then we are done.
-    if (setOfIDs != null && setOfIDs.isEmpty()) return 0;
+
+    // For convenience
+    String oboTenant = rUser.getOboTenantId();
+    String oboUser = rUser.getOboUserId();
+    boolean allApps = AuthListType.ALL.equals(listType);
+
+    // Ensure we have a valid listType
+    if (listType == null) listType = DEFAULT_LIST_TYPE;
 
     // Ensure we have a non-null orderByList
     List<OrderBy> tmpOrderByList = new ArrayList<>();
@@ -1034,8 +1044,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     // Validate orderBy columns
     // If orderBy column not found then it is an error
-    // For count we do not need the actual column so we just check that the column exists.
-    //   Down below in getApps() we need the actual column
+    // For count we do not need the actual column, so we just check that the column exists.
+    // Down below in getApps() we need the actual column
     for (OrderBy orderBy : tmpOrderByList)
     {
       String orderByStr = orderBy.getOrderByAttr();
@@ -1052,10 +1062,21 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // If searchList and searchAST are both provided then only searchList is checked.
     if (versionSpecified == null) versionSpecified = checkForVersion(searchList, searchAST);
 
-    // Begin where condition for the query
+    // Begin where condition for this query
+    // Start with either tenant = <tenant> or
+    //                   tenant = <tenant> and deleted = false
     Condition whereCondition;
-    if (showDeleted) whereCondition = APPS.TENANT.eq(tenant);
-    else whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
+    if (showDeleted) whereCondition = APPS.TENANT.eq(oboTenant);
+    else whereCondition = (APPS.TENANT.eq(oboTenant)).and(APPS.DELETED.eq(false));
+
+    // If only selecting items owned by requester we can add the condition now.
+    if (AuthListType.OWNED.equals(listType))
+    {
+      whereCondition = whereCondition.and(APPS.OWNER.eq(oboUser));
+    }
+
+    // If version was not specified then add condition to select only latest version of each app
+    if (!versionSpecified) whereCondition = whereCondition.and(APPS_VERSIONS.VERSION.eq(APPS.LATEST_VERSION));
 
     // Add searchList or searchAST to where condition
     if (searchList != null)
@@ -1078,11 +1099,19 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       whereCondition = addSearchCondStrToWhere(whereCondition, searchStr, AND);
     }
 
-    // If version was not specified then add condition to select only latest version
-    if (!versionSpecified) whereCondition = whereCondition.and(APPS_VERSIONS.VERSION.eq(APPS.LATEST_VERSION));
+    // If only selecting shared, then add the IN clause
+    if (AuthListType.SHARED_ONLY.equals(listType) && sharedAppIDs != null && !sharedAppIDs.isEmpty())
+    {
+      whereCondition = whereCondition.and(APPS.ID.in(sharedAppIDs));
+    }
 
-    // Add IN condition for list of IDs
-    if (setOfIDs != null && !setOfIDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(setOfIDs));
+    // If including apps with READ/MODIFY perm, then add the IN clause
+    // NOTE: Using an IN with a potentially very large set of IDs seems like a bad idea
+    //       If we find a better way we should implement it.
+    if (allApps && viewableAppIDs != null && !viewableAppIDs.isEmpty() )
+    {
+      whereCondition = whereCondition.and(APPS.ID.in(viewableAppIDs));
+    }
 
     // ------------------------- Build and execute SQL ----------------------------
     int count = 0;
@@ -1094,7 +1123,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       DSLContext db = DSL.using(conn);
       // Execute the select including startAfter
       // NOTE: This is much simpler than the same section in getApps() because we are not ordering since
-      //       we only want the count and we are not limiting (we want a count of all records).
+      //       we only want the count, and we are not limiting (we want a count of all records).
       Integer c = db.selectCount().from(APPS.join(APPS_VERSIONS).on(APPS_VERSIONS.APP_SEQ_ID.eq(APPS.SEQ_ID)))
                                   .where(whereCondition).fetchOne(0,int.class);
       if (c != null) count = c;
@@ -1121,33 +1150,41 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *     Search conditions given as a list of strings or an abstract syntax tree (AST).
    * Conditions in searchList must be processed by SearchUtils.validateAndExtractSearchCondition(cond)
    *   prior to this call for proper validation and treatment of special characters.
+   * NOTE: Use versionSpecified = null to indicate this method should determine if a search condition specifies
+   *       which versions to retrieve.
    * WARNING: If both searchList and searchAST provided only searchList is used.
-   * @param tenant - tenant name
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param searchList - optional list of conditions used for searching
    * @param searchAST - AST containing search conditions
-   * @param appIDs - list of app seqIDs to consider. null indicates no restriction.
    * @param limit - indicates maximum number of results to be included, -1 for unlimited
    * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
    * @param skip - number of results to skip (may not be used with startAfter)
    * @param startAfter - where to start when sorting, e.g. limit=10&orderBy=id(asc)&startAfter=101 (may not be used with skip)
    * @param versionSpecified - indicates (if known) if we are to get just latest version or all versions specified
    *                     by a search condition. Use null to indicate not known and this method should determine.
-   * @param showDeleted - whether or not to included resources that have been marked as deleted.
-   * NOTE: Use versionSpecified = null to indicate this method should determine if a search condition specifies
-   *       which versions to retrieve.
+   * @param showDeleted - whether to included resources that have been marked as deleted.
+   * @param listType - allows for filtering results based on authorization: OWNED, SHARED, SHARED_ONLY, ALL
+   * @param viewableAppIDs - list of app IDs to include due to permission READ or MODIFY
+   * @param sharedAppIDs - list of app IDs shared with the requester.
    * @return - list of App objects
    * @throws TapisException - on error
    */
   @Override
-  public List<App> getApps(String tenant, List<String> searchList, ASTNode searchAST, Set<String> appIDs, int limit,
-                           List<OrderBy> orderByList, int skip, String startAfter, Boolean versionSpecified, boolean showDeleted)
+  public List<App> getApps(ResourceRequestUser rUser, List<String> searchList, ASTNode searchAST, int limit,
+                           List<OrderBy> orderByList, int skip, String startAfter, Boolean versionSpecified,
+                           boolean showDeleted, AuthListType listType, Set<String> viewableAppIDs, Set<String> sharedAppIDs)
           throws TapisException
   {
     // The result list should always be non-null.
     var retList = new ArrayList<App>();
 
-    // If no seqIDs in list then we are done.
-    if (appIDs != null && appIDs.isEmpty()) return retList;
+    // For convenience
+    String oboTenant = rUser.getOboTenantId();
+    String oboUser = rUser.getOboUserId();
+    boolean allApps = AuthListType.ALL.equals(listType);
+
+    // Ensure we have a valid listType
+    if (listType == null) listType = DEFAULT_LIST_TYPE;
 
     // Ensure we have a non-null orderByList
     List<OrderBy> tmpOrderByList = new ArrayList<>();
@@ -1205,9 +1242,20 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (versionSpecified == null) versionSpecified = checkForVersion(searchList, searchAST);
 
     // Begin where condition for this query
+    // Start with either tenant = <tenant> or
+    //                   tenant = <tenant> and deleted = false
     Condition whereCondition;
-    if (showDeleted) whereCondition = APPS.TENANT.eq(tenant);
-    else whereCondition = (APPS.TENANT.eq(tenant)).and(APPS.DELETED.eq(false));
+    if (showDeleted) whereCondition = APPS.TENANT.eq(oboTenant);
+    else whereCondition = (APPS.TENANT.eq(oboTenant)).and(APPS.DELETED.eq(false));
+
+    // If only selecting items owned by requester we can add the condition now.
+    if (AuthListType.OWNED.equals(listType))
+    {
+      whereCondition = whereCondition.and(APPS.OWNER.eq(oboUser));
+    }
+
+    // If version was not specified then add condition to select only latest version of each app
+    if (!versionSpecified) whereCondition = whereCondition.and(APPS_VERSIONS.VERSION.eq(APPS.LATEST_VERSION));
 
     // Add searchList or searchAST to where condition
     if (searchList != null)
@@ -1223,20 +1271,28 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // Add startAfter
     if (!StringUtils.isBlank(startAfter))
     {
-      // Build search string so we can re-use code for checking and adding a condition
+      // Build search string, so we can re-use code for checking and adding a condition
       String searchStr;
       if (sortAsc) searchStr = majorOrderByStr + ".gt." + startAfter;
       else searchStr = majorOrderByStr + ".lt." + startAfter;
       whereCondition = addSearchCondStrToWhere(whereCondition, searchStr, AND);
     }
 
-    // If version was not specified then add condition to select only latest version of each app
-    if (!versionSpecified) whereCondition = whereCondition.and(APPS_VERSIONS.VERSION.eq(APPS.LATEST_VERSION));
+    // If only selecting shared, then add the IN clause
+    if (AuthListType.SHARED_ONLY.equals(listType) && sharedAppIDs != null && !sharedAppIDs.isEmpty())
+    {
+      whereCondition = whereCondition.and(APPS.ID.in(sharedAppIDs));
+    }
 
-    // Add IN condition for list of IDs
-    if (appIDs != null && !appIDs.isEmpty()) whereCondition = whereCondition.and(APPS.ID.in(appIDs));
+    // If including apps with READ/MODIFY perm, then add the IN clause
+    // NOTE: Using an IN with a potentially very large set of IDs seems like a bad idea
+    //       If we find a better way we should implement it.
+    if (allApps && viewableAppIDs != null && !viewableAppIDs.isEmpty() )
+    {
+      whereCondition = whereCondition.and(APPS.ID.in(viewableAppIDs));
+    }
 
-    // ------------------------- Call SQL ----------------------------
+      // ------------------------- Call SQL ----------------------------
     Connection conn = null;
     try
     {
@@ -1302,7 +1358,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * getAppIDs
    * Fetch all resource IDs in a tenant
    * @param tenant - tenant name
-   * @param showDeleted - whether or not to included resources that have been marked as deleted.
+   * @param showDeleted - whether to included resources that have been marked as deleted.
    * @return - List of app names
    * @throws TapisException - on error
    */
@@ -1470,7 +1526,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @param tenant - name of tenant
    * @param appId - Id of app
    * @param appVersion - version of app, null if check is for any version
-   * @param includeDeleted - whether or not to include deleted items
+   * @param includeDeleted - whether to include deleted items
    * @return - true if app exists according to given conditions, else false
    */
   private static boolean checkIfAppExists(DSLContext db, String tenant, String appId, String appVersion,

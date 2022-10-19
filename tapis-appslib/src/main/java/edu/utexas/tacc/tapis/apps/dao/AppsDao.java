@@ -1,5 +1,8 @@
 package edu.utexas.tacc.tapis.apps.dao;
 
+import java.util.List;
+import java.util.Set;
+
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
@@ -8,8 +11,7 @@ import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
 
-import java.util.List;
-import java.util.Set;
+import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl.AuthListType;
 
 public interface AppsDao
 {
@@ -52,13 +54,15 @@ public interface AppsDao
 
   App getApp(String tenant, String id, String version, boolean includeDeleted) throws TapisException;
 
-  int getAppsCount(String tenant, List<String> searchList, ASTNode searchAST, Set<String> setOfIDs,
-                   List<OrderBy> orderByList, String startAfter, Boolean versionSpecified,
-                   boolean showDeleted) throws TapisException;
+  int getAppsCount(ResourceRequestUser rUser, List<String> searchList, ASTNode searchAST, List<OrderBy> orderByList,
+                   String startAfter, Boolean versionSpecified, boolean showDeleted, AuthListType listType,
+                   Set<String> viewableAppIDs, Set<String> sharedAppIDs)
+          throws TapisException;
 
-  List<App> getApps(String tenant, List<String> searchList, ASTNode searchAST, Set<String> appIDs, int limit,
+  List<App> getApps(ResourceRequestUser rUser, List<String> searchList, ASTNode searchAST, int limit,
                     List<OrderBy> orderByList, int skip, String startAfter, Boolean versionSpecified,
-                    boolean showDeleted) throws TapisException;
+                    boolean showDeleted, AuthListType listType, Set<String> viewableAppIDs, Set<String> sharedAppIDs)
+          throws TapisException;
 
   Set<String> getAppIDs(String tenant, boolean showDeleted) throws TapisException;
 

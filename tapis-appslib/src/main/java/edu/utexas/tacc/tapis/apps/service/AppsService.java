@@ -61,14 +61,15 @@ public interface AppsService
           throws TapisException, TapisClientException, NotAuthorizedException;
 
   int getAppsTotalCount(ResourceRequestUser rUser, List<String> searchList, List<OrderBy> orderByList,
-                        String startAfter, boolean showDeleted) throws TapisException, TapisClientException;
-
-  List<App> getApps(ResourceRequestUser rUser, List<String> searchList, int limit,
-                    List<OrderBy> orderByList, int skip, String startAfter, boolean showDeleted)
+                        String startAfter, boolean showDeleted, String listType)
           throws TapisException, TapisClientException;
 
-  List<App> getAppsUsingSqlSearchStr(ResourceRequestUser rUser, String searchStr, int limit,
-                                     List<OrderBy> orderByList, int skip, String startAfter, boolean showDeleted)
+  List<App> getApps(ResourceRequestUser rUser, List<String> searchList, int limit, List<OrderBy> orderByList,
+                    int skip, String startAfter, boolean showDeleted, String listType)
+          throws TapisException, TapisClientException;
+
+  List<App> getAppsUsingSqlSearchStr(ResourceRequestUser rUser, String searchStr, int limit, List<OrderBy> orderByList,
+                                     int skip, String startAfter, boolean showDeleted, String listType)
           throws TapisException, TapisClientException;
 
   Set<String> getAllowedAppIDs(ResourceRequestUser rUser, boolean showDeleted)

@@ -753,14 +753,15 @@ public class AppResource
    * NOTE: The query parameters search, limit, orderBy, skip, startAfter are all handled in the filter
    *       QueryParametersRequestFilter. No need to use @QueryParam here.
    * @param securityContext - user identity
-   * @param showDeleted - whether or not to included resources that have been marked as deleted.
+   * @param showDeleted - whether to included resources that have been marked as deleted.
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @GET
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getApps(@Context SecurityContext securityContext,
-                          @QueryParam("showDeleted") @DefaultValue("false") boolean showDeleted)
+                          @QueryParam("showDeleted") @DefaultValue("false") boolean showDeleted,
+                          @QueryParam("listType") @DefaultValue("OWNED") String listType)
   {
     String opName = "getApps";
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -774,7 +775,8 @@ public class AppResource
 
     // Trace this request.
     if (_log.isTraceEnabled())
-      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted);
+      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted,
+                          "listType="+listType);
 
     // ThreadContext designed to never return null for SearchParameters
     SearchParameters srchParms = threadContext.getSearchParameters();
@@ -783,7 +785,7 @@ public class AppResource
     Response successResponse;
     try
     {
-      successResponse = getSearchResponse(rUser, null, srchParms, showDeleted);
+      successResponse = getSearchResponse(rUser, null, srchParms, showDeleted, listType);
     }
     catch (Exception e)
     {
@@ -798,7 +800,7 @@ public class AppResource
    * searchAppsQueryParameters
    * Dedicated search endpoint for App resource. Search conditions provided as query parameters.
    * @param securityContext - user identity
-   * @param showDeleted - whether or not to included resources that have been marked as deleted.
+   * @param showDeleted - whether to included resources that have been marked as deleted.
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @GET
@@ -806,7 +808,8 @@ public class AppResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response searchAppsQueryParameters(@Context SecurityContext securityContext,
-                                            @QueryParam("showDeleted") @DefaultValue("false") boolean showDeleted)
+                                            @QueryParam("showDeleted") @DefaultValue("false") boolean showDeleted,
+                                            @QueryParam("listType") @DefaultValue("OWNED") String listType)
   {
     String opName = "searchAppsGet";
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -820,7 +823,8 @@ public class AppResource
 
     // Trace this request.
     if (_log.isTraceEnabled())
-      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted);
+      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted,
+                          "listType="+listType);
 
     // Create search list based on query parameters
     // Note that some validation is done for each condition but the back end will handle translating LIKE wildcard
@@ -845,7 +849,7 @@ public class AppResource
     Response successResponse;
     try
     {
-      successResponse = getSearchResponse(rUser, null, srchParms, showDeleted);
+      successResponse = getSearchResponse(rUser, null, srchParms, showDeleted, listType);
     }
     catch (Exception e)
     {
@@ -864,7 +868,7 @@ public class AppResource
    * Request body contains an array of strings that are concatenated to form the full SQL-like search string.
    * @param payloadStream - request body
    * @param securityContext - user identity
-   * @param showDeleted - whether or not to included resources that have been marked as deleted.
+   * @param showDeleted - whether to included resources that have been marked as deleted.
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @POST
@@ -873,7 +877,8 @@ public class AppResource
   @Produces(MediaType.APPLICATION_JSON)
   public Response searchAppsRequestBody(InputStream payloadStream,
                                         @Context SecurityContext securityContext,
-                                        @QueryParam("showDeleted") @DefaultValue("false") boolean showDeleted)
+                                        @QueryParam("showDeleted") @DefaultValue("false") boolean showDeleted,
+                                        @QueryParam("listType") @DefaultValue("OWNED") String listType)
   {
     String opName = "searchAppsPost";
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -887,7 +892,8 @@ public class AppResource
 
     // Trace this request.
     if (_log.isTraceEnabled())
-      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted);
+      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted,
+                          "listType="+listType);
 
     // ------------------------- Extract and validate payload -------------------------
     // Read the payload into a string.
@@ -932,7 +938,7 @@ public class AppResource
     Response successResponse;
     try
     {
-      successResponse = getSearchResponse(rUser, sqlSearchStr, srchParms, showDeleted);
+      successResponse = getSearchResponse(rUser, sqlSearchStr, srchParms, showDeleted, listType);
     }
     catch (Exception e)
     {
@@ -1207,8 +1213,8 @@ public class AppResource
    *  srchParms must be non-null
    *  One of srchParms.searchList or sqlSearchStr must be non-null
    */
-  private Response getSearchResponse(ResourceRequestUser rUser, String sqlSearchStr,
-                                     SearchParameters srchParms, boolean showDeleted)
+  private Response getSearchResponse(ResourceRequestUser rUser, String sqlSearchStr, SearchParameters srchParms,
+                                     boolean showDeleted, String listType)
           throws Exception
   {
     RespAbstract resp1;
@@ -1230,18 +1236,21 @@ public class AppResource
     List<OrderBy> orderByList = srchParms.getOrderByList();
 
     if (StringUtils.isBlank(sqlSearchStr))
-      apps = appsService.getApps(rUser, searchList, limit, orderByList, skip, startAfter, showDeleted);
+      apps = appsService.getApps(rUser, searchList, limit, orderByList, skip, startAfter, showDeleted, listType);
     else
       apps = appsService.getAppsUsingSqlSearchStr(rUser, sqlSearchStr, limit, orderByList, skip,
-                                                  startAfter, showDeleted);
+                                                  startAfter, showDeleted, listType);
     if (apps == null) apps = Collections.emptyList();
     itemCountStr = String.format(APPS_CNT_STR, apps.size());
     if (computeTotal && limit <= 0) totalCount = apps.size();
 
     // If we need the count and there was a limit then we need to make a call
+    // This is a separate call from getApps() because unlike getApps() we do not want to include the limit or skip,
+    //   and we do not need to fetch all the data. One benefit is that the method is simpler and easier to follow
+    //   compared to attempting to fold everything into getApps().
     if (computeTotal && limit > 0)
     {
-      totalCount = appsService.getAppsTotalCount(rUser, searchList, orderByList, startAfter, showDeleted);
+      totalCount = appsService.getAppsTotalCount(rUser, searchList, orderByList, startAfter, showDeleted, listType);
     }
 
     // ---------------------------- Success -------------------------------
