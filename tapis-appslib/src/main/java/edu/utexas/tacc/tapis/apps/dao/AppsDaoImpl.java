@@ -1181,10 +1181,13 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // For convenience
     String oboTenant = rUser.getOboTenantId();
     String oboUser = rUser.getOboUserId();
-    boolean allApps = AuthListType.ALL.equals(listType);
+    boolean haveSharedIDs = sharedAppIDs != null && !sharedAppIDs.isEmpty();
 
     // Ensure we have a valid listType
     if (listType == null) listType = DEFAULT_LIST_TYPE;
+
+    // If asked for SHARED_ONLY and none are shared return an empty list
+    if (AuthListType.SHARED_ONLY.equals(listType) && !haveSharedIDs) return retList;
 
     // Ensure we have a non-null orderByList
     List<OrderBy> tmpOrderByList = new ArrayList<>();
@@ -1248,14 +1251,33 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (showDeleted) whereCondition = APPS.TENANT.eq(oboTenant);
     else whereCondition = (APPS.TENANT.eq(oboTenant)).and(APPS.DELETED.eq(false));
 
-    // If only selecting items owned by requester we can add the condition now.
-    if (AuthListType.OWNED.equals(listType))
-    {
-      whereCondition = whereCondition.and(APPS.OWNER.eq(oboUser));
-    }
-
     // If version was not specified then add condition to select only latest version of each app
     if (!versionSpecified) whereCondition = whereCondition.and(APPS_VERSIONS.VERSION.eq(APPS.LATEST_VERSION));
+
+    // Put together all IN clauses for ID sets based on listType.
+    // These must be grouped together because all general search conditions use AND.
+    Condition listTypeCondition = null;
+    if (AuthListType.OWNED.equals(listType))
+    {
+      listTypeCondition = APPS.OWNER.eq(oboUser);
+    }
+    else if (AuthListType.SHARED_ONLY.equals(listType))
+    {
+      listTypeCondition = APPS.ID.in(sharedAppIDs);
+    }
+    else if (AuthListType.SHARED.equals(listType))
+    {
+      listTypeCondition = APPS.OWNER.eq(oboUser).or(APPS.ID.in(sharedAppIDs));
+    }
+    else if (AuthListType.ALL.equals(listType))
+    {
+      listTypeCondition = APPS.OWNER.eq(oboUser).or(APPS.ID.in(sharedAppIDs));
+      // It is everything, so add in viewable items if we have any
+      if (viewableAppIDs != null && !viewableAppIDs.isEmpty()) listTypeCondition = listTypeCondition.or(APPS.ID.in(viewableAppIDs));
+    }
+
+    // Add listTypeCondition to whereCondition
+    whereCondition = whereCondition.and(listTypeCondition);
 
     // Add searchList or searchAST to where condition
     if (searchList != null)
@@ -1278,21 +1300,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       whereCondition = addSearchCondStrToWhere(whereCondition, searchStr, AND);
     }
 
-    // If only selecting shared, then add the IN clause
-    if (AuthListType.SHARED_ONLY.equals(listType) && sharedAppIDs != null && !sharedAppIDs.isEmpty())
-    {
-      whereCondition = whereCondition.and(APPS.ID.in(sharedAppIDs));
-    }
-
-    // If including apps with READ/MODIFY perm, then add the IN clause
-    // NOTE: Using an IN with a potentially very large set of IDs seems like a bad idea
-    //       If we find a better way we should implement it.
-    if (allApps && viewableAppIDs != null && !viewableAppIDs.isEmpty() )
-    {
-      whereCondition = whereCondition.and(APPS.ID.in(viewableAppIDs));
-    }
-
-      // ------------------------- Call SQL ----------------------------
+    // ------------------------- Call SQL ----------------------------
     Connection conn = null;
     try
     {

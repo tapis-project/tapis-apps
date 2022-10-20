@@ -74,6 +74,12 @@ public final class IntegrationUtils
   public static final ArgInputMode argInputModeFixed = ArgInputMode.FIXED;
   public static final ArgInputMode argInputModeDefault = ArgInputMode.INCLUDE_ON_DEMAND;
 
+  // Sets for testing of search listType query parameter.
+  public static final Set<String> viewableIDsNull = null;
+  public static final Set<String> viewableIDsEmpty = Collections.emptySet();
+  public static final Set<String> sharedIDsNull = null;
+  public static final Set<String> sharedIDsEmpty = Collections.emptySet();
+
   public static final Runtime runtime1 = Runtime.DOCKER;
   public static final Runtime runtime2 = Runtime.SINGULARITY;
   public static final Runtime runtimeNull = null;
@@ -338,6 +344,8 @@ public final class IntegrationUtils
   public static final boolean showDeletedTrue = true;
   public static final boolean versionSpecifiedFalse = false;
   public static final AppsServiceImpl.AuthListType listTypeOwned = AppsServiceImpl.AuthListType.OWNED;
+  public static final AppsServiceImpl.AuthListType listTypeShared = AppsServiceImpl.AuthListType.SHARED;
+  public static final AppsServiceImpl.AuthListType listTypeSharedOnly = AppsServiceImpl.AuthListType.SHARED_ONLY;
   public static final AppsServiceImpl.AuthListType listTypeAll = AppsServiceImpl.AuthListType.ALL;
 
   /**
