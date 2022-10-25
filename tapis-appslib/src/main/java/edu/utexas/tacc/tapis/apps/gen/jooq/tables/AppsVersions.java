@@ -57,12 +57,14 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     }
 
     /**
-     * The column <code>tapis_app.apps_versions.seq_id</code>. Sequence id for specific version of application
+     * The column <code>tapis_app.apps_versions.seq_id</code>. Sequence id for
+     * specific version of application
      */
     public final TableField<AppsVersionsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), SQLDataType.INTEGER.nullable(false).identity(true), this, "Sequence id for specific version of application");
 
     /**
-     * The column <code>tapis_app.apps_versions.app_seq_id</code>. Sequence id of application
+     * The column <code>tapis_app.apps_versions.app_seq_id</code>. Sequence id
+     * of application
      */
     public final TableField<AppsVersionsRecord, Integer> APP_SEQ_ID = createField(DSL.name("app_seq_id"), SQLDataType.INTEGER, this, "Sequence id of application");
 
@@ -77,12 +79,14 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     public final TableField<AppsVersionsRecord, String> ID = createField(DSL.name("id"), SQLDataType.CLOB.nullable(false), this, "");
 
     /**
-     * The column <code>tapis_app.apps_versions.version</code>. Application version
+     * The column <code>tapis_app.apps_versions.version</code>. Application
+     * version
      */
     public final TableField<AppsVersionsRecord, String> VERSION = createField(DSL.name("version"), SQLDataType.CLOB.nullable(false), this, "Application version");
 
     /**
-     * The column <code>tapis_app.apps_versions.description</code>. Application description
+     * The column <code>tapis_app.apps_versions.description</code>. Application
+     * description
      */
     public final TableField<AppsVersionsRecord, String> DESCRIPTION = createField(DSL.name("description"), SQLDataType.CLOB, this, "Application description");
 
@@ -162,7 +166,8 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_OUTPUT_DIR = createField(DSL.name("exec_system_output_dir"), SQLDataType.CLOB, this, "");
 
     /**
-     * The column <code>tapis_app.apps_versions.exec_system_logical_queue</code>.
+     * The column
+     * <code>tapis_app.apps_versions.exec_system_logical_queue</code>.
      */
     public final TableField<AppsVersionsRecord, String> EXEC_SYSTEM_LOGICAL_QUEUE = createField(DSL.name("exec_system_logical_queue"), SQLDataType.CLOB, this, "");
 
@@ -242,12 +247,14 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     public final TableField<AppsVersionsRecord, String[]> JOB_TAGS = createField(DSL.name("job_tags"), SQLDataType.CLOB.getArrayDataType(), this, "");
 
     /**
-     * The column <code>tapis_app.apps_versions.tags</code>. Tags for user supplied key:value pairs
+     * The column <code>tapis_app.apps_versions.tags</code>. Tags for user
+     * supplied key:value pairs
      */
     public final TableField<AppsVersionsRecord, String[]> TAGS = createField(DSL.name("tags"), SQLDataType.CLOB.getArrayDataType(), this, "Tags for user supplied key:value pairs");
 
     /**
-     * The column <code>tapis_app.apps_versions.notes</code>. Notes for general information stored as JSON
+     * The column <code>tapis_app.apps_versions.notes</code>. Notes for general
+     * information stored as JSON
      */
     public final TableField<AppsVersionsRecord, JsonElement> NOTES = createField(DSL.name("notes"), SQLDataType.JSONB.nullable(false), this, "Notes for general information stored as JSON", new JSONBToJsonElementBinding());
 
@@ -257,12 +264,14 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     public final TableField<AppsVersionsRecord, java.util.UUID> UUID = createField(DSL.name("uuid"), SQLDataType.UUID.nullable(false), this, "");
 
     /**
-     * The column <code>tapis_app.apps_versions.created</code>. UTC time for when record was created
+     * The column <code>tapis_app.apps_versions.created</code>. UTC time for
+     * when record was created
      */
     public final TableField<AppsVersionsRecord, LocalDateTime> CREATED = createField(DSL.name("created"), SQLDataType.LOCALDATETIME(6).nullable(false).defaultValue(DSL.field("timezone('utc'::text, now())", SQLDataType.LOCALDATETIME)), this, "UTC time for when record was created");
 
     /**
-     * The column <code>tapis_app.apps_versions.updated</code>. UTC time for when record was last updated
+     * The column <code>tapis_app.apps_versions.updated</code>. UTC time for
+     * when record was last updated
      */
     public final TableField<AppsVersionsRecord, LocalDateTime> UPDATED = createField(DSL.name("updated"), SQLDataType.LOCALDATETIME(6).nullable(false).defaultValue(DSL.field("timezone('utc'::text, now())", SQLDataType.LOCALDATETIME)), this, "UTC time for when record was last updated");
 
@@ -301,12 +310,12 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
 
     @Override
     public Schema getSchema() {
-        return TapisApp.TAPIS_APP;
+        return aliased() ? null : TapisApp.TAPIS_APP;
     }
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.APP_VERSION_SEQID_IDX);
+        return Arrays.asList(Indexes.APP_VERSION_SEQID_IDX);
     }
 
     @Override
@@ -320,17 +329,20 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     }
 
     @Override
-    public List<UniqueKey<AppsVersionsRecord>> getKeys() {
-        return Arrays.<UniqueKey<AppsVersionsRecord>>asList(Keys.APPS_VERSIONS_PKEY, Keys.APPS_VERSIONS_APP_SEQ_ID_VERSION_KEY);
+    public List<UniqueKey<AppsVersionsRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.APPS_VERSIONS_APP_SEQ_ID_VERSION_KEY);
     }
 
     @Override
     public List<ForeignKey<AppsVersionsRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<AppsVersionsRecord, ?>>asList(Keys.APPS_VERSIONS__APPS_VERSIONS_APP_SEQ_ID_FKEY);
+        return Arrays.asList(Keys.APPS_VERSIONS__APPS_VERSIONS_APP_SEQ_ID_FKEY);
     }
 
     private transient Apps _apps;
 
+    /**
+     * Get the implicit join path to the <code>tapis_app.apps</code> table.
+     */
     public Apps apps() {
         if (_apps == null)
             _apps = new Apps(this, Keys.APPS_VERSIONS__APPS_VERSIONS_APP_SEQ_ID_FKEY);
@@ -348,6 +360,11 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
         return new AppsVersions(alias, this);
     }
 
+    @Override
+    public AppsVersions as(Table<?> alias) {
+        return new AppsVersions(alias.getQualifiedName(), this);
+    }
+
     /**
      * Rename this table
      */
@@ -362,5 +379,13 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
     @Override
     public AppsVersions rename(Name name) {
         return new AppsVersions(name, null);
+    }
+
+    /**
+     * Rename this table
+     */
+    @Override
+    public AppsVersions rename(Table<?> name) {
+        return new AppsVersions(name.getQualifiedName(), null);
     }
 }

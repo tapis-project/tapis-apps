@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jooq.Catalog;
-import org.jooq.Sequence;
 import org.jooq.Table;
 import org.jooq.impl.SchemaImpl;
 
@@ -65,19 +64,12 @@ public class TapisApp extends SchemaImpl {
     }
 
     @Override
-    public final List<Sequence<?>> getSequences() {
-        return Arrays.<Sequence<?>>asList(
-            Sequences.APP_UPDATES_SEQ_ID_SEQ,
-            Sequences.APPS_SEQ_ID_SEQ,
-            Sequences.APPS_VERSIONS_SEQ_ID_SEQ);
-    }
-
-    @Override
     public final List<Table<?>> getTables() {
-        return Arrays.<Table<?>>asList(
+        return Arrays.asList(
             AppUpdates.APP_UPDATES,
             Apps.APPS,
             AppsVersions.APPS_VERSIONS,
-            FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY);
+            FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY
+        );
     }
 }
