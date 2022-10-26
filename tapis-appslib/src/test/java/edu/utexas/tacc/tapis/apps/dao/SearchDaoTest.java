@@ -167,6 +167,10 @@ public class SearchDaoTest
     App app0 = apps[0];
     String app0Id = app0.getId();
     String nameList = "noSuchName1,noSuchName2," + app0Id + ",noSuchName3";
+    String tagList1 = String.format("%s", tagVal1);
+    String tagList2 = String.format("%s,%s", tagVal1, tagVal2);
+    String tagList3 = String.format("%s", tagVal3Space);
+    String tagList4 = String.format("%s", tagValNotThere);
     // Create all input and validation data for tests
     // NOTE: Some cases require appNameLikeAll in the list of conditions since maven runs the tests in
     //       parallel and not all attribute names are unique across integration tests
@@ -201,6 +205,11 @@ public class SearchDaoTest
     validCaseInputs.put(21,new CaseData(numApps-1, Arrays.asList(appIdLikeAll, "id.nin." + nameList)));
     validCaseInputs.put(22,new CaseData(numApps, Arrays.asList(appIdLikeAll, "job_type.eq.BATCH")));
     validCaseInputs.put(23,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "job_type.eq.BATCH","owner.neq." + owner2)));
+    // Test Tapis3 specific CONTAINS operator used only for tags column
+    validCaseInputs.put(24, new CaseData(numApps, Arrays.asList(appIdLikeAll, "tags.contains."+tagList1)));
+    validCaseInputs.put(25, new CaseData(numApps, Arrays.asList(appIdLikeAll, "tags.contains."+tagList2)));
+    validCaseInputs.put(26, new CaseData(numApps, Arrays.asList(appIdLikeAll, "tags.contains."+tagList3)));
+    validCaseInputs.put(27, new CaseData(0, Arrays.asList(appIdLikeAll, "tags.contains."+tagList4)));
     // Test numeric relational
     validCaseInputs.put(40,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "max_jobs.between.1," + numApps/2)));
     validCaseInputs.put(41,new CaseData(numApps/2-1, Arrays.asList(appIdLikeAll, "max_jobs.between.2," + numApps/2)));

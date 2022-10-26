@@ -26,28 +26,32 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
     private static final long serialVersionUID = 1L;
 
     /**
-     * Setter for <code>tapis_app.apps_versions.seq_id</code>. Sequence id for specific version of application
+     * Setter for <code>tapis_app.apps_versions.seq_id</code>. Sequence id for
+     * specific version of application
      */
     public void setSeqId(Integer value) {
         set(0, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps_versions.seq_id</code>. Sequence id for specific version of application
+     * Getter for <code>tapis_app.apps_versions.seq_id</code>. Sequence id for
+     * specific version of application
      */
     public Integer getSeqId() {
         return (Integer) get(0);
     }
 
     /**
-     * Setter for <code>tapis_app.apps_versions.app_seq_id</code>. Sequence id of application
+     * Setter for <code>tapis_app.apps_versions.app_seq_id</code>. Sequence id
+     * of application
      */
     public void setAppSeqId(Integer value) {
         set(1, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps_versions.app_seq_id</code>. Sequence id of application
+     * Getter for <code>tapis_app.apps_versions.app_seq_id</code>. Sequence id
+     * of application
      */
     public Integer getAppSeqId() {
         return (Integer) get(1);
@@ -82,28 +86,32 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
     }
 
     /**
-     * Setter for <code>tapis_app.apps_versions.version</code>. Application version
+     * Setter for <code>tapis_app.apps_versions.version</code>. Application
+     * version
      */
     public void setVersion(String value) {
         set(4, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps_versions.version</code>. Application version
+     * Getter for <code>tapis_app.apps_versions.version</code>. Application
+     * version
      */
     public String getVersion() {
         return (String) get(4);
     }
 
     /**
-     * Setter for <code>tapis_app.apps_versions.description</code>. Application description
+     * Setter for <code>tapis_app.apps_versions.description</code>. Application
+     * description
      */
     public void setDescription(String value) {
         set(5, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps_versions.description</code>. Application description
+     * Getter for <code>tapis_app.apps_versions.description</code>. Application
+     * description
      */
     public String getDescription() {
         return (String) get(5);
@@ -320,14 +328,16 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
     }
 
     /**
-     * Setter for <code>tapis_app.apps_versions.exec_system_logical_queue</code>.
+     * Setter for
+     * <code>tapis_app.apps_versions.exec_system_logical_queue</code>.
      */
     public void setExecSystemLogicalQueue(String value) {
         set(21, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps_versions.exec_system_logical_queue</code>.
+     * Getter for
+     * <code>tapis_app.apps_versions.exec_system_logical_queue</code>.
      */
     public String getExecSystemLogicalQueue() {
         return (String) get(21);
@@ -544,28 +554,32 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
     }
 
     /**
-     * Setter for <code>tapis_app.apps_versions.tags</code>. Tags for user supplied key:value pairs
+     * Setter for <code>tapis_app.apps_versions.tags</code>. Tags for user
+     * supplied key:value pairs
      */
     public void setTags(String[] value) {
         set(37, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps_versions.tags</code>. Tags for user supplied key:value pairs
+     * Getter for <code>tapis_app.apps_versions.tags</code>. Tags for user
+     * supplied key:value pairs
      */
     public String[] getTags() {
         return (String[]) get(37);
     }
 
     /**
-     * Setter for <code>tapis_app.apps_versions.notes</code>. Notes for general information stored as JSON
+     * Setter for <code>tapis_app.apps_versions.notes</code>. Notes for general
+     * information stored as JSON
      */
     public void setNotes(JsonElement value) {
         set(38, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps_versions.notes</code>. Notes for general information stored as JSON
+     * Getter for <code>tapis_app.apps_versions.notes</code>. Notes for general
+     * information stored as JSON
      */
     public JsonElement getNotes() {
         return (JsonElement) get(38);
@@ -586,28 +600,32 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
     }
 
     /**
-     * Setter for <code>tapis_app.apps_versions.created</code>. UTC time for when record was created
+     * Setter for <code>tapis_app.apps_versions.created</code>. UTC time for
+     * when record was created
      */
     public void setCreated(LocalDateTime value) {
         set(40, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps_versions.created</code>. UTC time for when record was created
+     * Getter for <code>tapis_app.apps_versions.created</code>. UTC time for
+     * when record was created
      */
     public LocalDateTime getCreated() {
         return (LocalDateTime) get(40);
     }
 
     /**
-     * Setter for <code>tapis_app.apps_versions.updated</code>. UTC time for when record was last updated
+     * Setter for <code>tapis_app.apps_versions.updated</code>. UTC time for
+     * when record was last updated
      */
     public void setUpdated(LocalDateTime value) {
         set(41, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps_versions.updated</code>. UTC time for when record was last updated
+     * Getter for <code>tapis_app.apps_versions.updated</code>. UTC time for
+     * when record was last updated
      */
     public LocalDateTime getUpdated() {
         return (LocalDateTime) get(41);

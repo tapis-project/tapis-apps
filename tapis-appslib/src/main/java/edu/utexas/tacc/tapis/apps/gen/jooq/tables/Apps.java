@@ -12,15 +12,19 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.tables.records.AppsRecord;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
+import org.jooq.Function10;
 import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
+import org.jooq.Records;
 import org.jooq.Row10;
 import org.jooq.Schema;
+import org.jooq.SelectField;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableOptions;
@@ -57,12 +61,14 @@ public class Apps extends TableImpl<AppsRecord> {
     public final TableField<AppsRecord, Integer> SEQ_ID = createField(DSL.name("seq_id"), SQLDataType.INTEGER.nullable(false).identity(true), this, "Application sequence id");
 
     /**
-     * The column <code>tapis_app.apps.tenant</code>. Tenant name associated with the application
+     * The column <code>tapis_app.apps.tenant</code>. Tenant name associated
+     * with the application
      */
     public final TableField<AppsRecord, String> TENANT = createField(DSL.name("tenant"), SQLDataType.CLOB.nullable(false), this, "Tenant name associated with the application");
 
     /**
-     * The column <code>tapis_app.apps.id</code>. Unique name for the application
+     * The column <code>tapis_app.apps.id</code>. Unique name for the
+     * application
      */
     public final TableField<AppsRecord, String> ID = createField(DSL.name("id"), SQLDataType.CLOB.nullable(false), this, "Unique name for the application");
 
@@ -72,12 +78,14 @@ public class Apps extends TableImpl<AppsRecord> {
     public final TableField<AppsRecord, String> LATEST_VERSION = createField(DSL.name("latest_version"), SQLDataType.CLOB.nullable(false), this, "");
 
     /**
-     * The column <code>tapis_app.apps.owner</code>. User name of application owner
+     * The column <code>tapis_app.apps.owner</code>. User name of application
+     * owner
      */
     public final TableField<AppsRecord, String> OWNER = createField(DSL.name("owner"), SQLDataType.CLOB.nullable(false), this, "User name of application owner");
 
     /**
-     * The column <code>tapis_app.apps.enabled</code>. Indicates if application is currently active and available for use
+     * The column <code>tapis_app.apps.enabled</code>. Indicates if application
+     * is currently active and available for use
      */
     public final TableField<AppsRecord, Boolean> ENABLED = createField(DSL.name("enabled"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("true", SQLDataType.BOOLEAN)), this, "Indicates if application is currently active and available for use");
 
@@ -87,17 +95,20 @@ public class Apps extends TableImpl<AppsRecord> {
     public final TableField<AppsRecord, Boolean> CONTAINERIZED = createField(DSL.name("containerized"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("true", SQLDataType.BOOLEAN)), this, "");
 
     /**
-     * The column <code>tapis_app.apps.deleted</code>. Indicates if application has been soft deleted
+     * The column <code>tapis_app.apps.deleted</code>. Indicates if application
+     * has been soft deleted
      */
     public final TableField<AppsRecord, Boolean> DELETED = createField(DSL.name("deleted"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("false", SQLDataType.BOOLEAN)), this, "Indicates if application has been soft deleted");
 
     /**
-     * The column <code>tapis_app.apps.created</code>. UTC time for when record was created
+     * The column <code>tapis_app.apps.created</code>. UTC time for when record
+     * was created
      */
     public final TableField<AppsRecord, LocalDateTime> CREATED = createField(DSL.name("created"), SQLDataType.LOCALDATETIME(6).nullable(false).defaultValue(DSL.field("timezone('utc'::text, now())", SQLDataType.LOCALDATETIME)), this, "UTC time for when record was created");
 
     /**
-     * The column <code>tapis_app.apps.updated</code>. UTC time for when record was last updated
+     * The column <code>tapis_app.apps.updated</code>. UTC time for when record
+     * was last updated
      */
     public final TableField<AppsRecord, LocalDateTime> UPDATED = createField(DSL.name("updated"), SQLDataType.LOCALDATETIME(6).nullable(false).defaultValue(DSL.field("timezone('utc'::text, now())", SQLDataType.LOCALDATETIME)), this, "UTC time for when record was last updated");
 
@@ -136,12 +147,12 @@ public class Apps extends TableImpl<AppsRecord> {
 
     @Override
     public Schema getSchema() {
-        return TapisApp.TAPIS_APP;
+        return aliased() ? null : TapisApp.TAPIS_APP;
     }
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.APP_TENANT_ID_IDX);
+        return Arrays.asList(Indexes.APP_TENANT_ID_IDX);
     }
 
     @Override
@@ -155,8 +166,8 @@ public class Apps extends TableImpl<AppsRecord> {
     }
 
     @Override
-    public List<UniqueKey<AppsRecord>> getKeys() {
-        return Arrays.<UniqueKey<AppsRecord>>asList(Keys.APPS_PKEY, Keys.APPS_TENANT_ID_KEY);
+    public List<UniqueKey<AppsRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.APPS_TENANT_ID_KEY);
     }
 
     @Override
@@ -167,6 +178,11 @@ public class Apps extends TableImpl<AppsRecord> {
     @Override
     public Apps as(Name alias) {
         return new Apps(alias, this);
+    }
+
+    @Override
+    public Apps as(Table<?> alias) {
+        return new Apps(alias.getQualifiedName(), this);
     }
 
     /**
@@ -185,6 +201,14 @@ public class Apps extends TableImpl<AppsRecord> {
         return new Apps(name, null);
     }
 
+    /**
+     * Rename this table
+     */
+    @Override
+    public Apps rename(Table<?> name) {
+        return new Apps(name.getQualifiedName(), null);
+    }
+
     // -------------------------------------------------------------------------
     // Row10 type methods
     // -------------------------------------------------------------------------
@@ -192,5 +216,20 @@ public class Apps extends TableImpl<AppsRecord> {
     @Override
     public Row10<Integer, String, String, String, String, Boolean, Boolean, Boolean, LocalDateTime, LocalDateTime> fieldsRow() {
         return (Row10) super.fieldsRow();
+    }
+
+    /**
+     * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
+     */
+    public <U> SelectField<U> mapping(Function10<? super Integer, ? super String, ? super String, ? super String, ? super String, ? super Boolean, ? super Boolean, ? super Boolean, ? super LocalDateTime, ? super LocalDateTime, ? extends U> from) {
+        return convertFrom(Records.mapping(from));
+    }
+
+    /**
+     * Convenience mapping calling {@link SelectField#convertFrom(Class,
+     * Function)}.
+     */
+    public <U> SelectField<U> mapping(Class<U> toType, Function10<? super Integer, ? super String, ? super String, ? super String, ? super String, ? super Boolean, ? super Boolean, ? super Boolean, ? super LocalDateTime, ? super LocalDateTime, ? extends U> from) {
+        return convertFrom(toType, Records.mapping(from));
     }
 }

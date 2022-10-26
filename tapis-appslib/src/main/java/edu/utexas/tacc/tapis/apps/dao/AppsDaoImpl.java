@@ -1092,7 +1092,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     // Add startAfter.
     if (!StringUtils.isBlank(startAfter))
     {
-      // Build search string so we can re-use code for checking and adding a condition
+      // Build search string, so we can re-use code for checking and adding a condition
       String searchStr;
       if (sortAsc) searchStr = majorOrderByStr + ".gt." + startAfter;
       else searchStr = majorOrderByStr + ".lt." + startAfter;
@@ -1474,6 +1474,72 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     }
   }
 
+  /**
+   * Retrieves App History list from given tenant and app name.
+   *
+   * @param oboTenantId - The tenant ID
+   * @param appId - App name
+   * @return - App history list
+   * @throws TapisException - for Tapis related exceptions
+   */
+  @Override
+  public List<AppHistoryItem> getAppHistory(String oboTenantId, String appId) throws TapisException
+  {
+    // Initialize result.
+    List<AppHistoryItem> appHistoryList =  new ArrayList<AppHistoryItem>();;
+
+    // Begin where condition for the query
+    Condition whereCondition = APP_UPDATES.OBO_TENANT.eq(oboTenantId).and(APP_UPDATES.APP_ID.eq(appId));
+
+    // ------------------------- Call SQL ----------------------------
+    Connection conn = null;
+    try
+    {
+      // Get a database connection.
+      conn = getConnection();
+      DSLContext db = DSL.using(conn);
+
+
+      // Fetch all attributes by joining APPS and APPS_VERSIONS tables
+      @org.jetbrains.annotations.NotNull SelectConditionStep<Record> results;
+      results = db.selectFrom(APP_UPDATES.join(APPS_VERSIONS).on(APPS_VERSIONS.APP_SEQ_ID.eq(APP_UPDATES.APP_SEQ_ID)))
+              .where(whereCondition);
+      if (results == null) return null;
+
+      // Create an App object using the appRecord
+      for (Record r : results) { AppHistoryItem s = getAppHistoryFromRecord(r); appHistoryList.add(s); }
+
+      // Close out and commit
+      LibUtils.closeAndCommitDB(conn, null, null);
+    }
+    catch (Exception e)
+    {
+      // Rollback transaction and throw an exception
+      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", oboTenantId, appId, e.getMessage());
+    }
+    finally
+    {
+      // Always return the connection back to the connection pool.
+      LibUtils.finalCloseDB(conn);
+    }
+    return appHistoryList;
+  }
+
+  /**
+   * Check to see if a search condition references the column APPS_VERSIONS.VERSION
+   * @param condStr Single search condition in the form column_name.op.value
+   * @return true if condition references version else false
+   */
+  public static boolean checkCondForVersion(String condStr)
+  {
+    if (StringUtils.isBlank(condStr)) return false;
+    // Parse search value into column name, operator and value
+    // Format must be column_name.op.value
+    String[] parsedStrArray = DOT_SPLIT.split(condStr, 3);
+    if (parsedStrArray.length < 1) return false;
+    else return parsedStrArray[0].equalsIgnoreCase(APPS_VERSIONS.VERSION.getName());
+  }
+
   /* ********************************************************************** */
   /*                             Private Methods                            */
   /* ********************************************************************** */
@@ -1681,21 +1747,6 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       return checkASTNodeForVersion(searchAST);
     }
     return versionSpecified;
-  }
-
-  /**
-   * Check to see if a search condition references the column APPS_VERSIONS.VERSION
-   * @param condStr Single search condition in the form column_name.op.value
-   * @return true if condition references version else false
-   */
-  public static boolean checkCondForVersion(String condStr)
-  {
-    if (StringUtils.isBlank(condStr)) return false;
-    // Parse search value into column name, operator and value
-    // Format must be column_name.op.value
-    String[] parsedStrArray = DOT_SPLIT.split(condStr, 3);
-    if (parsedStrArray.length < 1) return false;
-    else return parsedStrArray[0].equalsIgnoreCase(APPS_VERSIONS.VERSION.getName());
   }
 
   /**
@@ -2075,61 +2126,11 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       case NLIKE -> c = col.notLike(val);
       case IN -> c = col.in(valList);
       case NIN -> c = col.notIn(valList);
+      case CONTAINS -> c = textArrayOverlaps(col, valList.toArray());
       case BETWEEN -> c = col.between(valList.get(0), valList.get(1));
       case NBETWEEN -> c = col.notBetween(valList.get(0), valList.get(1));
     }
     return c;
-  }
-  
-  /**
-   * Retrieves App History list from given tenant and app name.
-   * 
-   * @param oboTenantId - The tenant ID
-   * @param appId - App name
-   * @return - App history list
-   * @throws TapisException - for Tapis related exceptions
-   */
-  @Override
-  public List<AppHistoryItem> getAppHistory(String oboTenantId, String appId) throws TapisException
-  {
-    // Initialize result.
-    List<AppHistoryItem> appHistoryList =  new ArrayList<AppHistoryItem>();;
-
-    // Begin where condition for the query
-    Condition whereCondition = APP_UPDATES.OBO_TENANT.eq(oboTenantId).and(APP_UPDATES.APP_ID.eq(appId));
-
-    // ------------------------- Call SQL ----------------------------
-    Connection conn = null;
-    try
-    {
-      // Get a database connection.
-      conn = getConnection();
-      DSLContext db = DSL.using(conn);
-
-
-      // Fetch all attributes by joining APPS and APPS_VERSIONS tables
-      @org.jetbrains.annotations.NotNull SelectConditionStep<Record> results;
-      results = db.selectFrom(APP_UPDATES.join(APPS_VERSIONS).on(APPS_VERSIONS.APP_SEQ_ID.eq(APP_UPDATES.APP_SEQ_ID)))
-                         .where(whereCondition);
-      if (results == null) return null;
-
-      // Create an App object using the appRecord
-      for (Record r : results) { AppHistoryItem s = getAppHistoryFromRecord(r); appHistoryList.add(s); }
-
-      // Close out and commit
-      LibUtils.closeAndCommitDB(conn, null, null);
-    }
-    catch (Exception e)
-    {
-      // Rollback transaction and throw an exception
-      LibUtils.rollbackDB(conn, e,"DB_SELECT_NAME_ERROR", "App", oboTenantId, appId, e.getMessage());
-    }
-    finally
-    {
-      // Always return the connection back to the connection pool.
-      LibUtils.finalCloseDB(conn);
-    }
-    return appHistoryList;
   }
 
   /**
@@ -2144,5 +2145,15 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
                               r.get(APP_UPDATES.OBO_TENANT), r.get(APP_UPDATES.OBO_USER),
                               r.get(APP_UPDATES.APP_VERSION), r.get(APP_UPDATES.OPERATION),
                               r.get(APP_UPDATES.DESCRIPTION), r.get(APP_UPDATES.CREATED).toInstant(ZoneOffset.UTC));
+  }
+
+  /*
+   * Implement the array overlap construct in jooq.
+   * Given a column as a Field<T[]> and a java array create a jooq condition that
+   * returns true if column contains any of the values in the array.
+   */
+  private static <T> Condition textArrayOverlaps(Field<T[]> col, T[] array)
+  {
+    return DSL.condition("{0} && {1}::text[]", col, DSL.array(array));
   }
 }

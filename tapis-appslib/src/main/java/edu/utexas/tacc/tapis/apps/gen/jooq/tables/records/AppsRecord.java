@@ -38,28 +38,32 @@ public class AppsRecord extends UpdatableRecordImpl<AppsRecord> implements Recor
     }
 
     /**
-     * Setter for <code>tapis_app.apps.tenant</code>. Tenant name associated with the application
+     * Setter for <code>tapis_app.apps.tenant</code>. Tenant name associated
+     * with the application
      */
     public void setTenant(String value) {
         set(1, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps.tenant</code>. Tenant name associated with the application
+     * Getter for <code>tapis_app.apps.tenant</code>. Tenant name associated
+     * with the application
      */
     public String getTenant() {
         return (String) get(1);
     }
 
     /**
-     * Setter for <code>tapis_app.apps.id</code>. Unique name for the application
+     * Setter for <code>tapis_app.apps.id</code>. Unique name for the
+     * application
      */
     public void setId(String value) {
         set(2, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps.id</code>. Unique name for the application
+     * Getter for <code>tapis_app.apps.id</code>. Unique name for the
+     * application
      */
     public String getId() {
         return (String) get(2);
@@ -80,28 +84,32 @@ public class AppsRecord extends UpdatableRecordImpl<AppsRecord> implements Recor
     }
 
     /**
-     * Setter for <code>tapis_app.apps.owner</code>. User name of application owner
+     * Setter for <code>tapis_app.apps.owner</code>. User name of application
+     * owner
      */
     public void setOwner(String value) {
         set(4, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps.owner</code>. User name of application owner
+     * Getter for <code>tapis_app.apps.owner</code>. User name of application
+     * owner
      */
     public String getOwner() {
         return (String) get(4);
     }
 
     /**
-     * Setter for <code>tapis_app.apps.enabled</code>. Indicates if application is currently active and available for use
+     * Setter for <code>tapis_app.apps.enabled</code>. Indicates if application
+     * is currently active and available for use
      */
     public void setEnabled(Boolean value) {
         set(5, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps.enabled</code>. Indicates if application is currently active and available for use
+     * Getter for <code>tapis_app.apps.enabled</code>. Indicates if application
+     * is currently active and available for use
      */
     public Boolean getEnabled() {
         return (Boolean) get(5);
@@ -122,42 +130,48 @@ public class AppsRecord extends UpdatableRecordImpl<AppsRecord> implements Recor
     }
 
     /**
-     * Setter for <code>tapis_app.apps.deleted</code>. Indicates if application has been soft deleted
+     * Setter for <code>tapis_app.apps.deleted</code>. Indicates if application
+     * has been soft deleted
      */
     public void setDeleted(Boolean value) {
         set(7, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps.deleted</code>. Indicates if application has been soft deleted
+     * Getter for <code>tapis_app.apps.deleted</code>. Indicates if application
+     * has been soft deleted
      */
     public Boolean getDeleted() {
         return (Boolean) get(7);
     }
 
     /**
-     * Setter for <code>tapis_app.apps.created</code>. UTC time for when record was created
+     * Setter for <code>tapis_app.apps.created</code>. UTC time for when record
+     * was created
      */
     public void setCreated(LocalDateTime value) {
         set(8, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps.created</code>. UTC time for when record was created
+     * Getter for <code>tapis_app.apps.created</code>. UTC time for when record
+     * was created
      */
     public LocalDateTime getCreated() {
         return (LocalDateTime) get(8);
     }
 
     /**
-     * Setter for <code>tapis_app.apps.updated</code>. UTC time for when record was last updated
+     * Setter for <code>tapis_app.apps.updated</code>. UTC time for when record
+     * was last updated
      */
     public void setUpdated(LocalDateTime value) {
         set(9, value);
     }
 
     /**
-     * Getter for <code>tapis_app.apps.updated</code>. UTC time for when record was last updated
+     * Getter for <code>tapis_app.apps.updated</code>. UTC time for when record
+     * was last updated
      */
     public LocalDateTime getUpdated() {
         return (LocalDateTime) get(9);
