@@ -348,8 +348,6 @@ public final class IntegrationUtils
   public static final boolean showDeletedTrue = true;
   public static final boolean versionSpecifiedFalse = false;
   public static final AppsServiceImpl.AuthListType listTypeOwned = AppsServiceImpl.AuthListType.OWNED;
-  public static final AppsServiceImpl.AuthListType listTypeShared = AppsServiceImpl.AuthListType.SHARED;
-  public static final AppsServiceImpl.AuthListType listTypeSharedOnly = AppsServiceImpl.AuthListType.SHARED_ONLY;
   public static final AppsServiceImpl.AuthListType listTypeAll = AppsServiceImpl.AuthListType.ALL;
 
   /**

@@ -91,7 +91,7 @@ public class AppsServiceImpl implements AppsService
   // Compiled regex for splitting around ":"
   private static final Pattern COLON_SPLIT = Pattern.compile(":");
 
-  // Named null values to make it clear what is being passed in to a method
+  // Named and typed null values to make it clear what is being passed in to a method
   private static final String nullOwner = null;
   private static final String nullImpersonationId = null;
   private static final String nullTargetUser = null;
@@ -107,7 +107,7 @@ public class AppsServiceImpl implements AppsService
   // ************************************************************************
   // *********************** Enums ******************************************
   // ************************************************************************
-  public enum AuthListType  {OWNED, SHARED, SHARED_ONLY, ALL}
+  public enum AuthListType  {OWNED, SHARED_PUBLIC, ALL}
   public static final AuthListType DEFAULT_LIST_TYPE = AuthListType.OWNED;
 
   // ************************************************************************
@@ -117,10 +117,8 @@ public class AppsServiceImpl implements AppsService
   // Use HK2 to inject singletons
   @Inject
   private AppsDao dao;
-
   @Inject
   private ServiceClients serviceClients;
-
   @Inject
   private ServiceContext serviceContext;
 
@@ -149,6 +147,15 @@ public class AppsServiceImpl implements AppsService
     serviceContext.initServiceJWT(siteId, APPS_SERVICE, svcPassword);
     // Make sure DB is present and updated to latest version using flyway
     dao.migrateDB();
+  }
+
+  /**
+   * Check that we can connect with DB and that the main table of the service exists.
+   * @return null if all OK else return an Exception
+   */
+  public Exception checkDB()
+  {
+    return dao.checkDB();
   }
 
   // -----------------------------------------------------------------------
@@ -563,15 +570,6 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Check that we can connect with DB and that the main table of the service exists.
-   * @return null if all OK else return an Exception
-   */
-  public Exception checkDB()
-  {
-    return dao.checkDB();
-  }
-
-  /**
    * checkForApp
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - Name of the app
@@ -714,19 +712,19 @@ public class AppsServiceImpl implements AppsService
    * @param searchList - optional list of conditions used for searching
    * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
    * @param startAfter - where to start when sorting, e.g. orderBy=id(asc)&startAfter=101 (may not be used with skip)
-   * @param showDeleted - whether to included resources that have been marked as deleted.
-   * @param listType - allows for filtering results based on authorization: OWNED, SHARED, SHARED_ONLY, ALL
+   * @param includeDeleted - whether to included resources that have been marked as deleted.
+   * @param listType - allows for filtering results based on authorization: OWNED, SHARED_PUBLIC, ALL
    * @return Count of App objects
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
   public int getAppsTotalCount(ResourceRequestUser rUser, List<String> searchList, List<OrderBy> orderByList,
-                               String startAfter, boolean showDeleted, String listType)
+                               String startAfter, boolean includeDeleted, String listType)
           throws TapisException, TapisClientException
   {
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
 
-    // Process listType. Figure out how we will filter based on authorization. OWNED, SHARED, etc.
+    // Process listType. Figure out how we will filter based on authorization. OWNED, ALL, etc.
     // If no listType provided use the default
     if (StringUtils.isBlank(listType)) listType = DEFAULT_LIST_TYPE.name();
     // Validate the listType enum.
@@ -738,16 +736,9 @@ public class AppsServiceImpl implements AppsService
     }
     AuthListType listTypeEnum = AuthListType.valueOf(listType);
 
-    // For all list types other than SHARED_ONLY we will include items owned by the requester.
-    boolean includeOwned = !AuthListType.SHARED_ONLY.equals(listTypeEnum);
-    // If not looking for just items owned by requester then we must include shared items.
-    boolean includeShared = !AuthListType.OWNED.equals(listTypeEnum);
-
     // Set some flags for convenience and clarity
-    boolean ownedOnly = AuthListType.OWNED.equals(listTypeEnum);
-    boolean sharedOnly = AuthListType.SHARED_ONLY.equals(listTypeEnum);
-    boolean ownedOrShared = AuthListType.SHARED.equals(listTypeEnum);
-    boolean allApps = AuthListType.ALL.equals(listTypeEnum);
+    boolean allItems = AuthListType.ALL.equals(listTypeEnum);
+    boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum);
 
     // Build verified list of search conditions and check if any search conditions involve the version attribute
     boolean versionSpecified = false;
@@ -772,17 +763,18 @@ public class AppsServiceImpl implements AppsService
       }
     }
 
-    // If needed, get IDs for apps which requester has READ or modify permission
-    Set<String> viewableAppIDs = null;
-    if (allApps) viewableAppIDs = getViewableAppIDs(rUser);
+    // If needed, get IDs for items for which requester has READ or MODIFY permission
+    Set<String> viewableIDs = new HashSet<>();
+    if (allItems) viewableIDs = getViewableAppIDs(rUser);
 
-    // If needed, get IDs for apps shared with the requester.
-    Set<String> sharedAppIDs = Collections.emptySet();
-    if (includeShared) sharedAppIDs = getSharedAppIDs(rUser);
+    // If needed, get IDs for items shared with the requester or only shared publicly.
+    Set<String> sharedIDs = new HashSet<>();
+    if (allItems) sharedIDs = getSharedAppIDs(rUser, false);
+    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, true);
 
     // Count all allowed systems matching the search conditions
-    return dao.getAppsCount(rUser, verifiedSearchList, null, orderByList, startAfter, versionSpecified, showDeleted,
-                            listTypeEnum, viewableAppIDs, sharedAppIDs);
+    return dao.getAppsCount(rUser, verifiedSearchList, null, orderByList, startAfter, versionSpecified, includeDeleted,
+                            listTypeEnum, viewableIDs, sharedIDs);
   }
 
   /**
@@ -796,7 +788,7 @@ public class AppsServiceImpl implements AppsService
    * @param skip - number of results to skip (may not be used with startAfter)
    * @param startAfter - where to start when sorting, e.g. limit=10&orderBy=id(asc)&startAfter=101 (may not be used with skip)
    * @param includeDeleted - whether to included resources that have been marked as deleted.
-   * @param listType - allows for filtering results based on authorization: OWNED, SHARED, SHARED_ONLY, ALL
+   * @param listType - allows for filtering results based on authorization: OWNED, SHARED_PUBLIC, ALL
    * @return List of App objects
    * @throws TapisException - for Tapis related exceptions
    */
@@ -807,7 +799,7 @@ public class AppsServiceImpl implements AppsService
   {
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
 
-    // Process listType. Figure out how we will filter based on authorization. OWNED, SHARED, etc.
+    // Process listType. Figure out how we will filter based on authorization. OWNED, ALL, etc.
     // If no listType provided use the default
     if (StringUtils.isBlank(listType)) listType = DEFAULT_LIST_TYPE.name();
     // Validate the listType enum.
@@ -819,16 +811,9 @@ public class AppsServiceImpl implements AppsService
     }
     AuthListType listTypeEnum = AuthListType.valueOf(listType);
 
-    // For all list types other than SHARED_ONLY we will include items owned by the requester.
-    boolean includeOwned = !AuthListType.SHARED_ONLY.equals(listTypeEnum);
-    // If not looking for just items owned by requester then we must include shared items.
-    boolean includeShared = !AuthListType.OWNED.equals(listTypeEnum);
-
     // Set some flags for convenience and clarity
-    boolean ownedOnly = AuthListType.OWNED.equals(listTypeEnum);
-    boolean sharedOnly = AuthListType.SHARED_ONLY.equals(listTypeEnum);
-    boolean ownedOrShared = AuthListType.SHARED.equals(listTypeEnum);
-    boolean allApps = AuthListType.ALL.equals(listTypeEnum);
+    boolean allItems = AuthListType.ALL.equals(listTypeEnum);
+    boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum);
 
     // Build verified list of search conditions and check if any search conditions involve the version attribute
     boolean versionSpecified = false;
@@ -853,17 +838,17 @@ public class AppsServiceImpl implements AppsService
       }
     }
 
-    // If needed, get IDs for apps which requester has READ or modify permission
-    Set<String> viewableAppIDs = null;
-    if (allApps) viewableAppIDs = getViewableAppIDs(rUser);
+    // If needed, get IDs for items for which requester has READ or MODIFY permission
+    Set<String> viewableIDs = new HashSet<>();
+    if (allItems) viewableIDs = getViewableAppIDs(rUser);
 
-    // If needed, get IDs for apps shared with the requester.
-    Set<String> sharedAppIDs = Collections.emptySet();
-    if (includeShared) sharedAppIDs = getSharedAppIDs(rUser);
+    // If needed, get IDs for items shared with the requester or only shared publicly.
+    Set<String> sharedIDs = new HashSet<>();
+    if (allItems) sharedIDs = getSharedAppIDs(rUser, false);
+    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, true);
 
     List<App> apps = dao.getApps(rUser, verifiedSearchList, null, limit, orderByList, skip, startAfter,
-                                 versionSpecified, includeDeleted, listTypeEnum, viewableAppIDs, sharedAppIDs);
-
+                                 versionSpecified, includeDeleted, listTypeEnum, viewableIDs, sharedIDs);
     return apps;
   }
 
@@ -873,7 +858,7 @@ public class AppsServiceImpl implements AppsService
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param sqlSearchStr - string containing a valid SQL where clause
    * @param includeDeleted - whether to included resources that have been marked as deleted.
-   * @param listType - allows for filtering results based on authorization: OWNED, SHARED, SHARED_ONLY, ALL
+   * @param listType - allows for filtering results based on authorization: OWNED, SHARED_PUBLIC, ALL
    * @return List of App objects
    * @throws TapisException - for Tapis related exceptions
    */
@@ -889,7 +874,7 @@ public class AppsServiceImpl implements AppsService
 
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
 
-    // Process listType. Figure out how we will filter based on authorization. OWNED, SHARED, etc.
+    // Process listType. Figure out how we will filter based on authorization. OWNED, ALL, etc.
     // If no listType provided use the default
     if (StringUtils.isBlank(listType)) listType = DEFAULT_LIST_TYPE.name();
     // Validate the listType enum.
@@ -900,24 +885,10 @@ public class AppsServiceImpl implements AppsService
       throw new IllegalArgumentException(msg);
     }
     AuthListType listTypeEnum = AuthListType.valueOf(listType);
-    // For all list types other than SHARED_ONLY we will include items owned by the requester.
-    boolean includeOwned = !AuthListType.SHARED_ONLY.equals(listTypeEnum);
-    // If not looking for just items owned by requester then we must include shared items.
-    boolean includeShared = !AuthListType.OWNED.equals(listTypeEnum);
 
     // Set some flags for convenience and clarity
-    boolean ownedOnly = AuthListType.OWNED.equals(listTypeEnum);
-    boolean sharedOnly = AuthListType.SHARED_ONLY.equals(listTypeEnum);
-    boolean ownedOrShared = AuthListType.SHARED.equals(listTypeEnum);
-    boolean allApps = AuthListType.ALL.equals(listTypeEnum);
-
-    // Validate the listType enum.
-    if (!EnumUtils.isValidEnum(AuthListType.class, listType))
-    {
-      String msg = LibUtils.getMsgAuth("APPLIB_LISTTYPE_ERROR", rUser, listType);
-      _log.error(msg);
-      throw new IllegalArgumentException(msg);
-    }
+    boolean allItems = AuthListType.ALL.equals(listTypeEnum);
+    boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum);
 
     // Validate and parse the sql string into an abstract syntax tree (AST)
     // The activemq parser validates and parses the string into an AST but there does not appear to be a way
@@ -939,37 +910,38 @@ public class AppsServiceImpl implements AppsService
       throw new IllegalArgumentException(msg);
     }
 
-    // If needed, get IDs for apps which requester has READ or modify permission
-    Set<String> viewableAppIDs = null;
-    if (allApps) viewableAppIDs = getViewableAppIDs(rUser);
+    // If needed, get IDs for items for which requester has READ or MODIFY permission
+    Set<String> viewableIDs = new HashSet<>();
+    if (allItems) viewableIDs = getViewableAppIDs(rUser);
 
-    // If needed, get IDs for apps shared with the requester.
-    Set<String> sharedAppIDs = Collections.emptySet();
-    if (includeShared) sharedAppIDs = getSharedAppIDs(rUser);
+    // If needed, get IDs for items shared with the requester or only shared publicly.
+    Set<String> sharedIDs = new HashSet<>();
+    if (allItems) sharedIDs = getSharedAppIDs(rUser, false);
+    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, true);
 
     // Pass in null for versionSpecified since the Dao makes the same call we would make, so no time saved doing it here.
     Boolean versionSpecified = null;
 
     // Get all allowed apps matching the search conditions
     List<App> apps = dao.getApps(rUser, null, searchAST, limit, orderByList, skip, startAfter, versionSpecified,
-                                 includeDeleted, listTypeEnum, viewableAppIDs, sharedAppIDs);
+                                 includeDeleted, listTypeEnum, viewableIDs, sharedIDs);
     return apps;
   }
 
   /**
    * Get list of all app IDs that an rUser is authorized to view
    * @param rUser - ResourceRequestUser containing tenant, user and request info
-   * @param showDeleted - whether to included resources that have been marked as deleted.
+   * @param includeDeleted - whether to included resources that have been marked as deleted.
    * @return - set of application IDs
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
-  public Set<String> getAllowedAppIDs(ResourceRequestUser rUser, boolean showDeleted) throws TapisException
+  public Set<String> getAllowedAppIDs(ResourceRequestUser rUser, boolean includeDeleted) throws TapisException
   {
     AppOperation op = AppOperation.read;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     // Get all app names
-    Set<String> appIds = dao.getAppIDs(rUser.getOboTenantId(), showDeleted);
+    Set<String> appIds = dao.getAppIDs(rUser.getOboTenantId(), includeDeleted);
     var allowedAppIDs = new HashSet<String>();
     // Filter based on user authorization
     for (String appId: appIds)
@@ -1709,7 +1681,8 @@ public class AppsServiceImpl implements AppsService
   /**
    * Determine all apps that are shared with a user.
    */
-  private Set<String> getSharedAppIDs(ResourceRequestUser rUser) throws TapisException, TapisClientException
+  private Set<String> getSharedAppIDs(ResourceRequestUser rUser, boolean publicOnly)
+          throws TapisException, TapisClientException
   {
     var appIDs = new HashSet<String>();
     // Extract various names for convenience
@@ -1721,7 +1694,9 @@ public class AppsServiceImpl implements AppsService
     var skParms = new SKShareGetSharesParms();
     skParms.setResourceType(APPS_SHR_TYPE);
     skParms.setTenant(oboTenantId);
-    skParms.setGrantee(oboUserId);
+    // Set grantee based on whether we want just public or not.
+    if (publicOnly) skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
+    else skParms.setGrantee(oboUserId);
 
     // Call SK to get all shared with oboUser and add them to the set
     var skShares = getSKClient().getShares(skParms);
