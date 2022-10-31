@@ -899,7 +899,7 @@ public class AppsServiceImpl implements AppsService
     //        looks like activemq parser will ensure the leaf nodes all represent <attr>.<op>.<value> and in principle
     //        we should be able to check each one and generate of list of errors for reporting.
     //  Looks like jOOQ can parse an SQL string into a jooq Condition. Do this in the Dao? But still seems like no way
-    //    to walk the AST and check each condition so we can report on errors.
+    //    to walk the AST and check each condition, so we can report on errors.
 //    BooleanExpression searchAST;
     ASTNode searchAST;
     try { searchAST = ASTParser.parse(sqlSearchStr); }

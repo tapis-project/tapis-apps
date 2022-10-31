@@ -61,6 +61,8 @@ import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 
+import static edu.utexas.tacc.tapis.search.SearchUtils.SearchOperator.CONTAINS;
+import static edu.utexas.tacc.tapis.search.SearchUtils.SearchOperator.NCONTAINS;
 import static edu.utexas.tacc.tapis.apps.model.App.INVALID_SEQ_ID;
 import static edu.utexas.tacc.tapis.apps.model.App.INVALID_UUID;
 import static edu.utexas.tacc.tapis.apps.model.App.NO_APP_VERSION;
@@ -2053,8 +2055,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     Condition newCondition = createCondition(col, op, val);
     // If specified add the condition to the WHERE clause
     if (StringUtils.isBlank(joinOp) || whereCondition == null) return newCondition;
-    else if (joinOp.equals(AND)) return whereCondition.and(newCondition);
-    else if (joinOp.equals(OR)) return whereCondition.or(newCondition);
+    else if (joinOp.equalsIgnoreCase("AND")) return whereCondition.and(newCondition);
+    else if (joinOp.equalsIgnoreCase("OR")) return whereCondition.or(newCondition);
     return newCondition;
   }
 
@@ -2106,13 +2108,17 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    */
   private static Condition createCondition(Field col, SearchOperator op, String val)
   {
+    SearchOperator op1 = op;
     List<String> valList = Collections.emptyList();
     if (SearchUtils.listOpSet.contains(op)) valList = SearchUtils.getValueList(val);
+    // If operator is IN or NIN and column type is array then handle it as CONTAINS or NCONTAINS
+    if ((col.getDataType().getSQLType() == Types.ARRAY) && SearchOperator.IN.equals(op)) op1 = CONTAINS;
+    if ((col.getDataType().getSQLType() == Types.ARRAY) && SearchOperator.NIN.equals(op)) op1 = NCONTAINS;
     Condition c = null;
-    switch (op) {
-      case EQ -> c =col.eq(val);
+    switch (op1) {
+      case EQ -> c = col.eq(val);
       case NEQ -> c = col.ne(val);
-      case LT -> c = col.lt(val);
+      case LT -> c =  col.lt(val);
       case LTE -> c = col.le(val);
       case GT -> c =  col.gt(val);
       case GTE -> c = col.ge(val);
@@ -2120,7 +2126,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       case NLIKE -> c = col.notLike(val);
       case IN -> c = col.in(valList);
       case NIN -> c = col.notIn(valList);
-      case CONTAINS -> c = textArrayOverlaps(col, valList.toArray());
+      case CONTAINS -> c = textArrayOverlaps(col, valList.toArray(), false);
+      case NCONTAINS -> c = textArrayOverlaps(col, valList.toArray(), true);
       case BETWEEN -> c = col.between(valList.get(0), valList.get(1));
       case NBETWEEN -> c = col.notBetween(valList.get(0), valList.get(1));
     }
@@ -2146,8 +2153,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Given a column as a Field<T[]> and a java array create a jooq condition that
    * returns true if column contains any of the values in the array.
    */
-  private static <T> Condition textArrayOverlaps(Field<T[]> col, T[] array)
+  private static <T> Condition textArrayOverlaps(Field<T[]> col, T[] array, boolean negate)
   {
-    return DSL.condition("{0} && {1}::text[]", col, DSL.array(array));
+    Condition cond = DSL.condition("{0} && {1}::text[]", col, DSL.array(array));
+    if (negate) return cond.not();
+    else return cond;
   }
 }

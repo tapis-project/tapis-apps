@@ -206,10 +206,11 @@ public class SearchDaoTest
     validCaseInputs.put(22,new CaseData(numApps, Arrays.asList(appIdLikeAll, "job_type.eq.BATCH")));
     validCaseInputs.put(23,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "job_type.eq.BATCH","owner.neq." + owner2)));
     // Test Tapis3 specific CONTAINS operator used only for tags column
-    validCaseInputs.put(24, new CaseData(numApps, Arrays.asList(appIdLikeAll, "tags.contains."+tagList1)));
-    validCaseInputs.put(25, new CaseData(numApps, Arrays.asList(appIdLikeAll, "tags.contains."+tagList2)));
-    validCaseInputs.put(26, new CaseData(numApps, Arrays.asList(appIdLikeAll, "tags.contains."+tagList3)));
-    validCaseInputs.put(27, new CaseData(0, Arrays.asList(appIdLikeAll, "tags.contains."+tagList4)));
+    validCaseInputs.put(24, new CaseData(numApps, Arrays.asList(appIdLikeAll, "tags.in."+tagList1)));
+    validCaseInputs.put(25, new CaseData(numApps, Arrays.asList(appIdLikeAll, "tags.in."+tagList2)));
+    validCaseInputs.put(26, new CaseData(numApps, Arrays.asList(appIdLikeAll, "tags.in."+tagList3)));
+    validCaseInputs.put(27, new CaseData(0, Arrays.asList(appIdLikeAll, "tags.in."+tagList4)));
+    validCaseInputs.put(28, new CaseData(0, Arrays.asList(appIdLikeAll, "tags.nin."+tagList1)));
     // Test numeric relational
     validCaseInputs.put(40,new CaseData(numApps/2, Arrays.asList(appIdLikeAll, "max_jobs.between.1," + numApps/2)));
     validCaseInputs.put(41,new CaseData(numApps/2-1, Arrays.asList(appIdLikeAll, "max_jobs.between.2," + numApps/2)));
