@@ -138,7 +138,7 @@ public class SearchDaoTest
     Thread.sleep(500);
     for (App app : apps)
     {
-      boolean itemCreated = dao.createApp(rOwner1, app, gson.toJson(app), scrubbedJson);
+      boolean itemCreated = dao.createApp(rOwner1, app, gson.toJson(app), rawDataEmptyJson);
       Assert.assertTrue(itemCreated, "Item not created, id: " + app.getId());
     }
     Thread.sleep(500);
@@ -473,7 +473,7 @@ public class SearchDaoTest
    * Test listType options.
    * Test what we can without having to create shares or grant permissions.
    * Test basic behavior by using pre-populated lists for viewable and shared IDs
-   * listType = OWNED, SHARED_ONLY, SHARED, ALL
+   * listType = OWNED, SHARED_PUBLIC, ALL
    */
   @Test(groups={"integration"})
   public void testListType() throws Exception
@@ -494,27 +494,16 @@ public class SearchDaoTest
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned, viewableIDsNotOwner1, sharedIDsAll);
     assertEquals(searchResults.size(), numApps/2, "Incorrect result count");
 
-    // Using SHARED_ONLY should only see ones that are shared.
+    // Using SHARED_PUBLIC should only see ones that are in the sharedIDs list
     searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
-                                versionSpecifiedNull, showDeletedFalse, listTypeSharedOnly, viewableIDsNull, sharedIDsNotOwner1);
+                                versionSpecifiedNull, showDeletedFalse, listTypePublic, viewableIDsNull, sharedIDsNotOwner1);
     assertEquals(searchResults.size(), numApps/2, "Incorrect result count");
     searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
-                                versionSpecifiedNull, showDeletedFalse, listTypeSharedOnly, viewableIDsNull, sharedIDsNotOwner1Half1);
+                                versionSpecifiedNull, showDeletedFalse, listTypePublic, viewableIDsNull, sharedIDsNotOwner1Half1);
     assertEquals(searchResults.size(), (numApps/4), "Incorrect result count");
     searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
-                                versionSpecifiedNull, showDeletedFalse, listTypeSharedOnly, viewableIDsNull, sharedIDsNotOwner1Half2);
+                                versionSpecifiedNull, showDeletedFalse, listTypePublic, viewableIDsNull, sharedIDsNotOwner1Half2);
     assertEquals(searchResults.size(), (numApps/4), "Incorrect result count");
-
-    // Using SHARED should see extra beyond owned. All or half of items where not the owner.
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
-                                versionSpecifiedNull, showDeletedFalse, listTypeShared, viewableIDsNull, sharedIDsNotOwner1);
-    assertEquals(searchResults.size(), numApps, "Incorrect result count");
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
-                                versionSpecifiedNull, showDeletedFalse, listTypeShared, viewableIDsNull, sharedIDsNotOwner1Half1);
-    assertEquals(searchResults.size(), (numApps/2 + numApps/4), "Incorrect result count");
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
-                                versionSpecifiedNull, showDeletedFalse, listTypeShared, viewableIDsNull, sharedIDsNotOwner1Half2);
-    assertEquals(searchResults.size(), (numApps/2 + numApps/4), "Incorrect result count");
 
     // Using ALL should see extra beyond owned. All or half of items where not the owner.
     searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,

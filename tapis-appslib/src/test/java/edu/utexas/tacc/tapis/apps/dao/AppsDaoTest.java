@@ -70,7 +70,7 @@ public class AppsDaoTest
   public void testCreate() throws Exception
   {
     App app0 = apps[0];
-    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), scrubbedJson);
+    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     System.out.println("Created ictem, id: " + app0.getId() + " version: " + app0.getVersion());
   }
@@ -80,7 +80,7 @@ public class AppsDaoTest
   public void testGet() throws Exception
   {
     App app0 = apps[1];
-    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), scrubbedJson);
+    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     App tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion());
     Assert.assertNotNull(tmpApp, "Failed to get item, id: " + app0.getId() + " version: " + app0.getVersion());
@@ -219,11 +219,11 @@ public class AppsDaoTest
   {
     // Create 2 apps
     App app0 = apps[2];
-    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), scrubbedJson);
+    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
     app0 = apps[3];
-    appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), scrubbedJson);
+    appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
     // Get all apps
@@ -241,7 +241,7 @@ public class AppsDaoTest
   public void testGetApps() throws Exception
   {
     App app0 = apps[4];
-    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), scrubbedJson);
+    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
     List<App> apps = dao.getApps(rOwner1, null, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
@@ -253,39 +253,12 @@ public class AppsDaoTest
     }
   }
 
-  // Test retrieving all apps in a list of IDs
-  @Test
-  public void testGetAppsInIDList() throws Exception
-  {
-    var appIdList = new HashSet<String>();
-    // Create 2 apps
-    App app0 = apps[5];
-    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), scrubbedJson);
-    Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
-    System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
-    appIdList.add(app0.getId());
-    app0 = apps[6];
-    appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), scrubbedJson);
-    Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
-    System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
-    appIdList.add(app0.getId());
-    // Get all apps in list of IDs
-    List<App> apps = dao.getApps(rOwner1, null, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
-                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, appIdList, null);
-    for (App app : apps)
-    {
-      System.out.println("Found item with appId: " + app.getId() + " and appVer: " + app.getVersion());
-      Assert.assertTrue(appIdList.contains(app.getId()));
-    }
-    Assert.assertEquals(apps.size(), appIdList.size());
-  }
-
   // Test enable/disable/delete/undelete
   @Test
   public void testEnableDisableDeleteUndelete() throws Exception
   {
     App app0 = apps[12];
-    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), scrubbedJson);
+    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion() +
                        " enabled: " + app0.isEnabled());
@@ -315,7 +288,7 @@ public class AppsDaoTest
   public void testChangeAppOwner() throws Exception
   {
     App app0 = apps[7];
-    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), scrubbedJson);
+    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
     dao.updateAppOwner(rOwner1, tenantName, app0.getId(), "newOwner");
@@ -328,7 +301,7 @@ public class AppsDaoTest
   public void testHardDelete() throws Exception
   {
     App app0 = apps[9];
-    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), scrubbedJson);
+    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
 
@@ -345,13 +318,13 @@ public class AppsDaoTest
     // Create 2 versions of 2 apps
     App app1a = apps[10];
     App app1b = new App(app1a, tenantName, app1a.getId(), appVersion2);
-    boolean appCreated = dao.createApp(rOwner1, app1a, gson.toJson(app1a), scrubbedJson);
+    boolean appCreated = dao.createApp(rOwner1, app1a, gson.toJson(app1a), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app1a.getId() + " version: " + app1a.getVersion());
     System.out.println("Created item, id: " + app1a.getId() + " version: " + app1a.getVersion());
     appVerList.add(app1a.getVersion());
     appIdList.add(app1a.getId());
 
-    appCreated = dao.createApp(rOwner1, app1b, gson.toJson(app1a), scrubbedJson);
+    appCreated = dao.createApp(rOwner1, app1b, gson.toJson(app1a), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app1b.getId() + " version: " + app1b.getVersion());
     System.out.println("Created item, id: " + app1b.getId() + " version: " + app1b.getVersion());
     appVerList.add(app1b.getVersion());
@@ -359,13 +332,13 @@ public class AppsDaoTest
 
     App app2a = apps[11];
     App app2b = new App(app2a, tenantName, app2a.getId(), appVersion2);
-    appCreated = dao.createApp(rOwner1, app2a, gson.toJson(app2a), scrubbedJson);
+    appCreated = dao.createApp(rOwner1, app2a, gson.toJson(app2a), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app2a.getId() + " version: " + app2a.getVersion());
     System.out.println("Created item, id: " + app2a.getId() + " version: " + app2a.getVersion());
     appVerList.add(app2a.getVersion());
     appIdList.add(app2a.getId());
 
-    appCreated = dao.createApp(rOwner1, app2b, gson.toJson(app2b), scrubbedJson);
+    appCreated = dao.createApp(rOwner1, app2b, gson.toJson(app2b), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app2b.getId() + " version: " + app2b.getVersion());
     System.out.println("Created item, id: " + app2b.getId() + " version: " + app2b.getVersion());
     appVerList.add(app2b.getVersion());
@@ -427,7 +400,7 @@ public class AppsDaoTest
     Assert.assertFalse(dao.checkForApp(tenantName, fakeAppId, false));
     // update should throw not found exception
     boolean pass = false;
-    try { dao.patchApp(rOwner1, fakeAppId, fakeAppVersion, patchedApp, scrubbedJson, null); }
+    try { dao.patchApp(rOwner1, fakeAppId, fakeAppVersion, patchedApp, rawDataEmptyJson, null); }
     catch (IllegalStateException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_NOT_FOUND"));
@@ -435,7 +408,7 @@ public class AppsDaoTest
     }
     Assert.assertTrue(pass);
     pass = false;
-    try { dao.putApp(rOwner1, patchedApp, scrubbedJson, null); }
+    try { dao.putApp(rOwner1, patchedApp, rawDataEmptyJson, null); }
     catch (IllegalStateException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_NOT_FOUND"));
@@ -451,7 +424,7 @@ public class AppsDaoTest
   public void testGetAppHistory() throws Exception
   {
     App app0 = apps[13];
-    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), scrubbedJson);
+    boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     App tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion());
     Assert.assertNotNull(tmpApp, "Failed to get item, id: " + app0.getId() + " version: " + app0.getVersion());

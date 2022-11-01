@@ -727,7 +727,8 @@ public class AppsServiceImpl implements AppsService
     // Process listType. Figure out how we will filter based on authorization. OWNED, ALL, etc.
     // If no listType provided use the default
     if (StringUtils.isBlank(listType)) listType = DEFAULT_LIST_TYPE.name();
-    // Validate the listType enum.
+    // Validate the listType enum (case insensitive).
+    listType = listType.toUpperCase();
     if (!EnumUtils.isValidEnum(AuthListType.class, listType))
     {
       String msg = LibUtils.getMsgAuth("APPLIB_LISTTYPE_ERROR", rUser, listType);
@@ -802,7 +803,8 @@ public class AppsServiceImpl implements AppsService
     // Process listType. Figure out how we will filter based on authorization. OWNED, ALL, etc.
     // If no listType provided use the default
     if (StringUtils.isBlank(listType)) listType = DEFAULT_LIST_TYPE.name();
-    // Validate the listType enum.
+    // Validate the listType enum (case insensitive).
+    listType = listType.toUpperCase();
     if (!EnumUtils.isValidEnum(AuthListType.class, listType))
     {
       String msg = LibUtils.getMsgAuth("APPLIB_LISTTYPE_ERROR", rUser, listType);
@@ -877,7 +879,8 @@ public class AppsServiceImpl implements AppsService
     // Process listType. Figure out how we will filter based on authorization. OWNED, ALL, etc.
     // If no listType provided use the default
     if (StringUtils.isBlank(listType)) listType = DEFAULT_LIST_TYPE.name();
-    // Validate the listType enum.
+    // Validate the listType enum (case insensitive).
+    listType = listType.toUpperCase();
     if (!EnumUtils.isValidEnum(AuthListType.class, listType))
     {
       String msg = LibUtils.getMsgAuth("APPLIB_LISTTYPE_ERROR", rUser, listType);

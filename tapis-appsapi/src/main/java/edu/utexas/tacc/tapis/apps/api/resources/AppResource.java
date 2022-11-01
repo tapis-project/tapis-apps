@@ -754,6 +754,7 @@ public class AppResource
    *       QueryParametersRequestFilter. No need to use @QueryParam here.
    * @param securityContext - user identity
    * @param showDeleted - whether to included resources that have been marked as deleted.
+   * @param listType - allows for filtering results based on authorization: OWNED, SHARED_PUBLIC, ALL
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @GET
@@ -801,6 +802,7 @@ public class AppResource
    * Dedicated search endpoint for App resource. Search conditions provided as query parameters.
    * @param securityContext - user identity
    * @param showDeleted - whether to included resources that have been marked as deleted.
+   * @param listType - allows for filtering results based on authorization: OWNED, SHARED_PUBLIC, ALL
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @GET
@@ -869,6 +871,7 @@ public class AppResource
    * @param payloadStream - request body
    * @param securityContext - user identity
    * @param showDeleted - whether to included resources that have been marked as deleted.
+   * @param listType - allows for filtering results based on authorization: OWNED, SHARED_PUBLIC, ALL
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @POST

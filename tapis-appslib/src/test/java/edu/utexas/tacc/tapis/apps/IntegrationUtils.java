@@ -43,8 +43,13 @@ public final class IntegrationUtils
   public static final Gson gson =  TapisGsonUtils.getGson();
   // Test data
   public static final String tenantName = "dev";
-  public static final String owner1 = "testuser1";
-  public static final String owner2 = "testuser2";
+  public static final String owner0 = "owner0";
+  public static final String owner1 = "owner1";
+  public static final String owner2 = "owner2";
+  public static final String owner3 = "owner3";
+  public static final String owner4 = "owner4";
+  public static final String owner5 = "owner5";
+  public static final String owner6 = "owner6";
   public static final String apiUser = "testuser2";
   public static final String impersonationIdTestUser9 = "testuser9";
   public static final String appIdPrefix = "TestApp";
@@ -200,7 +205,7 @@ public final class IntegrationUtils
           TapisGsonUtils.getGson().fromJson("{\"project\": \"my proj2\", \"testdata\": \"abc2\"}", JsonObject.class);
   public static final JsonObject notes1Obj = (JsonObject) notes1;
   public static final JsonObject notesNull = null;
-  public static final String scrubbedJson = "{}";
+  public static final String rawDataEmptyJson = "{}";
 
   // FileInputs
   public static final FileInput fin1A = new FileInput("fin1A", "File input 1A", fileInputModeRequired, autoMountLocalTrue,
@@ -348,6 +353,7 @@ public final class IntegrationUtils
   public static final boolean showDeletedTrue = true;
   public static final boolean versionSpecifiedFalse = false;
   public static final AppsServiceImpl.AuthListType listTypeOwned = AppsServiceImpl.AuthListType.OWNED;
+  public static final AppsServiceImpl.AuthListType listTypePublic = AppsServiceImpl.AuthListType.SHARED_PUBLIC;
   public static final AppsServiceImpl.AuthListType listTypeAll = AppsServiceImpl.AuthListType.ALL;
 
   /**
