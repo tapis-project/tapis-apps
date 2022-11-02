@@ -72,9 +72,6 @@ public interface AppsService
                                      int skip, String startAfter, boolean includeDeleted, String listType)
           throws TapisException, TapisClientException;
 
-  Set<String> getAllowedAppIDs(ResourceRequestUser rUser, boolean includeDeleted)
-          throws TapisException;
-
   String getAppOwner(ResourceRequestUser rUser, String appId)
           throws TapisException, TapisClientException, NotAuthorizedException;
 

@@ -932,34 +932,6 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Get list of all app IDs that an rUser is authorized to view
-   * @param rUser - ResourceRequestUser containing tenant, user and request info
-   * @param includeDeleted - whether to included resources that have been marked as deleted.
-   * @return - set of application IDs
-   * @throws TapisException - for Tapis related exceptions
-   */
-  @Override
-  public Set<String> getAllowedAppIDs(ResourceRequestUser rUser, boolean includeDeleted) throws TapisException
-  {
-    AppOperation op = AppOperation.read;
-    if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
-    // Get all app names
-    Set<String> appIds = dao.getAppIDs(rUser.getOboTenantId(), includeDeleted);
-    var allowedAppIDs = new HashSet<String>();
-    // Filter based on user authorization
-    for (String appId: appIds)
-    {
-      try
-      {
-        checkAuthOwnerUnknown(rUser, op, appId);
-        allowedAppIDs.add(appId);
-      }
-      catch (NotAuthorizedException | TapisClientException e) { }
-    }
-    return allowedAppIDs;
-  }
-
-  /**
    * Get app owner
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - Name of the app
@@ -1661,21 +1633,36 @@ public class AppsServiceImpl implements AppsService
   private Set<String> getViewableAppIDs(ResourceRequestUser rUser) throws TapisException, TapisClientException
   {
     var appIDs = new HashSet<String>();
-    var userPerms = getSKClient().getUserPerms(rUser.getOboTenantId(), rUser.getOboUserId());
+    // Use implies to filter permissions returned. Without implies all permissions for apps, etc. are returned.
+    String impliedBy = null;
+    String implies = String.format("%s:%s:*:*", PERM_SPEC_PREFIX, rUser.getOboTenantId());
+    var userPerms = getSKClient().getUserPerms(rUser.getOboTenantId(), rUser.getOboUserId(), implies, impliedBy);
     // Check each perm to see if it allows user READ access.
     for (String userPerm : userPerms)
     {
       if (StringUtils.isBlank(userPerm)) continue;
-      // Split based on :, permSpec has the format app:<tenant>:<perms>:<system_name>
+      // Split based on :, permSpec has the format system:<tenant>:<perms>:<system_name>
       // NOTE: This assumes value in last field is always an id and never a wildcard.
       String[] permFields = COLON_SPLIT.split(userPerm);
       if (permFields.length < 4) continue;
       if (permFields[0].equals(PERM_SPEC_PREFIX) &&
-           (permFields[2].contains(Permission.READ.name()) ||
-            permFields[2].contains(Permission.MODIFY.name()) ||
-            permFields[2].contains(App.PERMISSION_WILDCARD)))
+              (permFields[2].contains(Permission.READ.name()) ||
+                      permFields[2].contains(Permission.MODIFY.name()) ||
+                      permFields[2].contains(App.PERMISSION_WILDCARD)))
       {
-        appIDs.add(permFields[3]);
+        // If system exists add ID to the list
+        // else resource no longer exists or has been deleted so remove orphaned permissions
+        if (dao.checkForApp(rUser.getOboTenantId(), permFields[3], false))
+        {
+          appIDs.add(permFields[3]);
+        }
+        else
+        {
+          // Log a warning and remove the permission
+          String msg = LibUtils.getMsgAuth("APPLIB_PERM_ORPHAN", rUser, permFields[3]);
+          _log.warn(msg);
+          removeOrphanedSKPerms(permFields[3], rUser.getOboTenantId());
+        }
       }
     }
     return appIDs;
@@ -1762,6 +1749,25 @@ public class AppsServiceImpl implements AppsService
       revokePermissions(resourceTenantId, appId, userName, ALL_PERMS);
       // Remove wildcard perm
       getSKClient().revokeUserPermission(resourceTenantId, userName, getPermSpecAllStr(resourceTenantId, appId));
+    }
+  }
+
+  /**
+   * Remove all SK permissions associated with given app ID, tenant. App does not need to exist.
+   * Used to clean up orphaned permissions.
+   */
+  private void removeOrphanedSKPerms(String appId, String tenant)
+          throws TapisException, TapisClientException
+  {
+    // Use Security Kernel client to find all users with perms associated with the app.
+    String permSpec = String.format(PERM_SPEC_TEMPLATE, tenant, "%", appId);
+    var userNames = getSKClient().getUsersWithPermission(tenant, permSpec);
+    // Revoke all perms for all users
+    for (String userName : userNames)
+    {
+      revokePermissions(tenant, appId, userName, ALL_PERMS);
+      // Remove wildcard perm
+      getSKClient().revokeUserPermission(tenant, userName, getPermSpecAllStr(tenant, appId));
     }
   }
 
