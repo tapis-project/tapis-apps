@@ -1,22 +1,7 @@
 package edu.utexas.tacc.tapis.apps.api;
 
-import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
-import edu.utexas.tacc.tapis.apps.dao.AppsDao;
-import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
-import edu.utexas.tacc.tapis.apps.service.AppsService;
-import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
-import edu.utexas.tacc.tapis.apps.service.ServiceClientsFactory;
-import edu.utexas.tacc.tapis.apps.service.ServiceContextFactory;
-import edu.utexas.tacc.tapis.shared.security.ServiceClients;
-import edu.utexas.tacc.tapis.shared.security.ServiceContext;
-import edu.utexas.tacc.tapis.shared.security.TenantManager;
-import edu.utexas.tacc.tapis.shared.TapisConstants;
-import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
-import edu.utexas.tacc.tapis.sharedapi.jaxrs.filters.JWTValidateRequestFilter;
-import edu.utexas.tacc.tapis.sharedapi.providers.ObjectMapperContextResolver;
-import edu.utexas.tacc.tapis.sharedapi.providers.TapisExceptionMapper;
-import edu.utexas.tacc.tapis.sharedapi.providers.ValidationExceptionMapper;
-
+import java.net.URI;
+import javax.ws.rs.ApplicationPath;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -26,8 +11,22 @@ import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.server.ApplicationHandler;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import java.net.URI;
-import javax.ws.rs.ApplicationPath;
+import edu.utexas.tacc.tapis.shared.security.ServiceClients;
+import edu.utexas.tacc.tapis.shared.security.ServiceContext;
+import edu.utexas.tacc.tapis.shared.security.TenantManager;
+import edu.utexas.tacc.tapis.shared.TapisConstants;
+import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
+import edu.utexas.tacc.tapis.sharedapi.jaxrs.filters.JWTValidateRequestFilter;
+import edu.utexas.tacc.tapis.sharedapi.providers.ObjectMapperContextResolver;
+import edu.utexas.tacc.tapis.sharedapi.providers.ValidationExceptionMapper;
+import edu.utexas.tacc.tapis.apps.api.providers.AppsExceptionMapper;
+import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
+import edu.utexas.tacc.tapis.apps.dao.AppsDao;
+import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
+import edu.utexas.tacc.tapis.apps.service.AppsService;
+import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
+import edu.utexas.tacc.tapis.apps.service.ServiceClientsFactory;
+import edu.utexas.tacc.tapis.apps.service.ServiceContextFactory;
 
 /*
  * Main startup class for the web application. Uses Jersey and Grizzly frameworks.
@@ -57,6 +56,7 @@ public class AppsApplication extends ResourceConfig
   private static String siteAdminTenantId;
   public static String getSiteAdminTenantId() {return siteAdminTenantId;}
 
+  // For all logging use println or similar, so we do not have a dependency on a logging subsystem.
   public AppsApplication()
   {
     // Log our existence.
@@ -68,7 +68,7 @@ public class AppsApplication extends ResourceConfig
     register(ObjectMapperContextResolver.class);
 
     // Register classes needed for returning a standard Tapis response for non-Tapis exceptions.
-    register(TapisExceptionMapper.class);
+    register(AppsExceptionMapper.class);
     register(ValidationExceptionMapper.class);
 
     // We specify what packages JAX-RS should recursively scan to find annotations. By setting the value to the
@@ -146,8 +146,10 @@ public class AppsApplication extends ResourceConfig
     AppsServiceImpl svcImpl = locator.getService(AppsServiceImpl.class);
 
     // Call the main service init method
+    System.out.println("Initializing service");
     svcImpl.initService(siteId, siteAdminTenantId, RuntimeParameters.getInstance().getServicePassword());
     // Create and start the server
+    System.out.println("Starting http server");
     final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(baseUri, config, false);
     server.start();
   }

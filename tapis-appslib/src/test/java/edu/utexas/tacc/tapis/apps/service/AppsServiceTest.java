@@ -1011,9 +1011,14 @@ public class AppsServiceTest
     String owner = svc.getAppOwner(rOwner1, fakeAppName);
     Assert.assertNull(owner, "Owner not null for non-existent app.");
 
-    // Get perms with no app should return null
-    Set<Permission> perms = svc.getUserPermissions(rOwner1, fakeAppName, fakeUserName);
-    Assert.assertNull(perms, "Perms list was not null for non-existent app");
+    // Get perms with no app should throw exception
+    pass = false;
+    try { svc.getUserPermissions(rOwner1, fakeAppName, fakeUserName); }
+    catch (NotFoundException nfe)
+    {
+      pass = true;
+    }
+    Assert.assertTrue(pass);
 
     // Revoke perm with no app should return 0 changes
     changeCount = svc.revokeUserPermissions(rOwner1, fakeAppName, fakeUserName, testPermsREADMODIFY, rawDataEmptyJson);

@@ -7,9 +7,12 @@ import java.util.Collections;
 import java.util.List;
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
@@ -18,6 +21,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -26,20 +30,37 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.http.server.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
+import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
+import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
+import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.shared.threadlocal.SearchParameters;
+import edu.utexas.tacc.tapis.sharedapi.responses.RespAbstract;
+import edu.utexas.tacc.tapis.sharedapi.responses.RespBoolean;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultBoolean;
+import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
+import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
-
+import edu.utexas.tacc.tapis.shared.exceptions.TapisJSONException;
+import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
+import edu.utexas.tacc.tapis.shared.schema.JsonValidator;
+import edu.utexas.tacc.tapis.shared.schema.JsonValidatorSpec;
+import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
+import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadLocal;
+import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
+import edu.utexas.tacc.tapis.sharedapi.responses.RespChangeCount;
+import edu.utexas.tacc.tapis.sharedapi.responses.RespResourceUrl;
+import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultChangeCount;
+import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultResourceUrl;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
@@ -52,22 +73,6 @@ import edu.utexas.tacc.tapis.apps.api.responses.RespAppHistory;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApps;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
-import edu.utexas.tacc.tapis.search.SearchUtils;
-import edu.utexas.tacc.tapis.sharedapi.responses.RespAbstract;
-import edu.utexas.tacc.tapis.sharedapi.responses.RespBoolean;
-import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
-import edu.utexas.tacc.tapis.shared.exceptions.TapisJSONException;
-import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
-import edu.utexas.tacc.tapis.shared.schema.JsonValidator;
-import edu.utexas.tacc.tapis.shared.schema.JsonValidatorSpec;
-import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
-import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadLocal;
-import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
-import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
-import edu.utexas.tacc.tapis.sharedapi.responses.RespChangeCount;
-import edu.utexas.tacc.tapis.sharedapi.responses.RespResourceUrl;
-import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultChangeCount;
-import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultResourceUrl;
 
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_CONTAINERIZED;
 import static edu.utexas.tacc.tapis.apps.model.App.ID_FIELD;
@@ -76,6 +81,10 @@ import static edu.utexas.tacc.tapis.apps.model.App.VERSION_FIELD;
 
 /*
  * JAX-RS REST resource for a Tapis App (edu.utexas.tacc.tapis.apps.model.App)
+ *
+ * These methods should do the minimal amount of validation and processing of incoming requests and
+ *   then make the service method call.
+ * One reason for this is the service methods are much easier to test.
  * jax-rs annotations map HTTP verb + endpoint to method invocation and map query parameters.
  *  NOTE: For OpenAPI spec please see repo openapi-apps, file AppsAPI.yaml
  */
@@ -144,7 +153,7 @@ public class AppResource
 
   // **************** Inject Services using HK2 ****************
   @Inject
-  private AppsService appsService;
+  private AppsService service;
 
   private final String className = getClass().getSimpleName();
 
@@ -165,9 +174,10 @@ public class AppResource
                             @Context SecurityContext securityContext)
   {
     String opName = "createApp";
-    // Note that although the following approximately 30 lines of code is very similar for many endpoints the slight
-    //   variations and use of fetched data makes it difficult to refactor into common routines. Common routines
-    //   might make the code even more complex and difficult to follow.
+    // Note that although the following approximately 30 line block of code is very similar for many endpoints the
+    //   slight variations and use of fetched data makes it difficult to refactor into common routines.
+    // Common routines might make the code even more complex and difficult to follow.
+
     // ------------------------- Retrieve and validate thread context -------------------------
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -179,8 +189,7 @@ public class AppResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled())
-      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString());
+    if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString());
 
     // ------------------------- Extract and validate payload -------------------------
     // Read the payload into a string.
@@ -191,7 +200,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName , e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
     // Create validator specification and validate the json against the schema
     JsonValidatorSpec spec = new JsonValidatorSpec(rawJson, FILE_APP_CREATE_REQUEST);
@@ -200,24 +209,23 @@ public class AppResource
     {
       msg = MsgUtils.getMsg(JSON_VALIDATION_ERR, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
-
+    // ------------------------- Create an App from the json and validate constraints -------------------------
     ReqPostApp req;
-    // ------------------------- Create an app from the json and validate constraints -------------------------
     try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqPostApp.class); }
     catch (JsonSyntaxException e)
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
     // If req is null that is an unrecoverable error
     if (req == null)
     {
       msg = ApiUtils.getMsgAuth(CREATE_ERR, rUser, "N/A", "ReqPostApp == null");
       _log.error(msg);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
 
     // Create an app from the request
@@ -236,7 +244,7 @@ public class AppResource
     String appId = app.getId();
     try
     {
-      appsService.createApp(rUser, app, scrubbedJson);
+      service.createApp(rUser, app, scrubbedJson);
     }
     catch (IllegalStateException e)
     {
@@ -247,19 +255,18 @@ public class AppResource
         _log.warn(msg);
         return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
-      else if (e.getMessage().contains(LIB_UNAUTH))
+      else if (e.getMessage().contains("APPLIB_CREATE_RESERVED"))
       {
-        // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
-        msg = ApiUtils.getMsgAuth(API_UNAUTH, rUser, appId, opName);
+        msg = ApiUtils.getMsgAuth("APPAPI_CREATE_RESERVED", rUser, appId);
         _log.warn(msg);
-        return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+        return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
       else
       {
         // IllegalStateException indicates an Invalid App was passed in
         msg = ApiUtils.getMsgAuth(CREATE_ERR, rUser, appId, e.getMessage());
         _log.error(msg);
-        return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+        throw new BadRequestException(msg);
       }
     }
     catch (IllegalArgumentException e)
@@ -267,13 +274,16 @@ public class AppResource
       // IllegalArgumentException indicates somehow a bad argument made it this far
       msg = ApiUtils.getMsgAuth(CREATE_ERR, rUser, appId, e.getMessage());
       _log.error(msg);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth(CREATE_ERR, rUser, appId, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
 
     // ---------------------------- Success ------------------------------- 
@@ -313,8 +323,8 @@ public class AppResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled())
-      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId,"appVersion="+appVersion);
+    if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(),
+                                                   "appId="+appId,"appVersion="+appVersion);
 
     // ------------------------- Extract and validate payload -------------------------
     // Read the payload into a string.
@@ -325,7 +335,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName , e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
     // Create validator specification and validate the json against the schema
     JsonValidatorSpec spec = new JsonValidatorSpec(rawJson, FILE_APP_UPDATE_REQUEST);
@@ -334,7 +344,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg(JSON_VALIDATION_ERR, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
 
     // ------------------------- Create a PatchApp from the json -------------------------
@@ -351,7 +361,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
 
     if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_PATCH_TRACE", rUser, rawJson));
@@ -366,43 +376,30 @@ public class AppResource
     // ---------------------------- Make service call to update the app -------------------------------
     try
     {
-      appsService.patchApp(rUser, appId, appVersion, patchApp, rawJson);
-    }
-    catch (NotFoundException e)
-    {
-      msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
-      _log.warn(msg);
-      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      service.patchApp(rUser, appId, appVersion, patchApp, rawJson);
     }
     catch (IllegalStateException e)
     {
-      if (e.getMessage().contains(LIB_UNAUTH))
-      {
-        // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
-        msg = ApiUtils.getMsgAuth(API_UNAUTH, rUser, appId, opName);
-        _log.warn(msg);
-        return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-      }
-      else
-      {
-        // IllegalStateException indicates an Invalid PatchApp was passed in
-        msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
-        _log.error(msg);
-        return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-      }
+      // IllegalStateException indicates an Invalid PatchApp was passed in
+      msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
+      _log.error(msg);
+      throw new BadRequestException(msg);
     }
     catch (IllegalArgumentException e)
     {
       // IllegalArgumentException indicates somehow a bad argument made it this far
       msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
       _log.error(msg);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
 
     // ---------------------------- Success -------------------------------
@@ -442,8 +439,8 @@ public class AppResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled())
-      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId,"appVersion="+appVersion);
+    if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(),
+                                                   "appId="+appId,"appVersion="+appVersion);
 
     // ------------------------- Extract and validate payload -------------------------
     // Read the payload into a string.
@@ -454,7 +451,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName , e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
     // Create validator specification and validate the json against the schema
     // NOTE that CREATE and PUT are very similar schemas.
@@ -465,7 +462,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg(JSON_VALIDATION_ERR, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
 
     // ------------------------- Create an App from the json and validate constraints -------------------------
@@ -475,14 +472,14 @@ public class AppResource
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
     // If req is null that is an unrecoverable error
     if (req == null)
     {
       msg = ApiUtils.getMsgAuth("APPAPI_UPDATE_ERROR", rUser, appId, opName, "ReqPutApp == null");
       _log.error(msg);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
 
     // Create an App from the request
@@ -497,43 +494,30 @@ public class AppResource
     // ---------------------------- Make service call to update the app -------------------------------
     try
     {
-       appsService.putApp(rUser, putApp, rawJson);
-    }
-    catch (NotFoundException e)
-    {
-      msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
-      _log.warn(msg);
-      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+       service.putApp(rUser, putApp, rawJson);
     }
     catch (IllegalStateException e)
     {
-      if (e.getMessage().contains(LIB_UNAUTH))
-      {
-        // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
-        msg = ApiUtils.getMsgAuth(API_UNAUTH, rUser, appId, opName);
-        _log.warn(msg);
-        return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-      }
-      else
-      {
-        // IllegalStateException indicates an Invalid PutApp was passed in
-        msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
-        _log.error(msg);
-        return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-      }
+      // IllegalStateException indicates an Invalid PutApp was passed in
+      msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
+      _log.error(msg);
+      throw new BadRequestException(msg);
     }
     catch (IllegalArgumentException e)
     {
       // IllegalArgumentException indicates somehow a bad argument made it this far
       msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
       _log.error(msg);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
 
     // ---------------------------- Success -------------------------------
@@ -653,29 +637,28 @@ public class AppResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled())
-      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId,"requireExecPerm="+requireExecPerm);
+    if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(),
+                                                   "appId="+appId,"requireExecPerm="+requireExecPerm);
 
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
 
     App app;
     try
     {
-      app = appsService.getApp(rUser, appId, null, requireExecPerm, null);
+      app = service.getApp(rUser, appId, null, requireExecPerm, null);
     }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", rUser, appId, e.getMessage());
       _log.error(msg, e);
-      return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
-
     // Resource was not found.
-    if (app == null)
-    {
-      String msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
-      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-    }
+    if (app == null) throw new NotFoundException(ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+
 
     // ---------------------------- Success -------------------------------
     // Success means we retrieved the app information.
@@ -724,22 +707,20 @@ public class AppResource
     App app;
     try
     {
-      app = appsService.getApp(rUser, appId, appVersion, requireExecPerm, impersonationId);
+      app = service.getApp(rUser, appId, appVersion, requireExecPerm, impersonationId);
     }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", rUser, appId, e.getMessage());
       _log.error(msg, e);
-      return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
 
     // Resource was not found.
-    if (app == null)
-    {
-      String msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
-      _log.warn(msg);
-      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-    }
+    if (app == null) throw new NotFoundException(ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId));
 
     // ---------------------------- Success -------------------------------
     // Success means we retrieved the app information.
@@ -775,9 +756,8 @@ public class AppResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled())
-      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted,
-                          "listType="+listType);
+    if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted,
+                                                   "listType="+listType);
 
     // ThreadContext designed to never return null for SearchParameters
     SearchParameters srchParms = threadContext.getSearchParameters();
@@ -788,11 +768,14 @@ public class AppResource
     {
       successResponse = getSearchResponse(rUser, null, srchParms, showDeleted, listType);
     }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       String msg = ApiUtils.getMsgAuth(SELECT_ERR, rUser, e.getMessage());
       _log.error(msg, e);
-      return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
     return successResponse;
   }
@@ -824,9 +807,8 @@ public class AppResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled())
-      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted,
-                          "listType="+listType);
+    if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted,
+                                                   "listType="+listType);
 
     // Create search list based on query parameters
     // Note that some validation is done for each condition but the back end will handle translating LIKE wildcard
@@ -836,28 +818,31 @@ public class AppResource
     {
       searchList = SearchUtils.buildListFromQueryParms(_uriInfo.getQueryParameters());
     }
-    catch (Exception e)
+    catch (IllegalArgumentException e)
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_SEARCH_ERROR", rUser, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
 
     // ThreadContext designed to never return null for SearchParameters
     SearchParameters srchParms = threadContext.getSearchParameters();
     srchParms.setSearchList(searchList);
 
-    // ------------------------- Retrieve all records -----------------------------
+    // ------------------------- Retrieve records -----------------------------
     Response successResponse;
     try
     {
       successResponse = getSearchResponse(rUser, null, srchParms, showDeleted, listType);
     }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       String msg = ApiUtils.getMsgAuth(SELECT_ERR, rUser, e.getMessage());
       _log.error(msg, e);
-      return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
 
     // ---------------------------- Success -------------------------------
@@ -894,9 +879,8 @@ public class AppResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled())
-      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted,
-                          "listType="+listType);
+    if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted,
+                                                   "listType="+listType);
 
     // ------------------------- Extract and validate payload -------------------------
     // Read the payload into a string.
@@ -907,7 +891,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName , e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
     // Create validator specification and validate the json against the schema
     JsonValidatorSpec spec = new JsonValidatorSpec(rawJson, FILE_APP_SEARCH_REQUEST);
@@ -916,7 +900,7 @@ public class AppResource
     {
       msg = MsgUtils.getMsg(JSON_VALIDATION_ERR, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
 
     // Construct final SQL-like search string using the json
@@ -931,27 +915,80 @@ public class AppResource
     {
       msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
 
     // ThreadContext designed to never return null for SearchParameters
     SearchParameters srchParms = threadContext.getSearchParameters();
 
-    // ------------------------- Retrieve all records -----------------------------
+    // ------------------------- Retrieve records -----------------------------
     Response successResponse;
     try
     {
       successResponse = getSearchResponse(rUser, sqlSearchStr, srchParms, showDeleted, listType);
     }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth(SELECT_ERR, rUser, e.getMessage());
       _log.error(msg, e);
-      return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
 
     // ---------------------------- Success -------------------------------
     return successResponse;
+  }
+
+  /**
+   * getHistory
+   * @param appId - name of the app
+   * @param securityContext - user identity
+   * @return Response with system history object as the result
+   */
+  @GET
+  @Path("{appId}/history")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getHistory(@PathParam("appId") String appId,
+                            @Context SecurityContext securityContext)
+  {
+    // Check that we have all we need from the context, the jwtTenantId and jwtUserId
+    // Utility method returns null if all OK and appropriate error response if there was a problem.
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
+    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    if (resp != null) return resp;
+
+    // Create a user that collects together tenant, user and request information needed by the service call
+    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
+
+    //RespAbstract resp1;
+    List<AppHistoryItem> appHistory;
+    
+    try
+    {
+      // Retrieve system history List
+      appHistory = service.getAppHistory(rUser, appId);
+    }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
+    catch (Exception e)
+    {
+      String msg = ApiUtils.getMsgAuth("SYSAPI_SYS_GET_ERROR", rUser, appId, e.getMessage());
+      _log.error(msg, e);
+      throw new WebApplicationException(msg);
+    }
+
+    // App or history not found
+    if (appHistory == null || appHistory.size()==0)
+      throw new NotFoundException(ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+
+    // ---------------------------- Success -------------------------------
+    // Success means we retrieved the system history information.
+    RespAppHistory resp1 = new RespAppHistory(appHistory);
+    return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, "AppHistory", appId), resp1);
   }
 
   /**
@@ -971,7 +1008,7 @@ public class AppResource
     String opName = "isEnabled";
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
+    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
     Response resp = ApiUtils.checkContext(threadContext, PRETTY);
     if (resp != null) return resp;
 
@@ -979,25 +1016,21 @@ public class AppResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled())
-      ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId);
+    if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId);
 
     boolean isEnabled;
     try
     {
-      isEnabled = appsService.isEnabled(rUser, appId);
+      isEnabled = service.isEnabled(rUser, appId);
     }
-    catch (NotFoundException e)
-    {
-      String msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
-      _log.warn(msg);
-      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-    }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       String msg = ApiUtils.getMsgAuth("APPAPI_GET_NAME_ERROR", rUser, appId, e.getMessage());
       _log.error(msg, e);
-      return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
 
     // ---------------------------- Success -------------------------------
@@ -1049,51 +1082,38 @@ public class AppResource
     try
     {
       if (OP_ENABLE.equals(opName))
-        changeCount = appsService.enableApp(rUser, appId);
+        changeCount = service.enableApp(rUser, appId);
       else if (OP_DISABLE.equals(opName))
-        changeCount = appsService.disableApp(rUser, appId);
+        changeCount = service.disableApp(rUser, appId);
       else if (OP_DELETE.equals(opName))
-        changeCount = appsService.deleteApp(rUser, appId);
+        changeCount = service.deleteApp(rUser, appId);
       else if (OP_UNDELETE.equals(opName))
-        changeCount = appsService.undeleteApp(rUser, appId);
+        changeCount = service.undeleteApp(rUser, appId);
       else
-        changeCount = appsService.changeAppOwner(rUser, appId, userName);
-    }
-    catch (NotFoundException e)
-    {
-      msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
-      _log.warn(msg);
-      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+        changeCount = service.changeAppOwner(rUser, appId, userName);
     }
     catch (IllegalStateException e)
     {
-      if (e.getMessage().contains(LIB_UNAUTH))
-      {
-        // IllegalStateException with msg containing APP_UNAUTH indicates operation not authorized for apiUser - return 401
-        msg = ApiUtils.getMsgAuth(API_UNAUTH, rUser, appId, opName);
-        _log.warn(msg);
-        return Response.status(Status.UNAUTHORIZED).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-      }
-      else
-      {
-        // IllegalStateException indicates resulting app would be invalid
-        msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
-        _log.error(msg);
-        return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-      }
+      // IllegalStateException indicates resulting app would be invalid
+      msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
+      _log.error(msg);
+      throw new BadRequestException(msg);
     }
     catch (IllegalArgumentException e)
     {
       // IllegalArgumentException indicates somehow a bad argument made it this far
       msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
       _log.error(msg);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth(UPDATE_ERR, rUser, appId, opName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
 
     // ---------------------------- Success -------------------------------
@@ -1177,7 +1197,7 @@ public class AppResource
       // Construct message reporting all errors
       String allErrors = getListOfErrors(errMessages, rUser, app1.getId());
       _log.error(allErrors);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(allErrors, PRETTY)).build();
+      throw new BadRequestException(allErrors);
     }
     return null;
   }
@@ -1218,7 +1238,7 @@ public class AppResource
    */
   private Response getSearchResponse(ResourceRequestUser rUser, String sqlSearchStr, SearchParameters srchParms,
                                      boolean showDeleted, String listType)
-          throws Exception
+          throws TapisException, TapisClientException
   {
     RespAbstract resp1;
     List<App> apps;
@@ -1239,9 +1259,9 @@ public class AppResource
     List<OrderBy> orderByList = srchParms.getOrderByList();
 
     if (StringUtils.isBlank(sqlSearchStr))
-      apps = appsService.getApps(rUser, searchList, limit, orderByList, skip, startAfter, showDeleted, listType);
+      apps = service.getApps(rUser, searchList, limit, orderByList, skip, startAfter, showDeleted, listType);
     else
-      apps = appsService.getAppsUsingSqlSearchStr(rUser, sqlSearchStr, limit, orderByList, skip,
+      apps = service.getAppsUsingSqlSearchStr(rUser, sqlSearchStr, limit, orderByList, skip,
                                                   startAfter, showDeleted, listType);
     if (apps == null) apps = Collections.emptyList();
     itemCountStr = String.format(APPS_CNT_STR, apps.size());
@@ -1253,7 +1273,7 @@ public class AppResource
     //   compared to attempting to fold everything into getApps().
     if (computeTotal && limit > 0)
     {
-      totalCount = appsService.getAppsTotalCount(rUser, searchList, orderByList, startAfter, showDeleted, listType);
+      totalCount = service.getAppsTotalCount(rUser, searchList, orderByList, startAfter, showDeleted, listType);
     }
 
     // ---------------------------- Success -------------------------------
@@ -1261,57 +1281,7 @@ public class AppResource
 
     return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, APPLICATIONS_SVC, itemCountStr), resp1);
   }
-  
-  /**
-   * getHistory
-   * @param appId - name of the app
-   * @param securityContext - user identity
-   * @return Response with system history object as the result
-   */
-  @GET
-  @Path("{appId}/history")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getHistory(@PathParam("appId") String appId,
-                            @Context SecurityContext securityContext)
-  {
-    // Check that we have all we need from the context, the jwtTenantId and jwtUserId
-    // Utility method returns null if all OK and appropriate error response if there was a problem.
-    TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
-    if (resp != null) return resp;
 
-    // Create a user that collects together tenant, user and request information needed by the service call
-    ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
-
-    //RespAbstract resp1;
-    List<AppHistoryItem> appHistory;
-    
-    try
-    {
-      // Retrieve system history List
-      appHistory = appsService.getAppHistory(rUser, appId);
-    }
-    catch (Exception e)
-    {
-      String msg = ApiUtils.getMsgAuth("SYSAPI_SYS_GET_ERROR", rUser, appId, e.getMessage());
-      _log.error(msg, e);
-      return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-    }
-    
-    // System not found
-    if (appHistory == null || appHistory.size()==0) {
-     String msg = ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId);
-      _log.warn(msg);
-      return Response.status(Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
-    }
-    
-    // ---------------------------- Success -------------------------------
-    // Success means we retrieved the system history information.
-    RespAppHistory resp1 = new RespAppHistory(appHistory);
-    return createSuccessResponse(Status.OK, MsgUtils.getMsg(TAPIS_FOUND, "AppHistory", appId), resp1);
-  }
-  
   /**
    * Create an OK response given message and base response to put in result
    * @param msg - message for resp.message
@@ -1322,5 +1292,4 @@ public class AppResource
   {
     return Response.status(status).entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp)).build();
   }
-
 }

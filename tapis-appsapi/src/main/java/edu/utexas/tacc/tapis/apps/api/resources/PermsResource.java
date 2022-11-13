@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
-import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisJSONException;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.schema.JsonValidator;
@@ -36,11 +35,17 @@ import edu.utexas.tacc.tapis.sharedapi.responses.RespNameArray;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultNameArray;
 import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
+import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
 
 /*
  * JAX-RS REST resource for Tapis App permissions
+ *
+ * These methods should do the minimal amount of validation and processing of incoming requests and
+ *   then make the service method call.
+ * One reason for this is the service methods are much easier to test.
+ *
  *  NOTE: For OpenAPI spec please see repo openapi-apps file AppsAPI.yaml
  * Annotations map HTTP verb + endpoint to method invocation.
  * Permissions are stored in the Security Kernel
@@ -131,7 +136,7 @@ public class PermsResource
     {
       msg = ApiUtils.getMsgAuth("APPAPI_PERMS_JSON_ERROR", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
 
     // ------------------------- Extract and validate payload -------------------------
@@ -145,11 +150,14 @@ public class PermsResource
     {
       appsService.grantUserPermissions(rUser, appId, userName, permsList, json);
     }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
 
     // ---------------------------- Success -------------------------------
@@ -197,15 +205,17 @@ public class PermsResource
     Set<Permission> perms;
     String msg;
     try { perms = appsService.getUserPermissions(rUser, appId, userName); }
+   // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(TapisRestUtils.getStatus(e)).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
 
     // ---------------------------- Success -------------------------------
-    if (perms == null) perms = new HashSet<>();
     ResultNameArray names = new ResultNameArray();
     List<String> permNames = new ArrayList<>();
     for (Permission perm : perms) { permNames.add(perm.name()); }
@@ -261,13 +271,16 @@ public class PermsResource
     {
       msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ENUM_ERROR", rUser, appId, userName, permissionStr, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
 
     // ---------------------------- Success -------------------------------
@@ -320,7 +333,7 @@ public class PermsResource
     {
       msg = ApiUtils.getMsgAuth("APPAPI_PERMS_JSON_ERROR", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
 
     // ------------------------- Extract and validate payload -------------------------
@@ -334,11 +347,14 @@ public class PermsResource
     {
       appsService.revokeUserPermissions(rUser, appId, userName, permsList, json);
     }
+    // Pass through not found or not auth to let exception mapper handle it.
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    // As final fallback
     catch (Exception e)
     {
       msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ERROR", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new WebApplicationException(msg);
     }
 
     // ---------------------------- Success -------------------------------
@@ -374,7 +390,7 @@ public class PermsResource
     {
       msg = ApiUtils.getMsgAuth("APPAPI_PERMS_JSON_INVALID", rUser, appId, userName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
 
     JsonObject obj = TapisGsonUtils.getGson().fromJson(json, JsonObject.class);
@@ -394,7 +410,7 @@ public class PermsResource
         {
           msg = ApiUtils.getMsgAuth("APPAPI_PERMS_ENUM_ERROR", rUser, appId, userName, permStr, e.getMessage());
           _log.error(msg, e);
-          return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+          throw new BadRequestException(msg);
         }
       }
     }
@@ -410,7 +426,7 @@ public class PermsResource
     if (msg != null)
     {
       _log.error(msg);
-      return Response.status(Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      throw new BadRequestException(msg);
     }
     else return null;
   }

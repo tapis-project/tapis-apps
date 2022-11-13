@@ -175,7 +175,7 @@ public class AppsServiceImpl implements AppsService
    */
   @Override
   public void createApp(ResourceRequestUser rUser, App app, String rawData)
-          throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotAuthorizedException
+          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException
   {
     AppOperation op = AppOperation.create;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -378,14 +378,13 @@ public class AppsServiceImpl implements AppsService
    * @return Number of items updated
    *
    * @throws TapisException - for Tapis related exceptions
-   * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
    * @throws NotFoundException - Resource not found
    */
   @Override
   public int enableApp(ResourceRequestUser rUser, String appId)
-          throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
+          throws TapisException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
   {
     return updateEnabled(rUser, appId, AppOperation.enable);
   }
@@ -397,14 +396,13 @@ public class AppsServiceImpl implements AppsService
    * @return Number of items updated
    *
    * @throws TapisException - for Tapis related exceptions
-   * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
    * @throws NotFoundException - Resource not found
    */
   @Override
   public int disableApp(ResourceRequestUser rUser, String appId)
-          throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
+          throws TapisException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
   {
     return updateEnabled(rUser, appId, AppOperation.disable);
   }
@@ -416,14 +414,13 @@ public class AppsServiceImpl implements AppsService
    * @return Number of items updated
    *
    * @throws TapisException - for Tapis related exceptions
-   * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
    * @throws NotFoundException - Resource not found
    */
   @Override
   public int deleteApp(ResourceRequestUser rUser, String appId)
-          throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
+          throws TapisException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
   {
     return updateDeleted(rUser, appId, AppOperation.delete);
   }
@@ -435,14 +432,13 @@ public class AppsServiceImpl implements AppsService
    * @return Number of items updated
    *
    * @throws TapisException - for Tapis related exceptions
-   * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
    * @throws NotFoundException - Resource not found
    */
   @Override
   public int undeleteApp(ResourceRequestUser rUser, String appId)
-          throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
+          throws TapisException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
   {
     return updateDeleted(rUser, appId, AppOperation.undelete);
   }
@@ -455,14 +451,13 @@ public class AppsServiceImpl implements AppsService
    * @return Number of items updated
    *
    * @throws TapisException - for Tapis related exceptions
-   * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
    * @throws NotFoundException - Resource not found
    */
   @Override
   public int changeAppOwner(ResourceRequestUser rUser, String appId, String newOwnerName)
-          throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
+          throws TapisException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
   {
     AppOperation op = AppOperation.changeOwner;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -1148,8 +1143,9 @@ public class AppsServiceImpl implements AppsService
 
     String resourceTenantId = rUser.getOboTenantId();
 
-    // If app does not exist or has been deleted then return null
-    if (!dao.checkForApp(resourceTenantId, appId, false)) return null;
+    // If app does not exist or has been deleted then throw an exception
+    if (!dao.checkForApp(resourceTenantId, appId, false))
+      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
 
     // ------------------------- Check authorization -------------------------
     checkAuth(rUser, op, appId, nullOwner, targetUser, nullPermSet);
@@ -1255,7 +1251,7 @@ public class AppsServiceImpl implements AppsService
   
   @Override
   public void shareApp(ResourceRequestUser rUser, String appId, AppShare postShare)
-      throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException
+      throws TapisException, NotAuthorizedException, TapisClientException
   {
     AppOperation op = AppOperation.modify;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -1279,7 +1275,8 @@ public class AppsServiceImpl implements AppsService
   }
   @Override
   public void unshareApp(ResourceRequestUser rUser, String appId, AppShare postShare)
-      throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException {
+      throws TapisException, NotAuthorizedException, TapisClientException
+  {
     AppOperation op = AppOperation.modify;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     
@@ -1302,7 +1299,8 @@ public class AppsServiceImpl implements AppsService
   }
   @Override
   public void shareAppPublicly(ResourceRequestUser rUser, String appId) throws TapisException,
-      NotAuthorizedException, TapisClientException, IllegalStateException {
+      NotAuthorizedException, TapisClientException
+  {
     AppOperation op = AppOperation.modify;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     
@@ -1326,7 +1324,8 @@ public class AppsServiceImpl implements AppsService
   
   @Override
   public void unshareAppPublicly(ResourceRequestUser rUser, String appId) throws TapisException,
-      NotAuthorizedException, TapisClientException, IllegalStateException {
+      NotAuthorizedException, TapisClientException
+  {
     AppOperation op = AppOperation.modify;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     
@@ -1361,13 +1360,12 @@ public class AppsServiceImpl implements AppsService
    * @return Number of items updated
    *
    * @throws TapisException - for Tapis related exceptions
-   * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
    * @throws NotFoundException - Resource not found
    */
   private int updateEnabled(ResourceRequestUser rUser, String appId, AppOperation appOp)
-          throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
+          throws TapisException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
   {
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId))
@@ -1398,13 +1396,12 @@ public class AppsServiceImpl implements AppsService
    * @return Number of items updated
    *
    * @throws TapisException - for Tapis related exceptions
-   * @throws IllegalStateException - Resulting App would be in an invalid state
    * @throws IllegalArgumentException - invalid parameter passed in
    * @throws NotAuthorizedException - unauthorized
    * @throws NotFoundException - Resource not found
    */
   private int updateDeleted(ResourceRequestUser rUser, String appId, AppOperation appOp)
-          throws TapisException, IllegalStateException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
+          throws TapisException, IllegalArgumentException, NotAuthorizedException, NotFoundException, TapisClientException
   {
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId))
@@ -2055,7 +2052,7 @@ public class AppsServiceImpl implements AppsService
    * Check for case when owner is not known and no need for impersonationId, targetUser or perms
    */
   private void checkAuthOwnerUnknown(ResourceRequestUser rUser, AppOperation op, String appId)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
+          throws TapisException, TapisClientException, NotAuthorizedException
   {
     checkAuth(rUser, op, appId, nullOwner, nullTargetUser, nullPermSet, nullImpersonationId);
   }
@@ -2064,7 +2061,7 @@ public class AppsServiceImpl implements AppsService
    * Check for case when owner is known and no need for impersonationId, targetUser or perms
    */
   private void checkAuthOwnerKnown(ResourceRequestUser rUser, AppOperation op, String appId, String owner)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
+          throws TapisException, TapisClientException, NotAuthorizedException
   {
     checkAuth(rUser, op, appId, owner, nullTargetUser, nullPermSet, nullImpersonationId);
   }
@@ -2081,7 +2078,7 @@ public class AppsServiceImpl implements AppsService
    */
   private void checkAuth(ResourceRequestUser rUser, AppOperation op, String systemId, String owner,
                          String targetUser, Set<Permission> perms)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
+          throws TapisException, TapisClientException, NotAuthorizedException
   {
     checkAuth(rUser, op, systemId, owner, targetUser, perms, nullImpersonationId);
   }
@@ -2112,7 +2109,7 @@ public class AppsServiceImpl implements AppsService
    */
   private void checkAuth(ResourceRequestUser rUser, AppOperation op, String appId, String owner,
                          String targetUser, Set<Permission> perms, String impersonationId)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
+          throws TapisException, TapisClientException, NotAuthorizedException
   {
     // Check service and user requests separately to avoid confusing a service name with a username
     if (rUser.isServiceRequest())
@@ -2144,7 +2141,7 @@ public class AppsServiceImpl implements AppsService
    */
   private void checkAuthSvc(ResourceRequestUser rUser, AppOperation op, String appId, String owner, String targetUser,
                             Set<Permission> perms, String impersonationId)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
+          throws TapisException, TapisClientException, NotAuthorizedException
   {
     // If ever called and not a svc request then fall back to denied
     if (!rUser.isServiceRequest())
@@ -2189,7 +2186,7 @@ public class AppsServiceImpl implements AppsService
    */
   private void checkAuthOboUser(ResourceRequestUser rUser, AppOperation op, String appId, String owner,
                                 String targetUser, Set<Permission> perms, String impersonationId)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException
+          throws TapisException, TapisClientException, NotAuthorizedException
   {
     String oboTenant = rUser.getOboTenantId();
     String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
