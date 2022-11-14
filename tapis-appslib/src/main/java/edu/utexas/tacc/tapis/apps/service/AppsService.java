@@ -25,40 +25,40 @@ import java.util.Set;
 public interface AppsService
 {
   void createApp(ResourceRequestUser rUser, App app, String rawData)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException;
+          throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException;
 
   void patchApp(ResourceRequestUser rUser, String appId, String appVersion, PatchApp patchApp, String rawData)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
+          throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
   void putApp(ResourceRequestUser rUser, App putApp, String rawData)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
+          throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
   int enableApp(ResourceRequestUser rUser, String appId)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
+          throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
   int disableApp(ResourceRequestUser rUser, String appId)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
+          throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
   int deleteApp(ResourceRequestUser rUser, String appId)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
+          throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
   int undeleteApp(ResourceRequestUser rUser, String appId)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalStateException, IllegalArgumentException, NotFoundException;
+          throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
   int changeAppOwner(ResourceRequestUser rUser, String appId, String newOwnerName)
-          throws TapisException, TapisClientException, NotAuthorizedException, IllegalArgumentException, NotFoundException;
+          throws TapisException, TapisClientException, IllegalArgumentException, NotFoundException;
 
   boolean checkForApp(ResourceRequestUser rUser, String appId)
-          throws TapisException, TapisClientException, NotAuthorizedException;
+          throws TapisException, TapisClientException;
 
   boolean checkForApp(ResourceRequestUser rUser, String appId, boolean includeDeleted)
-          throws TapisException, TapisClientException, NotAuthorizedException;
+          throws TapisException, TapisClientException;
 
   boolean isEnabled(ResourceRequestUser rUser, String appId)
-          throws TapisException, TapisClientException, NotAuthorizedException;
+          throws TapisException, TapisClientException;
 
   App getApp(ResourceRequestUser rUser, String appId, String appVersion, boolean requireExecPerm, String impersonationId)
-          throws TapisException, TapisClientException, NotAuthorizedException;
+          throws TapisException, TapisClientException;
 
   int getAppsTotalCount(ResourceRequestUser rUser, List<String> searchList, List<OrderBy> orderByList,
                         String startAfter, boolean includeDeleted, String listType)
@@ -73,34 +73,34 @@ public interface AppsService
           throws TapisException, TapisClientException;
 
   String getAppOwner(ResourceRequestUser rUser, String appId)
-          throws TapisException, TapisClientException, NotAuthorizedException;
+          throws TapisException, TapisClientException;
 
   void grantUserPermissions(ResourceRequestUser rUser, String appId, String userName, Set<Permission> permissions, String rawData)
-          throws TapisException, TapisClientException, NotAuthorizedException;
+          throws TapisException, TapisClientException;
 
   int revokeUserPermissions(ResourceRequestUser rUser, String appId, String userName, Set<Permission> permissions, String rawData)
-          throws TapisException, TapisClientException, NotAuthorizedException;
+          throws TapisException, TapisClientException;
 
   Set<Permission> getUserPermissions(ResourceRequestUser rUser, String appId, String userName)
-          throws TapisException, TapisClientException, NotAuthorizedException;
+          throws TapisException, TapisClientException;
 
   List<AppHistoryItem> getAppHistory(ResourceRequestUser rUser, String appId)
-          throws TapisException, TapisClientException, NotAuthorizedException;
+          throws TapisException, TapisClientException;
 
   //------------------- Share ---------------------------------
   // -----------------------------------------------------------------------
   AppShare getAppShare(ResourceRequestUser rUser, String appId)
-      throws TapisException, TapisClientException, NotAuthorizedException;
+      throws TapisException, TapisClientException;
   
   void shareApp(ResourceRequestUser rUser, String appId, AppShare appsShare)
-      throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException;
+      throws TapisException, TapisClientException, IllegalStateException;
   
   void unshareApp(ResourceRequestUser rUser, String appId, AppShare appsShare) 
-      throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException;
+      throws TapisException, TapisClientException, IllegalStateException;
 
   void shareAppPublicly(ResourceRequestUser rUser, String appId) 
-      throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException;
+      throws TapisException, TapisClientException, IllegalStateException;
   
   void unshareAppPublicly(ResourceRequestUser rUser, String appId) 
-      throws TapisException, NotAuthorizedException, TapisClientException, IllegalStateException;
+      throws TapisException, TapisClientException, IllegalStateException;
 }

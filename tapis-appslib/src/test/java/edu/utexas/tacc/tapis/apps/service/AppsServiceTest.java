@@ -1,21 +1,14 @@
 package edu.utexas.tacc.tapis.apps.service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
-import edu.utexas.tacc.tapis.apps.model.ParameterSet;
-import edu.utexas.tacc.tapis.shared.security.ServiceClients;
-import edu.utexas.tacc.tapis.shared.security.ServiceContext;
-import edu.utexas.tacc.tapis.shared.security.TenantManager;
-import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
-import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
-import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
-import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
-import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
-import edu.utexas.tacc.tapis.apps.IntegrationUtils;
-import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
-import edu.utexas.tacc.tapis.apps.dao.AppsDao;
-import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -31,16 +24,21 @@ import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
-
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.NotFoundException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
+import edu.utexas.tacc.tapis.apps.model.ParameterSet;
+import edu.utexas.tacc.tapis.shared.security.ServiceClients;
+import edu.utexas.tacc.tapis.shared.security.ServiceContext;
+import edu.utexas.tacc.tapis.shared.security.TenantManager;
+import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
+import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
+import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
+import edu.utexas.tacc.tapis.sharedapi.security.AuthenticatedUser;
+import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
+import edu.utexas.tacc.tapis.apps.IntegrationUtils;
+import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
+import edu.utexas.tacc.tapis.apps.dao.AppsDao;
+import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
+import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import static edu.utexas.tacc.tapis.apps.IntegrationUtils.*;
 import static edu.utexas.tacc.tapis.apps.service.AppsServiceImpl.AuthListType.ALL;
 import static edu.utexas.tacc.tapis.apps.service.AppsServiceImpl.AuthListType.OWNED;
@@ -1095,7 +1093,7 @@ public class AppsServiceTest
     // CREATE - Deny user not owner/admin, deny service
     boolean pass = false;
     try { svc.createApp(rUser0, app0, rawDataEmptyJson); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1103,7 +1101,7 @@ public class AppsServiceTest
     Assert.assertTrue(pass);
     pass = false;
     try { svc.createApp(rFilesSvc, app0, rawDataEmptyJson); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1120,7 +1118,7 @@ public class AppsServiceTest
     // READ - deny user not owner/admin and no READ or MODIFY access (testuser0)
     pass = false;
     try { svc.getApp(rUser0, app0Id, app0Version, false, null); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1130,7 +1128,7 @@ public class AppsServiceTest
     // EXECUTE - deny user not owner/admin with READ but not EXECUTE (testuser3)
     pass = false;
     try { svc.getApp(rUser3, app0Id, app0Version, true, null); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1140,7 +1138,7 @@ public class AppsServiceTest
     // MODIFY Deny user with no READ or MODIFY (testuser0), deny user with only READ (testuser3), deny service
     pass = false;
     try { svc.patchApp(rUser0, app0Id, app0Version, patchApp, rawDataEmptyJson); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1148,7 +1146,7 @@ public class AppsServiceTest
     Assert.assertTrue(pass);
     pass = false;
     try { svc.patchApp(rUser3, app0Id, app0Version, patchApp, rawDataEmptyJson); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1156,7 +1154,7 @@ public class AppsServiceTest
     Assert.assertTrue(pass);
     pass = false;
     try { svc.patchApp(rFilesSvc3, app0Id, app0Version, patchApp, rawDataEmptyJson); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1166,7 +1164,7 @@ public class AppsServiceTest
     // DELETE - deny user not owner/admin (testuser3), deny service
     pass = false;
     try { svc.deleteApp(rUser3, app0Id); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1174,7 +1172,7 @@ public class AppsServiceTest
     Assert.assertTrue(pass);
     pass = false;
     try { svc.deleteApp(rFilesSvc3, app0Id); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1184,7 +1182,7 @@ public class AppsServiceTest
     // CHANGE_OWNER - deny user not owner/admin (testuser3), deny service
     pass = false;
     try { svc.changeAppOwner(rUser3, app0Id, testUser2); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1192,7 +1190,7 @@ public class AppsServiceTest
     Assert.assertTrue(pass);
     pass = false;
     try { svc.changeAppOwner(rFilesSvc3, app0Id, testUser2); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1202,7 +1200,7 @@ public class AppsServiceTest
     // GET_PERMS - deny user not owner/admin and no READ or MODIFY access (testuser0)
     pass = false;
     try { svc.getUserPermissions(rUser0, app0Id, testUser1); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1212,7 +1210,7 @@ public class AppsServiceTest
     // GRANT_PERMS - deny user not owner/admin (testuser3), deny service
     pass = false;
     try { svc.grantUserPermissions(rUser3, app0Id, testUser3, testPermsREADMODIFY, rawDataEmptyJson); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1220,7 +1218,7 @@ public class AppsServiceTest
     Assert.assertTrue(pass);
     pass = false;
     try { svc.grantUserPermissions(rFilesSvc3, app0Id, testUser3, testPermsREADMODIFY, rawDataEmptyJson); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1230,7 +1228,7 @@ public class AppsServiceTest
     // REVOKE_PERMS - deny user not owner/admin (testuser3), deny service
     pass = false;
     try { svc.revokeUserPermissions(rUser3, app0Id, testUser4, testPermsREADMODIFY, rawDataEmptyJson); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1238,7 +1236,7 @@ public class AppsServiceTest
     Assert.assertTrue(pass);
     pass = false;
     try { svc.grantUserPermissions(rFilesSvc3, app0Id, testUser4, testPermsREADMODIFY, rawDataEmptyJson); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1248,7 +1246,7 @@ public class AppsServiceTest
     // User should not be able to impersonate another user.
     pass = false;
     try { svc.getApp(rUser2, app0Id, null, false, owner1); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH_IMPERSONATE"));
       pass = true;
@@ -1258,7 +1256,7 @@ public class AppsServiceTest
     // When a service impersonates another user they should be denied if that user cannot read the system.
     pass = false;
     try { svc.getApp(rJobsSvc1, app0Id, null, false, impersonationIdTestUser9); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1499,7 +1497,7 @@ public class AppsServiceTest
     // shareWithUser should have no access yet.
     boolean pass = false;
     try { svc.getApp(rShareWithUser, appId, appVer, false, null); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1543,7 +1541,7 @@ public class AppsServiceTest
     // shareWithUser should no longer have access
     pass = false;
     try { svc.getApp(rShareWithUser, appId, appVer, false, null); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;
@@ -1582,7 +1580,7 @@ public class AppsServiceTest
     // rUser0 should no longer have access
     pass = false;
     try { svc.getApp(rUser0, appId, appVer, false, null); }
-    catch (NotAuthorizedException e)
+    catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
       pass = true;

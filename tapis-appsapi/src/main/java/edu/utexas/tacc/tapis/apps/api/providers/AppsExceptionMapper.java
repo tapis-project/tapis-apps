@@ -18,6 +18,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 
 /*
  * Class used to map various exception types to a TapisResponse.
@@ -35,7 +36,8 @@ public class AppsExceptionMapper implements ExceptionMapper<Exception>
     TapisResponse<String> resp = TapisResponse.createErrorResponse(exception.getMessage());
     Response.Status status = INTERNAL_SERVER_ERROR;
     if (exception instanceof NotFoundException) status = NOT_FOUND;
-    else if (exception instanceof NotAuthorizedException || exception instanceof ForbiddenException) status = FORBIDDEN;
+    else if (exception instanceof NotAuthorizedException) status = UNAUTHORIZED;
+    else if (exception instanceof ForbiddenException) status = FORBIDDEN;
     else if (exception instanceof BadRequestException) status = BAD_REQUEST;
     else if (exception instanceof WebApplicationException) status = INTERNAL_SERVER_ERROR;
     else if (exception instanceof TapisClientException tce) status = Response.Status.valueOf(tce.getStatus());
