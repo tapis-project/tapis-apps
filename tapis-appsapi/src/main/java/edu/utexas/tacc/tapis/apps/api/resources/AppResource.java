@@ -171,7 +171,7 @@ public class AppResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response createApp(InputStream payloadStream,
-                            @Context SecurityContext securityContext)
+                            @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "createApp";
     // Note that although the following approximately 30 line block of code is very similar for many endpoints the
@@ -277,7 +277,7 @@ public class AppResource
       throw new BadRequestException(msg);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -309,7 +309,7 @@ public class AppResource
   public Response patchApp(@PathParam("appId") String appId,
                            @PathParam("appVersion") String appVersion,
                            InputStream payloadStream,
-                           @Context SecurityContext securityContext)
+                           @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "patchApp";
     // ------------------------- Retrieve and validate thread context -------------------------
@@ -393,7 +393,7 @@ public class AppResource
       throw new BadRequestException(msg);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -425,7 +425,7 @@ public class AppResource
   public Response putApp(@PathParam("appId") String appId,
                          @PathParam("appVersion") String appVersion,
                          InputStream payloadStream,
-                         @Context SecurityContext securityContext)
+                         @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "putApp";
     // ------------------------- Retrieve and validate thread context -------------------------
@@ -511,7 +511,7 @@ public class AppResource
       throw new BadRequestException(msg);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -539,7 +539,7 @@ public class AppResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response enableApp(@PathParam("appId") String appId,
-                            @Context SecurityContext securityContext)
+                            @Context SecurityContext securityContext) throws TapisClientException
   {
     return postAppSingleUpdate(OP_ENABLE, appId, null, securityContext);
   }
@@ -555,7 +555,7 @@ public class AppResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response disableApp(@PathParam("appId") String appId,
-                             @Context SecurityContext securityContext)
+                             @Context SecurityContext securityContext) throws TapisClientException
   {
     return postAppSingleUpdate(OP_DISABLE, appId, null, securityContext);
   }
@@ -571,7 +571,7 @@ public class AppResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteApp(@PathParam("appId") String appId,
-                            @Context SecurityContext securityContext)
+                            @Context SecurityContext securityContext) throws TapisClientException
   {
     return postAppSingleUpdate(OP_DELETE, appId, null, securityContext);
   }
@@ -587,7 +587,7 @@ public class AppResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response undeleteApp(@PathParam("appId") String appId,
-                              @Context SecurityContext securityContext)
+                              @Context SecurityContext securityContext) throws TapisClientException
   {
     return postAppSingleUpdate(OP_UNDELETE, appId, null, securityContext);
   }
@@ -605,7 +605,7 @@ public class AppResource
   @Produces(MediaType.APPLICATION_JSON)
   public Response changeAppOwner(@PathParam("appId") String appId,
                                  @PathParam("userName") String userName,
-                                 @Context SecurityContext securityContext)
+                                 @Context SecurityContext securityContext) throws TapisClientException
   {
     return postAppSingleUpdate(OP_CHANGEOWNER, appId, userName, securityContext);
   }
@@ -624,7 +624,7 @@ public class AppResource
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAppLatestVersion(@PathParam("appId") String appId,
                          @QueryParam("requireExecPerm") @DefaultValue("false") boolean requireExecPerm,
-                         @Context SecurityContext securityContext)
+                         @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "getAppLatestVersion";
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -648,7 +648,7 @@ public class AppResource
       app = service.getApp(rUser, appId, null, requireExecPerm, null);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -684,7 +684,7 @@ public class AppResource
                          @PathParam("appVersion") String appVersion,
                          @QueryParam("requireExecPerm") @DefaultValue("false") boolean requireExecPerm,
                          @QueryParam("impersonationId") String impersonationId,
-                         @Context SecurityContext securityContext)
+                         @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "getApp";
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -710,7 +710,7 @@ public class AppResource
       app = service.getApp(rUser, appId, appVersion, requireExecPerm, impersonationId);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -743,7 +743,7 @@ public class AppResource
   @Produces(MediaType.APPLICATION_JSON)
   public Response getApps(@Context SecurityContext securityContext,
                           @QueryParam("showDeleted") @DefaultValue("false") boolean showDeleted,
-                          @QueryParam("listType") @DefaultValue("OWNED") String listType)
+                          @QueryParam("listType") @DefaultValue("OWNED") String listType) throws TapisClientException
   {
     String opName = "getApps";
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -769,7 +769,7 @@ public class AppResource
       successResponse = getSearchResponse(rUser, null, srchParms, showDeleted, listType);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -795,6 +795,7 @@ public class AppResource
   public Response searchAppsQueryParameters(@Context SecurityContext securityContext,
                                             @QueryParam("showDeleted") @DefaultValue("false") boolean showDeleted,
                                             @QueryParam("listType") @DefaultValue("OWNED") String listType)
+          throws TapisClientException
   {
     String opName = "searchAppsGet";
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -836,7 +837,7 @@ public class AppResource
       successResponse = getSearchResponse(rUser, null, srchParms, showDeleted, listType);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -867,6 +868,7 @@ public class AppResource
                                         @Context SecurityContext securityContext,
                                         @QueryParam("showDeleted") @DefaultValue("false") boolean showDeleted,
                                         @QueryParam("listType") @DefaultValue("OWNED") String listType)
+          throws TapisClientException
   {
     String opName = "searchAppsPost";
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -928,7 +930,7 @@ public class AppResource
       successResponse = getSearchResponse(rUser, sqlSearchStr, srchParms, showDeleted, listType);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -952,7 +954,7 @@ public class AppResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getHistory(@PathParam("appId") String appId,
-                            @Context SecurityContext securityContext)
+                            @Context SecurityContext securityContext) throws TapisClientException
   {
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
@@ -972,7 +974,7 @@ public class AppResource
       appHistory = service.getAppHistory(rUser, appId);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -1003,7 +1005,7 @@ public class AppResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response isEnabled(@PathParam("appId") String appId,
-                         @Context SecurityContext securityContext)
+                         @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "isEnabled";
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -1024,7 +1026,7 @@ public class AppResource
       isEnabled = service.isEnabled(rUser, appId);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -1055,6 +1057,7 @@ public class AppResource
    * @return Response to be returned to the client.
    */
   private Response postAppSingleUpdate(String opName, String appId, String userName, SecurityContext securityContext)
+          throws TapisClientException
   {
     // ------------------------- Retrieve and validate thread context -------------------------
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
@@ -1107,7 +1110,7 @@ public class AppResource
       throw new BadRequestException(msg);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {

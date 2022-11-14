@@ -11,6 +11,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
 import edu.utexas.tacc.tapis.sharedapi.responses.TapisResponse;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -37,8 +38,9 @@ public class AppsExceptionMapper implements ExceptionMapper<Exception>
     else if (exception instanceof NotAuthorizedException || exception instanceof ForbiddenException) status = FORBIDDEN;
     else if (exception instanceof BadRequestException) status = BAD_REQUEST;
     else if (exception instanceof WebApplicationException) status = INTERNAL_SERVER_ERROR;
+    else if (exception instanceof TapisClientException tce) status = Response.Status.valueOf(tce.getStatus());
     else log.error("UNCAUGHT_EXCEPTION", exception);
-
+    resp.setStatus(status.toString());
     return Response.status(status).type(MediaType.APPLICATION_JSON).entity(resp).build();
   }
 }

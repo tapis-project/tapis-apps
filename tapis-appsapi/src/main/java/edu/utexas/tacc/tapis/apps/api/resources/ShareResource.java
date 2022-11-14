@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.gson.JsonSyntaxException;
 
+import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisJSONException;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.schema.JsonValidator;
@@ -113,7 +114,7 @@ public class ShareResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response getShareApp(@PathParam("appId") String appId,
-                            @Context SecurityContext securityContext)
+                              @Context SecurityContext securityContext) throws TapisClientException
   {
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
@@ -126,14 +127,13 @@ public class ShareResource
 
     //RespAbstract resp1;
     AppShare appShare;
-    
     try
     {
       // Retrieve App share information
       appShare = appsService.getAppShare(rUser, appId);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -164,7 +164,7 @@ public class ShareResource
   @Produces(MediaType.APPLICATION_JSON)
   public Response shareApp(@PathParam("appId") String appId,
                               InputStream payloadStream,
-                              @Context SecurityContext securityContext)
+                              @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "createUpdateShare";
     // ------------------------- Retrieve and validate thread context -------------------------
@@ -219,7 +219,7 @@ public class ShareResource
       appsService.shareApp(rUser, appId, appsShare);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -251,7 +251,7 @@ public class ShareResource
   @Produces(MediaType.APPLICATION_JSON)
   public Response unshareApp(@PathParam("appId") String appId,
                               InputStream payloadStream,
-                              @Context SecurityContext securityContext)
+                              @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "unshare";
     // ------------------------- Retrieve and validate thread context -------------------------
@@ -299,14 +299,13 @@ public class ShareResource
     }
 
     if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_PUT_TRACE", rUser, rawJson));
-    
     try
     {
       // Unshare App
       appsService.unshareApp(rUser, appId, appsShare);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -334,7 +333,7 @@ public class ShareResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response shareAppPublicly(@PathParam("appId") String appId,
-                              @Context SecurityContext securityContext)
+                                   @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "sharePublicly";
     // ------------------------- Retrieve and validate thread context -------------------------
@@ -356,7 +355,7 @@ public class ShareResource
       appsService.shareAppPublicly(rUser, appId);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
@@ -384,7 +383,7 @@ public class ShareResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response unshareAppPublicly(@PathParam("appId") String appId,
-                              @Context SecurityContext securityContext)
+                              @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "unsharePublicly";
       // ------------------------- Retrieve and validate thread context -------------------------
@@ -407,7 +406,7 @@ public class ShareResource
       appsService.unshareAppPublicly(rUser, appId);
     }
     // Pass through not found or not auth to let exception mapper handle it.
-    catch (NotFoundException | NotAuthorizedException | ForbiddenException e) { throw e; }
+    catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
     {
