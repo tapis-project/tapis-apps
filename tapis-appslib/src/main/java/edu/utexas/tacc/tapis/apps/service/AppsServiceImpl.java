@@ -674,6 +674,8 @@ public class AppsServiceImpl implements AppsService
     // Fetch the app and set sharedAppCtx.
     App app = dao.getApp(resourceTenantId, appId, appVersion);
     app.setSharedAppCtx(sharedAppCtx);
+    // Update dynamically computed flags.
+    app.setIsPublic(isAppSharedPublic(rUser, app.getTenant(), appId));
     return app;
   }
 
@@ -823,6 +825,11 @@ public class AppsServiceImpl implements AppsService
 
     List<App> apps = dao.getApps(rUser, verifiedSearchList, null, limit, orderByList, skip, startAfter,
                                  versionSpecified, includeDeleted, listTypeEnum, viewableIDs, sharedIDs);
+    // Update dynamically computed flags.
+    for (App app : apps)
+    {
+      app.setIsPublic(isAppSharedPublic(rUser, app.getTenant(), app.getId()));
+    }
     return apps;
   }
 
@@ -900,6 +907,11 @@ public class AppsServiceImpl implements AppsService
     // Get all allowed apps matching the search conditions
     List<App> apps = dao.getApps(rUser, null, searchAST, limit, orderByList, skip, startAfter, versionSpecified,
                                  includeDeleted, listTypeEnum, viewableIDs, sharedIDs);
+    // Update dynamically computed flags.
+    for (App app : apps)
+    {
+      app.setIsPublic(isAppSharedPublic(rUser, app.getTenant(), app.getId()));
+    }
     return apps;
   }
 
@@ -2278,7 +2290,23 @@ public class AppsServiceImpl implements AppsService
     if (perms.contains(Permission.READ)) return isPermittedAny(rUser, oboTenant, oboUser, appId, READMODIFY_PERMS);
     return false;
   }
-  
+
+  /*
+   * Determine if an app is shared publicly
+   */
+  private boolean isAppSharedPublic(ResourceRequestUser rUser, String tenant, String appId)
+          throws TapisException, TapisClientException
+  {
+    // Create SKShareGetSharesParms needed for SK calls.
+    var skParms = new SKShareGetSharesParms();
+    skParms.setResourceType(APPS_SHR_TYPE);
+    skParms.setTenant(tenant);
+    skParms.setResourceId1(appId);
+    skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
+    var skShares = getSKClient().getShares(skParms);
+    return (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty());
+  }
+
   /*
    * Common routine to update share/unshare for a list of users.
    * Can be used to mark a system publicly shared with all users in tenant including "~public" in the set of users.

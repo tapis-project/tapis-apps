@@ -1486,7 +1486,9 @@ public class AppsServiceTest
     String appId = app0.getId();
     String appVer = app0.getVersion();
     app0 = svc.getApp(rOwner, appId, app0.getVersion(), false, null);
-    
+    Assert.assertFalse(app0.getSharedAppCtx());
+    Assert.assertFalse(app0.isPublic());
+
     //  Create an AppShare from the json
     AppShare appShare;
     String rawDataShare = "{\"users\": [\"" + shareWithUser + "\"]}";
@@ -1522,7 +1524,8 @@ public class AppsServiceTest
     // shareWithUser should now have access. Get app and verify shared app context
     app0 = svc.getApp(rShareWithUser, appId, appVer, true, null);
     Assert.assertTrue(app0.getSharedAppCtx());
-   
+    Assert.assertFalse(app0.isPublic());
+
     // **************************  Unsharing app  ***************************
     svc.unshareApp(rOwner, app0.getId(), appShare);
    
@@ -1549,7 +1552,9 @@ public class AppsServiceTest
     Assert.assertTrue(pass);
 
     // **************************  Sharing app publicly  ***************************
-    
+    app0 = svc.getApp(rOwner, appId, app0.getVersion(), false, null);
+    Assert.assertFalse(app0.isPublic());
+
     // Service call
     svc.shareAppPublicly(rOwner, app0.getId());
     
@@ -1564,7 +1569,8 @@ public class AppsServiceTest
     // Verify shared app context when rUser0 fetches
     app0 = svc.getApp(rUser0, app0.getId(), app0.getVersion(), true, null);
     Assert.assertTrue(app0.getSharedAppCtx());
-   
+    Assert.assertTrue(app0.isPublic());
+
     // **************************  Unsharing app publicly  ***************************
     // Service call
     svc.unshareAppPublicly(rOwner, app0.getId());
@@ -1586,5 +1592,8 @@ public class AppsServiceTest
       pass = true;
     }
     Assert.assertTrue(pass);
+
+    app0 = svc.getApp(rOwner, appId, app0.getVersion(), false, null);
+    Assert.assertFalse(app0.isPublic());
   }
 }

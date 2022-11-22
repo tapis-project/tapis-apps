@@ -9,6 +9,14 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.2.5 - 2022-11-22
+
+Incremental improvements and new preview features.
+
+### New features:
+- Add attribute returned for getSystem: *isPublic*.
+
+---------------------------------------------------------------------------
 ## 1.2.4 - 2022-11-14
 
 Incremental improvements and new preview features.

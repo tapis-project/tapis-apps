@@ -59,6 +59,7 @@ public final class App
   public static final boolean DEFAULT_CONTAINERIZED = true;
   public static final boolean DEFAULT_STRICT_FILE_INPUTS = false;
   public static final boolean DEFAULT_SHARED_APP_CTX = false;
+  public static final boolean DEFAULT_IS_PUBLIC = false;
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
   public static final JsonElement DEFAULT_PARAMETER_SET = TapisGsonUtils.getGson().fromJson("{}", JsonElement.class);
   public static final JsonElement DEFAULT_FILE_INPUTS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
@@ -117,12 +118,12 @@ public final class App
   public static final String MAX_MINUTES_FIELD = "maxMinutes";
   public static final String TAGS_FIELD = "tags";
   public static final String NOTES_FIELD = "notes";
-  public static final String SHAREDAPPCTX_FIELD = "sharedAppCtx";
   public static final String UUID_FIELD = "uuid";
   public static final String DELETED_FIELD = "deleted";
   public static final String CREATED_FIELD = "created";
   public static final String UPDATED_FIELD = "updated";
   public static final String SHARED_APP_CTX_FIELD = "sharedAppCtx";
+  public static final String IS_PUBLIC_FIELD = "isPublic";
 
   // Message keys
   private static final String CREATE_MISSING_ATTR = "APPLIB_CREATE_MISSING_ATTR";
@@ -171,6 +172,7 @@ public final class App
   // ************************************************************************
 
   private boolean sharedAppCtx = DEFAULT_SHARED_APP_CTX; // Indicates app accessible due to having been shared with requesting user.
+  private boolean isPublic = DEFAULT_IS_PUBLIC;
 
   // NOTE: In order to use jersey's SelectableEntityFilteringFeature fields cannot be final.
   // === Start fields in table apps =============================================
@@ -310,6 +312,7 @@ public final class App
     tags = (a.getTags() == null) ? EMPTY_STR_ARRAY : a.getTags().clone();
     notes = a.getNotes();
     sharedAppCtx = a.getSharedAppCtx();
+    isPublic = a.isPublic();
     uuid = a.getUuid();
     deleted = a.isDeleted();
   }
@@ -432,6 +435,7 @@ public final class App
     tags = a.getTags();
     notes = a.getNotes();
     sharedAppCtx = a.getSharedAppCtx();
+    isPublic = a.isPublic();
     uuid = a.getUuid();
     deleted = a.isDeleted();
     created = a.getCreated();
@@ -849,4 +853,7 @@ public final class App
 
   public boolean getSharedAppCtx() { return sharedAppCtx; }
   public void setSharedAppCtx(boolean b) { sharedAppCtx = b;  }
+
+  public boolean isPublic() { return isPublic; }
+  public void setIsPublic(boolean b) { isPublic = b;  }
 }
