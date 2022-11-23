@@ -1477,7 +1477,7 @@ public class AppsServiceImpl implements AppsService
    * Check that system referenced by execSystemId exists with canExec = true.
    * Check that system referenced by archiveSystemId exists.
    * Check LogicalQueue max/min constraints.
-   * Collect and report as many errors as possible so they can all be fixed before next attempt
+   * Collect and report as many errors as possible, so they can all be fixed before next attempt
    * @param app - the App to check
    * @throws IllegalStateException - if any constraints are violated
    */

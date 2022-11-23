@@ -1181,8 +1181,8 @@ public class AppResource
   /**
    * Fill in defaults and check constraints on App attributes
    * Check values. Id and version must be set.
-   * Collect and report as many errors as possible so they can all be fixed before next attempt
-   * NOTE: JsonSchema validation should handle some of these checks but we check here again just in case
+   * Collect and report as many errors as possible, so they can all be fixed before next attempt
+   * NOTE: JsonSchema validation should handle some of these checks, but we check here again just in case
    *
    * @return null if OK or error Response
    */

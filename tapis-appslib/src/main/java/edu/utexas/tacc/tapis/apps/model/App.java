@@ -607,7 +607,6 @@ public final class App
    *  If containerized is true then containerImage must be set
    *  If containerized and SINGULARITY then RuntimeOptions must include one of SINGULARITY_START or SINGULARITY_RUN
    *  If dynamicExecSystem then execSystemConstraints must be given
-   *  If not dynamicExecSystem then execSystemId must be given
    *  If archiveSystem given then archive dir must be given
    */
   private void checkAttrMisc(List<String> errMessages)
