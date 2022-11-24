@@ -37,6 +37,13 @@ import java.util.UUID;
 
 /*
  * Utilities and data for integration testing
+ *
+ * Following systems must be present and shared publicly in the DEV environment:
+ *   tapisv3-storage-testuser1
+ *   tapisv3-storage2-testuser1
+ *   tapisv3-exec1-testuser1
+ *   tapisv3-exec4-testuser1
+ * For system definitions see json files in tapis-appslib/src/test/resources
  */
 public final class IntegrationUtils
 {
@@ -124,7 +131,7 @@ public final class IntegrationUtils
   public static final String execSystemLogicalQueue2 = "dslarge";
   public static final String execSystemLogicalQueueNull = null;
   public static final String archiveSystemId1 = "tapisv3-storage-testuser1";
-  public static final String archiveSystemId2 = "tapisv3-storage-dev-testuser1";
+  public static final String archiveSystemId2 = "tapisv3-storage2-testuser1";
   public static final String archiveSystemIdNull = null;
   public static final String archiveSystemDir1 = "archiveSystemDir1";
   public static final String archiveSystemDir2 = "archiveSystemDir2";

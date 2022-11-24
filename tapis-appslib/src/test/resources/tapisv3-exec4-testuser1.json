@@ -1,0 +1,106 @@
+{
+  "id": "tapisv3-exec4-testuser1",
+  "description": "Exec test system with most attributes populated.",
+  "systemType": "LINUX",
+  "host": "129.114.35.53",
+  "effectiveUserId": "testuser1",
+  "defaultAuthnMethod": "PKI_KEYS",
+  "rootDir": "/home/testuser1",
+  "port": 22,
+  "canExec": true,
+  "canRunBatch": true,
+  "jobRuntimes": [
+    {
+      "runtimeType": "DOCKER",
+      "version": "0.0.1d"
+    }
+  ],
+  "jobWorkingDir": "workdir",
+  "jobEnvVariables": [
+    {
+      "key": "HOME",
+      "value": "/home/$USER",
+      "description": null
+    },
+    {
+      "key": "TMP",
+      "value": "/tmp",
+      "description": null
+    }
+  ],
+  "jobMaxJobs": 2,
+  "jobMaxJobsPerUser": 2,
+  "batchScheduler": "SLURM",
+  "batchLogicalQueues": [
+    {
+      "name": "dsnormal",
+      "hpcQueueName": "normal",
+      "maxJobs": 5,
+      "maxJobsPerUser": 2,
+      "minNodeCount": 10,
+      "maxNodeCount": 20,
+      "minCoresPerNode": 10,
+      "maxCoresPerNode": 20,
+      "minMemoryMB": 32,
+      "maxMemoryMB": 64,
+      "minMinutes": 10,
+      "maxMinutes": 20
+    },
+    {
+      "name": "dslarge",
+      "hpcQueueName": "large",
+      "maxJobs": 50,
+      "maxJobsPerUser": 10,
+      "minNodeCount": 0,
+      "maxNodeCount": 500,
+      "minCoresPerNode": 0,
+      "maxCoresPerNode": 80,
+      "minMemoryMB": 0,
+      "maxMemoryMB": 1280,
+      "minMinutes": 0,
+      "maxMinutes": 600
+    }
+  ],
+  "batchDefaultLogicalQueue": "dsnormal",
+  "batchSchedulerProfile": null,
+  "jobCapabilities": [
+    {
+      "category": "SCHEDULER",
+      "name": "Type",
+      "datatype": "STRING",
+      "precedence": 100,
+      "value": "Slurm"
+    },
+    {
+      "category": "SOFTWARE",
+      "name": "MPI",
+      "datatype": "STRING",
+      "precedence": 100,
+      "value": ""
+    },
+    {
+      "category": "HARDWARE",
+      "name": "CoreCount",
+      "datatype": "INTEGER",
+      "precedence": 50,
+      "value": "4"
+    },
+    {
+      "category": "JOB",
+      "name": "MaxRunTime",
+      "datatype": "STRING",
+      "precedence": 200,
+      "value": "24H"
+    }
+  ],
+  "tags": [
+    "value1",
+    "value2",
+    "a",
+    "Long tag (1 3 2) special chars [_ $ - & * % @ + = ! ^ ? < > , . ( ) { } / \\ | ]. Backslashes must be escaped."
+  ],
+  "notes": {
+    "project": "myproject2",
+    "testdata": "abc2"
+  }
+}

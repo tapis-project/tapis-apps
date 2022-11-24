@@ -1,0 +1,10 @@
+{
+  "id": "tapisv3-storage-testuser1",
+  "description": "Storage system for integration tests",
+  "systemType": "LINUX",
+  "host": "129.114.35.122",
+  "effectiveUserId": "testuser1",
+  "defaultAuthnMethod": "PKI_KEYS",
+  "rootDir": "/home/testuser1",
+  "canExec": false
+}
