@@ -629,50 +629,53 @@ public class AppsServiceImpl implements AppsService
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
-    String resourceTenantId = rUser.getOboTenantId();
+    String oboTenant = rUser.getOboTenantId();
 
-    // We need owner to check auth and if app not there cannot find owner, so
-    // if app does not exist then return null
-    if (!dao.checkForApp(resourceTenantId, appId, false)) return null;
+    // Fetch the app. We need to make sure it exists and is not deleted.
+    // Also, knowing app owner is useful here. We can skip auth checking.
+    App app = dao.getApp(oboTenant, appId, appVersion);
+    if (app == null) return null;
 
     // ------------------------- Check authorization -------------------------
-    // If impersonationId supplied confirm that it is allowed
+    // If impersonationId supplied confirm that it is allowed and determine final obo user.
     if (!StringUtils.isBlank(impersonationId)) checkImpersonationAllowed(rUser, op, appId, impersonationId);
-
-    // Access might be allowed due to permission or due to sharing, so we will need to check for both.
-    // Also, need to record if it was allowed due to sharing. Jobs needs to know.
-    // First check if allowed by permissions or ownership and record the result.
-    boolean isPermitted = true;
-    try
-    {
-      checkAuth(rUser, op, appId, nullOwner, nullTargetUser, nullPermSet, impersonationId);
-    }
-    catch (ForbiddenException e)
-    {
-      isPermitted = false;
-    }
-    
-    // Check shared app context
-    // Note that even if allowed by permission we still need to check for sharing and set sharedAppCtx in the
-    //  returned app. Sharing implies more than permissions and Jobs needs to know that the App is being run in
-    //  a sharedAppCtx.
     String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
-    boolean sharedAppCtx = isAppSharedWithUser(rUser, appId, oboOrImpersonatedUser, Permission.READ);
 
-    // If not permitted or shared then deny
-    if (!isPermitted && !sharedAppCtx)
+    // If owner is making the request then always allowed, and we will not set sharedAppCtx to true
+    boolean isPermitted = true;
+    boolean sharedAppCtx = false;
+
+    // If not owner we need to do some authorization checking and determine if sharedAppCtx is true
+    String owner = app.getOwner();
+    if (!oboOrImpersonatedUser.equals(owner))
     {
-      throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()));
+      // Access might be allowed due to permission or due to sharing, so we will need to check for both.
+      // Also, need to record if it was allowed due to sharing. Jobs needs to know.
+      // First check if allowed by permissions or ownership and record the result.
+      try
+      {
+        checkAuth(rUser, op, appId, owner, nullTargetUser, nullPermSet, impersonationId);
+      }
+      catch (ForbiddenException e) {isPermitted = false;}
+
+      // Check shared app context
+      // Even if allowed by permission we still need to check for sharing and set sharedAppCtx in the returned app.
+      sharedAppCtx = isAppSharedWithUser(rUser, appId, oboOrImpersonatedUser, Permission.READ);
+
+      // If not permitted or shared then deny
+      if (!isPermitted && !sharedAppCtx)
+      {
+        throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()));
+      }
+
+      // If flag is set to also require EXECUTE perm then make explicit auth call to make sure user has exec perm
+      if (!sharedAppCtx && requireExecPerm)
+      {
+        checkAuth(rUser, AppOperation.execute, appId, owner, nullTargetUser, nullPermSet, impersonationId);
+      }
     }
 
-    // If flag is set to also require EXECUTE perm then make explicit auth call to make sure user has exec perm
-    if (!sharedAppCtx && requireExecPerm)
-    {
-      checkAuth(rUser, AppOperation.execute, appId, nullOwner, nullTargetUser, nullPermSet, impersonationId);
-    }
-
-    // Fetch the app and set sharedAppCtx.
-    App app = dao.getApp(resourceTenantId, appId, appVersion);
+    // Set sharedAppCtx.
     app.setSharedAppCtx(sharedAppCtx);
     // Update dynamically computed flags.
     app.setIsPublic(isAppSharedPublic(rUser, app.getTenant(), appId));
@@ -1474,27 +1477,29 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * Check constraints on App attributes.
-   * Check that system referenced by execSystemId exists with canExec = true.
-   * Check that system referenced by archiveSystemId exists.
+   * If execSystemId set
+   *   - Check that it exists with canExec = true.
+   *   - Check authorization
+   * If archiveSystemId set
+   *   - Check that it exists.
+   *   - Check authorization
    * Check LogicalQueue max/min constraints.
    * Collect and report as many errors as possible, so they can all be fixed before next attempt
    * @param app - the App to check
    * @throws IllegalStateException - if any constraints are violated
    */
-  private void validateApp(ResourceRequestUser rUser, App app) throws IllegalStateException
+  private void validateApp(ResourceRequestUser rUser, App app) throws TapisException, IllegalStateException
   {
     // Make api level checks, i.e. checks that do not involve a dao or service call.
     List<String> errMessages = app.checkAttributeRestrictions();
-//    var systemsClient = getSystemsClient(rUser);
+    var systemsClient = getSystemsClient(rUser);
 
     // Now make checks that do require a dao or service call.
+    // If execSystemId is set verify it
+    if (!StringUtils.isBlank(app.getExecSystemId())) checkExecSystem(systemsClient, app, errMessages);
 
-    // TBD: Suppress system checks for now so user is free to create app before systems exist.
-//    // If execSystemId is set verify it
-//    if (!StringUtils.isBlank(app.getExecSystemId())) checkExecSystem(systemsClient, app, errMessages);
-//
-//    // If archiveSystemId is set verify it
-//    if (!StringUtils.isBlank(app.getArchiveSystemId())) checkArchiveSystem(systemsClient, app, errMessages);
+    // If archiveSystemId is set verify it
+    if (!StringUtils.isBlank(app.getArchiveSystemId())) checkArchiveSystem(systemsClient, app, errMessages);
 
     // If validation failed throw an exception
     if (!errMessages.isEmpty())
@@ -1878,7 +1883,9 @@ public class AppsServiceImpl implements AppsService
     // Verify that execSystem exists with canExec == true
     try
     {
-      execSystem = systemsClient.getSystem(execSystemId);
+      // Get system, requireExecPerm=true
+      // authnMethod=null, requireExec=true, select=null, returnCred=false, impersonationId=null, sharedAppCtx=false
+      execSystem = systemsClient.getSystem(execSystemId, null, true, null, false, null, false);
     }
     catch (TapisClientException e)
     {
@@ -2230,8 +2237,8 @@ public class AppsServiceImpl implements AppsService
    * @param targetUser - user to check
    * @param privilege - privilege to check
    * @return - Boolean value that indicates if app is shared
-   * @throws TapisClientException
-   * @throws TapisException
+   * @throws TapisClientException SKClient error
+   * @throws TapisException other error
    */
   private boolean isAppSharedWithUser(ResourceRequestUser rUser, String appId, String targetUser, Permission privilege)
           throws TapisClientException, TapisException
