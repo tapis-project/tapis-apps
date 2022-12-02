@@ -88,6 +88,8 @@ public class GeneralResource
     resp.status = RESPONSE_STATUS.success.name();
     resp.message = MsgUtils.getMsg("TAPIS_HEALTHY", "Apps Service");
     resp.version = TapisUtils.getTapisFullVersion();
+    resp.commit = TapisUtils.getGitCommit();
+    resp.build = TapisUtils.getBuildTime();
     return Response.ok(resp).build();
   }
 
@@ -197,6 +199,8 @@ public class GeneralResource
     resp.status = RESPONSE_STATUS.success.name();
     resp.message = MsgUtils.getMsg("TAPIS_READY", "Applications Service");
     resp.version = TapisUtils.getTapisFullVersion();
+    resp.commit = TapisUtils.getGitCommit();
+    resp.build = TapisUtils.getBuildTime();
     return Response.ok(resp).build();
   }
 

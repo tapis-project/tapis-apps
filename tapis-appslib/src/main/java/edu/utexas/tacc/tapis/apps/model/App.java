@@ -58,7 +58,6 @@ public final class App
   public static final boolean DEFAULT_ENABLED = true;
   public static final boolean DEFAULT_CONTAINERIZED = true;
   public static final boolean DEFAULT_STRICT_FILE_INPUTS = false;
-  public static final boolean DEFAULT_SHARED_APP_CTX = false;
   public static final boolean DEFAULT_IS_PUBLIC = false;
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
   public static final JsonElement DEFAULT_PARAMETER_SET = TapisGsonUtils.getGson().fromJson("{}", JsonElement.class);
@@ -171,7 +170,7 @@ public final class App
   // *********************** Fields *****************************************
   // ************************************************************************
 
-  private boolean sharedAppCtx = DEFAULT_SHARED_APP_CTX; // Indicates app accessible due to having been shared with requesting user.
+  private String sharedAppCtx; // App accessible due to having been shared with requesting user. Set to grantor.
   private boolean isPublic = DEFAULT_IS_PUBLIC;
 
   // NOTE: In order to use jersey's SelectableEntityFilteringFeature fields cannot be final.
@@ -850,8 +849,8 @@ public final class App
 
   public boolean isDeleted() { return deleted; }
 
-  public boolean getSharedAppCtx() { return sharedAppCtx; }
-  public void setSharedAppCtx(boolean b) { sharedAppCtx = b;  }
+  public String getSharedAppCtx() { return sharedAppCtx; }
+  public void setSharedAppCtx(String s) { sharedAppCtx = s;  }
 
   public boolean isPublic() { return isPublic; }
   public void setIsPublic(boolean b) { isPublic = b;  }

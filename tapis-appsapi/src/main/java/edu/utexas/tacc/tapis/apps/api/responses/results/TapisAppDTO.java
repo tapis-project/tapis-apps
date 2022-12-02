@@ -43,7 +43,7 @@ public final class TapisAppDTO
 {
   private static final Gson gson = TapisGsonUtils.getGson();
 
-  public boolean sharedAppCtx;
+  public String sharedAppCtx;
   public boolean isPublic;
 
   public String tenant;
@@ -184,7 +184,7 @@ public final class TapisAppDTO
       case DELETED_FIELD -> jsonObject.addProperty(DELETED_FIELD, Boolean.toString(deleted));
       case CREATED_FIELD -> jsonObject.addProperty(CREATED_FIELD, created.toString());
       case UPDATED_FIELD -> jsonObject.addProperty(UPDATED_FIELD, updated.toString());
-      case SHARED_APP_CTX_FIELD -> jsonObject.addProperty(SHARED_APP_CTX_FIELD, Boolean.toString(sharedAppCtx));
+      case SHARED_APP_CTX_FIELD -> jsonObject.addProperty(SHARED_APP_CTX_FIELD, sharedAppCtx);
       case IS_PUBLIC_FIELD -> jsonObject.addProperty(IS_PUBLIC_FIELD, Boolean.toString(isPublic));
     }
   }

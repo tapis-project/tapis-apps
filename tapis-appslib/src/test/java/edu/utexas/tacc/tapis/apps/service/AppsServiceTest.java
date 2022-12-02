@@ -1441,7 +1441,7 @@ public class AppsServiceTest
     Assert.assertTrue(tmpObj.has("testdata"));
     String testdataStr = origNotes.get("testdata").getAsString();
     Assert.assertEquals(tmpObj.get("testdata").getAsString(), testdataStr);
-    Assert.assertEquals(app0.getSharedAppCtx(), false);
+    Assert.assertNull(app0.getSharedAppCtx());
   }
   // Test retrieving an app.
   @Test
@@ -1486,7 +1486,7 @@ public class AppsServiceTest
     String appId = app0.getId();
     String appVer = app0.getVersion();
     app0 = svc.getApp(rOwner, appId, app0.getVersion(), false, null);
-    Assert.assertFalse(app0.getSharedAppCtx());
+    Assert.assertNull(app0.getSharedAppCtx());
     Assert.assertFalse(app0.isPublic());
 
     //  Create an AppShare from the json
@@ -1523,7 +1523,7 @@ public class AppsServiceTest
     
     // shareWithUser should now have access. Get app and verify shared app context
     app0 = svc.getApp(rShareWithUser, appId, appVer, true, null);
-    Assert.assertTrue(app0.getSharedAppCtx());
+    Assert.assertEquals(app0.getSharedAppCtx(), app0.getOwner());
     Assert.assertFalse(app0.isPublic());
 
     // **************************  Unsharing app  ***************************
@@ -1568,7 +1568,7 @@ public class AppsServiceTest
     
     // Verify shared app context when rUser0 fetches
     app0 = svc.getApp(rUser0, app0.getId(), app0.getVersion(), true, null);
-    Assert.assertTrue(app0.getSharedAppCtx());
+    Assert.assertEquals(app0.getSharedAppCtx(), app0.getOwner());
     Assert.assertTrue(app0.isPublic());
 
     // **************************  Unsharing app publicly  ***************************

@@ -43,6 +43,7 @@ import edu.utexas.tacc.tapis.search.SearchUtils;
 import edu.utexas.tacc.tapis.security.client.SKClient;
 import edu.utexas.tacc.tapis.security.client.gen.model.ReqShareResource;
 import edu.utexas.tacc.tapis.security.client.gen.model.SkShare;
+import edu.utexas.tacc.tapis.security.client.gen.model.SkShareList;
 import edu.utexas.tacc.tapis.security.client.model.SKShareDeleteShareParms;
 import edu.utexas.tacc.tapis.security.client.model.SKShareGetSharesParms;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
@@ -641,11 +642,11 @@ public class AppsServiceImpl implements AppsService
     if (!StringUtils.isBlank(impersonationId)) checkImpersonationAllowed(rUser, op, appId, impersonationId);
     String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
 
-    // If owner is making the request then always allowed, and we will not set sharedAppCtx to true
+    // If owner is making the request then always allowed, and we will not set sharedAppCtx
     boolean isPermitted = true;
-    boolean sharedAppCtx = false;
+    String sharedAppCtx = null;
 
-    // If not owner we need to do some authorization checking and determine if sharedAppCtx is true
+    // If not owner we need to do some authorization checking and determine if sharedAppCtx must be set
     String owner = app.getOwner();
     if (!oboOrImpersonatedUser.equals(owner))
     {
@@ -660,16 +661,18 @@ public class AppsServiceImpl implements AppsService
 
       // Check shared app context
       // Even if allowed by permission we still need to check for sharing and set sharedAppCtx in the returned app.
-      sharedAppCtx = isAppSharedWithUser(rUser, appId, oboOrImpersonatedUser, Permission.READ);
+      boolean shared = isAppSharedWithUser(rUser, appId, oboOrImpersonatedUser, Permission.READ);
+      // NOTE: Grantor is always app owner
+      if (shared) sharedAppCtx = owner;
 
       // If not permitted or shared then deny
-      if (!isPermitted && !sharedAppCtx)
+      if (!isPermitted && !shared)
       {
         throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()));
       }
 
       // If flag is set to also require EXECUTE perm then make explicit auth call to make sure user has exec perm
-      if (!sharedAppCtx && requireExecPerm)
+      if (!shared && requireExecPerm)
       {
         checkAuth(rUser, AppOperation.execute, appId, owner, nullTargetUser, nullPermSet, impersonationId);
       }
@@ -1215,7 +1218,7 @@ public class AppsServiceImpl implements AppsService
     
     // First determine if app is publicly shared. Search for share to grantee ~public
     skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
-    var skShares = getSKClient().getShares(skParms);
+    SkShareList skShares = getSKClient().getShares(skParms);
     // Set isPublic based on result.
     boolean isPublic = (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty());
     // Now get all the users with whom the system has been shared
@@ -1884,8 +1887,8 @@ public class AppsServiceImpl implements AppsService
     try
     {
       // Get system, requireExecPerm=true
-      // authnMethod=null, requireExec=true, select=null, returnCred=false, impersonationId=null, sharedAppCtx=false
-      execSystem = systemsClient.getSystem(execSystemId, null, true, null, false, null, false);
+      // authnMethod=null, requireExec=true, select=null, returnCred=false, impersonationId=null, sharedAppCtx=null
+      execSystem = systemsClient.getSystem(execSystemId, null, true, null, false, null, null);
     }
     catch (TapisClientException e)
     {
