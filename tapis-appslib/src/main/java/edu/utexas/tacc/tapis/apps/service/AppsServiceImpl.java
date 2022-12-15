@@ -224,16 +224,12 @@ public class AppsServiceImpl implements AppsService
     // Creation of app and perms not in single DB transaction.
     // Use try/catch to rollback any writes in case of failure.
     boolean appCreated = false;
-//TODO    String appsPermSpecALL = getPermSpecAllStr(tenant, appId);
+    String appsPermSpecALL = getPermSpecAllStr(tenant, appId);
 
     try {
       // ------------------- Make Dao call to persist the app -----------------------------------
       appCreated = dao.createApp(rUser, app, changeDescription, rawData);
 
-      // TODO Remove this? wasn't this already removed? are there some changes in another branch? We now always check for owner as part of auth
-      // ------------------- Add permissions -----------------------------
-      // Give owner full access to the app
-//      getSKClient().grantUserPermission(tenant, app.getOwner(), appsPermSpecALL);
     }
     catch (Exception e0)
     {
@@ -246,10 +242,6 @@ public class AppsServiceImpl implements AppsService
       // Remove app from DB
       if (appCreated) try {dao.hardDeleteApp(tenant, appId); }
       catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "hardDelete", e.getMessage()));}
-// TODO remove this?
-//      // Remove perms
-//      try { getSKClient().revokeUserPermission(tenant, app.getOwner(), appsPermSpecALL); }
-//      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "revokePermOwner", e.getMessage()));}
       throw e0;
     }
   }
@@ -477,19 +469,11 @@ public class AppsServiceImpl implements AppsService
     try {
       // ------------------- Make Dao call to update the app owner -----------------------------------
       dao.updateAppOwner(rUser, resourceTenantId, appId, newOwnerName);
-      //TODO Add permissions for new owner
-//      getSKClient().grantUserPermission(resourceTenantId, newOwnerName, appsPermSpec);
-      // Remove permissions from old owner
-//TODO      getSKClient().revokeUserPermission(resourceTenantId, oldOwnerName, appsPermSpec);
     }
     catch (Exception e0)
     {
       // Something went wrong. Attempt to undo all changes and then re-throw the exception
       try { dao.updateAppOwner(rUser, resourceTenantId, appId, oldOwnerName); } catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "updateOwner", e.getMessage()));}
-//      try { getSKClient().revokeUserPermission(resourceTenantId, newOwnerName, appsPermSpec); }
-//      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "revokePermNewOwner", e.getMessage()));}
-//      try { getSKClient().grantUserPermission(resourceTenantId, oldOwnerName, appsPermSpec); }
-//      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "grantPermOldOwner", e.getMessage()));}
       throw e0;
     }
     return 1;
