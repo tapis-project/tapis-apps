@@ -360,7 +360,10 @@ public final class IntegrationUtils
   public static final boolean showDeletedTrue = true;
   public static final boolean versionSpecifiedFalse = false;
   public static final AppsServiceImpl.AuthListType listTypeOwned = AppsServiceImpl.AuthListType.OWNED;
-  public static final AppsServiceImpl.AuthListType listTypePublic = AppsServiceImpl.AuthListType.SHARED_PUBLIC;
+  public static final AppsServiceImpl.AuthListType listTypeSharedPublic = AppsServiceImpl.AuthListType.SHARED_PUBLIC;
+  public static final AppsServiceImpl.AuthListType listTypeSharedDirect = AppsServiceImpl.AuthListType.SHARED_DIRECT;
+  public static final AppsServiceImpl.AuthListType listTypeMine = AppsServiceImpl.AuthListType.MINE;
+  public static final AppsServiceImpl.AuthListType listTypeReadPerm = AppsServiceImpl.AuthListType.READ_PERM;
   public static final AppsServiceImpl.AuthListType listTypeAll = AppsServiceImpl.AuthListType.ALL;
 
   /**

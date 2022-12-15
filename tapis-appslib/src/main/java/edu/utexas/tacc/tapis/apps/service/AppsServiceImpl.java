@@ -105,11 +105,11 @@ public class AppsServiceImpl implements AppsService
   private static final String OP_UNSHARE = "unShare";
   private static final Set<String> publicUserSet = Collections.singleton(SKClient.PUBLIC_GRANTEE); // "~public"
   private static final String APPS_SHR_TYPE = "apps";
-  
+
   // ************************************************************************
   // *********************** Enums ******************************************
   // ************************************************************************
-  public enum AuthListType  {OWNED, SHARED_PUBLIC, ALL}
+  public enum AuthListType {OWNED, SHARED_DIRECT, SHARED_PUBLIC, MINE, READ_PERM, ALL}
   public static final AuthListType DEFAULT_LIST_TYPE = AuthListType.OWNED;
 
   // ************************************************************************
@@ -224,15 +224,16 @@ public class AppsServiceImpl implements AppsService
     // Creation of app and perms not in single DB transaction.
     // Use try/catch to rollback any writes in case of failure.
     boolean appCreated = false;
-    String appsPermSpecALL = getPermSpecAllStr(tenant, appId);
+//TODO    String appsPermSpecALL = getPermSpecAllStr(tenant, appId);
 
     try {
       // ------------------- Make Dao call to persist the app -----------------------------------
       appCreated = dao.createApp(rUser, app, changeDescription, rawData);
 
+      // TODO Remove this? wasn't this already removed? are there some changes in another branch? We now always check for owner as part of auth
       // ------------------- Add permissions -----------------------------
       // Give owner full access to the app
-      getSKClient().grantUserPermission(tenant, app.getOwner(), appsPermSpecALL);
+//      getSKClient().grantUserPermission(tenant, app.getOwner(), appsPermSpecALL);
     }
     catch (Exception e0)
     {
@@ -245,9 +246,10 @@ public class AppsServiceImpl implements AppsService
       // Remove app from DB
       if (appCreated) try {dao.hardDeleteApp(tenant, appId); }
       catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "hardDelete", e.getMessage()));}
-      // Remove perms
-      try { getSKClient().revokeUserPermission(tenant, app.getOwner(), appsPermSpecALL); }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "revokePermOwner", e.getMessage()));}
+// TODO remove this?
+//      // Remove perms
+//      try { getSKClient().revokeUserPermission(tenant, app.getOwner(), appsPermSpecALL); }
+//      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "revokePermOwner", e.getMessage()));}
       throw e0;
     }
   }
@@ -475,19 +477,19 @@ public class AppsServiceImpl implements AppsService
     try {
       // ------------------- Make Dao call to update the app owner -----------------------------------
       dao.updateAppOwner(rUser, resourceTenantId, appId, newOwnerName);
-      // Add permissions for new owner
-      getSKClient().grantUserPermission(resourceTenantId, newOwnerName, appsPermSpec);
+      //TODO Add permissions for new owner
+//      getSKClient().grantUserPermission(resourceTenantId, newOwnerName, appsPermSpec);
       // Remove permissions from old owner
-      getSKClient().revokeUserPermission(resourceTenantId, oldOwnerName, appsPermSpec);
+//TODO      getSKClient().revokeUserPermission(resourceTenantId, oldOwnerName, appsPermSpec);
     }
     catch (Exception e0)
     {
       // Something went wrong. Attempt to undo all changes and then re-throw the exception
       try { dao.updateAppOwner(rUser, resourceTenantId, appId, oldOwnerName); } catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "updateOwner", e.getMessage()));}
-      try { getSKClient().revokeUserPermission(resourceTenantId, newOwnerName, appsPermSpec); }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "revokePermNewOwner", e.getMessage()));}
-      try { getSKClient().grantUserPermission(resourceTenantId, oldOwnerName, appsPermSpec); }
-      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "grantPermOldOwner", e.getMessage()));}
+//      try { getSKClient().revokeUserPermission(resourceTenantId, newOwnerName, appsPermSpec); }
+//      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "revokePermNewOwner", e.getMessage()));}
+//      try { getSKClient().grantUserPermission(resourceTenantId, oldOwnerName, appsPermSpec); }
+//      catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "grantPermOldOwner", e.getMessage()));}
       throw e0;
     }
     return 1;
@@ -718,8 +720,11 @@ public class AppsServiceImpl implements AppsService
     AuthListType listTypeEnum = AuthListType.valueOf(listType);
 
     // Set some flags for convenience and clarity
-    boolean allItems = AuthListType.ALL.equals(listTypeEnum);
-    boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum);
+    boolean allItems = AuthListType.ALL.equals(listTypeEnum);             // Include everything
+    boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum); // Include only publicly shared
+    boolean sharedOnly = AuthListType.SHARED_DIRECT.equals(listTypeEnum); // Include only shared directly with user
+    boolean mine = AuthListType.MINE.equals(listTypeEnum);                // Include owned and directly shared with user
+    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);       // Include only directly granted READ/MODIFY
 
     // Build verified list of search conditions and check if any search conditions involve the version attribute
     boolean versionSpecified = false;
@@ -746,12 +751,13 @@ public class AppsServiceImpl implements AppsService
 
     // If needed, get IDs for items for which requester has READ or MODIFY permission
     Set<String> viewableIDs = new HashSet<>();
-    if (allItems) viewableIDs = getViewableAppIDs(rUser);
+    if (allItems || readPermOnly) viewableIDs = getViewableAppIDs(rUser);
 
     // If needed, get IDs for items shared with the requester or only shared publicly.
     Set<String> sharedIDs = new HashSet<>();
-    if (allItems) sharedIDs = getSharedAppIDs(rUser, false);
-    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, true);
+    if (allItems) sharedIDs = getSharedAppIDs(rUser, false, false);
+    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, true, false);
+    else if (sharedOnly || mine) sharedIDs = getSharedAppIDs(rUser, false, true);
 
     // Count all allowed systems matching the search conditions
     return dao.getAppsCount(rUser, verifiedSearchList, null, orderByList, startAfter, versionSpecified, includeDeleted,
@@ -794,8 +800,11 @@ public class AppsServiceImpl implements AppsService
     AuthListType listTypeEnum = AuthListType.valueOf(listType);
 
     // Set some flags for convenience and clarity
-    boolean allItems = AuthListType.ALL.equals(listTypeEnum);
-    boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum);
+    boolean allItems = AuthListType.ALL.equals(listTypeEnum);             // Include everything
+    boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum); // Include only publicly shared
+    boolean sharedOnly = AuthListType.SHARED_DIRECT.equals(listTypeEnum); // Include only shared directly with user
+    boolean mine = AuthListType.MINE.equals(listTypeEnum);                // Include owned and directly shared with user
+    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);       // Include only directly granted READ/MODIFY
 
     // Build verified list of search conditions and check if any search conditions involve the version attribute
     boolean versionSpecified = false;
@@ -822,12 +831,13 @@ public class AppsServiceImpl implements AppsService
 
     // If needed, get IDs for items for which requester has READ or MODIFY permission
     Set<String> viewableIDs = new HashSet<>();
-    if (allItems) viewableIDs = getViewableAppIDs(rUser);
+    if (allItems || readPermOnly) viewableIDs = getViewableAppIDs(rUser);
 
     // If needed, get IDs for items shared with the requester or only shared publicly.
     Set<String> sharedIDs = new HashSet<>();
-    if (allItems) sharedIDs = getSharedAppIDs(rUser, false);
-    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, true);
+    if (allItems) sharedIDs = getSharedAppIDs(rUser, false, false);
+    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, true, false);
+    else if (sharedOnly || mine) sharedIDs = getSharedAppIDs(rUser, false, true);
 
     List<App> apps = dao.getApps(rUser, verifiedSearchList, null, limit, orderByList, skip, startAfter,
                                  versionSpecified, includeDeleted, listTypeEnum, viewableIDs, sharedIDs);
@@ -875,8 +885,11 @@ public class AppsServiceImpl implements AppsService
     AuthListType listTypeEnum = AuthListType.valueOf(listType);
 
     // Set some flags for convenience and clarity
-    boolean allItems = AuthListType.ALL.equals(listTypeEnum);
-    boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum);
+    boolean allItems = AuthListType.ALL.equals(listTypeEnum);             // Include everything
+    boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum); // Include only publicly shared
+    boolean sharedOnly = AuthListType.SHARED_DIRECT.equals(listTypeEnum); // Include only shared directly with user
+    boolean mine = AuthListType.MINE.equals(listTypeEnum);                // Include owned and directly shared with user
+    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);       // Include only directly granted READ/MODIFY
 
     // Validate and parse the sql string into an abstract syntax tree (AST)
     // The activemq parser validates and parses the string into an AST but there does not appear to be a way
@@ -900,12 +913,13 @@ public class AppsServiceImpl implements AppsService
 
     // If needed, get IDs for items for which requester has READ or MODIFY permission
     Set<String> viewableIDs = new HashSet<>();
-    if (allItems) viewableIDs = getViewableAppIDs(rUser);
+    if (allItems || readPermOnly) viewableIDs = getViewableAppIDs(rUser);
 
     // If needed, get IDs for items shared with the requester or only shared publicly.
     Set<String> sharedIDs = new HashSet<>();
-    if (allItems) sharedIDs = getSharedAppIDs(rUser, false);
-    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, true);
+    if (allItems) sharedIDs = getSharedAppIDs(rUser, false, false);
+    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, true, false);
+    else if (sharedOnly || mine) sharedIDs = getSharedAppIDs(rUser, false, true);
 
     // Pass in null for versionSpecified since the Dao makes the same call we would make, so no time saved doing it here.
     Boolean versionSpecified = null;
@@ -1650,9 +1664,12 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Determine all apps that are shared with a user.
+   * Determine apps that are shared with a user.
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param publicOnly - Include only items shared public
+   * @param directOnly - Include only items shared directly with user. Exclude publicly shared items
    */
-  private Set<String> getSharedAppIDs(ResourceRequestUser rUser, boolean publicOnly)
+  private Set<String> getSharedAppIDs(ResourceRequestUser rUser, boolean publicOnly, boolean directOnly)
           throws TapisException, TapisClientException
   {
     var appIDs = new HashSet<String>();
@@ -1668,6 +1685,10 @@ public class AppsServiceImpl implements AppsService
     // Set grantee based on whether we want just public or not.
     if (publicOnly) skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
     else skParms.setGrantee(oboUserId);
+
+    // Determine if we should include public or not.
+    if (directOnly) skParms.setIncludePublicGrantees(false);
+    else skParms.setIncludePublicGrantees(true);
 
     // Call SK to get all shared with oboUser and add them to the set
     var skShares = getSKClient().getShares(skParms);

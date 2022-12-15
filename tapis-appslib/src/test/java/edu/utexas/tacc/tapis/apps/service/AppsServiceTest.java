@@ -469,16 +469,17 @@ public class AppsServiceTest
     tmpApp = svc.getApp(newOwnerAuth, app0.getId(), app0.getVersion(), false, null);
     Assert.assertEquals(tmpApp.getOwner(), newOwnerName);
 
-    // Check expected auxiliary updates have happened
-    // New owner should be able to retrieve permissions and have all permissions
-    Set<Permission> userPerms = svc.getUserPermissions(newOwnerAuth, app0.getId(), newOwnerName);
-    Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
-    for (Permission perm : Permission.values())
-    {
-      Assert.assertTrue(userPerms.contains(perm));
-    }
+// TODO we no longer use perms for owner
+//    // Check expected auxiliary updates have happened
+//    // New owner should be able to retrieve permissions and have all permissions
+//    Set<Permission> userPerms = svc.getUserPermissions(newOwnerAuth, app0.getId(), newOwnerName);
+//    Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
+//    for (Permission perm : Permission.values())
+//    {
+//      Assert.assertTrue(userPerms.contains(perm));
+//    }
     // Original owner should no longer have modify permission
-    userPerms = svc.getUserPermissions(newOwnerAuth, app0.getId(), origOwnerName);
+    Set<Permission> userPerms = svc.getUserPermissions(newOwnerAuth, app0.getId(), origOwnerName);
     Assert.assertFalse(userPerms.contains(Permission.MODIFY));
     // Original owner should not be able to modify app
     try {
@@ -532,10 +533,10 @@ public class AppsServiceTest
   {
     var sharedIDs = new HashSet<String>();
     // Create 4 apps.
-    // One owned by owner3
-    // One owned by owner4 with READ permission granted to owner3
-    // One owned by owner5 and shared with owner3
-    // One owned by owner6 and shared publicly
+    // app3 - One owned by owner3
+    // app4 - One owned by owner4 with READ permission granted to owner3
+    // app5 - One owned by owner5 and shared with owner3
+    // app6 - One owned by owner6 and shared publicly
     App app3 = apps[2];
     App app4 = apps[3];
     App app5 = apps[5];
@@ -562,12 +563,30 @@ public class AppsServiceTest
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
     System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeOwned);
     Assert.assertEquals(apps.size(), 1, "Wrong number of returned apps for listType=" + listTypeOwned);
-    // PUBLIC - should return 1
+    // SHARED_PUBLIC - should return 1
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
-                       showDeletedFalse, listTypePublic.name());
+                       showDeletedFalse, listTypeSharedPublic.name());
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
-    System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypePublic);
-    Assert.assertEquals(apps.size(), 1, "Wrong number of returned apps for listType=" + listTypePublic);
+    System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeSharedPublic);
+    Assert.assertEquals(apps.size(), 1, "Wrong number of returned apps for listType=" + listTypeSharedPublic);
+    // SHARED_DIRECT - should return 1
+    apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
+                       showDeletedFalse, listTypeSharedDirect.name());
+    Assert.assertNotNull(apps, "Returned list of apps should not be null");
+    System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeSharedDirect);
+    Assert.assertEquals(apps.size(), 1, "Wrong number of returned apps for listType=" + listTypeSharedDirect);
+    // READ_PERM - should return 1
+    apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
+                       showDeletedFalse, listTypeReadPerm.name());
+    Assert.assertNotNull(apps, "Returned list of apps should not be null");
+    System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeReadPerm);
+    Assert.assertEquals(apps.size(), 1, "Wrong number of returned apps for listType=" + listTypeReadPerm);
+    // MINE - should return 2
+    apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
+                       showDeletedFalse, listTypeMine.name());
+    Assert.assertNotNull(apps, "Returned list of apps should not be null");
+    System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeMine);
+    Assert.assertEquals(apps.size(), 2, "Wrong number of returned apps for listType=" + listTypeMine);
     // ALL - should return 4
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
                        showDeletedFalse, listTypeAll.name());

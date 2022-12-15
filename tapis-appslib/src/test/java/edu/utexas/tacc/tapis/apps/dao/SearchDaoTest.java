@@ -496,13 +496,13 @@ public class SearchDaoTest
 
     // Using SHARED_PUBLIC should only see ones that are in the sharedIDs list
     searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
-                                versionSpecifiedNull, showDeletedFalse, listTypePublic, viewableIDsNull, sharedIDsNotOwner1);
+                                versionSpecifiedNull, showDeletedFalse, listTypeSharedPublic, viewableIDsNull, sharedIDsNotOwner1);
     assertEquals(searchResults.size(), numApps/2, "Incorrect result count");
     searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
-                                versionSpecifiedNull, showDeletedFalse, listTypePublic, viewableIDsNull, sharedIDsNotOwner1Half1);
+                                versionSpecifiedNull, showDeletedFalse, listTypeSharedPublic, viewableIDsNull, sharedIDsNotOwner1Half1);
     assertEquals(searchResults.size(), (numApps/4), "Incorrect result count");
     searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
-                                versionSpecifiedNull, showDeletedFalse, listTypePublic, viewableIDsNull, sharedIDsNotOwner1Half2);
+                                versionSpecifiedNull, showDeletedFalse, listTypeSharedPublic, viewableIDsNull, sharedIDsNotOwner1Half2);
     assertEquals(searchResults.size(), (numApps/4), "Incorrect result count");
 
     // Using ALL should see extra beyond owned. All or half of items where not the owner.
