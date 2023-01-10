@@ -9,12 +9,11 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 1.2.5 - 202?-??-??
+## 1.2.5 - 2023-01-10
 
 Incremental improvements, new preview features and bug fixes.
 
 ### New features:
-- Update sharedAppCtx to represent the share grantor.
 - Add attribute returned for getSystem: *isPublic*.
 - Check authorization and validate execSystemId and archiveSystemId at application creation time.
 - Add support for new listType values: SHARED_DIRECT, READ_PERM, MINE

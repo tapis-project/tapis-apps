@@ -628,11 +628,11 @@ public class AppsServiceImpl implements AppsService
     if (!StringUtils.isBlank(impersonationId)) checkImpersonationAllowed(rUser, op, appId, impersonationId);
     String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
 
-    // If owner is making the request then always allowed, and we will not set sharedAppCtx
+    // If owner is making the request then always allowed, and we will not set sharedAppCtx to true
     boolean isPermitted = true;
-    String sharedAppCtx = null;
+    boolean sharedAppCtx = false;
 
-    // If not owner we need to do some authorization checking and determine if sharedAppCtx must be set
+    // If not owner we need to do some authorization checking and determine if sharedAppCtx is true
     String owner = app.getOwner();
     if (!oboOrImpersonatedUser.equals(owner))
     {
@@ -647,18 +647,16 @@ public class AppsServiceImpl implements AppsService
 
       // Check shared app context
       // Even if allowed by permission we still need to check for sharing and set sharedAppCtx in the returned app.
-      boolean shared = isAppSharedWithUser(rUser, appId, oboOrImpersonatedUser, Permission.READ);
-      // NOTE: Grantor is always app owner
-      if (shared) sharedAppCtx = owner;
+      sharedAppCtx = isAppSharedWithUser(rUser, appId, oboOrImpersonatedUser, Permission.READ);
 
       // If not permitted or shared then deny
-      if (!isPermitted && !shared)
+      if (!isPermitted && !sharedAppCtx)
       {
         throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()));
       }
 
       // If flag is set to also require EXECUTE perm then make explicit auth call to make sure user has exec perm
-      if (!shared && requireExecPerm)
+      if (!sharedAppCtx && requireExecPerm)
       {
         checkAuth(rUser, AppOperation.execute, appId, owner, nullTargetUser, nullPermSet, impersonationId);
       }
@@ -1892,8 +1890,8 @@ public class AppsServiceImpl implements AppsService
     try
     {
       // Get system, requireExecPerm=true
-      // authnMethod=null, requireExec=true, select=null, returnCred=false, impersonationId=null, sharedAppCtx=null
-      execSystem = systemsClient.getSystem(execSystemId, null, true, null, false, null, null);
+      // authnMethod=null, requireExec=true, select=null, returnCred=false, impersonationId=null, sharedAppCtx=false
+      execSystem = systemsClient.getSystem(execSystemId, null, true, null, false, null, false);
     }
     catch (TapisClientException e)
     {
