@@ -1,0 +1,42 @@
+TapisV3 Apps JOOQ Notes
+=======================================
+
+-------------------------------------
+Schema updates
+-------------------------------------
+Whenever the DB schema is updated it will be necessary to regenerate the jooq java code.
+To update the schema and re-create the jooq code:
+
+1. Create the flyway migration sql files under tapis-appslib/src/main/resources/db/migration
+
+2. Make changes in Dao implementation under tapis-appslib/src/main/java/edu/utexas/tacc/tapis/apps/dao.
+   Be sure to update for tables and columns that have been renamed or removed.
+   Or proceed with steps 3,4,5 and see what compile failures happen, then make updates.
+
+3. Make sure local DB is up and tapis-appslib/pom.xml has correct properties for db.url, db.username and db.password
+   If using a new postgres the following commands should be used to create the initial DB:
+     CREATE DATABASE tapisappdb ENCODING="UTF8" LC_COLLATE="en_US.utf8" LC_CTYPE="en_US.utf8"
+     CREATE ROLE tapis_app WITH LOGIN;
+     ALTER USER tapis_app WITH ENCRYPTED PASSWORD '<password>';
+   Where <password> is the password that has been placed in tapis-appslib/pom.xml (search for property db.password)
+
+4. Use sql in lib/src/main/resources/sql/reset_db.sql to reset the schema
+     DROP SCHEMA IF EXISTS tapis_app CASCADE;
+     CREATE SCHEMA IF NOT EXISTS tapis_app AUTHORIZATION tapis_app;
+     ALTER ROLE tapis_app SET search_path = 'tapis_app';
+     SET search_path TO tapis_app;
+
+5. Run the maven profile to re-create the schema and generate/update the jooq source code:
+   a. cd tapis-appslib
+   b. mvn clean install -Pdb-update
+
+6. If necessary fix any compile errors (such as in the Dao)
+
+7. Run a top level mvn clean install.
+
+8. Using "git status" you should be able to see the updates to the jooq source code.
+
+9. Make other updates as needed for Dao and service layers. For example, if columns added this is the time
+   to start adding the new model attributes to the code.
+
+10. Commit the updates.
