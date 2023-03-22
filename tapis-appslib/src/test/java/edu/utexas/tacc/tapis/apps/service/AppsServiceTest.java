@@ -209,16 +209,13 @@ public class AppsServiceTest
     App app0 = makeMinimalApp(apps[11], apps[11].getId());
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
     App tmpApp = svc.getApp(rOwner1, app0.getId(), app0.getVersion(), false, null);
-    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
-    System.out.println("Found item: " + app0.getId());
+    checkCommonAppMinimalAttrs(app0, tmpApp);
     // Make sure we can create and get an app ending with "-app"
     app0 = IntegrationUtils.makeMinimalApp(app0, specialId1);
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
     tmpApp = svc.getApp(rOwner1, app0.getId(), app0.getVersion(), false, null);
-    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
-    System.out.println("Found item: " + app0.getId());
     // Verify attributes
-// TODO    checkCommonAppAttrs(app0, tmpApp);
+    checkCommonAppMinimalAttrs(app0, tmpApp);
   }
 
   // Test retrieving an app.
@@ -418,7 +415,6 @@ public class AppsServiceTest
     app0.setDescription(description2);
     app0.setContainerImage(containerImage2);
     app0.setExecSystemId(execSystemId2);
-    app0.setJobType(jobTypeNull);
     app0.getParameterSet().setContainerArgs(containerArgList3);
     app0.setFileInputs(finList3);
     app0.setFileInputArrays(fiaList3);
@@ -1313,155 +1309,6 @@ public class AppsServiceTest
     svc.getApp(rJobsSvc, app0.getId(), null, false, testUser3);
   }
 
-  /**
-   * Check common attributes after creating and retrieving an app
-   * @param app0 - Test app
-   * @param tmpApp - Retrieved app
-   */
-  private static void checkCommonAppAttrs(App app0, App tmpApp)
-  {
-    Assert.assertNotNull(tmpApp, "Failed to get item: " + app0.getId());
-    System.out.println("Found item: " + app0.getId());
-    Assert.assertEquals(tmpApp.getTenant(), app0.getTenant());
-    Assert.assertEquals(tmpApp.getId(), app0.getId());
-    Assert.assertEquals(tmpApp.getVersion(), app0.getVersion());
-    Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
-    // If patch set jobType to null then we should get null back.
-    if (app0.getJobType() == null) Assert.assertNull(tmpApp.getJobType());
-    else Assert.assertEquals(tmpApp.getJobType().name(), app0.getJobType().name());
-    Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
-    Assert.assertEquals(tmpApp.isEnabled(), app0.isEnabled());
-    Assert.assertEquals(tmpApp.getRuntime().name(), app0.getRuntime().name());
-    Assert.assertEquals(tmpApp.getRuntimeVersion(), app0.getRuntimeVersion());
-    // Verify runtimeOptions
-    List<RuntimeOption> rtOps = tmpApp.getRuntimeOptions();
-    Assert.assertNotNull(rtOps);
-    List<RuntimeOption> app0RTOptions = app0.getRuntimeOptions();
-    Assert.assertNotNull(app0RTOptions);
-    for (RuntimeOption rtOption : app0RTOptions)
-    {
-      Assert.assertTrue(rtOps.contains(rtOption), "List of runtime options did not contain: " + rtOption.name());
-    }
-    Assert.assertEquals(tmpApp.getContainerImage(), app0.getContainerImage());
-    Assert.assertEquals(tmpApp.getMaxJobs(), app0.getMaxJobs());
-    Assert.assertEquals(tmpApp.getMaxJobsPerUser(), app0.getMaxJobsPerUser());
-    Assert.assertEquals(tmpApp.isStrictFileInputs(), app0.isStrictFileInputs());
-
-    // ========== JobAttributes
-    Assert.assertEquals(tmpApp.getJobDescription(), app0.getJobDescription());
-    Assert.assertEquals(tmpApp.isDynamicExecSystem(), app0.isDynamicExecSystem());
-    // Verify execSystemConstraints
-    String[] origExecSystemConstraints = app0.getExecSystemConstraints();
-    String[] tmpExecSystemConstraints = tmpApp.getExecSystemConstraints();
-    Assert.assertNotNull(tmpExecSystemConstraints, "execSystemConstraints value was null");
-    var execSystemConstraintsList = Arrays.asList(tmpExecSystemConstraints);
-    Assert.assertEquals(tmpExecSystemConstraints.length, origExecSystemConstraints.length, "Wrong number of constraints");
-    for (String execSystemConstraintStr : origExecSystemConstraints)
-    {
-      Assert.assertTrue(execSystemConstraintsList.contains(execSystemConstraintStr));
-      System.out.println("Found execSystemConstraint: " + execSystemConstraintStr);
-    }
-    Assert.assertEquals(tmpApp.getExecSystemId(), app0.getExecSystemId());
-    Assert.assertEquals(tmpApp.getExecSystemExecDir(), app0.getExecSystemExecDir());
-    Assert.assertEquals(tmpApp.getExecSystemInputDir(), app0.getExecSystemInputDir());
-    Assert.assertEquals(tmpApp.getExecSystemOutputDir(), app0.getExecSystemOutputDir());
-    Assert.assertEquals(tmpApp.getExecSystemLogicalQueue(), app0.getExecSystemLogicalQueue());
-    Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
-    Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
-    Assert.assertEquals(tmpApp.isArchiveOnAppError(), app0.isArchiveOnAppError());
-    Assert.assertEquals(tmpApp.getIsMpi(), app0.getIsMpi());
-    Assert.assertEquals(tmpApp.getMpiCmd(), app0.getMpiCmd());
-    Assert.assertEquals(tmpApp.getCmdPrefix(), app0.getCmdPrefix());
-
-    // Verify parameterSet
-    ParameterSet parmSet = tmpApp.getParameterSet();
-    ParameterSet parmSet0 = app0.getParameterSet();
-    Assert.assertNotNull(parmSet, "parameterSet was null");
-    verifyAppArgs("App Arg", parmSet0.getAppArgs(), parmSet.getAppArgs());
-    verifyAppArgs("Container Arg", parmSet0.getContainerArgs(), parmSet.getContainerArgs());
-    verifyAppArgs("Scheduler Option Arg", parmSet0.getSchedulerOptions(), parmSet.getSchedulerOptions());
-
-    // Verify envVariables
-    verifyKeyValuePairs("Env Var", parmSet0.getEnvVariables(), parmSet.getEnvVariables());
-
-    // Verify archiveFilter in parameterSet
-    ArchiveFilter tmpArchiveFilter = parmSet.getArchiveFilter();
-    ArchiveFilter archiveFilter0 = parmSet0.getArchiveFilter();
-    Assert.assertNotNull(tmpArchiveFilter, "archiveFilter was null");
-    Assert.assertEquals(tmpArchiveFilter.isIncludeLaunchFiles(), archiveFilter0.isIncludeLaunchFiles());
-    // Verify archiveIncludes
-    String[] tmpArchiveIncludes = tmpArchiveFilter.getIncludes();
-    Assert.assertNotNull(tmpArchiveIncludes, "archiveIncludes value was null");
-    var archiveIncludesList = Arrays.asList(tmpArchiveIncludes);
-    Assert.assertEquals(tmpArchiveIncludes.length, archiveFilter0.getIncludes().length, "Wrong number of archiveIncludes");
-    for (String archiveIncludeStr : archiveFilter0.getIncludes())
-    {
-      Assert.assertTrue(archiveIncludesList.contains(archiveIncludeStr));
-      System.out.println("Found archiveInclude: " + archiveIncludeStr);
-    }
-    // Verify archiveExcludes
-    String[] tmpArchiveExcludes = tmpArchiveFilter.getExcludes();
-    Assert.assertNotNull(tmpArchiveExcludes, "archiveExcludes value was null");
-    var archiveExcludesList = Arrays.asList(tmpArchiveExcludes);
-    Assert.assertEquals(tmpArchiveExcludes.length, archiveFilter0.getExcludes().length, "Wrong number of archiveExcludes");
-    for (String archiveExcludeStr : archiveFilter0.getExcludes())
-    {
-      Assert.assertTrue(archiveExcludesList.contains(archiveExcludeStr));
-      System.out.println("Found archiveExclude: " + archiveExcludeStr);
-    }
-
-    // Verify file inputs
-    verifyFileInputs(app0.getFileInputs(), tmpApp.getFileInputs());
-
-    // Verify file input arrays
-    verifyFileInputArrays(app0.getFileInputArrays(), tmpApp.getFileInputArrays());
-
-    Assert.assertEquals(tmpApp.getNodeCount(), app0.getNodeCount());
-    Assert.assertEquals(tmpApp.getCoresPerNode(), app0.getCoresPerNode());
-    Assert.assertEquals(tmpApp.getMemoryMB(), app0.getMemoryMB());
-    Assert.assertEquals(tmpApp.getMaxMinutes(), app0.getMaxMinutes());
-
-    // Verify notification subscriptions
-    verifySubscriptions(app0.getSubscriptions(), tmpApp.getSubscriptions());
-
-    // Verify jobTags
-    String[] origJobTags = app0.getJobTags();
-    String[] tmpJobTags = tmpApp.getJobTags();
-    Assert.assertNotNull(tmpJobTags, "JobTags value was null");
-    var jobTagsList = Arrays.asList(tmpJobTags);
-    Assert.assertEquals(tmpJobTags.length, origJobTags.length, "Wrong number of jobTags");
-    for (String jobTagStr : origJobTags)
-    {
-      Assert.assertTrue(jobTagsList.contains(jobTagStr));
-      System.out.println("Found jobTag: " + jobTagStr);
-    }
-    // Verify tags
-    String[] origTags = app0.getTags();
-    String[] tmpTags = tmpApp.getTags();
-    Assert.assertNotNull(origTags, "Orig Tags should not be null");
-    Assert.assertNotNull(tmpTags, "Fetched Tags value should not be null");
-    var tagsList = Arrays.asList(tmpTags);
-    Assert.assertEquals(tmpTags.length, origTags.length, "Wrong number of tags.");
-    for (String tagStr : origTags)
-    {
-      Assert.assertTrue(tagsList.contains(tagStr));
-      System.out.println("Found tag: " + tagStr);
-    }
-    // Verify notes
-    Assert.assertNotNull(app0.getNotes(), "Orig Notes should not be null");
-    Assert.assertNotNull(tmpApp.getNotes(), "Fetched Notes should not be null");
-    System.out.println("Found notes. toString: " + app0.getNotes().toString());
-    System.out.println("Notes class type: " + app0.getNotes().getClass().toString());
-    JsonObject tmpObj = (JsonObject) tmpApp.getNotes();
-    JsonObject origNotes = (JsonObject) app0.getNotes();
-    Assert.assertTrue(tmpObj.has("project"));
-    String projStr = origNotes.get("project").getAsString();
-    Assert.assertEquals(tmpObj.get("project").getAsString(), projStr);
-    Assert.assertTrue(tmpObj.has("testdata"));
-    String testdataStr = origNotes.get("testdata").getAsString();
-    Assert.assertEquals(tmpObj.get("testdata").getAsString(), testdataStr);
-    Assert.assertEquals(app0.getSharedAppCtx(), false);
-  }
   // Test retrieving an app.
   @Test
   public void testGetAppHistory() throws Exception
@@ -1614,5 +1461,313 @@ public class AppsServiceTest
 
     app0 = svc.getApp(rOwner, appId, app0.getVersion(), false, null);
     Assert.assertFalse(app0.isPublic());
+  }
+
+
+  /**
+   * Check common attributes after creating and retrieving an app
+   * @param app0 - Test app
+   * @param tmpApp - Retrieved app
+   */
+  private static void checkCommonAppAttrs(App app0, App tmpApp)
+  {
+    Assert.assertNotNull(tmpApp, "Failed to get item: " + app0.getId());
+    System.out.println("Found item: " + app0.getId());
+    Assert.assertEquals(tmpApp.getTenant(), app0.getTenant());
+    Assert.assertEquals(tmpApp.getId(), app0.getId());
+    Assert.assertEquals(tmpApp.getVersion(), app0.getVersion());
+    Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
+    var app0JobType = app0.getJobType();
+    var tmpJobType = tmpApp.getJobType();
+    // If patch set jobType to null then we should get null back.
+    if (app0.getJobType() == null) Assert.assertNull(tmpApp.getJobType());
+    else Assert.assertEquals(tmpApp.getJobType().name(), app0.getJobType().name());
+    Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
+    Assert.assertEquals(tmpApp.isEnabled(), app0.isEnabled());
+    Assert.assertEquals(tmpApp.getRuntime().name(), app0.getRuntime().name());
+    Assert.assertEquals(tmpApp.getRuntimeVersion(), app0.getRuntimeVersion());
+    // Verify runtimeOptions
+    List<RuntimeOption> rtOps = tmpApp.getRuntimeOptions();
+    Assert.assertNotNull(rtOps);
+    List<RuntimeOption> app0RTOptions = app0.getRuntimeOptions();
+    Assert.assertNotNull(app0RTOptions);
+    for (RuntimeOption rtOption : app0RTOptions)
+    {
+      Assert.assertTrue(rtOps.contains(rtOption), "List of runtime options did not contain: " + rtOption.name());
+    }
+    Assert.assertEquals(tmpApp.getContainerImage(), app0.getContainerImage());
+    Assert.assertEquals(tmpApp.getMaxJobs(), app0.getMaxJobs());
+    Assert.assertEquals(tmpApp.getMaxJobsPerUser(), app0.getMaxJobsPerUser());
+    Assert.assertEquals(tmpApp.isStrictFileInputs(), app0.isStrictFileInputs());
+
+    // ========== JobAttributes
+    Assert.assertEquals(tmpApp.getJobDescription(), app0.getJobDescription());
+    Assert.assertEquals(tmpApp.isDynamicExecSystem(), app0.isDynamicExecSystem());
+    // Verify execSystemConstraints
+    String[] origExecSystemConstraints = app0.getExecSystemConstraints();
+    String[] tmpExecSystemConstraints = tmpApp.getExecSystemConstraints();
+    Assert.assertNotNull(tmpExecSystemConstraints, "execSystemConstraints value was null");
+    var execSystemConstraintsList = Arrays.asList(tmpExecSystemConstraints);
+    Assert.assertEquals(tmpExecSystemConstraints.length, origExecSystemConstraints.length, "Wrong number of constraints");
+    for (String execSystemConstraintStr : origExecSystemConstraints)
+    {
+      Assert.assertTrue(execSystemConstraintsList.contains(execSystemConstraintStr));
+      System.out.println("Found execSystemConstraint: " + execSystemConstraintStr);
+    }
+    Assert.assertEquals(tmpApp.getExecSystemId(), app0.getExecSystemId());
+    Assert.assertEquals(tmpApp.getExecSystemExecDir(), app0.getExecSystemExecDir());
+    Assert.assertEquals(tmpApp.getExecSystemInputDir(), app0.getExecSystemInputDir());
+    Assert.assertEquals(tmpApp.getExecSystemOutputDir(), app0.getExecSystemOutputDir());
+    Assert.assertEquals(tmpApp.getExecSystemLogicalQueue(), app0.getExecSystemLogicalQueue());
+    Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
+    Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
+    Assert.assertEquals(tmpApp.isArchiveOnAppError(), app0.isArchiveOnAppError());
+    Assert.assertEquals(tmpApp.getIsMpi(), app0.getIsMpi());
+    Assert.assertEquals(tmpApp.getMpiCmd(), app0.getMpiCmd());
+    Assert.assertEquals(tmpApp.getCmdPrefix(), app0.getCmdPrefix());
+
+    // Verify parameterSet
+    ParameterSet parmSet = tmpApp.getParameterSet();
+    ParameterSet parmSet0 = app0.getParameterSet();
+    Assert.assertNotNull(parmSet, "parameterSet was null");
+    verifyAppArgs("App Arg", parmSet0.getAppArgs(), parmSet.getAppArgs());
+    verifyAppArgs("Container Arg", parmSet0.getContainerArgs(), parmSet.getContainerArgs());
+    verifyAppArgs("Scheduler Option Arg", parmSet0.getSchedulerOptions(), parmSet.getSchedulerOptions());
+
+    // Verify envVariables
+    verifyKeyValuePairs("Env Var", parmSet0.getEnvVariables(), parmSet.getEnvVariables());
+
+    // Verify archiveFilter in parameterSet
+    ArchiveFilter tmpArchiveFilter = parmSet.getArchiveFilter();
+    ArchiveFilter archiveFilter0 = parmSet0.getArchiveFilter();
+    Assert.assertNotNull(tmpArchiveFilter, "archiveFilter was null");
+    Assert.assertEquals(tmpArchiveFilter.isIncludeLaunchFiles(), archiveFilter0.isIncludeLaunchFiles());
+    // Verify archiveIncludes
+    String[] tmpArchiveIncludes = tmpArchiveFilter.getIncludes();
+    Assert.assertNotNull(tmpArchiveIncludes, "archiveIncludes value was null");
+    var archiveIncludesList = Arrays.asList(tmpArchiveIncludes);
+    Assert.assertEquals(tmpArchiveIncludes.length, archiveFilter0.getIncludes().length, "Wrong number of archiveIncludes");
+    for (String archiveIncludeStr : archiveFilter0.getIncludes())
+    {
+      Assert.assertTrue(archiveIncludesList.contains(archiveIncludeStr));
+      System.out.println("Found archiveInclude: " + archiveIncludeStr);
+    }
+    // Verify archiveExcludes
+    String[] tmpArchiveExcludes = tmpArchiveFilter.getExcludes();
+    Assert.assertNotNull(tmpArchiveExcludes, "archiveExcludes value was null");
+    var archiveExcludesList = Arrays.asList(tmpArchiveExcludes);
+    Assert.assertEquals(tmpArchiveExcludes.length, archiveFilter0.getExcludes().length, "Wrong number of archiveExcludes");
+    for (String archiveExcludeStr : archiveFilter0.getExcludes())
+    {
+      Assert.assertTrue(archiveExcludesList.contains(archiveExcludeStr));
+      System.out.println("Found archiveExclude: " + archiveExcludeStr);
+    }
+
+    // Verify file inputs
+    verifyFileInputs(app0.getFileInputs(), tmpApp.getFileInputs());
+
+    // Verify file input arrays
+    verifyFileInputArrays(app0.getFileInputArrays(), tmpApp.getFileInputArrays());
+
+    Assert.assertEquals(tmpApp.getNodeCount(), app0.getNodeCount());
+    Assert.assertEquals(tmpApp.getCoresPerNode(), app0.getCoresPerNode());
+    Assert.assertEquals(tmpApp.getMemoryMB(), app0.getMemoryMB());
+    Assert.assertEquals(tmpApp.getMaxMinutes(), app0.getMaxMinutes());
+
+    // Verify notification subscriptions
+    verifySubscriptions(app0.getSubscriptions(), tmpApp.getSubscriptions());
+
+    // Verify jobTags
+    String[] origJobTags = app0.getJobTags();
+    String[] tmpJobTags = tmpApp.getJobTags();
+    Assert.assertNotNull(tmpJobTags, "JobTags value was null");
+    var jobTagsList = Arrays.asList(tmpJobTags);
+    Assert.assertEquals(tmpJobTags.length, origJobTags.length, "Wrong number of jobTags");
+    for (String jobTagStr : origJobTags)
+    {
+      Assert.assertTrue(jobTagsList.contains(jobTagStr));
+      System.out.println("Found jobTag: " + jobTagStr);
+    }
+    // Verify tags
+    String[] origTags = app0.getTags();
+    String[] tmpTags = tmpApp.getTags();
+    Assert.assertNotNull(origTags, "Orig Tags should not be null");
+    Assert.assertNotNull(tmpTags, "Fetched Tags value should not be null");
+    var tagsList = Arrays.asList(tmpTags);
+    Assert.assertEquals(tmpTags.length, origTags.length, "Wrong number of tags.");
+    for (String tagStr : origTags)
+    {
+      Assert.assertTrue(tagsList.contains(tagStr));
+      System.out.println("Found tag: " + tagStr);
+    }
+    // Verify notes
+    Assert.assertNotNull(app0.getNotes(), "Orig Notes should not be null");
+    Assert.assertNotNull(tmpApp.getNotes(), "Fetched Notes should not be null");
+    System.out.println("Found notes. toString: " + app0.getNotes().toString());
+    System.out.println("Notes class type: " + app0.getNotes().getClass().toString());
+    JsonObject tmpObj = (JsonObject) tmpApp.getNotes();
+    JsonObject origNotes = (JsonObject) app0.getNotes();
+    Assert.assertTrue(tmpObj.has("project"));
+    String projStr = origNotes.get("project").getAsString();
+    Assert.assertEquals(tmpObj.get("project").getAsString(), projStr);
+    Assert.assertTrue(tmpObj.has("testdata"));
+    String testdataStr = origNotes.get("testdata").getAsString();
+    Assert.assertEquals(tmpObj.get("testdata").getAsString(), testdataStr);
+    Assert.assertEquals(app0.getSharedAppCtx(), false);
+  }
+
+  /**
+   * Check common attributes after creating and retrieving a minimal app
+   * @param app0 - Test app
+   * @param tmpApp - Retrieved app
+   */
+  private static void checkCommonAppMinimalAttrs(App app0, App tmpApp)
+  {
+    Assert.assertNotNull(tmpApp, "Failed to get item: " + app0.getId());
+    System.out.println("Found item: " + app0.getId());
+
+    // Check required attributes
+    Assert.assertEquals(tmpApp.getTenant(), app0.getTenant());
+    Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
+    Assert.assertEquals(tmpApp.getId(), app0.getId());
+    Assert.assertEquals(tmpApp.getVersion(), app0.getVersion());
+    Assert.assertEquals(tmpApp.getContainerImage(), app0.getContainerImage());
+    // Check that attributes have been set to defaults.
+    Assert.assertEquals(tmpApp.getJobType(), App.DEFAULT_JOB_TYPE);
+    Assert.assertEquals(tmpApp.isEnabled(), App.DEFAULT_ENABLED);
+    Assert.assertEquals(tmpApp.getRuntime(), App.DEFAULT_RUNTIME);
+    Assert.assertEquals(tmpApp.getMaxJobs(), App.DEFAULT_MAX_JOBS);
+    Assert.assertEquals(tmpApp.getMaxJobsPerUser(), App.DEFAULT_MAX_JOBS_PER_USER);
+    Assert.assertEquals(tmpApp.isStrictFileInputs(), App.DEFAULT_STRICT_FILE_INPUTS);
+
+    // Check attributes allowed to be null that should come back null
+    Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
+    Assert.assertEquals(tmpApp.getRuntimeVersion(), app0.getRuntimeVersion());
+
+// TODO
+//    // Verify runtimeOptions
+//    List<RuntimeOption> rtOps = tmpApp.getRuntimeOptions();
+//    Assert.assertNotNull(rtOps);
+//    List<RuntimeOption> app0RTOptions = app0.getRuntimeOptions();
+//    Assert.assertNotNull(app0RTOptions);
+//    for (RuntimeOption rtOption : app0RTOptions)
+//    {
+//      Assert.assertTrue(rtOps.contains(rtOption), "List of runtime options did not contain: " + rtOption.name());
+//    }
+//
+//    // ========== JobAttributes
+//    Assert.assertEquals(tmpApp.getJobDescription(), app0.getJobDescription());
+//    Assert.assertEquals(tmpApp.isDynamicExecSystem(), app0.isDynamicExecSystem());
+//    // Verify execSystemConstraints
+//    String[] origExecSystemConstraints = app0.getExecSystemConstraints();
+//    String[] tmpExecSystemConstraints = tmpApp.getExecSystemConstraints();
+//    Assert.assertNotNull(tmpExecSystemConstraints, "execSystemConstraints value was null");
+//    var execSystemConstraintsList = Arrays.asList(tmpExecSystemConstraints);
+//    Assert.assertEquals(tmpExecSystemConstraints.length, origExecSystemConstraints.length, "Wrong number of constraints");
+//    for (String execSystemConstraintStr : origExecSystemConstraints)
+//    {
+//      Assert.assertTrue(execSystemConstraintsList.contains(execSystemConstraintStr));
+//      System.out.println("Found execSystemConstraint: " + execSystemConstraintStr);
+//    }
+//    Assert.assertEquals(tmpApp.getExecSystemId(), app0.getExecSystemId());
+//    Assert.assertEquals(tmpApp.getExecSystemExecDir(), app0.getExecSystemExecDir());
+//    Assert.assertEquals(tmpApp.getExecSystemInputDir(), app0.getExecSystemInputDir());
+//    Assert.assertEquals(tmpApp.getExecSystemOutputDir(), app0.getExecSystemOutputDir());
+//    Assert.assertEquals(tmpApp.getExecSystemLogicalQueue(), app0.getExecSystemLogicalQueue());
+//    Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
+//    Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
+//    Assert.assertEquals(tmpApp.isArchiveOnAppError(), app0.isArchiveOnAppError());
+//    Assert.assertEquals(tmpApp.getIsMpi(), app0.getIsMpi());
+//    Assert.assertEquals(tmpApp.getMpiCmd(), app0.getMpiCmd());
+//    Assert.assertEquals(tmpApp.getCmdPrefix(), app0.getCmdPrefix());
+//
+//    // Verify parameterSet
+//    ParameterSet parmSet = tmpApp.getParameterSet();
+//    ParameterSet parmSet0 = app0.getParameterSet();
+//    Assert.assertNotNull(parmSet, "parameterSet was null");
+//    verifyAppArgs("App Arg", parmSet0.getAppArgs(), parmSet.getAppArgs());
+//    verifyAppArgs("Container Arg", parmSet0.getContainerArgs(), parmSet.getContainerArgs());
+//    verifyAppArgs("Scheduler Option Arg", parmSet0.getSchedulerOptions(), parmSet.getSchedulerOptions());
+//
+//    // Verify envVariables
+//    verifyKeyValuePairs("Env Var", parmSet0.getEnvVariables(), parmSet.getEnvVariables());
+//
+//    // Verify archiveFilter in parameterSet
+//    ArchiveFilter tmpArchiveFilter = parmSet.getArchiveFilter();
+//    ArchiveFilter archiveFilter0 = parmSet0.getArchiveFilter();
+//    Assert.assertNotNull(tmpArchiveFilter, "archiveFilter was null");
+//    Assert.assertEquals(tmpArchiveFilter.isIncludeLaunchFiles(), archiveFilter0.isIncludeLaunchFiles());
+//    // Verify archiveIncludes
+//    String[] tmpArchiveIncludes = tmpArchiveFilter.getIncludes();
+//    Assert.assertNotNull(tmpArchiveIncludes, "archiveIncludes value was null");
+//    var archiveIncludesList = Arrays.asList(tmpArchiveIncludes);
+//    Assert.assertEquals(tmpArchiveIncludes.length, archiveFilter0.getIncludes().length, "Wrong number of archiveIncludes");
+//    for (String archiveIncludeStr : archiveFilter0.getIncludes())
+//    {
+//      Assert.assertTrue(archiveIncludesList.contains(archiveIncludeStr));
+//      System.out.println("Found archiveInclude: " + archiveIncludeStr);
+//    }
+//    // Verify archiveExcludes
+//    String[] tmpArchiveExcludes = tmpArchiveFilter.getExcludes();
+//    Assert.assertNotNull(tmpArchiveExcludes, "archiveExcludes value was null");
+//    var archiveExcludesList = Arrays.asList(tmpArchiveExcludes);
+//    Assert.assertEquals(tmpArchiveExcludes.length, archiveFilter0.getExcludes().length, "Wrong number of archiveExcludes");
+//    for (String archiveExcludeStr : archiveFilter0.getExcludes())
+//    {
+//      Assert.assertTrue(archiveExcludesList.contains(archiveExcludeStr));
+//      System.out.println("Found archiveExclude: " + archiveExcludeStr);
+//    }
+//
+//    // Verify file inputs
+//    verifyFileInputs(app0.getFileInputs(), tmpApp.getFileInputs());
+//
+//    // Verify file input arrays
+//    verifyFileInputArrays(app0.getFileInputArrays(), tmpApp.getFileInputArrays());
+//
+//    Assert.assertEquals(tmpApp.getNodeCount(), app0.getNodeCount());
+//    Assert.assertEquals(tmpApp.getCoresPerNode(), app0.getCoresPerNode());
+//    Assert.assertEquals(tmpApp.getMemoryMB(), app0.getMemoryMB());
+//    Assert.assertEquals(tmpApp.getMaxMinutes(), app0.getMaxMinutes());
+//
+//    // Verify notification subscriptions
+//    verifySubscriptions(app0.getSubscriptions(), tmpApp.getSubscriptions());
+//
+//    // Verify jobTags
+//    String[] origJobTags = app0.getJobTags();
+//    String[] tmpJobTags = tmpApp.getJobTags();
+//    Assert.assertNotNull(tmpJobTags, "JobTags value was null");
+//    var jobTagsList = Arrays.asList(tmpJobTags);
+//    Assert.assertEquals(tmpJobTags.length, origJobTags.length, "Wrong number of jobTags");
+//    for (String jobTagStr : origJobTags)
+//    {
+//      Assert.assertTrue(jobTagsList.contains(jobTagStr));
+//      System.out.println("Found jobTag: " + jobTagStr);
+//    }
+//    // Verify tags
+//    String[] origTags = app0.getTags();
+//    String[] tmpTags = tmpApp.getTags();
+//    Assert.assertNotNull(origTags, "Orig Tags should not be null");
+//    Assert.assertNotNull(tmpTags, "Fetched Tags value should not be null");
+//    var tagsList = Arrays.asList(tmpTags);
+//    Assert.assertEquals(tmpTags.length, origTags.length, "Wrong number of tags.");
+//    for (String tagStr : origTags)
+//    {
+//      Assert.assertTrue(tagsList.contains(tagStr));
+//      System.out.println("Found tag: " + tagStr);
+//    }
+//    // Verify notes
+//    Assert.assertNotNull(app0.getNotes(), "Orig Notes should not be null");
+//    Assert.assertNotNull(tmpApp.getNotes(), "Fetched Notes should not be null");
+//    System.out.println("Found notes. toString: " + app0.getNotes().toString());
+//    System.out.println("Notes class type: " + app0.getNotes().getClass().toString());
+//    JsonObject tmpObj = (JsonObject) tmpApp.getNotes();
+//    JsonObject origNotes = (JsonObject) app0.getNotes();
+//    Assert.assertTrue(tmpObj.has("project"));
+//    String projStr = origNotes.get("project").getAsString();
+//    Assert.assertEquals(tmpObj.get("project").getAsString(), projStr);
+//    Assert.assertTrue(tmpObj.has("testdata"));
+//    String testdataStr = origNotes.get("testdata").getAsString();
+//    Assert.assertEquals(tmpObj.get("testdata").getAsString(), testdataStr);
+//    Assert.assertEquals(app0.getSharedAppCtx(), false);
   }
 }

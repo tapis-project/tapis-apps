@@ -61,11 +61,14 @@ public final class App
   public static final boolean DEFAULT_SHARED_APP_CTX = false;
   public static final boolean DEFAULT_IS_PUBLIC = false;
   public static final Runtime DEFAULT_RUNTIME = Runtime.DOCKER;
+  public static final JobType DEFAULT_JOB_TYPE = JobType.FORK;
   public static final JsonElement DEFAULT_PARAMETER_SET = TapisGsonUtils.getGson().fromJson("{}", JsonElement.class);
   public static final JsonElement DEFAULT_FILE_INPUTS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
   public static final JsonElement DEFAULT_FILE_INPUT_ARRAYS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
   public static final JsonElement DEFAULT_SUBSCRIPTIONS = TapisGsonUtils.getGson().fromJson("[]", JsonElement.class);
   public static final JsonObject DEFAULT_NOTES = TapisGsonUtils.getGson().fromJson("{}", JsonObject.class);
+  public static final int DEFAULT_MAX_JOBS = -1;
+  public static final int DEFAULT_MAX_JOBS_PER_USER = -1;
   public static final int DEFAULT_NODE_COUNT = 1;
   public static final int DEFAULT_CORES_PER_NODE = 1;
   public static final int DEFAULT_MEMORY_MB = 100;
@@ -343,11 +346,11 @@ public final class App
     id = id1;
     version = version1;
     description = description1;
-    jobType = jobType1;
+    jobType = (jobType1 == null) ? DEFAULT_JOB_TYPE : jobType1;
     owner = owner1;
     enabled = enabled1;
     containerized = containerized1;
-    runtime = runtime1;
+    runtime = (runtime1 == null) ? DEFAULT_RUNTIME : runtime1;
     runtimeVersion = runtimeVersion1;
     runtimeOptions = (runtimeOptions1 == null) ? null : new ArrayList<>(runtimeOptions1);
     containerImage = containerImage1;

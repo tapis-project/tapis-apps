@@ -75,6 +75,13 @@ import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
 
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_CONTAINERIZED;
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_CORES_PER_NODE;
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_JOB_TYPE;
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_MAX_JOBS;
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_MAX_JOBS_PER_USER;
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_MAX_MINUTES;
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_MEMORY_MB;
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NODE_COUNT;
 import static edu.utexas.tacc.tapis.apps.model.App.ID_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.OWNER_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.VERSION_FIELD;
@@ -1149,6 +1156,8 @@ public class AppResource
           jobAttrs.parameterSet, jobAttrs.fileInputs, jobAttrs.fileInputArrays, jobAttrs.nodeCount, jobAttrs.coresPerNode,
           jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.subscriptions, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
+    // Update App from request to get proper defaults
+    updateAppFromRequest(app, rawJson);
     return app;
   }
 
@@ -1175,6 +1184,8 @@ public class AppResource
           jobAttrs.parameterSet, jobAttrs.fileInputs, jobAttrs.fileInputArrays, jobAttrs.nodeCount, jobAttrs.coresPerNode,
           jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.subscriptions, jobAttrs.tags,
           req.tags, notes, null, false, null, null);
+    // Update App from request to get proper defaults
+    updateAppFromRequest(app, rawJson);
     return app;
   }
 
@@ -1294,5 +1305,31 @@ public class AppResource
   private static Response createSuccessResponse(Status status, String msg, RespAbstract resp)
   {
     return Response.status(status).entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp)).build();
+  }
+
+  /*
+   * Fill in defaults as needed for JobType, maxJobs, maxJobsPerUser, NodeCount, CoresPerNode, MemoryMB, MaxMinutes
+   */
+  private static void updateAppFromRequest(App app, String rawJson)
+  {
+    JsonObject topObj = TapisGsonUtils.getGson().fromJson(rawJson, JsonObject.class);
+    if (!topObj.has(App.JOB_TYPE_FIELD)) app.setJobType(DEFAULT_JOB_TYPE);
+    if (!topObj.has(App.MAX_JOBS_FIELD)) app.setMaxJobs(DEFAULT_MAX_JOBS);
+    if (!topObj.has(App.MAX_JOBS_PER_USER_FIELD)) app.setMaxJobsPerUser(DEFAULT_MAX_JOBS_PER_USER);
+
+    // Handle attributes inside JobAttributes
+    // Set all to default initially in case no JobAttributes object provided
+    app.setNodeCount(DEFAULT_NODE_COUNT);
+    app.setCoresPerNode(DEFAULT_CORES_PER_NODE);
+    app.setMemoryMB(DEFAULT_MEMORY_MB);
+    app.setMaxMinutes(DEFAULT_MAX_MINUTES);
+    // Now apply anything set in JobAttributes
+    if (topObj.has(App.JOB_ATTRS_FIELD))
+    {
+      if (!topObj.has(App.NODE_COUNT_FIELD)) app.setMaxMinutes(DEFAULT_NODE_COUNT);
+      if (!topObj.has(App.CORES_PER_NODE_FIELD)) app.setMaxMinutes(DEFAULT_CORES_PER_NODE);
+      if (!topObj.has(App.MEMORY_MB_FIELD)) app.setMaxMinutes(DEFAULT_MEMORY_MB);
+      if (!topObj.has(App.MAX_MINUTES_FIELD)) app.setMaxMinutes(DEFAULT_MAX_MINUTES);
+    }
   }
 }

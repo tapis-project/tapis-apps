@@ -71,10 +71,13 @@ public final class IntegrationUtils
   public static final String ownerNull = null;
   public static final boolean enabledTrue = true;
   public static final boolean enabledFalse = false;
+  public static final boolean enabledDefault = App.DEFAULT_ENABLED;
   public static final boolean isDeletedFalse = false;
   public static final boolean containerizedTrue = true;
+  public static final boolean containerizedDefault = App.DEFAULT_CONTAINERIZED;
   public static final boolean strictFileInputsTrue = true;
   public static final boolean strictFileInputsFalse = false;
+  public static final boolean strictFileInputsDefault = App.DEFAULT_STRICT_FILE_INPUTS;
   public static final Boolean strictFileInputsNull = null;
   public static final boolean autoMountLocalTrue = true;
   public static final boolean autoMountLocalFalse = false;
@@ -111,6 +114,7 @@ public final class IntegrationUtils
   public static final String jobDescriptionNull = null;
   public static final boolean dynamicExecSystemTrue = true;
   public static final boolean dynamicExecSystemFalse = false;
+  public static final boolean dynamicExecSystemDefault = false;
   public static final Boolean dynamicExecSystemNull = null;
   public static final String[] execSystemConstraints1 = {"Constraint1a AND", "Constraint1b"};
   public static final String[] execSystemConstraints2 = {"Constraint2a AND", "Constraint2b"};
@@ -138,9 +142,11 @@ public final class IntegrationUtils
   public static final String archiveSystemDirNull = null;
   public static final boolean archiveOnAppErrorTrue = true;
   public static final boolean archiveOnAppErrorFalse = false;
+  public static final boolean archiveOnAppErrorDefault = false;
   public static final Boolean archiveOnAppErrorNull = null;
   public static final Boolean isMpiTrue = true;
   public static final Boolean isMpiFalse = false;
+  public static final Boolean isMpiDefault = false;
   public static final Boolean isMpiNull = null;
   public static final String mpiCmd1 = "ibrun1 -n 1";
   public static final String mpiCmd2 = "ibrun2 -n 2";
@@ -151,21 +157,27 @@ public final class IntegrationUtils
   public static final boolean archiveIncludeLaunchFilesTrue = true;
   public static final boolean archiveIncludeLaunchFilesFalse = false;
   public static final Boolean archiveIncludeLaunchFilesNull = null;
+  public static final int maxJobsDefault = App.DEFAULT_MAX_JOBS;
   public static final int maxJobs1 = 5; // from tapisv3-exec3 dsnormal LogicalQueue maxJobs
   public static final int maxJobs2 = 2;
   public static final Integer maxJobsNull = null;
+  public static final int maxJobsPerUserDefault = App.DEFAULT_MAX_JOBS_PER_USER;
   public static final int maxJobsPerUser1 = 2; // from tapisv3-exec3 dsnormal LogicalQueue maxJobsPerUser
   public static final int maxJobsPerUser2 = 2;
   public static final Integer maxJobsPerUserNull = null;
   public static final int nodeCount1 = 10; // from tapisv3-exec3 dsnormal LogicalQueue minNodeCount
   public static final int nodeCount2 = 20; // from tapisv3-exec3 dsnormal LogicalQueue maxNodeCount
+  public static final int nodeCountDefault = App.DEFAULT_NODE_COUNT; // from tapisv3-exec3 dsnormal LogicalQueue minNodeCount
   public static final Integer nodeCountNull = null;
+  public static final int coresPerNodeDefault = App.DEFAULT_CORES_PER_NODE;
   public static final int coresPerNode1 = 10; // from tapisv3-exec3 dsnormal LogicalQueue minCoresPerNode
   public static final int coresPerNode2 = 20; // from tapisv3-exec3 dsnormal LogicalQueue maxCoresPerNode
   public static final Integer coresPerNodeNull = null;
+  public static final int memoryMBDefault = App.DEFAULT_MEMORY_MB;
   public static final int memoryMB1 = 32; // from tapisv3-exec3 dsnormal LogicalQueue minMemoryMB
   public static final int memoryMB2 = 64; // from tapisv3-exec3 dsnormal LogicalQueue maxMemoryMB
   public static final Integer memoryMBNull = null;
+  public static final int maxMinutesDefault = App.DEFAULT_MAX_MINUTES;
   public static final int maxMinutes1 = 10; // from tapisv3-exec3 dsnormal LogicalQueue minMinutes
   public static final int maxMinutes2 = 20; // from tapisv3-exec3 dsnormal LogicalQueue maxMinutes
   public static final Integer maxMinutesNull = null;
@@ -405,13 +417,14 @@ public final class IntegrationUtils
    */
   public static App makeMinimalApp(App app, String id)
   {
-    return new App(-1, -1, tenantName, id, app.getVersion(), descriptionNull, jobType1, ownerNull, enabledTrue,
-            containerizedTrue, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage1, maxJobs1, maxJobsPerUser1,
-            strictFileInputsFalse, jobDescriptionNull, dynamicExecSystemFalse, execSystemConstraintsNull,
+    return new App(-1, -1, tenantName, id, app.getVersion(), descriptionNull, App.DEFAULT_JOB_TYPE, ownerNull,
+            App.DEFAULT_ENABLED, App.DEFAULT_CONTAINERIZED, runtimeNull, runtimeVersionNull, runtimeOptionsNull,
+            containerImage1, App.DEFAULT_MAX_JOBS, App.DEFAULT_MAX_JOBS_PER_USER, App.DEFAULT_STRICT_FILE_INPUTS,
+            jobDescriptionNull, dynamicExecSystemDefault, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
-            execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorFalse,
-            isMpiFalse, mpiCmdNull, cmdPrefixNull,
-            parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMB1, maxMinutes1, notifList1, jobTagsNull,
+            execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorDefault,
+            isMpiDefault, mpiCmdNull, cmdPrefixNull, parameterSetNull, finListNull, fiaListNull, App.DEFAULT_NODE_COUNT,
+            App.DEFAULT_CORES_PER_NODE, App.DEFAULT_MEMORY_MB, App.DEFAULT_MAX_MINUTES, notifListNull, jobTagsNull,
             tagsNull, notesNull, uuidNull, deletedFalse, createdNull, updatedNull);
   }
 
@@ -482,7 +495,7 @@ public final class IntegrationUtils
             isMpiNull, mpiCmdNull, cmdPrefixNull,
             parameterSet, finList3, fiaList3, nodeCountNull,
             coresPerNodeNull, memoryMBNull, maxMinutesNull, notifListNull, jobTagsNull);
-    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2, jobTypeNull,
+    return new PatchApp(description2, runtimeNull, runtimeVersionNull, runtimeOptionsNull, containerImage2, JobType.UNSET,
             maxJobsNull, maxJobsPerUserNull, strictFileInputsNull, jobAttributes, tagsNull, notesNull);
   }
 
