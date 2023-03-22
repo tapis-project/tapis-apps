@@ -9,6 +9,17 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.3.1 - 2023-03-22
+
+Incremental improvements and bug fix.
+
+### New features:
+- Increased maximum length of cmdPrefix attribute from 126 to 1024 characters.
+
+### Bug fixes:
+- Fix issue with setting of defaults for maxJobs and maxJobsPerUser.
+
+---------------------------------------------------------------------------
 ## 1.3.0 - 2023-02-27
 
 Incremental improvements and official release of new preview features since 1.2.0.
