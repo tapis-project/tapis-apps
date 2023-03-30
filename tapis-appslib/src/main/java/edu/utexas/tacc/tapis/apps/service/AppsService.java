@@ -57,7 +57,8 @@ public interface AppsService
   boolean isEnabled(ResourceRequestUser rUser, String appId)
           throws TapisException, TapisClientException;
 
-  App getApp(ResourceRequestUser rUser, String appId, String appVersion, boolean requireExecPerm, String impersonationId)
+  App getApp(ResourceRequestUser rUser, String appId, String appVersion, boolean requireExecPerm,
+             String impersonationId, String resourceTenant)
           throws TapisException, TapisClientException;
 
   int getAppsTotalCount(ResourceRequestUser rUser, List<String> searchList, List<OrderBy> orderByList,

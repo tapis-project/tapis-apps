@@ -631,6 +631,7 @@ public class AppResource
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAppLatestVersion(@PathParam("appId") String appId,
                          @QueryParam("requireExecPerm") @DefaultValue("false") boolean requireExecPerm,
+                         @QueryParam("resourceTenant") String resourceTenant,
                          @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "getAppLatestVersion";
@@ -645,14 +646,16 @@ public class AppResource
 
     // Trace this request.
     if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(),
-                                                   "appId="+appId,"requireExecPerm="+requireExecPerm);
+                                                   "appId="+appId,
+                                                   "requireExecPerm="+requireExecPerm,
+                                                   "resourceTenant="+resourceTenant);
 
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
 
     App app;
     try
     {
-      app = service.getApp(rUser, appId, null, requireExecPerm, null);
+      app = service.getApp(rUser, appId, null, requireExecPerm, null, resourceTenant);
     }
     // Pass through not found or not auth to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
@@ -691,6 +694,7 @@ public class AppResource
                          @PathParam("appVersion") String appVersion,
                          @QueryParam("requireExecPerm") @DefaultValue("false") boolean requireExecPerm,
                          @QueryParam("impersonationId") String impersonationId,
+                         @QueryParam("resourceTenant") String resourceTenant,
                          @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "getApp";
@@ -706,15 +710,15 @@ public class AppResource
     // Trace this request.
     if (_log.isTraceEnabled())
       ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(),
-                          "appId="+appId, "appVersion="+appVersion,
-                          "requireExecPerm="+requireExecPerm, "impersonationId="+impersonationId);
+                          "appId="+appId, "appVersion="+appVersion, "requireExecPerm="+requireExecPerm,
+                          "impersonationId="+impersonationId, "resourceTenant"+resourceTenant);
 
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
 
     App app;
     try
     {
-      app = service.getApp(rUser, appId, appVersion, requireExecPerm, impersonationId);
+      app = service.getApp(rUser, appId, appVersion, requireExecPerm, impersonationId, resourceTenant);
     }
     // Pass through not found or not auth to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }

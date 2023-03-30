@@ -82,6 +82,7 @@ public class AppsServiceImpl implements AppsService
   private static final String FILES_SERVICE = TapisConstants.SERVICE_NAME_FILES;
   private static final String JOBS_SERVICE = TapisConstants.SERVICE_NAME_JOBS;
   private static final Set<String> SVCLIST_IMPERSONATE = new HashSet<>(Set.of(JOBS_SERVICE));
+  private static final Set<String> SVCLIST_RESOURCETENANT = new HashSet<>(Set.of(JOBS_SERVICE));
 
   // Message keys
   private static final String ERROR_ROLLBACK = "APPLIB_ERROR_ROLLBACK";
@@ -605,34 +606,38 @@ public class AppsServiceImpl implements AppsService
    * @param appVersion - Version of the app, null or blank for latest version
    * @param requireExecPerm - check for EXECUTE permission as well as READ permission
    * @param impersonationId - use provided Tapis username instead of oboUser when checking auth
+   * @param resourceTenant - use provided tenant instead of oboTenant which fetching resource
    * @return populated instance of an App or null if not found or user not authorized.
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
-  public App getApp(ResourceRequestUser rUser, String appId, String appVersion, boolean requireExecPerm, String impersonationId)
+  public App getApp(ResourceRequestUser rUser, String appId, String appVersion, boolean requireExecPerm,
+                    String impersonationId, String resourceTenant)
           throws TapisException, TapisClientException
   {
     AppOperation op = AppOperation.read;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
-    String oboTenant = rUser.getOboTenantId();
+    String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
+    String oboOrResourceTenant = StringUtils.isBlank(resourceTenant) ? rUser.getOboTenantId() : resourceTenant;
+
+    // If impersonationId set confirm that it is allowed and determine final obo user.
+    if (!StringUtils.isBlank(impersonationId)) checkImpersonationAllowed(rUser, op, appId, impersonationId);
+    // If resourceTenant set confirm it is allowed
+    if (!StringUtils.isBlank(resourceTenant)) checkResourceTenantAllowed(rUser, op, appId, resourceTenant);
 
     // Fetch the app. We need to make sure it exists and is not deleted.
     // Also, knowing app owner is useful here. We can skip auth checking.
-    App app = dao.getApp(oboTenant, appId, appVersion);
+    App app = dao.getApp(oboOrResourceTenant, appId, appVersion);
     if (app == null) return null;
 
     // ------------------------- Check authorization -------------------------
-    // If impersonationId supplied confirm that it is allowed and determine final obo user.
-    if (!StringUtils.isBlank(impersonationId)) checkImpersonationAllowed(rUser, op, appId, impersonationId);
-    String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
-
-    // If owner is making the request then always allowed, and we will not set sharedAppCtx to true
+    // If owner is making the request then always allowed, and we will not set sharedAppCtx
     boolean isPermitted = true;
-    boolean sharedAppCtx = false;
+    String sharedAppCtx = null;
 
-    // If not owner we need to do some authorization checking and determine if sharedAppCtx is true
+    // If not owner we need to do some authorization checking and determine if sharedAppCtx must be set
     String owner = app.getOwner();
     if (!oboOrImpersonatedUser.equals(owner))
     {
@@ -647,16 +652,18 @@ public class AppsServiceImpl implements AppsService
 
       // Check shared app context
       // Even if allowed by permission we still need to check for sharing and set sharedAppCtx in the returned app.
-      sharedAppCtx = isAppSharedWithUser(rUser, appId, oboOrImpersonatedUser, Permission.READ);
+      boolean shared = isAppSharedWithUser(rUser, appId, oboOrImpersonatedUser, Permission.READ);
+      // NOTE: Grantor is always app owner
+      if (shared) sharedAppCtx = owner;
 
       // If not permitted or shared then deny
-      if (!isPermitted && !sharedAppCtx)
+      if (!isPermitted && !shared)
       {
         throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()));
       }
 
       // If flag is set to also require EXECUTE perm then make explicit auth call to make sure user has exec perm
-      if (!sharedAppCtx && requireExecPerm)
+      if (!shared && requireExecPerm)
       {
         checkAuth(rUser, AppOperation.execute, appId, owner, nullTargetUser, nullPermSet, impersonationId);
       }
@@ -1890,8 +1897,8 @@ public class AppsServiceImpl implements AppsService
     try
     {
       // Get system, requireExecPerm=true
-      // authnMethod=null, requireExec=true, select=null, returnCred=false, impersonationId=null, sharedAppCtx=false
-      execSystem = systemsClient.getSystem(execSystemId, null, true, null, false, null, false);
+      // authnMethod=null, requireExec=true, select=null, returnCred=false, impersonationId=null, sharedAppCtx=null
+      execSystem = systemsClient.getSystem(execSystemId, null, true, null, false, null, null, null);
     }
     catch (TapisClientException e)
     {
@@ -2278,6 +2285,26 @@ public class AppsServiceImpl implements AppsService
     }
     // An allowed service is impersonating, log it
     _log.info(LibUtils.getMsgAuth("APPLIB_AUTH_IMPERSONATE", rUser, appId, op.name(), impersonationId));
+  }
+
+  /**
+   * Confirm that caller is allowed to set resourceTenant
+   * Must be a service request from a service in the allowed list.
+   *
+   * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param op - operation name
+   * @param appId - name of the app
+   */
+  private void checkResourceTenantAllowed(ResourceRequestUser rUser, AppOperation op, String appId, String resourceTenant)
+  {
+    // If a service request the username will be the service name. E.g. files, jobs, streams, etc
+    String svcName = rUser.getJwtUserId();
+    if (!rUser.isServiceRequest() || !SVCLIST_RESOURCETENANT.contains(svcName))
+    {
+      throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH_RESOURCETENANT", rUser, appId, op.name(), resourceTenant));
+    }
+    // An allowed service is impersonating, log it
+    _log.trace(LibUtils.getMsgAuth("APPLIB_AUTH_RESOURCETENANT", rUser, appId, op.name(), resourceTenant));
   }
 
   /**

@@ -9,6 +9,14 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.3.2 - 2023-04-??
+
+Fix for sharing privilege escalation.
+
+### New features:
+- Update sharedAppCtx to represent the share grantor. Fixes privilege escalation issue.
+
+---------------------------------------------------------------------------
 ## 1.3.1 - 2023-03-22
 
 Incremental improvements and bug fix.
