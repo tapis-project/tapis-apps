@@ -9,11 +9,14 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 1.3.2 - 2023-04-??
+## 1.3.2 - 2023-04-03
 
 Fix for sharing privilege escalation.
 
 ### New features:
+- Increased maximum length of cmdPrefix attribute from 1024 to 4096 characters.
+
+### Bug fixes:
 - Update sharedAppCtx to represent the share grantor. Fixes privilege escalation issue.
 
 ---------------------------------------------------------------------------

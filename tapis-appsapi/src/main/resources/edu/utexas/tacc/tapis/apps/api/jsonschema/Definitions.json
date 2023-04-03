@@ -51,7 +51,7 @@
       "archiveOnAppError": { "type": "boolean", "default": true },
       "isMpi": { "type": "boolean", "default": false },
       "mpiCmd": { "type": ["string", "null"], "minLength": 1, "maxLength": 126 },
-      "cmdPrefix": { "type": ["string", "null"], "minLength": 1, "maxLength": 1024 },
+      "cmdPrefix": { "type": ["string", "null"], "minLength": 1, "maxLength": 4096 },
       "parameterSet": { "$ref": "#/ParameterSet" },
       "fileInputs": {
         "type": ["array", "null"],
