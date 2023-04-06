@@ -1,0 +1,22 @@
+---
+version: "3"
+
+volumes:
+  tapis-app-pgdata:
+
+services:
+  tapis-app-postgres:
+    image: postgres:11.4
+    container_name: tapis_app_postgres
+    labels:
+      name: tapis_app_postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgres
+    ports:
+      - ${PG_PORT}:5432
+    volumes:
+      - tapis-app-pgdata:/var/lib/postgresql-app/data
+
