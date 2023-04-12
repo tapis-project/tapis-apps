@@ -24,7 +24,6 @@ import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.sharedapi.responses.RespBasic;
 import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
 import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils.RESPONSE_STATUS;
-
 import edu.utexas.tacc.tapis.apps.api.AppsApplication;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
@@ -33,6 +32,8 @@ import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 
 /* Tapis Apps general resource endpoints including healthcheck and readycheck
  *
+ * The healthcheck corresponds to a kubernetes liveness probe and readycheck to a readiness probe. Please see:
+ *   https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
  *  NOTE: For OpenAPI spec please see file AppsApi.yaml located in repo openapi-apps.
  */
 @Path("/v3/apps")
@@ -48,10 +49,10 @@ public class GeneralResource
   /*                                    Fields                                    */
   /* **************************************************************************** */
   // Count the number of health check requests received.
-  private static final AtomicLong _healthCheckCount = new AtomicLong();
+  private static final AtomicLong healthCheckCount = new AtomicLong();
 
   // Count the number of health check requests received.
-  private static final AtomicLong _readyCheckCount = new AtomicLong();
+  private static final AtomicLong readyCheckCount = new AtomicLong();
 
   // Use CallSiteToggle to limit logging for readyCheck endpoint
   private static final CallSiteToggle checkTenantsOK = new CallSiteToggle();
@@ -70,6 +71,7 @@ public class GeneralResource
 
   /**
    * Lightweight non-authenticated health check endpoint.
+   * This intended to serve as a kubernetes liveness probe
    * Note that no JWT is required on this call and no logging is done.
    * @return a success response if all is ok
    */
@@ -81,7 +83,7 @@ public class GeneralResource
   public Response healthCheck()
   {
     // Get the current check count.
-    long checkNum = _healthCheckCount.incrementAndGet();
+    long checkNum = healthCheckCount.incrementAndGet();
     RespBasic resp = new RespBasic("Health check received. Count: " + checkNum);
 
     // Manually create a success response with git info included in version
@@ -95,6 +97,7 @@ public class GeneralResource
 
   /**
    * Lightweight non-authenticated ready check endpoint.
+   * This intended to serve as a kubernetes readiness probe
    * Note that no JWT is required on this call and CallSiteToggle is used to limit logging.
    * Based on similar method in tapis-securityapi.../SecurityResource
    *
@@ -103,8 +106,8 @@ public class GeneralResource
    *    - get a service JWT
    *    - connect to the DB and verify and that main service table exists
    *
-   * It's intended as the endpoint that monitoring applications can use to check
-   * whether the service is ready to accept traffic.  In particular, kubernetes
+   * It is intended as the endpoint that monitoring applications can use to check
+   * whether the application is ready to accept traffic.  In particular, kubernetes
    * can use this endpoint as part of its pod readiness check.
    *
    * Note that no JWT is required on this call.
@@ -130,13 +133,21 @@ public class GeneralResource
   public Response readyCheck()
   {
     // Get the current check count.
-    long checkNum = _readyCheckCount.incrementAndGet();
+    long checkNum = readyCheckCount.incrementAndGet();
 
+    // Keep track of status for each check
+    var statusMsgSB = new StringBuilder();
+
+    // =========================================
     // Check that we can get tenants list
+    // =========================================
+    statusMsgSB.append("CheckTenants:");
     Exception readyCheckException = checkTenants();
     if (readyCheckException != null)
     {
-      RespBasic r = new RespBasic("Readiness tenants check failed. Check number: " + checkNum);
+      statusMsgSB.append("FAIL");
+      RespBasic r = new RespBasic(String.format("Readiness tenants check failed. Check number: %s %s ",
+                                                checkNum, statusMsgSB));
       String msg = MsgUtils.getMsg("TAPIS_NOT_READY", "Apps Service");
       // We failed so set the log limiter check.
       if (checkTenantsOK.toggleOff())
@@ -148,15 +159,21 @@ public class GeneralResource
     }
     else
     {
+      statusMsgSB.append("PASS");
       // We succeeded so clear the log limiter check.
       if (checkTenantsOK.toggleOn()) _log.info(ApiUtils.getMsg("APPAPI_READYCHECK_TENANTS_ERRTOGGLE_CLEARED"));
     }
 
+    // =========================================
     // Check that we have a service JWT
+    // =========================================
+    statusMsgSB.append(" CheckJWT:");
     readyCheckException = checkJWT();
     if (readyCheckException != null)
     {
-      RespBasic r = new RespBasic("Readiness JWT check failed. Check number: " + checkNum);
+      statusMsgSB.append("FAIL");
+      RespBasic r = new RespBasic(String.format("Readiness JWT check failed. Check number: %s %s ",
+                                  checkNum, statusMsgSB));
       String msg = MsgUtils.getMsg("TAPIS_NOT_READY", "Apps Service");
       // We failed so set the log limiter check.
       if (checkJWTOK.toggleOff())
@@ -168,15 +185,21 @@ public class GeneralResource
     }
     else
     {
+      statusMsgSB.append("PASS");
       // We succeeded so clear the log limiter check.
       if (checkJWTOK.toggleOn()) _log.info(ApiUtils.getMsg("APPAPI_READYCHECK_JWT_ERRTOGGLE_CLEARED"));
     }
 
+    // =========================================
     // Check that we can connect to the DB
+    // =========================================
+    statusMsgSB.append(" CheckDB:");
     readyCheckException = checkDB();
     if (readyCheckException != null)
     {
-      RespBasic r = new RespBasic("Readiness DB check failed. Check number: " + checkNum);
+      statusMsgSB.append("FAIL");
+      RespBasic r = new RespBasic(String.format("Readiness DB check failed. Check number: %s %s ",
+                                                checkNum, statusMsgSB));
       String msg = MsgUtils.getMsg("TAPIS_NOT_READY", "Apps Service");
       // We failed so set the log limiter check.
       if (checkDBOK.toggleOff())
@@ -188,13 +211,14 @@ public class GeneralResource
     }
     else
     {
+      statusMsgSB.append("PASS");
       // We succeeded so clear the log limiter check.
       if (checkDBOK.toggleOn()) _log.info(ApiUtils.getMsg("APPAPI_READYCHECK_DB_ERRTOGGLE_CLEARED"));
     }
 
     // ---------------------------- Success -------------------------------
     // Create the response payload.
-    RespBasic resp = new RespBasic("Ready check passed. Count: " + checkNum);
+    RespBasic resp = new RespBasic(String.format("Ready check passed. Count: %s %s", checkNum, statusMsgSB));
     // Manually create a success response with git info included in version
     resp.status = RESPONSE_STATUS.success.name();
     resp.message = MsgUtils.getMsg("TAPIS_READY", "Applications Service");
