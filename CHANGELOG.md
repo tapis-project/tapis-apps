@@ -9,6 +9,17 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.3.3 - 2023-05-08
+
+Incremental improvements and bug fix.
+
+### New features:
+- None
+
+### Bug fixes:
+- Add package registration of jax-rs filters to ensure query parameters are correctly set.
+
+---------------------------------------------------------------------------
 ## 1.3.2 - 2023-04-03
 
 Fix for sharing privilege escalation.
