@@ -17,6 +17,12 @@ import java.util.List;
  */
 public final class ReqSubscribe
 {
+  /* ********************************************************************** */
+  /*                               Constants                                */
+  /* ********************************************************************** */
+  // Default values
+  public static final Boolean DEFAULT_ENABLED = true;
+
   // ============== Enums ==========================================
   public enum JobEventCategoryFilter {ALL, JOB_NEW_STATUS, JOB_INPUT_TRANSACTION_ID, JOB_ARCHIVE_TRANSACTION_ID,
                                       JOB_ERROR_MESSAGE, JOB_SUBSCRIPTION }
@@ -25,7 +31,7 @@ public final class ReqSubscribe
   private static final Logger log = LoggerFactory.getLogger(ReqSubscribe.class);
 
   private final String description;
-  private final boolean enabled;
+  private final Boolean enabled;
 
   // Matching and delivery
   private final JobEventCategoryFilter jobEventCategoryFilter;
@@ -35,11 +41,11 @@ public final class ReqSubscribe
   /* ********************************************************************** */
   /*                           Constructors                                 */
   /* ********************************************************************** */
-  public ReqSubscribe(String description1, boolean enabled1, JobEventCategoryFilter jobEventCategoryFilter1,
+  public ReqSubscribe(String description1, Boolean enabled1, JobEventCategoryFilter jobEventCategoryFilter1,
                       List<DeliveryTarget> targets1, int ttlMinutes1)
   {
     description = description1;
-    enabled = enabled1;
+    enabled = (enabled1 == null) ? DEFAULT_ENABLED : enabled1;
     jobEventCategoryFilter = jobEventCategoryFilter1;
     deliveryTargets = (targets1 == null) ? null : new ArrayList<>(targets1);
     ttlMinutes = ttlMinutes1;
@@ -49,7 +55,7 @@ public final class ReqSubscribe
   /*                               Accessors                                */
   /* ********************************************************************** */
   public String getDescription() { return description; }
-  public boolean isEnabled() { return enabled; }
+  public Boolean isEnabled() { return enabled; }
   public JobEventCategoryFilter getJobEventCategoryFilter() { return jobEventCategoryFilter; }
   public int getTtlMinutes() { return ttlMinutes; }
 

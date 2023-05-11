@@ -377,7 +377,7 @@ public final class App
     coresPerNode = coresPerNode1;
     memoryMB = memoryMB1;
     maxMinutes = maxMinutes1;
-    subscriptions = subscriptions1;
+    subscriptions = (subscriptions1 == null) ? null : new ArrayList<>(subscriptions1);
     jobTags = (jobTags1 == null) ? null : jobTags1.clone();
     tags = (tags1 == null) ? null : tags1.clone();
     notes = notes1;
