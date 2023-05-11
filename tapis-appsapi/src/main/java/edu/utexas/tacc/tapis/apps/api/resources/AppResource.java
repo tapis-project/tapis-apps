@@ -1322,18 +1322,22 @@ public class AppResource
     if (!topObj.has(App.MAX_JOBS_PER_USER_FIELD)) app.setMaxJobsPerUser(DEFAULT_MAX_JOBS_PER_USER);
 
     // Handle attributes inside JobAttributes
-    // Set all to default initially in case no JobAttributes object provided
-    app.setNodeCount(DEFAULT_NODE_COUNT);
-    app.setCoresPerNode(DEFAULT_CORES_PER_NODE);
-    app.setMemoryMB(DEFAULT_MEMORY_MB);
-    app.setMaxMinutes(DEFAULT_MAX_MINUTES);
     // Now apply anything set in JobAttributes
     if (topObj.has(App.JOB_ATTRS_FIELD))
     {
-      if (!topObj.has(App.NODE_COUNT_FIELD)) app.setMaxMinutes(DEFAULT_NODE_COUNT);
-      if (!topObj.has(App.CORES_PER_NODE_FIELD)) app.setMaxMinutes(DEFAULT_CORES_PER_NODE);
-      if (!topObj.has(App.MEMORY_MB_FIELD)) app.setMaxMinutes(DEFAULT_MEMORY_MB);
-      if (!topObj.has(App.MAX_MINUTES_FIELD)) app.setMaxMinutes(DEFAULT_MAX_MINUTES);
+      JsonObject jobAttrObj = topObj.getAsJsonObject(App.JOB_ATTRS_FIELD);
+      if (!jobAttrObj.has(App.NODE_COUNT_FIELD)) app.setMaxMinutes(DEFAULT_NODE_COUNT);
+      if (!jobAttrObj.has(App.CORES_PER_NODE_FIELD)) app.setMaxMinutes(DEFAULT_CORES_PER_NODE);
+      if (!jobAttrObj.has(App.MEMORY_MB_FIELD)) app.setMaxMinutes(DEFAULT_MEMORY_MB);
+      if (!jobAttrObj.has(App.MAX_MINUTES_FIELD)) app.setMaxMinutes(DEFAULT_MAX_MINUTES);
+    }
+    else
+    {
+      // No jobAttributes provided, set all to default
+      app.setNodeCount(DEFAULT_NODE_COUNT);
+      app.setCoresPerNode(DEFAULT_CORES_PER_NODE);
+      app.setMemoryMB(DEFAULT_MEMORY_MB);
+      app.setMaxMinutes(DEFAULT_MAX_MINUTES);
     }
   }
 }

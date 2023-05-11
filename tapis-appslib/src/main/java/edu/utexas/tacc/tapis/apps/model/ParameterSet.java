@@ -1,7 +1,5 @@
 package edu.utexas.tacc.tapis.apps.model;
 
-import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,6 +65,4 @@ public final class ParameterSet
   // When patching we update archiveFilter attributes via setter, so do not return a new instance of ArchiveFilter.
   public ArchiveFilter getArchiveFilter() { return archiveFilter; }
   public void setArchiveFilter(ArchiveFilter af) { archiveFilter = af; }
-  @Override
-  public String toString() {return TapisUtils.toString(this);}
 }

@@ -19,6 +19,7 @@ Incremental improvements and bug fixes.
 ### Bug fixes:
 - Add package registration of jax-rs filters to ensure query parameters are correctly set.
 - Allow for sharedAppCtx to be null for GET followed by POST or PUT.
+- Fix issue with setting of default value of enabled=true within a jobAttributes subscription.
 
 ---------------------------------------------------------------------------
 ## 1.3.2 - 2023-04-03

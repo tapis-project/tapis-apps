@@ -1,11 +1,9 @@
 package edu.utexas.tacc.tapis.apps.model;
 
-import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * Notification Subscription request in the context of a Job submission
@@ -22,6 +20,7 @@ public final class ReqSubscribe
   /* ********************************************************************** */
   // Default values
   public static final Boolean DEFAULT_ENABLED = true;
+  public static final int DEFAULT_TTL_MINUTES = 10080; // 60*24*7 = 1 week
 
   // ============== Enums ==========================================
   public enum JobEventCategoryFilter {ALL, JOB_NEW_STATUS, JOB_INPUT_TRANSACTION_ID, JOB_ARCHIVE_TRANSACTION_ID,
@@ -41,6 +40,17 @@ public final class ReqSubscribe
   /* ********************************************************************** */
   /*                           Constructors                                 */
   /* ********************************************************************** */
+
+  // Default constructor to set defaults. This appears to be needed for when object is created from json using gson.
+  public ReqSubscribe()
+  {
+    description = null;
+    enabled = DEFAULT_ENABLED;
+    jobEventCategoryFilter = null;
+    deliveryTargets = null;
+    ttlMinutes = DEFAULT_TTL_MINUTES;
+  }
+
   public ReqSubscribe(String description1, Boolean enabled1, JobEventCategoryFilter jobEventCategoryFilter1,
                       List<DeliveryTarget> targets1, int ttlMinutes1)
   {
@@ -63,7 +73,4 @@ public final class ReqSubscribe
   {
     return (deliveryTargets == null) ? null : new ArrayList<>(deliveryTargets);
   }
-
-  @Override
-  public String toString() {return TapisUtils.toString(this);}
 }
