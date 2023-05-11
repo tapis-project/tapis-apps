@@ -22,7 +22,7 @@
     "jobAttributes": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/JobAttributes" },
     "tags": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/TagsDefinition" },
     "notes": { "type": "object" },
-    "sharedAppCtx": { "type": "boolean" },
+    "sharedAppCtx": { "type": ["string", "null"] },
     "isPublic": { "type": "boolean" },
     "tenant": { "type":  "string" },
     "uuid": { "type":  "string" },
