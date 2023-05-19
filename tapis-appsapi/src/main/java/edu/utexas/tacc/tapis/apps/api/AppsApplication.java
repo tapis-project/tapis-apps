@@ -160,9 +160,36 @@ public class AppsApplication extends ResourceConfig
     // Call the main service init method
     System.out.println("Initializing service");
     svcImpl.initService(siteId, siteAdminTenantId, RuntimeParameters.getInstance().getServicePassword());
+
+    // Add a shutdown hook so we can gracefully stop
+    System.out.println("Registering shutdownHook");
+    Thread shudownHook = new AppsApplication.ServiceShutdown(svcImpl);
+    Runtime.getRuntime().addShutdownHook(shudownHook);
+
     // Create and start the server
     System.out.println("Starting http server");
     final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(baseUri, config, false);
     server.start();
+  }
+  /*
+   *
+   * Private class used to gracefully shut down the application
+   *
+   */
+  private static class ServiceShutdown extends Thread
+  {
+    private final AppsService svc;
+
+    ServiceShutdown(AppsService svc1) {
+      svc = svc1;
+    }
+
+    @Override
+    public void run()
+    {
+      System.out.printf("**** Stopping Applications Service. Version: %s ****%n", TapisUtils.getTapisFullVersion());
+      // Perform any remaining shutdown steps
+//      svc.shutDown();
+    }
   }
 }
