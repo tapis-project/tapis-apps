@@ -9,6 +9,17 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.3.4 - 2023-0?-??
+
+Incremental improvements and bug fix
+
+### New features:
+- Add application shutdown hook for graceful shutdown.
+
+### Bug fixes:
+- None
+
+---------------------------------------------------------------------------
 ## 1.3.3 - 2023-05-11
 
 Incremental improvements and bug fixes.
