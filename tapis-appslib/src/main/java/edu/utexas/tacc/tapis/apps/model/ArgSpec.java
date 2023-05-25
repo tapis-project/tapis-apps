@@ -47,7 +47,7 @@ public final class ArgSpec
     notes = DEFAULT_NOTES;
   }
 
-  // Constructer setting all attributes
+  // Constructor setting all attributes
   public ArgSpec(String arg1, String name1, String description1, ArgInputMode mode1, JsonObject notes1)
   {
     arg = arg1;
