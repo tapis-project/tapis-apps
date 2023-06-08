@@ -17,13 +17,35 @@ import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NOTES;
  */
 public final class KeyValuePair
 {
+  // ************************************************************************
+  // *********************** Constants **************************************
+  // ************************************************************************
   public static final ArgInputMode DEFAULT_INPUT_MODE = ArgInputMode.INCLUDE_BY_DEFAULT;
 
+  // ************************************************************************
+  // *********************** Fields *****************************************
+  // ************************************************************************
   private final String key;
   private final String value;
   private final String description;
   private final ArgInputMode inputMode;
   private final JsonObject notes; // metadata as json
+
+  // ************************************************************************
+  // *********************** Constructors ***********************************
+  // ************************************************************************
+
+  // Default constructor to ensure defaults are set during jax-rs processing
+  // Make sure correct defaults are set for any fields that are not required.
+  // NOTE: In this case only key is required.
+  public KeyValuePair()
+  {
+    key = "";
+    value = "";
+    description = "";
+    inputMode = DEFAULT_INPUT_MODE;
+    notes = DEFAULT_NOTES;
+  }
 
   public KeyValuePair(String key1, String value1, String description1, ArgInputMode inputMode1, JsonObject notes1)
   {

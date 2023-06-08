@@ -191,18 +191,21 @@ public final class IntegrationUtils
   public static final JsonObject notes2 =
           TapisGsonUtils.getGson().fromJson("{\"project\": \"my proj2\", \"testdata\": \"abc2\"}", JsonObject.class);
   public static final JsonObject notes1Obj = (JsonObject) notes1;
+  public static final JsonObject notes2Obj = (JsonObject) notes2;
   public static final JsonObject notesNull = null;
   public static final String rawDataEmptyJson = "{}";
-  public static final KeyValuePair keyValuePairFull = new KeyValuePair("key_fullKeyVal", "val_fullKeyVal",
-                                                                  "Fully populated keyValuePair",
-                                                                  ArgInputMode.FIXED, notes1Obj);
+  public static final KeyValuePair keyValuePairFull1 = new KeyValuePair("key_fullKeyVal1", "val_fullKeyVal1",
+                                                                  "Fully populated keyValuePair1", ArgInputMode.FIXED, notes1Obj);
+  public static final KeyValuePair keyValuePairFull2 = new KeyValuePair("key_fullKeyVal2", "val_fullKeyVal2",
+                                                                  "Fully populated keyValuePair2", ArgInputMode.REQUIRED, notes2Obj);
   public static final List<KeyValuePair> envVariables1 = List.of(new KeyValuePair("a1","b1"),
                                                                  new KeyValuePair("HOME","/home/testuser1", ""),
                                                                  new KeyValuePair("TMP","/tmp1", "my keyvalue pair"),
-                                                                 keyValuePairFull);
+                                                                 keyValuePairFull1);
   public static final List<KeyValuePair> envVariables2 = List.of(new KeyValuePair("a2","b2", "my 2nd key-value pair"),
                                                                  new KeyValuePair("HOME","/home/testuser2"),
-                                                                 new KeyValuePair("TMP","/tmp2"));
+                                                                 new KeyValuePair("TMP","/tmp2"),
+                                                                 keyValuePairFull2);
   public static final List<KeyValuePair> envVariablesNull = null;
   public static final String[] archiveIncludes1 = {"/include1A", "/include1B"};
   public static final String[] archiveIncludes2 = {"/include2A", "/include2B"};

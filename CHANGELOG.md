@@ -9,14 +9,16 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 1.3.4 - 2023-0?-??
+## 1.3.4 - 2023-06-08
 
-Incremental improvements and enhancements
+Incremental improvements and new features
+
+### Breaking changes:
+- None
 
 ### New features:
 - Add application shutdown hook for graceful shutdown.
 - Add notes and inputMode attributes to items in JobAttributes->ParameterSet->envVariables.
-
 
 ### Bug fixes:
 - None
