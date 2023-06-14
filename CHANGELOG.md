@@ -9,12 +9,12 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 1.3.4 - 2023-06-08
+## 1.3.4 - 2023-06-14
 
 Incremental improvements and new features
 
 ### Breaking changes:
-- None
+- Environment variables beginning with *_tapis* may not be used in *jobAttributes.parameterSet.envVariables*. This is to match Jobs service behavior.
 
 ### New features:
 - Add application shutdown hook for graceful shutdown.

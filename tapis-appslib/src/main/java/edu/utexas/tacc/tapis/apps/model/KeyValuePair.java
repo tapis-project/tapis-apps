@@ -1,9 +1,8 @@
 package edu.utexas.tacc.tapis.apps.model;
 
+import java.util.Objects;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.StringUtils;
-import java.util.Objects;
-import edu.utexas.tacc.tapis.apps.model.App.ArgInputMode;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NOTES;
 
 /*
@@ -20,7 +19,14 @@ public final class KeyValuePair
   // ************************************************************************
   // *********************** Constants **************************************
   // ************************************************************************
-  public static final ArgInputMode DEFAULT_INPUT_MODE = ArgInputMode.INCLUDE_BY_DEFAULT;
+  public static final KeyValueInputMode DEFAULT_INPUT_MODE = KeyValueInputMode.INCLUDE_BY_DEFAULT;
+  public static final String VALUE_NOT_SET = "!tapis_not_set";
+  public static final String RESERVED_PREFIX= "_tapis";
+
+  // ************************************************************************
+  // *********************** Enums ******************************************
+  // ************************************************************************
+  public enum KeyValueInputMode {REQUIRED, FIXED, INCLUDE_ON_DEMAND, INCLUDE_BY_DEFAULT}
 
   // ************************************************************************
   // *********************** Fields *****************************************
@@ -28,7 +34,7 @@ public final class KeyValuePair
   private final String key;
   private final String value;
   private final String description;
-  private final ArgInputMode inputMode;
+  private final KeyValueInputMode inputMode;
   private final JsonObject notes; // metadata as json
 
   // ************************************************************************
@@ -38,46 +44,39 @@ public final class KeyValuePair
   // Default constructor to ensure defaults are set during jax-rs processing
   // Make sure correct defaults are set for any fields that are not required.
   // NOTE: In this case only key is required.
+  // NOTE: We set value = null to distinguish between not set and empty string for incoming jax-rs request.
+  //       This allows the constructor that should be called to handle the inputMode=REQUIRED case.
   public KeyValuePair()
   {
     key = "";
-    value = "";
+    value = null;
     description = "";
     inputMode = DEFAULT_INPUT_MODE;
     notes = DEFAULT_NOTES;
   }
 
-  public KeyValuePair(String key1, String value1, String description1, ArgInputMode inputMode1, JsonObject notes1)
+  public KeyValuePair(String key1, String value1, String description1, KeyValueInputMode inputMode1, JsonObject notes1)
   {
     key = key1;
-    value = StringUtils.isBlank(value1) ? "" : value1;
-    description = StringUtils.isBlank(description1) ? "" : description1;
     inputMode = (inputMode1 == null) ? DEFAULT_INPUT_MODE : inputMode1;
-    notes = (notes1 == null) ? DEFAULT_NOTES : notes1;
-  }
+    // Default depends on inputMode. If REQUIRED use special string, else empty string
+    if (KeyValueInputMode.REQUIRED.equals(inputMode))
+    {
+      value = (value1 == null) ? VALUE_NOT_SET : value1;
 
-  public KeyValuePair(String key1, String value1, String description1)
-  {
-    key = key1;
-    value = StringUtils.isBlank(value1) ? "" : value1;
+    }
+    else
+    {
+      value = StringUtils.isBlank(value1) ? "" : value1;
+    }
     description = StringUtils.isBlank(description1) ? "" : description1;
-    inputMode = DEFAULT_INPUT_MODE;
-    notes = DEFAULT_NOTES;
-  }
-
-  public KeyValuePair(String key1, String value1)
-  {
-    key = key1;
-    value = StringUtils.isBlank(value1) ? "" : value1;
-    description = "";
-    inputMode = DEFAULT_INPUT_MODE;
-    notes = DEFAULT_NOTES;
+    notes = (notes1 == null) ? DEFAULT_NOTES : notes1;
   }
 
   public String getKey() { return key; }
   public String getValue() { return value; }
   public String getDescription() { return description; }
-  public ArgInputMode getInputMode() { return inputMode; }
+  public KeyValueInputMode getInputMode() { return inputMode; }
   public JsonObject getNotes() { return notes; }
 
 // NOTE: If this is ever used it will strip off the description

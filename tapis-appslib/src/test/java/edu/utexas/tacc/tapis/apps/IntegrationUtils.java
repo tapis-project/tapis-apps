@@ -12,11 +12,12 @@ import edu.utexas.tacc.tapis.apps.model.ReqSubscribe;
 import edu.utexas.tacc.tapis.apps.model.ArgSpec;
 import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
 import edu.utexas.tacc.tapis.apps.model.DeliveryTarget;
+import edu.utexas.tacc.tapis.apps.model.DeliveryTarget.NotifDeliveryMethod;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.FileInputArray;
 import edu.utexas.tacc.tapis.apps.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
-import edu.utexas.tacc.tapis.apps.model.DeliveryTarget.NotifDeliveryMethod;
+import edu.utexas.tacc.tapis.apps.model.KeyValuePair.KeyValueInputMode;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.model.ReqSubscribe.JobEventCategoryFilter;
@@ -34,6 +35,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NOTES;
+import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.DEFAULT_INPUT_MODE;
 
 /*
  * Utilities and data for integration testing
@@ -195,17 +199,19 @@ public final class IntegrationUtils
   public static final JsonObject notesNull = null;
   public static final String rawDataEmptyJson = "{}";
   public static final KeyValuePair keyValuePairFull1 = new KeyValuePair("key_fullKeyVal1", "val_fullKeyVal1",
-                                                                  "Fully populated keyValuePair1", ArgInputMode.FIXED, notes1Obj);
+                                                                  "Fully populated keyValuePair1", KeyValueInputMode.FIXED, notes1Obj);
   public static final KeyValuePair keyValuePairFull2 = new KeyValuePair("key_fullKeyVal2", "val_fullKeyVal2",
-                                                                  "Fully populated keyValuePair2", ArgInputMode.REQUIRED, notes2Obj);
-  public static final List<KeyValuePair> envVariables1 = List.of(new KeyValuePair("a1","b1"),
-                                                                 new KeyValuePair("HOME","/home/testuser1", ""),
-                                                                 new KeyValuePair("TMP","/tmp1", "my keyvalue pair"),
+                                                                  "Fully populated keyValuePair2", KeyValueInputMode.REQUIRED, notes2Obj);
+  public static final List<KeyValuePair> envVariables1 = List.of(new KeyValuePair("a1","b1", null, DEFAULT_INPUT_MODE, DEFAULT_NOTES),
+                                                                 new KeyValuePair("HOME","/home/testuser1", "", DEFAULT_INPUT_MODE, DEFAULT_NOTES),
+                                                                 new KeyValuePair("TMP","/tmp1", "my keyvalue pair", DEFAULT_INPUT_MODE, DEFAULT_NOTES),
                                                                  keyValuePairFull1);
-  public static final List<KeyValuePair> envVariables2 = List.of(new KeyValuePair("a2","b2", "my 2nd key-value pair"),
-                                                                 new KeyValuePair("HOME","/home/testuser2"),
-                                                                 new KeyValuePair("TMP","/tmp2"),
+  public static final List<KeyValuePair> envVariables2 = List.of(new KeyValuePair("a2","b2", "my 2nd key-value pair", DEFAULT_INPUT_MODE, DEFAULT_NOTES),
+                                                                 new KeyValuePair("HOME","/home/testuser2", null, DEFAULT_INPUT_MODE, DEFAULT_NOTES),
+                                                                 new KeyValuePair("TMP","/tmp2", null, DEFAULT_INPUT_MODE, DEFAULT_NOTES),
                                                                  keyValuePairFull2);
+  public static final List<KeyValuePair> envVariablesReject =
+          List.of(new KeyValuePair("rejectMe", KeyValuePair.VALUE_NOT_SET, null, KeyValueInputMode.FIXED, null));
   public static final List<KeyValuePair> envVariablesNull = null;
   public static final String[] archiveIncludes1 = {"/include1A", "/include1B"};
   public static final String[] archiveIncludes2 = {"/include2A", "/include2B"};
@@ -349,6 +355,8 @@ public final class IntegrationUtils
                                                                     envVariables1, archiveFilter1);
   public static final ParameterSet parameterSet2 = new ParameterSet(appArgList2, containerArgList2, schedulerOptionList2,
                                                                     envVariables2, archiveFilter2);
+  public static final ParameterSet parameterSetReject = new ParameterSet(appArgList1, containerArgList1, schedulerOptionList1,
+                                                                         envVariablesReject, archiveFilter1);
   public static final ParameterSet parameterSetNull = null;
 
   public static final List<OrderBy> orderByListNull = null;

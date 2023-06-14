@@ -30,6 +30,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+
+import edu.utexas.tacc.tapis.apps.model.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.http.server.Request;
@@ -61,11 +63,8 @@ import edu.utexas.tacc.tapis.sharedapi.responses.RespChangeCount;
 import edu.utexas.tacc.tapis.sharedapi.responses.RespResourceUrl;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultChangeCount;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultResourceUrl;
-import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
-import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
+import edu.utexas.tacc.tapis.apps.api.model.ApiJobAttributes;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqPostApp;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqPutApp;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApp;
@@ -1141,24 +1140,26 @@ public class AppResource
 
   /**
    * Create an app from a ReqPostApp
-   * Check for req == null should have already been done
+   * Check for req == null must have already been done
    */
   private static App createAppFromPostRequest(String tenantId, ReqPostApp req, String rawJson)
   {
-    var jobAttrs = req.jobAttributes;
-    if (jobAttrs == null) jobAttrs = new JobAttributes();
+    // Make sure jobAttributes are filled in as needed with proper defaults for parameterSet.
+    ApiJobAttributes apiJobAttrs = processJobAttrs(req.apiJobAttributes);
+
     // Extract Notes from the raw json.
     JsonObject notes = extractNotes(rawJson);
+
     // Create App
     var app = new App(-1, -1, tenantId, req.id, req.version, req.description, req.jobType, req.owner, req.enabled,
           DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
-          jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
-          jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
-          jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
-          jobAttrs.isMpi, jobAttrs.mpiCmd, jobAttrs.cmdPrefix,
-          jobAttrs.parameterSet, jobAttrs.fileInputs, jobAttrs.fileInputArrays, jobAttrs.nodeCount, jobAttrs.coresPerNode,
-          jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.subscriptions, jobAttrs.tags,
+          apiJobAttrs.description, apiJobAttrs.dynamicExecSystem, apiJobAttrs.execSystemConstraints, apiJobAttrs.execSystemId,
+          apiJobAttrs.execSystemExecDir, apiJobAttrs.execSystemInputDir, apiJobAttrs.execSystemOutputDir,
+          apiJobAttrs.execSystemLogicalQueue, apiJobAttrs.archiveSystemId, apiJobAttrs.archiveSystemDir, apiJobAttrs.archiveOnAppError,
+          apiJobAttrs.isMpi, apiJobAttrs.mpiCmd, apiJobAttrs.cmdPrefix,
+          apiJobAttrs.parameterSet, apiJobAttrs.fileInputs, apiJobAttrs.fileInputArrays, apiJobAttrs.nodeCount, apiJobAttrs.coresPerNode,
+          apiJobAttrs.memoryMB, apiJobAttrs.maxMinutes, apiJobAttrs.subscriptions, apiJobAttrs.tags,
           req.tags, notes, null, false, null, null);
     // Update App from request to get proper defaults
     updateAppFromRequest(app, rawJson);
@@ -1170,8 +1171,9 @@ public class AppResource
    */
   private static App createAppFromPutRequest(String tenantId, String id, String version, ReqPutApp req, String rawJson)
   {
-    var jobAttrs = req.jobAttributes;
-    if (jobAttrs == null) jobAttrs = new JobAttributes();
+    // Make sure jobAttributes are filled in as needed with proper defaults for parameterSet.
+    ApiJobAttributes apiJobAttrs = processJobAttrs(req.apiJobAttributes);
+
     // Extract Notes from the raw json.
     JsonObject notes = extractNotes(rawJson);
 
@@ -1181,12 +1183,12 @@ public class AppResource
     var app = new App(-1, -1, tenantId, id, version, req.description, req.jobType, owner, enabled,
           DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
-          jobAttrs.description, jobAttrs.dynamicExecSystem, jobAttrs.execSystemConstraints, jobAttrs.execSystemId,
-          jobAttrs.execSystemExecDir, jobAttrs.execSystemInputDir, jobAttrs.execSystemOutputDir,
-          jobAttrs.execSystemLogicalQueue, jobAttrs.archiveSystemId, jobAttrs.archiveSystemDir, jobAttrs.archiveOnAppError,
-          jobAttrs.isMpi, jobAttrs.mpiCmd, jobAttrs.cmdPrefix,
-          jobAttrs.parameterSet, jobAttrs.fileInputs, jobAttrs.fileInputArrays, jobAttrs.nodeCount, jobAttrs.coresPerNode,
-          jobAttrs.memoryMB, jobAttrs.maxMinutes, jobAttrs.subscriptions, jobAttrs.tags,
+          apiJobAttrs.description, apiJobAttrs.dynamicExecSystem, apiJobAttrs.execSystemConstraints, apiJobAttrs.execSystemId,
+          apiJobAttrs.execSystemExecDir, apiJobAttrs.execSystemInputDir, apiJobAttrs.execSystemOutputDir,
+          apiJobAttrs.execSystemLogicalQueue, apiJobAttrs.archiveSystemId, apiJobAttrs.archiveSystemDir, apiJobAttrs.archiveOnAppError,
+          apiJobAttrs.isMpi, apiJobAttrs.mpiCmd, apiJobAttrs.cmdPrefix,
+          apiJobAttrs.parameterSet, apiJobAttrs.fileInputs, apiJobAttrs.fileInputArrays, apiJobAttrs.nodeCount, apiJobAttrs.coresPerNode,
+          apiJobAttrs.memoryMB, apiJobAttrs.maxMinutes, apiJobAttrs.subscriptions, apiJobAttrs.tags,
           req.tags, notes, null, false, null, null);
     // Update App from request to get proper defaults
     updateAppFromRequest(app, rawJson);
@@ -1236,6 +1238,28 @@ public class AppResource
     if (!topObj.has(App.NOTES_FIELD)) return notes;
     notes = topObj.getAsJsonObject(App.NOTES_FIELD);
     return notes;
+  }
+
+  /*
+   * Based on incoming request make sure jobAttributes are filled in as needed with proper defaults for parameterSet.
+   * If reqJobAttrs is null use default constructor to make one.
+   * If reqJobAttrs.parameterSet is null use default constructor to make one.
+   */
+  private static ApiJobAttributes processJobAttrs(ApiJobAttributes reqJobAttrs)
+  {
+    // Based on incoming request values make sure jobAttrs and parmSet are set to something.
+    ParameterSet reqParmSet = (reqJobAttrs != null) ? reqJobAttrs.parameterSet : null;
+    ApiJobAttributes apiJobAttrs = (reqJobAttrs != null) ? reqJobAttrs : new ApiJobAttributes();
+    ParameterSet apiParmSet = (reqParmSet != null) ? reqParmSet : new ParameterSet();
+    // Fill in final parmSet in final apiJobAttrs.
+    apiJobAttrs.parameterSet = apiParmSet;
+    // If incoming request contained envVariables then process them to set proper defaults.
+    if (apiParmSet.getEnvVariables() != null)
+    {
+      List<KeyValuePair> envVariables = App.processEnvVariables(apiJobAttrs.parameterSet.getEnvVariables());
+      apiJobAttrs.parameterSet.setEnvVariables(envVariables);
+    }
+    return apiJobAttrs;
   }
 
   /**

@@ -11,6 +11,8 @@ import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
+
+import edu.utexas.tacc.tapis.apps.model.*;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jvnet.hk2.annotations.Service;
@@ -18,9 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
-import edu.utexas.tacc.tapis.apps.model.JobAttributes;
-import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.security.client.model.SKShareHasPrivilegeParms;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
@@ -28,12 +27,8 @@ import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.systems.client.gen.model.LogicalQueue;
 import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
-import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
-import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
-import edu.utexas.tacc.tapis.apps.model.AppShare;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
@@ -282,6 +277,17 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForAppVersion(resourceTenantId, appId, appVersion, false))
     {
       throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, appId));
+    }
+
+    // If needed process request to create list of env variables with proper defaults.
+    // Note that because this is a patch DO NOT fill in with non-null unless it is in the request.
+    // On service side we rely on null to indicate it was not in the patch request.
+    if (patchApp.getJobAttributes() != null &&
+        patchApp.getJobAttributes().getParameterSet() != null &&
+        patchApp.getJobAttributes().getParameterSet().getEnvVariables() != null)
+    {
+      List<KeyValuePair> envVars = App.processEnvVariables(patchApp.getJobAttributes().getParameterSet().getEnvVariables());
+      patchApp.getJobAttributes().getParameterSet().setEnvVariables(envVars);
     }
 
     // Retrieve the app being patched and create fully populated App with changes merged in

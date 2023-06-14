@@ -1,6 +1,6 @@
 package edu.utexas.tacc.tapis.apps.api.responses.results;
 
-import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
+import edu.utexas.tacc.tapis.apps.api.model.ApiJobAttributes;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
@@ -61,7 +61,7 @@ public final class TapisAppDTO
   public int maxJobs;
   public int maxJobsPerUser;
   public boolean strictFileInputs;
-  public JobAttributes jobAttributes;
+  public ApiJobAttributes apiJobAttributes;
   public String[] tags;
   public JsonObject notes;
   public UUID uuid;
@@ -86,7 +86,7 @@ public final class TapisAppDTO
     maxJobs = a.getMaxJobs();
     maxJobsPerUser = a.getMaxJobsPerUser();
     strictFileInputs = a.isStrictFileInputs();
-    jobAttributes = new JobAttributes(a);
+    apiJobAttributes = new ApiJobAttributes(a);
     tags = a.getTags();
     notes = a.getNotes();
     uuid = a.getUuid();
@@ -175,7 +175,7 @@ public final class TapisAppDTO
       case MAX_JOBS_PER_USER_FIELD -> jsonObject.addProperty(MAX_JOBS_PER_USER_FIELD, maxJobsPerUser);
       case STRICT_FILE_INPUTS_FIELD -> jsonObject.addProperty(STRICT_FILE_INPUTS_FIELD, String.valueOf(strictFileInputs));
       case JOB_ATTRS_FIELD -> {
-        jsonStr = gson.toJson(jobAttributes);
+        jsonStr = gson.toJson(apiJobAttributes);
         jsonObject.add(JOB_ATTRS_FIELD, gson.fromJson(jsonStr, JsonObject.class));
       }
       case TAGS_FIELD -> jsonObject.add(TAGS_FIELD, gson.toJsonTree(tags));

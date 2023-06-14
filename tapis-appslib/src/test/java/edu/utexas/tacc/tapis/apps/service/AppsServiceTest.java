@@ -720,6 +720,7 @@ public class AppsServiceTest
   // - If dynamicExecSystem then execSystemConstraints must be given
   // - If not dynamicExecSystem then execSystemId must be given
   // - If archiveSystem given then archive dir must be given
+  // - If envVariables contains a FIXED entry then value cannot be !tapis_not_set
   // - (SKIP Apps no longer validates execSystemId) Validation of queue limits: NodeCount, CoresPerNode, MemoryMB, MaxMinutes
   @Test
   public void testCreateInvalidMiscFail()
@@ -789,6 +790,20 @@ public class AppsServiceTest
     Assert.assertTrue(pass);
     // Reset in prep for continued checking
     app0.setArchiveSystemDir(tmpArchiveSystemDir);
+
+    // If envVariables contains a FIXED entry then value cannot be !tapis_not_set
+    var tmpParmSet = app0.getParameterSet();
+    app0.setParameterSet(parameterSetReject);
+    pass = false;
+    try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_ENV_VAR_FIXED_UNSET"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    // Reset in prep for continued checking
+    app0.setParameterSet(tmpParmSet);
 
     // SKIP Apps no longer validates execSystemId
 //    // Various LogicalQueue related attributes must be in range defined for ExecSystemsLogicalQueue

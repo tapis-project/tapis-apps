@@ -17,6 +17,10 @@ import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
+import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.KeyValueInputMode.FIXED;
+import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.RESERVED_PREFIX;
+import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.VALUE_NOT_SET;
+
 
 /*
  * Tapis Application
@@ -467,6 +471,11 @@ public final class App
     if (jobTags == null) setJobTags(EMPTY_STR_ARRAY);
     if (tags == null) setTags(EMPTY_STR_ARRAY);
     if (notes == null) setNotes(DEFAULT_NOTES);
+    // Process request to create list of env variables with proper defaults.
+    if (parameterSet != null && parameterSet.getEnvVariables() != null)
+    {
+      parameterSet.setEnvVariables(processEnvVariables(parameterSet.getEnvVariables()));
+    }
   }
 
   /**
@@ -484,6 +493,23 @@ public final class App
     checkAttrStringLengths(errMessages);
     checkAttrMisc(errMessages);
     return errMessages;
+  }
+
+  /*
+   * Process envVariables from request to create list of job env variables with proper defaults.
+   */
+  public static List<KeyValuePair> processEnvVariables(List<KeyValuePair> requestEnvVars)
+  {
+    var envVars = new ArrayList<KeyValuePair>();
+    // If no items return an empty list
+    if (requestEnvVars == null || requestEnvVars.isEmpty()) return envVars;
+
+    // Process each item. Constructor will set appropriate defaults
+    for (KeyValuePair kv : requestEnvVars)
+    {
+      envVars.add(new KeyValuePair(kv.getKey(), kv.getValue(), kv.getDescription(), kv.getInputMode(), kv.getNotes()));
+    }
+    return envVars;
   }
 
   // ************************************************************************
@@ -610,6 +636,7 @@ public final class App
    *  If containerized and SINGULARITY then RuntimeOptions must include one of SINGULARITY_START or SINGULARITY_RUN
    *  If dynamicExecSystem then execSystemConstraints must be given
    *  If archiveSystem given then archive dir must be given
+   *  If parameterSet.envVariables set then check that if inputMode=FIXED then value != "!tapis_not_set"
    */
   private void checkAttrMisc(List<String> errMessages)
   {
@@ -646,6 +673,22 @@ public final class App
     if (!StringUtils.isBlank(archiveSystemId) && StringUtils.isBlank(archiveSystemDir))
     {
       errMessages.add(LibUtils.getMsg("APPLIB_ARCHIVE_NODIR"));
+    }
+    // Check for inputMode=FIXED and value == "!tapis_not_set"
+    // Check for variables that begin with "_tapis". This is not allowed. Jobs will not accept them.
+    if (parameterSet != null && parameterSet.getEnvVariables() != null)
+    {
+      for (KeyValuePair kv : parameterSet.getEnvVariables())
+      {
+        if (FIXED.equals(kv.getInputMode()) && VALUE_NOT_SET.equals(kv.getValue()))
+        {
+          errMessages.add(LibUtils.getMsg("APPLIB_ENV_VAR_FIXED_UNSET", kv.getKey(), kv.getValue()));
+        }
+        if (StringUtils.startsWith(kv.getKey(), RESERVED_PREFIX))
+        {
+          errMessages.add(LibUtils.getMsg("APPLIB_ENV_VAR_INVALID_PREFIX", kv.getKey(), kv.getValue()));
+        }
+      }
     }
   }
 

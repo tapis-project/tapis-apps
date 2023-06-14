@@ -13,6 +13,9 @@ import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
  * Fields set to null indicate attribute not updated.
  *
  * Make defensive copies as needed on get/set to keep this class as immutable as possible.
+ *
+ * Allow notes, jobType to be set because these fields require special handling when
+ * object is being created based on a jax-rs request.
  */
 public final class PatchApp
 {
