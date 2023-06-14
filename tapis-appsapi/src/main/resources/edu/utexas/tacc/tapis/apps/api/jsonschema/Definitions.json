@@ -17,6 +17,7 @@
               "JOB_ERROR_MESSAGE", "JOB_SUBSCRIPTION" ] },
   "FileInputModeEnum": { "type": "string", "enum": [ "OPTIONAL", "REQUIRED", "FIXED" ], "default": "OPTIONAL" },
   "ArgInputModeEnum": { "type": "string", "enum": [ "REQUIRED", "FIXED", "INCLUDE_ON_DEMAND", "INCLUDE_BY_DEFAULT" ], "default": "INCLUDE_ON_DEMAND" },
+  "KeyValueInputModeEnum": { "type": "string", "enum": [ "REQUIRED", "FIXED", "INCLUDE_ON_DEMAND", "INCLUDE_BY_DEFAULT" ], "default": "INCLUDE_BY_DEFAULT" },
   "RuntimeOptions": {
     "type": ["array", "null"],
     "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/RuntimeOptionEnum" }
@@ -165,7 +166,7 @@
       "key": { "type":  "string", "minLength": 1 },
       "value": { "type":  ["string", "null"], "default": "" },
       "description": { "type": ["string", "null"], "default": "", "maxLength": 2048 },
-      "inputMode": { "$ref": "#/ArgInputModeEnum" },
+      "inputMode": { "$ref": "#/KeyValueInputModeEnum" },
       "notes": { "type": "object" }
     }
   }
