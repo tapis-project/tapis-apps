@@ -64,7 +64,7 @@ import edu.utexas.tacc.tapis.sharedapi.responses.RespResourceUrl;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultChangeCount;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultResourceUrl;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
-import edu.utexas.tacc.tapis.apps.api.model.ApiJobAttributes;
+import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqPostApp;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqPutApp;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApp;
@@ -1145,7 +1145,7 @@ public class AppResource
   private static App createAppFromPostRequest(String tenantId, ReqPostApp req, String rawJson)
   {
     // Make sure jobAttributes are filled in as needed with proper defaults for parameterSet.
-    ApiJobAttributes apiJobAttrs = processJobAttrs(req.apiJobAttributes);
+    JobAttributes apiJobAttrs = processJobAttrs(req.jobAttributes);
 
     // Extract Notes from the raw json.
     JsonObject notes = extractNotes(rawJson);
@@ -1172,7 +1172,7 @@ public class AppResource
   private static App createAppFromPutRequest(String tenantId, String id, String version, ReqPutApp req, String rawJson)
   {
     // Make sure jobAttributes are filled in as needed with proper defaults for parameterSet.
-    ApiJobAttributes apiJobAttrs = processJobAttrs(req.apiJobAttributes);
+    JobAttributes apiJobAttrs = processJobAttrs(req.jobAttributes);
 
     // Extract Notes from the raw json.
     JsonObject notes = extractNotes(rawJson);
@@ -1245,11 +1245,11 @@ public class AppResource
    * If reqJobAttrs is null use default constructor to make one.
    * If reqJobAttrs.parameterSet is null use default constructor to make one.
    */
-  private static ApiJobAttributes processJobAttrs(ApiJobAttributes reqJobAttrs)
+  private static JobAttributes processJobAttrs(JobAttributes reqJobAttrs)
   {
     // Based on incoming request values make sure jobAttrs and parmSet are set to something.
     ParameterSet reqParmSet = (reqJobAttrs != null) ? reqJobAttrs.parameterSet : null;
-    ApiJobAttributes apiJobAttrs = (reqJobAttrs != null) ? reqJobAttrs : new ApiJobAttributes();
+    JobAttributes apiJobAttrs = (reqJobAttrs != null) ? reqJobAttrs : new JobAttributes();
     ParameterSet apiParmSet = (reqParmSet != null) ? reqParmSet : new ParameterSet();
     // Fill in final parmSet in final apiJobAttrs.
     apiJobAttrs.parameterSet = apiParmSet;

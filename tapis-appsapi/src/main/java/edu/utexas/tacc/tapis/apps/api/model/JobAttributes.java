@@ -17,7 +17,7 @@ import static edu.utexas.tacc.tapis.apps.model.App.EMPTY_STR_ARRAY;
 /*
  * Class for JobAttributes in an App definition contained in a request.
  */
-public final class ApiJobAttributes
+public final class JobAttributes
 {
   public String description;
   public boolean dynamicExecSystem;
@@ -47,14 +47,14 @@ public final class ApiJobAttributes
   // Make sure correct defaults are set for any fields that are not required.
   // NOTE: We set value = null to distinguish between not set and empty string for incoming jax-rs request.
   // TODO      This allows the constructor that should be called to handle the inputMode=REQUIRED case.
-  public ApiJobAttributes()
+  public JobAttributes()
   {
     // TODO process inputMode for env vars
     tags = EMPTY_STR_ARRAY;
   }
 
   // Constructor to build an api model object from the lib model App object
-  public ApiJobAttributes(App a)
+  public JobAttributes(App a)
   {
     description = a.getJobDescription();
     dynamicExecSystem = a.isDynamicExecSystem();
