@@ -137,8 +137,8 @@ public final class App
   private static final String TOO_LONG_ATTR = "APPLIB_TOO_LONG_ATTR";
 
   // Validation patterns
-  //ID Must start alphabetic and contain only alphanumeric and 4 special characters: - . _ ~
-  private static final String PATTERN_VALID_ID = "^[a-zA-Z]([a-zA-Z0-9]|[-\\._~])*";
+  //ID Must start alphanumeric and contain only alphanumeric and 4 special characters: - . _ ~
+  private static final String PATTERN_VALID_ID = "^[a-zA-Z0-9]([a-zA-Z0-9]|[-\\._~])*";
 
   private static final String SING_OPT_LIST = String.format("%s,%s", RuntimeOption.SINGULARITY_RUN,
                                                                      RuntimeOption.SINGULARITY_START);
