@@ -102,6 +102,10 @@ public class AppsServiceImpl implements AppsService
   private static final Set<String> publicUserSet = Collections.singleton(SKClient.PUBLIC_GRANTEE); // "~public"
   private static final String APPS_SHR_TYPE = "apps";
 
+  // Connection timeouts for SKClient
+  private static final int SK_READ_TIMEOUT_MS = 20000;
+  private static final int SK_CONN_TIMEOUT_MS = 20000;
+
   // ************************************************************************
   // *********************** Enums ******************************************
   // ************************************************************************
@@ -1427,8 +1431,13 @@ public class AppsServiceImpl implements AppsService
   {
     String oboTenant = getServiceTenantId();
     String oboUser = getServiceUserId();
-    
-    try { return serviceClients.getClient(oboUser, oboTenant, SKClient.class); }
+    try
+    {
+      SKClient skClient = serviceClients.getClient(oboUser, oboTenant, SKClient.class);
+      skClient.setReadTimeout(SK_READ_TIMEOUT_MS);
+      skClient.setConnectTimeout(SK_CONN_TIMEOUT_MS);
+      return skClient;
+    }
     catch (Exception e)
     {
       String msg = MsgUtils.getMsg("TAPIS_CLIENT_NOT_FOUND", TapisConstants.SERVICE_NAME_SECURITY, oboTenant, oboUser);
