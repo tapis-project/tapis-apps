@@ -1864,6 +1864,13 @@ public class AppsServiceImpl implements AppsService
           if (af.isIncludeLaunchFiles() != null)
             app1.getParameterSet().getArchiveFilter().setIncludeLaunchFiles(af.isIncludeLaunchFiles());
         }
+        // If LogConfig in ParameterSet is being updated then process it
+        if (pParmSet.getLogConfig() != null)
+        {
+          LogConfig lc = pParmSet.getLogConfig();
+          if (!StringUtils.isBlank(lc.getStdoutFilename())) app1.getParameterSet().getLogConfig().setStdoutFilename(lc.getStdoutFilename());
+          if (!StringUtils.isBlank(lc.getStderrFilename())) app1.getParameterSet().getLogConfig().setStderrFilename(lc.getStderrFilename());
+        }
       }
       if (jobAttrs.getFileInputs() != null) app1.setFileInputs(jobAttrs.getFileInputs());
       if (jobAttrs.getFileInputArrays() != null) app1.setFileInputArrays(jobAttrs.getFileInputArrays());

@@ -2,24 +2,14 @@ package edu.utexas.tacc.tapis.apps;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.apps.model.App;
+import edu.utexas.tacc.tapis.apps.model.*;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.ArgInputMode;
 import edu.utexas.tacc.tapis.apps.model.App.FileInputMode;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
-import edu.utexas.tacc.tapis.apps.model.ReqSubscribe;
-import edu.utexas.tacc.tapis.apps.model.ArgSpec;
-import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
-import edu.utexas.tacc.tapis.apps.model.DeliveryTarget;
 import edu.utexas.tacc.tapis.apps.model.DeliveryTarget.NotifDeliveryMethod;
-import edu.utexas.tacc.tapis.apps.model.FileInput;
-import edu.utexas.tacc.tapis.apps.model.FileInputArray;
-import edu.utexas.tacc.tapis.apps.model.JobAttributes;
-import edu.utexas.tacc.tapis.apps.model.KeyValuePair;
 import edu.utexas.tacc.tapis.apps.model.KeyValuePair.KeyValueInputMode;
-import edu.utexas.tacc.tapis.apps.model.ParameterSet;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
 import edu.utexas.tacc.tapis.apps.model.ReqSubscribe.JobEventCategoryFilter;
 import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
@@ -241,37 +231,37 @@ public final class IntegrationUtils
 
   // FileInputs
   public static final FileInput fin1A = new FileInput("fin1A", "File input 1A", fileInputModeRequired, autoMountLocalTrue,
-                                                      "/src1A", "/target1A");
+          notes1Obj, "/src1A", "/target1A");
   public static final FileInput fin1B = new FileInput("fin1B", "File input 1B", fileInputModeOptional, autoMountLocalFalse,
-                                                      "/src1B", "/target1B");
+          notes1Obj, "/src1B", "/target1B");
   public static final List<FileInput> finList1 = new ArrayList<>(List.of(fin1A, fin1B));
   public static final FileInput fin2A = new FileInput("fin2A", "File input 2A", fileInputModeRequired, autoMountLocalTrue,
-          "/src2A", "/target2A");
+          notes1Obj, "/src2A", "/target2A");
   public static final FileInput fin2B = new FileInput("fin2B", "File input 2B", fileInputModeOptional, autoMountLocalFalse,
-          "/src2B", "/targetBA");
+          notes1Obj, "/src2B", "/targetBA");
   public static final List<FileInput> finList2 = new ArrayList<>(List.of(fin2A, fin2B));
   public static final FileInput fin3A = new FileInput("fin3A", "File input 3A", fileInputModeOptional, autoMountLocalTrue,
-          "/src3A", "/target3A");
+          notes1Obj, "/src3A", "/target3A");
   public static final FileInput fin3B = new FileInput("fin3B", "File input 3B", fileInputModeFixed, autoMountLocalFalse,
-          "/src3B", "/target3B");
+          notes1Obj, "/src3B", "/target3B");
   public static final List<FileInput> finList3 = new ArrayList<>(List.of(fin3A, fin3B));
   public static final List<FileInput> finListNull = null;
 
   // FileInputArrays
-  public static final FileInputArray fia1A = new FileInputArray("fia1A", "File input array 1A", fileInputModeRequired,
+  public static final FileInputArray fia1A = new FileInputArray("fia1A", "File input array 1A", fileInputModeRequired, notes1Obj,
           List.of("/src1Aa","/src1Ab"), "/targetDir1A");
-  public static final FileInputArray fia1B = new FileInputArray("fia1B", "File input array 1B", fileInputModeOptional,
+  public static final FileInputArray fia1B = new FileInputArray("fia1B", "File input array 1B", fileInputModeOptional, notes1Obj,
           List.of("/src1Ba","/src1Bb"), "/targetDir1B");
   public static final List<FileInputArray> fiaList1 = new ArrayList<>(List.of(fia1A, fia1B));
-  public static final FileInputArray fia2A = new FileInputArray("fia2A", "File input array 2A", fileInputModeRequired,
+  public static final FileInputArray fia2A = new FileInputArray("fia2A", "File input array 2A", fileInputModeRequired, notes1Obj,
           List.of("/src2Aa","/src2Ab"), "/targetDir2A");
-  public static final FileInputArray fia2B = new FileInputArray("fia2B", "File input array 2B", fileInputModeOptional,
+  public static final FileInputArray fia2B = new FileInputArray("fia2B", "File input array 2B", fileInputModeOptional, notes1Obj,
           List.of("/src2Ba","/src2Bb"), "/targetDir2B");
   public static final List<FileInputArray> fiaList2 = new ArrayList<>(List.of(fia2A, fia2B));
 
-  public static final FileInputArray fia3A = new FileInputArray("fia3A", "File input array 3A", fileInputModeRequired,
+  public static final FileInputArray fia3A = new FileInputArray("fia3A", "File input array 3A", fileInputModeRequired, notes1Obj,
           List.of("/src3Aa","/src3Ab"), "/targetDir3A");
-  public static final FileInputArray fia3B = new FileInputArray("fia3B", "File input array 3B", fileInputModeOptional,
+  public static final FileInputArray fia3B = new FileInputArray("fia3B", "File input array 3B", fileInputModeOptional, notes1Obj,
           List.of("/src3Ba","/src3Bb"), "/targetDir3B");
   public static final List<FileInputArray> fiaList3 = new ArrayList<>(List.of(fia3A, fia3B));
 
@@ -351,12 +341,16 @@ public final class IntegrationUtils
   public static final List<ArgSpec> schedulerOptionList2 = new ArrayList<>(List.of(schedulerOption2A, schedulerOption2B));
   public static final List<ArgSpec> schedulerOptionListNull = null;
 
+  public static LogConfig logConfig1 = new LogConfig("stdout_file1", "stderr_file1");
+  public static LogConfig logConfig2 = new LogConfig("stdout_file2", "stderr_file2");
+  public static final LogConfig logConfigNull = null;
+
   public static final ParameterSet parameterSet1 = new ParameterSet(appArgList1, containerArgList1, schedulerOptionList1,
-                                                                    envVariables1, archiveFilter1);
+                                                                    envVariables1, archiveFilter1, logConfig1);
   public static final ParameterSet parameterSet2 = new ParameterSet(appArgList2, containerArgList2, schedulerOptionList2,
-                                                                    envVariables2, archiveFilter2);
+                                                                    envVariables2, archiveFilter2, logConfig2);
   public static final ParameterSet parameterSetReject = new ParameterSet(appArgList1, containerArgList1, schedulerOptionList1,
-                                                                         envVariablesReject, archiveFilter1);
+                                                                         envVariablesReject, archiveFilter1, logConfig1);
   public static final ParameterSet parameterSetNull = null;
 
   public static final List<OrderBy> orderByListNull = null;
@@ -503,7 +497,7 @@ public final class IntegrationUtils
   public static PatchApp makePatchAppPartial2()
   {
     ParameterSet parameterSet = new ParameterSet(appArgListNull, containerArgList3, schedulerOptionListNull,
-                                                 envVariablesNull, archiveFilterNull);
+                                                 envVariablesNull, archiveFilterNull, logConfigNull);
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
@@ -521,7 +515,7 @@ public final class IntegrationUtils
   public static PatchApp makePatchAppPartial3()
   {
     ParameterSet parameterSet = new ParameterSet(appArgList3, containerArgListNull, schedulerOptionListNull,
-                                                 envVariablesNull, archiveFilterNull);
+                                                 envVariablesNull, archiveFilterNull, logConfigNull);
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,

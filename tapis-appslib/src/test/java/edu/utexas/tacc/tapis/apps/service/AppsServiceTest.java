@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.apps.model.*;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -17,15 +18,10 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
-import edu.utexas.tacc.tapis.apps.model.App;
-import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
-import edu.utexas.tacc.tapis.apps.model.AppShare;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
-import edu.utexas.tacc.tapis.apps.model.ArchiveFilter;
-import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.shared.security.TenantManager;
@@ -38,7 +34,7 @@ import edu.utexas.tacc.tapis.apps.IntegrationUtils;
 import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
 import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
-import edu.utexas.tacc.tapis.apps.model.PatchApp;
+
 import static edu.utexas.tacc.tapis.apps.IntegrationUtils.*;
 import static edu.utexas.tacc.tapis.apps.service.AppsServiceImpl.AuthListType.ALL;
 import static edu.utexas.tacc.tapis.apps.service.AppsServiceImpl.AuthListType.OWNED;
@@ -1577,6 +1573,14 @@ public class AppsServiceTest
       Assert.assertTrue(archiveExcludesList.contains(archiveExcludeStr));
       System.out.println("Found archiveExclude: " + archiveExcludeStr);
     }
+
+    // Verify logConfig in parameterSet
+    LogConfig tmpLogConfig = parmSet.getLogConfig();
+    LogConfig logConfig0 = parmSet0.getLogConfig();
+    Assert.assertNotNull(tmpLogConfig, "logConfig was null");
+    System.out.println("Found logConfig: " + tmpLogConfig);
+    Assert.assertEquals(tmpLogConfig.getStdoutFilename(), logConfig0.getStdoutFilename(), "stdoutFilename mismatch");
+    Assert.assertEquals(tmpLogConfig.getStderrFilename(), logConfig0.getStderrFilename(), "stderrFilename mismatch");
 
     // Verify file inputs
     verifyFileInputs(app0.getFileInputs(), tmpApp.getFileInputs());

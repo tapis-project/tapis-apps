@@ -1,5 +1,7 @@
 package edu.utexas.tacc.tapis.apps.model;
 
+import org.jooq.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +17,7 @@ public final class ParameterSet
   private List<ArgSpec> schedulerOptions;
   private List<KeyValuePair> envVariables;
   private ArchiveFilter archiveFilter;
+  private LogConfig logConfig;
 
   // ************************************************************************
   // *********************** Constructors ***********************************
@@ -27,19 +30,21 @@ public final class ParameterSet
     schedulerOptions = new ArrayList<>();
     envVariables = new ArrayList<>();
     archiveFilter = new ArchiveFilter();
+    logConfig = new LogConfig();
   }
 
   /**
    * Constructor setting all final attributes.
    */
   public ParameterSet(List<ArgSpec> appArgs1, List<ArgSpec> containerArgs1, List<ArgSpec> schedulerOptions1,
-                      List<KeyValuePair> envVariables1, ArchiveFilter archiveFilter1)
+                      List<KeyValuePair> envVariables1, ArchiveFilter archiveFilter1, LogConfig logConfig1)
   {
     appArgs = (appArgs1 == null) ? null: new ArrayList<>(appArgs1);
     containerArgs = (containerArgs1 == null) ? null: new ArrayList<>(containerArgs1);
     schedulerOptions = (schedulerOptions1 == null) ? null: new ArrayList<>(schedulerOptions1);
     envVariables = (envVariables1 == null) ? null: new ArrayList<>(envVariables1);
     archiveFilter = (archiveFilter1 == null) ? null: new ArchiveFilter(archiveFilter1);
+    logConfig = new LogConfig(logConfig1);
   }
 
   public ParameterSet(ParameterSet p)
@@ -49,6 +54,7 @@ public final class ParameterSet
     schedulerOptions = p.getSchedulerOptions();
     envVariables = p.getEnvVariables();
     archiveFilter = p.getArchiveFilter();
+    logConfig = p.getLogConfig();
   }
 
   /* ********************************************************************** */
@@ -62,7 +68,9 @@ public final class ParameterSet
   public void setSchedulerOptions(List<ArgSpec> aa) { schedulerOptions = aa; }
   public List<KeyValuePair> getEnvVariables() { return (envVariables == null) ? null : new ArrayList<>(envVariables); }
   public void setEnvVariables(List<KeyValuePair> kv) { envVariables = kv; }
-  // When patching we update archiveFilter attributes via setter, so do not return a new instance of ArchiveFilter.
+  // When patching we update archiveFilter or logConfig via setters, so do not return  new instances.
   public ArchiveFilter getArchiveFilter() { return archiveFilter; }
   public void setArchiveFilter(ArchiveFilter af) { archiveFilter = af; }
+  public LogConfig getLogConfig() { return logConfig; }
+  public void setLogConfig(LogConfig lc) { logConfig = lc; }
 }

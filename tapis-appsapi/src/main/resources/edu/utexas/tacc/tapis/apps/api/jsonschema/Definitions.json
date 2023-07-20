@@ -89,7 +89,17 @@
       "envVariables": {
         "type": ["array", "null"], "items":  { "$ref": "#/KeyValuePair" }
       },
-      "archiveFilter": { "$ref": "#/ArchiveFilter" }
+      "archiveFilter": { "$ref": "#/ArchiveFilter" },
+      "logConfig": {
+        "type": "object",
+        "additionalProperties": false,
+        "$comment": "Log file redirection and customization in supported runtimes",
+        "required": [ "stdoutFilename", "stderrFilename" ],
+        "properties": {
+          "stdoutFilename": {"type": "string", "minLength": 1},
+          "stderrFilename": {"type": "string", "minLength": 1}
+        }
+      }
     }
   },
   "FileInput": {
@@ -101,6 +111,7 @@
       "description": { "type":  ["string", "null"], "maxLength": 8096 },
       "inputMode": { "$ref": "#/FileInputModeEnum" },
       "autoMountLocal": { "type": "boolean", "default": true },
+      "notes": { "type": "object" },
       "sourceUrl": { "type": ["string", "null"], "minLength": 1, "format": "uri" },
       "targetPath": { "type": "string", "minLength": 1 }
     }
@@ -113,6 +124,7 @@
       "name": { "type": "string", "minLength": 1, "maxLength": 80 },
       "description": { "type":  ["string", "null"], "maxLength": 8096 },
       "inputMode": { "$ref": "#/FileInputModeEnum" },
+      "notes": { "type": "object" },
       "sourceUrls": { "type": ["array", "null"], "items": { "type": "string", "format": "uri" } },
       "targetDir": {"type": "string", "minLength": 1 }
     }
