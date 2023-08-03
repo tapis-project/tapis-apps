@@ -1,19 +1,21 @@
 package edu.utexas.tacc.tapis.apps.api.responses.results;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import static edu.utexas.tacc.tapis.apps.api.resources.AppResource.SUMMARY_ATTRS;
 import static edu.utexas.tacc.tapis.apps.model.App.DELETED_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.IS_PUBLIC_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.SHARED_WITH_USERS_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.SHARED_APP_CTX_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.TENANT_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.ID_FIELD;
@@ -45,6 +47,7 @@ public final class TapisAppDTO
 
   public String sharedAppCtx;
   public boolean isPublic;
+  public Set<String> sharedWithUsers;
 
   public String tenant;
   public String id;
@@ -99,6 +102,7 @@ public final class TapisAppDTO
     if (maxJobsPerUser < 0) maxJobsPerUser = Integer.MAX_VALUE;
     sharedAppCtx = a.getSharedAppCtx();
     isPublic = a.isPublic();
+    sharedWithUsers = a.getSharedWithUsers();
   }
 
   /**
@@ -186,6 +190,7 @@ public final class TapisAppDTO
       case UPDATED_FIELD -> jsonObject.addProperty(UPDATED_FIELD, updated.toString());
       case SHARED_APP_CTX_FIELD -> jsonObject.addProperty(SHARED_APP_CTX_FIELD, sharedAppCtx);
       case IS_PUBLIC_FIELD -> jsonObject.addProperty(IS_PUBLIC_FIELD, Boolean.toString(isPublic));
+      case SHARED_WITH_USERS_FIELD -> jsonObject.add(SHARED_WITH_USERS_FIELD, gson.toJsonTree(sharedWithUsers));
     }
   }
 }

@@ -130,6 +130,7 @@ public final class App
   public static final String UPDATED_FIELD = "updated";
   public static final String SHARED_APP_CTX_FIELD = "sharedAppCtx";
   public static final String IS_PUBLIC_FIELD = "isPublic";
+  public static final String SHARED_WITH_USERS_FIELD = "sharedWithUsers";
 
   // Message keys
   private static final String CREATE_MISSING_ATTR = "APPLIB_CREATE_MISSING_ATTR";
@@ -179,6 +180,7 @@ public final class App
 
   private String sharedAppCtx; // App accessible due to having been shared with requesting user. Set to grantor.
   private boolean isPublic = DEFAULT_IS_PUBLIC;
+  private Set<String> sharedWithUsers;
 
   // NOTE: In order to use jersey's SelectableEntityFilteringFeature fields cannot be final.
   // === Start fields in table apps =============================================
@@ -319,6 +321,7 @@ public final class App
     notes = a.getNotes();
     sharedAppCtx = a.getSharedAppCtx();
     isPublic = a.isPublic();
+    sharedWithUsers = a.getSharedWithUsers();
     uuid = a.getUuid();
     deleted = a.isDeleted();
   }
@@ -442,6 +445,7 @@ public final class App
     notes = a.getNotes();
     sharedAppCtx = a.getSharedAppCtx();
     isPublic = a.isPublic();
+    sharedWithUsers = a.getSharedWithUsers();
     uuid = a.getUuid();
     deleted = a.isDeleted();
     created = a.getCreated();
@@ -900,4 +904,7 @@ public final class App
 
   public boolean isPublic() { return isPublic; }
   public void setIsPublic(boolean b) { isPublic = b;  }
+
+  public void setSharedWithUsers(Set<String> s) { sharedWithUsers = (s == null) ? null : new HashSet<>(s); }
+  public Set<String> getSharedWithUsers() { return (sharedWithUsers == null) ? null : new HashSet<>(sharedWithUsers); }
 }

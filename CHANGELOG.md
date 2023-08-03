@@ -15,6 +15,7 @@ Incremental improvements.
 ### New features:
 - Add support for attribute *notes* for *fileInput* and *fileInputArray*.
 - Add support for *logConfig* in *parameterSet*. For supporting flexible redirection of stdout and stderr. 
+- Add computed attribute sharedWithUsers to be included when an application is fetched.
 
 ---------------------------------------------------------------------------
 ## 1.4.0 - 2023-07-07

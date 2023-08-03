@@ -679,10 +679,11 @@ public class AppsServiceImpl implements AppsService
       }
     }
 
-    // Set sharedAppCtx.
+    // Update dynamically computed info.
     app.setSharedAppCtx(sharedAppCtx);
-    // Update dynamically computed flags.
-    app.setIsPublic(isAppSharedPublic(rUser, app.getTenant(), appId));
+    AppShare appShare = getAppShare(rUser, appId);
+    app.setIsPublic(appShare.isPublic());
+    app.setSharedWithUsers(appShare.getUserList());
     return app;
   }
 
@@ -840,10 +841,12 @@ public class AppsServiceImpl implements AppsService
 
     List<App> apps = dao.getApps(rUser, verifiedSearchList, null, limit, orderByList, skip, startAfter,
                                  versionSpecified, includeDeleted, listTypeEnum, viewableIDs, sharedIDs);
-    // Update dynamically computed flags.
+    // Update dynamically computed info.
     for (App app : apps)
     {
-      app.setIsPublic(isAppSharedPublic(rUser, app.getTenant(), app.getId()));
+      AppShare appShare = getAppShare(rUser, app.getId());
+      app.setIsPublic(appShare.isPublic());
+      app.setSharedWithUsers(appShare.getUserList());
     }
     return apps;
   }
@@ -929,7 +932,9 @@ public class AppsServiceImpl implements AppsService
     // Update dynamically computed flags.
     for (App app : apps)
     {
-      app.setIsPublic(isAppSharedPublic(rUser, app.getTenant(), app.getId()));
+      AppShare appShare = getAppShare(rUser, app.getId());
+      app.setIsPublic(appShare.isPublic());
+      app.setSharedWithUsers(appShare.getUserList());
     }
     return apps;
   }
