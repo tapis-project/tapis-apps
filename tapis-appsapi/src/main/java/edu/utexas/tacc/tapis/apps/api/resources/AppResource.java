@@ -710,7 +710,7 @@ public class AppResource
     if (_log.isTraceEnabled())
       ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(),
                           "appId="+appId, "appVersion="+appVersion, "requireExecPerm="+requireExecPerm,
-                          "impersonationId="+impersonationId, "resourceTenant"+resourceTenant);
+                          "impersonationId="+impersonationId, "resourceTenant="+resourceTenant);
 
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
 
