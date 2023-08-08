@@ -681,7 +681,7 @@ public class AppsServiceImpl implements AppsService
 
     // Update dynamically computed info.
     app.setSharedAppCtx(sharedAppCtx);
-    AppShare appShare = getAppShare(rUser, appId);
+    AppShare appShare = getAppShare(rUser, appId, impersonationId, resourceTenant);
     app.setIsPublic(appShare.isPublic());
     app.setSharedWithUsers(appShare.getUserList());
     return app;
@@ -1210,17 +1210,27 @@ public class AppsServiceImpl implements AppsService
   public AppShare getAppShare(ResourceRequestUser rUser, String appId)
           throws TapisException, TapisClientException
   {
+    return getAppShare(rUser, appId, null, null);
+  }
+  // Full method with support for svc call allowing impersonation and set resource tenant
+  AppShare getAppShare(ResourceRequestUser rUser, String appId, String impersonationId, String resourceTenant)
+          throws TapisException, TapisClientException
+  {
     // ---------------------------- Check inputs ------------------------------------
     // Required app attributes: rUser, id
     AppOperation op = AppOperation.read;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
-    String oboTenantId = rUser.getOboTenantId();
+    String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
+    String oboOrResourceTenant = StringUtils.isBlank(resourceTenant) ? rUser.getOboTenantId() : resourceTenant;
+
+    //Make sure to never return null
+    AppShare retShare = new AppShare(false, Collections.EMPTY_SET);
 
     // We need owner to check auth and if app not there cannot find owner, so
     // if app does not exist then return null
-    if (!dao.checkForApp(oboTenantId, appId, true)) return null;
+    if (!dao.checkForApp(oboOrResourceTenant, appId, true)) return retShare;
 
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, op, appId);
@@ -1229,7 +1239,7 @@ public class AppsServiceImpl implements AppsService
     // Create SKShareGetSharesParms needed for SK calls.
     var skParms = new SKShareGetSharesParms();
     skParms.setResourceType(APPS_SHR_TYPE);
-    skParms.setTenant(oboTenantId);
+    skParms.setTenant(oboOrResourceTenant);
     skParms.setResourceId1(appId);
 
     var userSet = new HashSet<String>();
