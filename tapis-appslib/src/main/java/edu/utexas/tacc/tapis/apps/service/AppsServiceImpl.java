@@ -645,11 +645,14 @@ public class AppsServiceImpl implements AppsService
     // ------------------------- Check authorization -------------------------
     // If owner is making the request then always allowed, and we will not set sharedAppCtx
     boolean isPermitted = true;
-    String sharedAppCtx = null;
-
-    // If not owner we need to do some authorization checking and determine if sharedAppCtx must be set
     String owner = app.getOwner();
-    if (!oboOrImpersonatedUser.equals(owner))
+    boolean isOwner = oboOrImpersonatedUser.equals(owner);
+
+    // Determine if shared directly with user. Used in auth check and to update sharedAppCtx
+    boolean sharedWithUser = isAppSharedWithUser(rUser, appId, oboOrImpersonatedUser, Permission.READ);
+
+    // If not owner we need to do some authorization checking
+    if (!isOwner)
     {
       // Access might be allowed due to permission or due to sharing, so we will need to check for both.
       // Also, need to record if it was allowed due to sharing. Jobs needs to know.
@@ -661,29 +664,28 @@ public class AppsServiceImpl implements AppsService
       catch (ForbiddenException e) {isPermitted = false;}
 
       // Check shared app context
-      // Even if allowed by permission we still need to check for sharing and set sharedAppCtx in the returned app.
-      boolean shared = isAppSharedWithUser(rUser, appId, oboOrImpersonatedUser, Permission.READ);
-      // NOTE: Grantor is always app owner
-      if (shared) sharedAppCtx = owner;
-
+      // Even if allowed by permission we still need to check for sharing.
       // If not permitted or shared then deny
-      if (!isPermitted && !shared)
+      if (!isPermitted && !sharedWithUser)
       {
         throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()));
       }
 
       // If flag is set to also require EXECUTE perm then make explicit auth call to make sure user has exec perm
-      if (!shared && requireExecPerm)
+      if (!sharedWithUser && requireExecPerm)
       {
         checkAuth(rUser, AppOperation.execute, appId, owner, nullTargetUser, nullPermSet, impersonationId);
       }
     }
 
     // Update dynamically computed info.
-    app.setSharedAppCtx(sharedAppCtx);
     AppShare appShare = getAppShare(rUser, appId, impersonationId, resourceTenant);
     app.setIsPublic(appShare.isPublic());
     app.setSharedWithUsers(appShare.getUserList());
+    // Update sharedAppCtx unless owner is making the request
+    // NOTE: Grantor is always app owner
+    if (!isOwner && (sharedWithUser || appShare.isPublic())) app.setSharedAppCtx(owner);
+
     return app;
   }
 
@@ -2279,7 +2281,7 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Check if an app is shared with a user.
+   * Check if an app is shared directly with a user.
    * SK call hasPrivilege includes check for public sharing.
    *
    * @param rUser - ResourceRequestUser containing tenant, user and request info
