@@ -96,8 +96,8 @@
         "$comment": "Log file redirection and customization in supported runtimes",
         "required": [ "stdoutFilename", "stderrFilename" ],
         "properties": {
-          "stdoutFilename": {"type": "string", "minLength": 1},
-          "stderrFilename": {"type": "string", "minLength": 1}
+          "stdoutFilename": {"type": "string"},
+          "stderrFilename": {"type": "string"}
         }
       }
     }
