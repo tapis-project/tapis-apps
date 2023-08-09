@@ -24,6 +24,7 @@
     "notes": { "type": "object" },
     "sharedAppCtx": { "type": ["string", "null"] },
     "isPublic": { "type": "boolean" },
+    "sharedWithUsers": { "type": "array", "items": { "type":  "string" } },
     "tenant": { "type":  "string" },
     "uuid": { "type":  "string" },
     "deleted": { "type":  "boolean" },
