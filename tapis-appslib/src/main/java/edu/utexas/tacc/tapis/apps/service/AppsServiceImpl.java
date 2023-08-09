@@ -280,7 +280,7 @@ public class AppsServiceImpl implements AppsService
     // App with given version must already exist and not be deleted
     if (!dao.checkForAppVersion(resourceTenantId, appId, appVersion, false))
     {
-      throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, appId));
+      throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, appId, appVersion));
     }
 
     // If needed process request to create list of env variables with proper defaults.
