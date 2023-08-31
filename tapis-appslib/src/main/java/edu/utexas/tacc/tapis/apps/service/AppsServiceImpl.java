@@ -13,6 +13,8 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
 import edu.utexas.tacc.tapis.apps.model.*;
+import edu.utexas.tacc.tapis.shared.uri.TapisUrl;
+import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jvnet.hk2.annotations.Service;
@@ -1280,12 +1282,61 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(appId))
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
-    // App must already exist and not be deleted
+    // App must already exist and not be deleted.
     if (!dao.checkForApp(resourceTenantId, appId, false))
       throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
 
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, op, appId);
+
+    // Fetch latest version of app since we need attributes from it.
+    App app;
+    app = dao.getApp(resourceTenantId, appId);
+
+    //TODO Check that app owner, the share grantor, has proper access to systems defined in the application.
+    // Source system for all file inputs involving Tapis protocol sourceUrl
+    var errMessages = new ArrayList<String>();
+    var systemsClient = getSystemsClient(rUser);
+
+    // Now make checks that do require a dao or service call.
+    // If execSystemId is set verify it
+    if (!StringUtils.isBlank(app.getExecSystemId())) checkExecSystem(systemsClient, app, errMessages);
+
+    // If archiveSystemId is set verify it
+    if (!StringUtils.isBlank(app.getArchiveSystemId())) checkArchiveSystem(systemsClient, app, errMessages);
+
+    // TODO If fileInputs set then TODO TBD
+    var fileInputs = app.getFileInputs();
+    if (fileInputs != null && !fileInputs.isEmpty())
+    {
+      for (FileInput fi : fileInputs)
+      {
+        // TODO
+        TapisUtils.extractFilename(fi.getSourceUrl());
+        TapisUrl.makeTapisUrl(fi.getSourceUrl());
+
+      }
+    }
+    // TODO If fileInputArrays set then TODO TBD
+    var fileInputArrays = app.getFileInputArrays();
+    if (fileInputArrays != null && !fileInputArrays.isEmpty())
+    {
+
+    }
+
+    if (!StringUtils.isBlank(app.getArchiveSystemId()))
+    {
+      checkArchiveSystem(systemsClient, app, errMessages);
+    }
+
+    // If validation failed throw an exception
+    if (!errMessages.isEmpty())
+    {
+      // Construct message reporting all errors
+      String allErrors = getListOfErrors(rUser, app.getId(), errMessages);
+      _log.error(allErrors);
+      throw new IllegalStateException(allErrors);
+    }
 
     // ----------------- Make update --------------------
     updateUserShares(rUser, OP_SHARE, appId, postShare, false);
@@ -1919,7 +1970,7 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * Check attributes related to execSystemId
-   *   - verify that execSystemId exists
+   *   - verify that execSystemId exists and is accessible to user with EXEC permission.
    *   - verify that execSystem.canExec == true
    *   - verify that if jobType is BATCH then execSystem.canRunBatch == true
    *   - if app type is BATCH and app specifies a LogicalQueue
