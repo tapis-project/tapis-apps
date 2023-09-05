@@ -275,6 +275,18 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
      */
     public final TableField<AppsVersionsRecord, LocalDateTime> UPDATED = createField(DSL.name("updated"), SQLDataType.LOCALDATETIME(6).nullable(false).defaultValue(DSL.field("timezone('utc'::text, now())", SQLDataType.LOCALDATETIME)), this, "UTC time for when record was last updated");
 
+    /**
+     * The column
+     * <code>tapis_app.apps_versions.dtn_system_input_staging_dir</code>.
+     */
+    public final TableField<AppsVersionsRecord, String> DTN_SYSTEM_INPUT_STAGING_DIR = createField(DSL.name("dtn_system_input_staging_dir"), SQLDataType.CLOB, this, "");
+
+    /**
+     * The column
+     * <code>tapis_app.apps_versions.dtn_system_output_staging_dir</code>.
+     */
+    public final TableField<AppsVersionsRecord, String> DTN_SYSTEM_OUTPUT_STAGING_DIR = createField(DSL.name("dtn_system_output_staging_dir"), SQLDataType.CLOB, this, "");
+
     private AppsVersions(Name alias, Table<AppsVersionsRecord> aliased) {
         this(alias, aliased, null);
     }

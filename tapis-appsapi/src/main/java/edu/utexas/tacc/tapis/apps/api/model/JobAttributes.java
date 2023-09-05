@@ -26,6 +26,8 @@ public final class JobAttributes
   public String execSystemExecDir;
   public String execSystemInputDir;
   public String execSystemOutputDir;
+  public String dtnSystemInputStagingDir;
+  public String dtnSystemOutputStagingDir;
   public String execSystemLogicalQueue;
   public String archiveSystemId;
   public String archiveSystemDir;
@@ -63,6 +65,8 @@ public final class JobAttributes
     execSystemExecDir = a.getExecSystemExecDir();
     execSystemInputDir = a.getExecSystemInputDir();
     execSystemOutputDir = a.getExecSystemOutputDir();
+    dtnSystemInputStagingDir = a.getDtnSystemInputStagingDir();
+    dtnSystemOutputStagingDir = a.getDtnSystemOutputStagingDir();
     execSystemLogicalQueue = a.getExecSystemLogicalQueue();
     archiveSystemId = a.getArchiveSystemId();
     archiveSystemDir = a.getArchiveSystemDir();
