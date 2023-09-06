@@ -101,8 +101,7 @@
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-core</artifactId>
     </dependency>
- <!-- apache.maven.artifact used to parse/validate maven version, including version ranges
-      TODO move version to bom -->
+ <!-- apache.maven.artifact used to parse/validate maven version, including version ranges -->
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-artifact</artifactId>

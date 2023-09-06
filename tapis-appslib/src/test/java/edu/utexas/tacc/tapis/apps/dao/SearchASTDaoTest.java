@@ -28,7 +28,7 @@ import static edu.utexas.tacc.tapis.apps.IntegrationUtils.*;
  *       For this reason there is currently no need to have a SearchAppsTest suite.
  *       If this changes then we will need to create another suite and move the test data into IntegrationUtils so that
  *       it can be re-used.
- * TODO: Test that timestamps are handling timezone correctly.
+ * TBD: Test that timestamps are handling timezone correctly.
  */
 @Test(groups={"integration"})
 public class SearchASTDaoTest
@@ -155,9 +155,9 @@ public class SearchASTDaoTest
 //    validCaseInputs.put(16,new CaseData(1, "id LIKE " + sq(app0Name)));
 //    validCaseInputs.put(17,new CaseData(0, "id LIKE 'NOSUCHAPPxFM2c29bc8RpKWeE2sht7aZrJzQf3s'"));
 //    validCaseInputs.put(18,new CaseData(numApps, "id LIKE " + appNameLikeAll));
-//// TODO - continue
-////    validCaseInputs.put(19,new CaseData(numApps-1, "id LIKE " + appNameLikeAll + " AND id NLIKE " + app0Name)); // TODO support NLIKE
-////    validCaseInputs.put(20,new CaseData(1, "id LIKE " + appNameLikeAll + " AND id IN " + nameList)); // TODO
+//// TBD - continue
+////    validCaseInputs.put(19,new CaseData(numApps-1, "id LIKE " + appNameLikeAll + " AND id NLIKE " + app0Name)); // TBD support NLIKE
+////    validCaseInputs.put(20,new CaseData(1, "id LIKE " + appNameLikeAll + " AND id IN " + nameList)); // TBD
 ////    validCaseInputs.put(21,new CaseData(numApps-1, "id LIKE " + appNameLikeAll, "name.nin." + nameList));
 ////    validCaseInputs.put(22,new CaseData(numApps, "id LIKE " + appNameLikeAll, "job_type = LINUX"));
 ////    validCaseInputs.put(23,new CaseData(numApps/2, "id LIKE " + appNameLikeAll, "job_type = LINUX","owner <> " + sq(ownerUser2)));

@@ -465,15 +465,6 @@ public class AppsServiceTest
     tmpApp = svc.getApp(newOwnerAuth, app0.getId(), app0.getVersion(), false, null, null);
     Assert.assertEquals(tmpApp.getOwner(), newOwnerName);
 
-// TODO we no longer use perms for owner
-//    // Check expected auxiliary updates have happened
-//    // New owner should be able to retrieve permissions and have all permissions
-//    Set<Permission> userPerms = svc.getUserPermissions(newOwnerAuth, app0.getId(), newOwnerName);
-//    Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
-//    for (Permission perm : Permission.values())
-//    {
-//      Assert.assertTrue(userPerms.contains(perm));
-//    }
     // Original owner should no longer have modify permission
     Set<Permission> userPerms = svc.getUserPermissions(newOwnerAuth, app0.getId(), origOwnerName);
     Assert.assertFalse(userPerms.contains(Permission.MODIFY));
@@ -1669,7 +1660,7 @@ public class AppsServiceTest
     Assert.assertEquals(tmpApp.getDescription(), app0.getDescription());
     Assert.assertEquals(tmpApp.getRuntimeVersion(), app0.getRuntimeVersion());
 
-// TODO
+// TBD
 //    // Verify runtimeOptions
 //    List<RuntimeOption> rtOps = tmpApp.getRuntimeOptions();
 //    Assert.assertNotNull(rtOps);
