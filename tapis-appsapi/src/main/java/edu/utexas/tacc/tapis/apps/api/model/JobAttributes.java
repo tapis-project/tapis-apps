@@ -46,10 +46,8 @@ public final class JobAttributes
   // Default constructor to ensure defaults are set during jax-rs processing
   // Make sure correct defaults are set for any fields that are not required.
   // NOTE: We set value = null to distinguish between not set and empty string for incoming jax-rs request.
-  // TODO      This allows the constructor that should be called to handle the inputMode=REQUIRED case.
   public JobAttributes()
   {
-    // TODO process inputMode for env vars
     tags = EMPTY_STR_ARRAY;
   }
 
