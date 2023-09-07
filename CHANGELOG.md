@@ -8,6 +8,17 @@ https://tapis.readthedocs.io/en/latest/technical/apps.html
 You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
+---------------------------------------------------------------------------
+## 1.4.2 - 2023-09-07
+
+Code cleanup, update java version in docker builds.
+
+### New features:
+- None
+
+### Bug fixes:
+- None
+
 ## 1.4.1 - 2023-08-09
 
 Incremental improvements.
