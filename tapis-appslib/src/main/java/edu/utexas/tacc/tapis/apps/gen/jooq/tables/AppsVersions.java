@@ -275,6 +275,11 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
      */
     public final TableField<AppsVersionsRecord, LocalDateTime> UPDATED = createField(DSL.name("updated"), SQLDataType.LOCALDATETIME(6).nullable(false).defaultValue(DSL.field("timezone('utc'::text, now())", SQLDataType.LOCALDATETIME)), this, "UTC time for when record was last updated");
 
+    /**
+     * The column <code>tapis_app.apps_versions.locked</code>.
+     */
+    public final TableField<AppsVersionsRecord, Boolean> LOCKED = createField(DSL.name("locked"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("false", SQLDataType.BOOLEAN)), this, "");
+
     private AppsVersions(Name alias, Table<AppsVersionsRecord> aliased) {
         this(alias, aliased, null);
     }

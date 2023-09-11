@@ -631,6 +631,20 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
         return (LocalDateTime) get(41);
     }
 
+    /**
+     * Setter for <code>tapis_app.apps_versions.locked</code>.
+     */
+    public void setLocked(Boolean value) {
+        set(42, value);
+    }
+
+    /**
+     * Getter for <code>tapis_app.apps_versions.locked</code>.
+     */
+    public Boolean getLocked() {
+        return (Boolean) get(42);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -654,7 +668,7 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
     /**
      * Create a detached, initialised AppsVersionsRecord
      */
-    public AppsVersionsRecord(Integer seqId, Integer appSeqId, String tenant, String id, String version, String description, Runtime runtime, String runtimeVersion, String[] runtimeOptions, String containerImage, JobType jobType, Integer maxJobs, Integer maxJobsPerUser, Boolean strictFileInputs, String jobDescription, Boolean dynamicExecSystem, String[] execSystemConstraints, String execSystemId, String execSystemExecDir, String execSystemInputDir, String execSystemOutputDir, String execSystemLogicalQueue, String archiveSystemId, String archiveSystemDir, Boolean archiveOnAppError, Boolean isMpi, String mpiCmd, String cmdPrefix, JsonElement parameterSet, JsonElement fileInputs, JsonElement fileInputArrays, Integer nodeCount, Integer coresPerNode, Integer memoryMb, Integer maxMinutes, JsonElement subscriptions, String[] jobTags, String[] tags, JsonElement notes, UUID uuid, LocalDateTime created, LocalDateTime updated) {
+    public AppsVersionsRecord(Integer seqId, Integer appSeqId, String tenant, String id, String version, String description, Runtime runtime, String runtimeVersion, String[] runtimeOptions, String containerImage, JobType jobType, Integer maxJobs, Integer maxJobsPerUser, Boolean strictFileInputs, String jobDescription, Boolean dynamicExecSystem, String[] execSystemConstraints, String execSystemId, String execSystemExecDir, String execSystemInputDir, String execSystemOutputDir, String execSystemLogicalQueue, String archiveSystemId, String archiveSystemDir, Boolean archiveOnAppError, Boolean isMpi, String mpiCmd, String cmdPrefix, JsonElement parameterSet, JsonElement fileInputs, JsonElement fileInputArrays, Integer nodeCount, Integer coresPerNode, Integer memoryMb, Integer maxMinutes, JsonElement subscriptions, String[] jobTags, String[] tags, JsonElement notes, UUID uuid, LocalDateTime created, LocalDateTime updated, Boolean locked) {
         super(AppsVersions.APPS_VERSIONS);
 
         setSeqId(seqId);
@@ -699,5 +713,6 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
         setUuid(uuid);
         setCreated(created);
         setUpdated(updated);
+        setLocked(locked);
     }
 }

@@ -60,6 +60,7 @@ public final class App
   public static final String[] EMPTY_STR_ARRAY = new String[0];
   public static final String DEFAULT_OWNER = APIUSERID_VAR;
   public static final boolean DEFAULT_ENABLED = true;
+  public static final boolean DEFAULT_LOCKED = false;
   public static final boolean DEFAULT_CONTAINERIZED = true;
   public static final boolean DEFAULT_STRICT_FILE_INPUTS = false;
   public static final boolean DEFAULT_IS_PUBLIC = false;
@@ -84,6 +85,7 @@ public final class App
   public static final String DESCRIPTION_FIELD = "description";
   public static final String OWNER_FIELD = "owner";
   public static final String ENABLED_FIELD = "enabled";
+  public static final String LOCKED_FIELD = "locked";
   public static final String CONTAINERIZED_FIELD = "containerized";
   public static final String RUNTIME_FIELD = "runtime";
   public static final String RUNTIMEVER_FIELD = "runtimeVersion";
@@ -164,7 +166,7 @@ public final class App
   //       UNSET should never be returned to caller.
   public enum JobType  {BATCH, FORK, UNSET}
   public enum AppOperation {create, read, modify, execute, delete, undelete, hardDelete, changeOwner,
-                            enable, disable, getPerms, grantPerms, revokePerms}
+                            enable, disable, getPerms, grantPerms, revokePerms, lock, unlock}
   public enum Permission {READ, MODIFY, EXECUTE}
   public enum Runtime {DOCKER, SINGULARITY}
   // NOTE: RuntimeOption starts with NONE due to a bug in client code generation.
@@ -197,6 +199,7 @@ public final class App
   private int verSeqId;
   private final String version;    // Version of the app
   private String description; // Full description of the app
+  private boolean locked; // Indicates if app version is currently locked
   private Runtime runtime;
   private String runtimeVersion;
   private List<RuntimeOption> runtimeOptions;
@@ -285,6 +288,7 @@ public final class App
     description = a.getDescription();
     owner = a.getOwner();
     enabled = a.isEnabled();
+    locked = a.isLocked();
     containerized = a.isContainerized();
     runtime = a.getRuntime();
     runtimeVersion = a.getRuntimeVersion();
@@ -331,7 +335,7 @@ public final class App
    * Also useful for testing
    */
   public App(int seqId1, int verSeqId1, String tenant1, String id1, String version1, String description1,
-             JobType jobType1, String owner1, boolean enabled1, boolean containerized1,
+             JobType jobType1, String owner1, boolean enabled1, boolean locked1, boolean containerized1,
              Runtime runtime1, String runtimeVersion1, List<RuntimeOption> runtimeOptions1, String containerImage1,
              int maxJobs1, int maxJobsPerUser1, boolean strictFileInputs1,
              // == Start jobAttributes
@@ -355,6 +359,7 @@ public final class App
     jobType = (jobType1 == null) ? DEFAULT_JOB_TYPE : jobType1;
     owner = owner1;
     enabled = enabled1;
+    locked = locked1;
     containerized = containerized1;
     runtime = (runtime1 == null) ? DEFAULT_RUNTIME : runtime1;
     runtimeVersion = runtimeVersion1;
@@ -409,6 +414,7 @@ public final class App
     description = a.getDescription();
     owner = a.getOwner();
     enabled = a.isEnabled();
+    locked = a.isLocked();
     containerized = a.isContainerized();
     runtime = a.getRuntime();
     runtimeVersion = a.getRuntimeVersion();
@@ -745,6 +751,9 @@ public final class App
 
   public boolean isEnabled() { return enabled; }
   public void setEnabled(boolean b) { enabled = b;   }
+
+  public boolean isLocked() { return locked; }
+  public void setLocked(boolean b) { locked = b;   }
 
   public boolean isContainerized() { return containerized; }
   public void setContainerized(boolean b) { containerized = b;   }

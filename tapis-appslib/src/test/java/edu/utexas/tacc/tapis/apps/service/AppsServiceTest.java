@@ -607,10 +607,10 @@ public class AppsServiceTest
     }
   }
 
-  // Check enable/disable/delete/undelete as well as isEnabled
-  // When resource deleted isEnabled should throw a NotFound exception
+  // Check enable/disable/lock/unlock/delete/undelete as well as isEnabled, isLocked
+  // When resource deleted isEnabled, lock and unlock should throw a NotFound exception
   @Test
-  public void testEnableDisableDeleteUndelete() throws Exception
+  public void testPostSingleUpdates() throws Exception
   {
     // Create the app
     App app0 = apps[20];
@@ -632,6 +632,18 @@ public class AppsServiceTest
     Assert.assertTrue(tmpApp.isEnabled());
     Assert.assertTrue(svc.isEnabled(rOwner1, appId));
 
+    // Locked should start off false, then become true and finally false again.
+    tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
+    Assert.assertFalse(tmpApp.isLocked());
+    changeCount = svc.lockApp(rOwner1, appId, appVer);
+    Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
+    tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
+    Assert.assertTrue(tmpApp.isLocked());
+    changeCount = svc.unlockApp(rOwner1, appId, appVer);
+    Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
+    tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
+    Assert.assertFalse(tmpApp.isLocked());
+
     // Deleted should start off false, then become true and finally false again.
     tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
     Assert.assertFalse(tmpApp.isDeleted());
@@ -644,14 +656,29 @@ public class AppsServiceTest
     tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
     Assert.assertFalse(tmpApp.isDeleted());
 
-    // When deleted isEnabled should throw NotFound exception
+    // When deleted isEnabled, disable and enable should throw NotFound exception
     svc.deleteApp(rOwner1, appId);
     boolean pass = false;
     try { svc.isEnabled(rOwner1, appId); }
-    catch (NotFoundException nfe)
-    {
-      pass = true;
-    }
+    catch (NotFoundException nfe) { pass = true; }
+    Assert.assertTrue(pass);
+    pass = false;
+    try { svc.disableApp(rOwner1, appId); }
+    catch (NotFoundException nfe) { pass = true; }
+    Assert.assertTrue(pass);
+    pass = false;
+    try { svc.enableApp(rOwner1, appId); }
+    catch (NotFoundException nfe) { pass = true; }
+    Assert.assertTrue(pass);
+
+    // When deleted unlock, lock should throw NotFound exception
+    pass = false;
+    try { svc.unlockApp(rOwner1, appId, appVer); }
+    catch (NotFoundException nfe) { pass = true; }
+    Assert.assertTrue(pass);
+    pass = false;
+    try { svc.lockApp(rOwner1, appId, appVer); }
+    catch (NotFoundException nfe) { pass = true; }
     Assert.assertTrue(pass);
   }
 
@@ -984,7 +1011,8 @@ public class AppsServiceTest
   }
 
   // Test various cases when app is missing
-  //  - isEnabled
+  //  - isEnabled, enable, disable
+  //  - lock, unlock
   //  - get owner with no app
   //  - get perm with no app
   //  - grant perm with no app
@@ -1013,13 +1041,28 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
 
-    // isEnabled check with no resource should throw a NotFound exception
+    // isEnabled, enable, disable with no resource should throw a NotFound exception
     pass = false;
     try { svc.isEnabled(rOwner1, fakeAppName); }
-    catch (NotFoundException nfe)
-    {
-      pass = true;
-    }
+    catch (NotFoundException nfe) { pass = true; }
+    Assert.assertTrue(pass);
+    pass = false;
+    try { svc.enableApp(rOwner1, fakeAppName); }
+    catch (NotFoundException nfe) { pass = true; }
+    Assert.assertTrue(pass);
+    pass = false;
+    try { svc.disableApp(rOwner1, fakeAppName); }
+    catch (NotFoundException nfe) { pass = true; }
+    Assert.assertTrue(pass);
+
+    // lock, unlock with no resource should throw a NotFound exception
+    pass = false;
+    try { svc.lockApp(rOwner1, fakeAppName, fakeAppVersion); }
+    catch (NotFoundException nfe) { pass = true; }
+    Assert.assertTrue(pass);
+    pass = false;
+    try { svc.unlockApp(rOwner1, fakeAppName, fakeAppVersion); }
+    catch (NotFoundException nfe) { pass = true; }
     Assert.assertTrue(pass);
 
     // Get owner with no app should return null
@@ -1486,6 +1529,7 @@ public class AppsServiceTest
     else Assert.assertEquals(tmpApp.getJobType().name(), app0.getJobType().name());
     Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
     Assert.assertEquals(tmpApp.isEnabled(), app0.isEnabled());
+    Assert.assertEquals(tmpApp.isLocked(), app0.isLocked());
     Assert.assertEquals(tmpApp.getRuntime().name(), app0.getRuntime().name());
     Assert.assertEquals(tmpApp.getRuntimeVersion(), app0.getRuntimeVersion());
     // Verify runtimeOptions
@@ -1645,6 +1689,7 @@ public class AppsServiceTest
     // Check that attributes have been set to defaults.
     Assert.assertEquals(tmpApp.getJobType(), App.DEFAULT_JOB_TYPE);
     Assert.assertEquals(tmpApp.isEnabled(), App.DEFAULT_ENABLED);
+    Assert.assertEquals(tmpApp.isLocked(), App.DEFAULT_LOCKED);
     Assert.assertEquals(tmpApp.getRuntime(), App.DEFAULT_RUNTIME);
     Assert.assertEquals(tmpApp.getMaxJobs(), App.DEFAULT_MAX_JOBS);
     Assert.assertEquals(tmpApp.getMaxJobsPerUser(), App.DEFAULT_MAX_JOBS_PER_USER);

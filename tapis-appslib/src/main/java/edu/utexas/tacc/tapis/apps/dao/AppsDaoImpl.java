@@ -201,6 +201,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ID, app.getId())
               .set(APPS_VERSIONS.VERSION, app.getVersion())
               .set(APPS_VERSIONS.DESCRIPTION, app.getDescription())
+              .set(APPS_VERSIONS.LOCKED, app.isLocked())
               .set(APPS_VERSIONS.RUNTIME, runtime)
               .set(APPS_VERSIONS.RUNTIME_VERSION, app.getRuntimeVersion())
               .set(APPS_VERSIONS.RUNTIME_OPTIONS, runtimeOptionsStrArray)
@@ -338,6 +339,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       int appVerSeqId = -1;
       var result = db.update(APPS_VERSIONS)
               .set(APPS_VERSIONS.DESCRIPTION, putApp.getDescription())
+              .set(APPS_VERSIONS.LOCKED, putApp.isLocked())
               .set(APPS_VERSIONS.RUNTIME, runtime)
               .set(APPS_VERSIONS.RUNTIME_VERSION, putApp.getRuntimeVersion())
               .set(APPS_VERSIONS.RUNTIME_OPTIONS, runtimeOptionsStrArray)
@@ -561,6 +563,53 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       String changeDescription = "{\"enabled\":" +  enabled + "}";
       addUpdate(db, rUser, tenantId, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
                 appOp, changeDescription , null, INVALID_UUID);
+      // Close out and commit
+      LibUtils.closeAndCommitDB(conn, null, null);
+    }
+    catch (Exception e)
+    {
+      // Rollback transaction and throw an exception
+      LibUtils.rollbackDB(conn, e,"DB_UPDATE_FAILURE", "apps", appId);
+    }
+    finally
+    {
+      // Always return the connection back to the connection pool.
+      LibUtils.finalCloseDB(conn);
+    }
+  }
+
+  /**
+   * Update attribute locked for an app given app Id and value
+   */
+  @Override
+  public void updateLocked(ResourceRequestUser rUser, String tenantId, String appId, String appVersion,
+                           boolean locked) throws TapisException
+  {
+    String opName = "updateLocked";
+    // ------------------------- Check Input -------------------------
+    if (StringUtils.isBlank(appId)) LibUtils.logAndThrowNullParmException(opName, "appId");
+    if (StringUtils.isBlank(appVersion)) LibUtils.logAndThrowNullParmException(opName, "appVersion");
+
+    // AppOperation needed for recording the update
+    AppOperation appOp = locked ? AppOperation.lock : AppOperation.unlock;
+
+    // ------------------------- Call SQL ----------------------------
+    Connection conn = null;
+    try
+    {
+      // Get a database connection.
+      conn = getConnection();
+      DSLContext db = DSL.using(conn);
+      db.update(APPS_VERSIONS)
+              .set(APPS_VERSIONS.LOCKED, locked)
+              .where(APPS_VERSIONS.TENANT.eq(tenantId),APPS_VERSIONS.ID.eq(appId),APPS_VERSIONS.VERSION.eq(appVersion)).execute();
+      // Persist update record
+      String changeDescription = "{\"locked\":" +  locked + "}";
+      // Persist update record. Using -1 for appVerSeqId results in it being fetched.
+      int appSeqId = getAppSeqIdUsingDb(db, tenantId, appId);
+      int appVerSeqId = -1;
+      addUpdate(db, rUser, tenantId, appId, appVersion, appSeqId, appVerSeqId, appOp,
+                changeDescription, null, INVALID_UUID);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
     }
@@ -1748,9 +1797,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     List<ReqSubscribe> subscriptions =
             Arrays.asList(TapisGsonUtils.getGson().fromJson(subscriptionsJsonElement, ReqSubscribe[].class));
     app = new App(appSeqId, appVerSeqId, r.get(APPS.TENANT), r.get(APPS.ID), r.get(APPS_VERSIONS.VERSION),
-            r.get(APPS_VERSIONS.DESCRIPTION), r.get(APPS_VERSIONS.JOB_TYPE), r.get(APPS.OWNER), r.get(APPS.ENABLED),
-            r.get(APPS.CONTAINERIZED), r.get(APPS_VERSIONS.RUNTIME), r.get(APPS_VERSIONS.RUNTIME_VERSION),
-            runtimeOptions,
+            r.get(APPS_VERSIONS.DESCRIPTION), r.get(APPS_VERSIONS.JOB_TYPE), r.get(APPS.OWNER),
+            r.get(APPS.ENABLED), r.get(APPS_VERSIONS.LOCKED), r.get(APPS.CONTAINERIZED),
+            r.get(APPS_VERSIONS.RUNTIME), r.get(APPS_VERSIONS.RUNTIME_VERSION), runtimeOptions,
             r.get(APPS_VERSIONS.CONTAINER_IMAGE), r.get(APPS_VERSIONS.MAX_JOBS), r.get(APPS_VERSIONS.MAX_JOBS_PER_USER),
             r.get(APPS_VERSIONS.STRICT_FILE_INPUTS), r.get(APPS_VERSIONS.JOB_DESCRIPTION),
             r.get(APPS_VERSIONS.DYNAMIC_EXEC_SYSTEM), r.get(APPS_VERSIONS.EXEC_SYSTEM_CONSTRAINTS),

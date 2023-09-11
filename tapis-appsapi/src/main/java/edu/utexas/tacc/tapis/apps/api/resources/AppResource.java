@@ -129,6 +129,8 @@ public class AppResource
   // Operation names
   private static final String OP_ENABLE = "enableApp";
   private static final String OP_DISABLE = "disableApp";
+  private static final String OP_LOCK = "lockApp";
+  private static final String OP_UNLOCK = "unlockApp";
   private static final String OP_CHANGEOWNER = "changeAppOwner";
   private static final String OP_DELETE = "deleteApp";
   private static final String OP_UNDELETE = "undeleteApp";
@@ -282,7 +284,7 @@ public class AppResource
       _log.error(msg);
       throw new BadRequestException(msg);
     }
-    // Pass through not found or not auth to let exception mapper handle it.
+    // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
@@ -398,7 +400,7 @@ public class AppResource
       _log.error(msg);
       throw new BadRequestException(msg);
     }
-    // Pass through not found or not auth to let exception mapper handle it.
+    // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
@@ -494,7 +496,7 @@ public class AppResource
     if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_PUT_TRACE", rUser, rawJson));
 
     // Fill in defaults and check constraints on App attributes
-    // NOTE: We do not have all the Tapis App attributes yet so we cannot validate it
+    // NOTE: We do not have all the Tapis App attributes yet, so we cannot validate it
     putApp.setDefaults();
 
     // ---------------------------- Make service call to update the app -------------------------------
@@ -516,7 +518,7 @@ public class AppResource
       _log.error(msg);
       throw new BadRequestException(msg);
     }
-    // Pass through not found or not auth to let exception mapper handle it.
+    // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
@@ -547,7 +549,7 @@ public class AppResource
   public Response enableApp(@PathParam("appId") String appId,
                             @Context SecurityContext securityContext) throws TapisClientException
   {
-    return postAppSingleUpdate(OP_ENABLE, appId, null, securityContext);
+    return postAppSingleUpdate(OP_ENABLE, appId, null, null, securityContext);
   }
 
   /**
@@ -563,7 +565,43 @@ public class AppResource
   public Response disableApp(@PathParam("appId") String appId,
                              @Context SecurityContext securityContext) throws TapisClientException
   {
-    return postAppSingleUpdate(OP_DISABLE, appId, null, securityContext);
+    return postAppSingleUpdate(OP_DISABLE, appId, null, null, securityContext);
+  }
+
+  /**
+   * Lock an app version
+   * @param appId - name of the app
+   * @param appVersion - version of the app
+   * @param securityContext - user identity
+   * @return - response with change count as the result
+   */
+  @POST
+  @Path("{appId}/lock")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response lockApp(@PathParam("appId") String appId,
+                          @PathParam("appVersion") String appVersion,
+                          @Context SecurityContext securityContext) throws TapisClientException
+  {
+    return postAppSingleUpdate(OP_LOCK, appId, appVersion, null, securityContext);
+  }
+
+  /**
+   * Unlock an app version
+   * @param appId - name of the app
+   * @param appVersion - version of the app
+   * @param securityContext - user identity
+   * @return - response with change count as the result
+   */
+  @POST
+  @Path("{appId}/disable")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response unlockApp(@PathParam("appId") String appId,
+                            @PathParam("appVersion") String appVersion,
+                            @Context SecurityContext securityContext) throws TapisClientException
+  {
+    return postAppSingleUpdate(OP_UNLOCK, appId, appVersion, null, securityContext);
   }
 
   /**
@@ -579,7 +617,7 @@ public class AppResource
   public Response deleteApp(@PathParam("appId") String appId,
                             @Context SecurityContext securityContext) throws TapisClientException
   {
-    return postAppSingleUpdate(OP_DELETE, appId, null, securityContext);
+    return postAppSingleUpdate(OP_DELETE, appId, null, null, securityContext);
   }
 
   /**
@@ -595,7 +633,7 @@ public class AppResource
   public Response undeleteApp(@PathParam("appId") String appId,
                               @Context SecurityContext securityContext) throws TapisClientException
   {
-    return postAppSingleUpdate(OP_UNDELETE, appId, null, securityContext);
+    return postAppSingleUpdate(OP_UNDELETE, appId, null, null, securityContext);
   }
 
   /**
@@ -613,7 +651,7 @@ public class AppResource
                                  @PathParam("userName") String userName,
                                  @Context SecurityContext securityContext) throws TapisClientException
   {
-    return postAppSingleUpdate(OP_CHANGEOWNER, appId, userName, securityContext);
+    return postAppSingleUpdate(OP_CHANGEOWNER, appId, null, userName, securityContext);
   }
 
   /**
@@ -656,7 +694,7 @@ public class AppResource
     {
       app = service.getApp(rUser, appId, null, requireExecPerm, null, resourceTenant);
     }
-    // Pass through not found or not auth to let exception mapper handle it.
+    // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
@@ -719,7 +757,7 @@ public class AppResource
     {
       app = service.getApp(rUser, appId, appVersion, requireExecPerm, impersonationId, resourceTenant);
     }
-    // Pass through not found or not auth to let exception mapper handle it.
+    // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
@@ -778,7 +816,7 @@ public class AppResource
     {
       successResponse = getSearchResponse(rUser, null, srchParms, showDeleted, listType);
     }
-    // Pass through not found or not auth to let exception mapper handle it.
+    // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
@@ -846,7 +884,7 @@ public class AppResource
     {
       successResponse = getSearchResponse(rUser, null, srchParms, showDeleted, listType);
     }
-    // Pass through not found or not auth to let exception mapper handle it.
+    // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
@@ -939,7 +977,7 @@ public class AppResource
     {
       successResponse = getSearchResponse(rUser, sqlSearchStr, srchParms, showDeleted, listType);
     }
-    // Pass through not found or not auth to let exception mapper handle it.
+    // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
@@ -983,7 +1021,7 @@ public class AppResource
       // Retrieve system history List
       appHistory = service.getAppHistory(rUser, appId);
     }
-    // Pass through not found or not auth to let exception mapper handle it.
+    // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
@@ -1035,7 +1073,7 @@ public class AppResource
     {
       isEnabled = service.isEnabled(rUser, appId);
     }
-    // Pass through not found or not auth to let exception mapper handle it.
+    // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
     // As final fallback
     catch (Exception e)
@@ -1062,11 +1100,13 @@ public class AppResource
    * Note that userName only used for changeOwner
    * @param opName Name of operation.
    * @param appId Id of app to update
+   * @param appVersion - version of the app
    * @param userName new owner name for op changeOwner
    * @param securityContext Security context from client call
    * @return Response to be returned to the client.
    */
-  private Response postAppSingleUpdate(String opName, String appId, String userName, SecurityContext securityContext)
+  private Response postAppSingleUpdate(String opName, String appId, String appVersion, String userName,
+                                       SecurityContext securityContext)
           throws TapisClientException
   {
     // ------------------------- Retrieve and validate thread context -------------------------
@@ -1082,9 +1122,11 @@ public class AppResource
     // Trace this request.
     if (_log.isTraceEnabled())
     {
-      // NOTE: We deliberately do not check for blank. If empty string passed in we want to record it here.
-      if (userName!=null)
+      // Parameters to log depend on operation
+      if (OP_CHANGEOWNER.equals(opName))
         ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId, "userName="+userName);
+      else if (OP_LOCK.equals(opName) || OP_UNLOCK.equals(opName))
+        ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId, "appVersion="+appVersion);
       else
         ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId);
     }
@@ -1098,6 +1140,10 @@ public class AppResource
         changeCount = service.enableApp(rUser, appId);
       else if (OP_DISABLE.equals(opName))
         changeCount = service.disableApp(rUser, appId);
+      else if (OP_LOCK.equals(opName))
+        changeCount = service.lockApp(rUser, appId, appVersion);
+      else if (OP_UNLOCK.equals(opName))
+        changeCount = service.unlockApp(rUser, appId, appVersion);
       else if (OP_DELETE.equals(opName))
         changeCount = service.deleteApp(rUser, appId);
       else if (OP_UNDELETE.equals(opName))
@@ -1152,7 +1198,7 @@ public class AppResource
 
     // Create App
     var app = new App(-1, -1, tenantId, req.id, req.version, req.description, req.jobType, req.owner, req.enabled,
-          DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
+          req.locked, DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
           apiJobAttrs.description, apiJobAttrs.dynamicExecSystem, apiJobAttrs.execSystemConstraints, apiJobAttrs.execSystemId,
           apiJobAttrs.execSystemExecDir, apiJobAttrs.execSystemInputDir, apiJobAttrs.execSystemOutputDir,
@@ -1179,8 +1225,9 @@ public class AppResource
 
     // NOTE: Following attributes are not updatable and must be filled in on service side.
     String owner = null;
-    boolean enabled = true;
-    var app = new App(-1, -1, tenantId, id, version, req.description, req.jobType, owner, enabled,
+    boolean enabled = App.DEFAULT_ENABLED;
+    boolean locked = App.DEFAULT_LOCKED;
+    var app = new App(-1, -1, tenantId, id, version, req.description, req.jobType, owner, enabled, locked,
           DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
           apiJobAttrs.description, apiJobAttrs.dynamicExecSystem, apiJobAttrs.execSystemConstraints, apiJobAttrs.execSystemId,

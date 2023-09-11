@@ -27,6 +27,8 @@ public interface AppsDao
 
   void updateEnabled(ResourceRequestUser rUser, String tenantId, String id, boolean enabled) throws TapisException;
 
+  void updateLocked(ResourceRequestUser rUser, String tenantId, String id, String version, boolean locked) throws TapisException;
+
   void updateDeleted(ResourceRequestUser rUser, String tenantId, String id, boolean deleted) throws TapisException;
 
   void updateAppOwner(ResourceRequestUser rUser, String tenantId, String id, String newOwnerName) throws TapisException;

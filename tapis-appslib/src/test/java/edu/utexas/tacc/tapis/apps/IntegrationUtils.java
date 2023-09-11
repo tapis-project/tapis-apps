@@ -66,6 +66,9 @@ public final class IntegrationUtils
   public static final boolean enabledTrue = true;
   public static final boolean enabledFalse = false;
   public static final boolean enabledDefault = App.DEFAULT_ENABLED;
+  public static final boolean lockedTrue = true;
+  public static final boolean lockedFalse = false;
+  public static final boolean lockedDefault = App.DEFAULT_LOCKED;
   public static final boolean isDeletedFalse = false;
   public static final boolean containerizedTrue = true;
   public static final boolean containerizedDefault = App.DEFAULT_CONTAINERIZED;
@@ -406,7 +409,7 @@ public final class IntegrationUtils
 
       // Constructor initializes all attributes except for JobCapabilities
       apps[i] = new App(-1, -1, tenantName, appId, appVersion+suffix, description1 + suffix, jobType1, owner1,
-                 enabledTrue, containerizedTrue, runtime1, runtimeVersion1 +suffix, runtimeOptions1,
+                 enabledTrue, lockedFalse, containerizedTrue, runtime1, runtimeVersion1 +suffix, runtimeOptions1,
                  containerImage1 +suffix, maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
                  jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
                  execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
@@ -427,7 +430,7 @@ public final class IntegrationUtils
   public static App makeMinimalApp(App app, String id)
   {
     return new App(-1, -1, tenantName, id, app.getVersion(), descriptionNull, App.DEFAULT_JOB_TYPE, ownerNull,
-            App.DEFAULT_ENABLED, App.DEFAULT_CONTAINERIZED, runtimeNull, runtimeVersionNull, runtimeOptionsNull,
+            App.DEFAULT_ENABLED, App.DEFAULT_LOCKED, App.DEFAULT_CONTAINERIZED, runtimeNull, runtimeVersionNull, runtimeOptionsNull,
             containerImage1, App.DEFAULT_MAX_JOBS, App.DEFAULT_MAX_JOBS_PER_USER, App.DEFAULT_STRICT_FILE_INPUTS,
             jobDescriptionNull, dynamicExecSystemDefault, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
@@ -444,7 +447,7 @@ public final class IntegrationUtils
   public static App makePutAppFull(App app)
   {
     App putApp = new App(-1, -1, tenantName, app.getId(), app.getVersion(), description2, jobType2, app.getOwner(),
-            app.isEnabled(), app.isContainerized(), runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
+            app.isEnabled(), app.isLocked(), app.isContainerized(), runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
             maxJobs2, maxJobsPerUser2, strictFileInputsTrue,
             jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
             execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
