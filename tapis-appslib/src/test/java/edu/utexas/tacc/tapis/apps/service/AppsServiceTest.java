@@ -482,22 +482,6 @@ public class AppsServiceTest
     }
   }
 
-//  @Test
-//  public void testGetAppIDs() throws Exception
-//  {
-//    App app0 = apps[?];
-//    svc.createApp(rOwner1, app0, scrubbedJson);
-//    app0 = apps[?];
-//    svc.createApp(rOwner1, app0, scrubbedJson);
-//    Set<String> appIDs = svc.getAllowedAppIDs(rOwner1, showDeletedFalse);
-//    for (String name : appIDs)
-//    {
-//      System.out.println("Found item: " + name);
-//    }
-//    Assert.assertTrue(appIDs.contains(apps[?].getId()), "List of apps did not contain app name: " + apps[?].getId());
-//    Assert.assertTrue(appIDs.contains(apps[?].getId()), "List of apps did not contain app name: " + apps[?].getId());
-//  }
-
   @Test
   public void testGetApps() throws Exception
   {
@@ -1035,10 +1019,7 @@ public class AppsServiceTest
     // Delete app with no app should throw NotFound exception
     pass = false;
     try { svc.deleteApp(rOwner1, fakeAppName); }
-    catch (NotFoundException nfe)
-    {
-      pass = true;
-    }
+    catch (NotFoundException nfe) { pass = true; }
     Assert.assertTrue(pass);
 
     // isEnabled, enable, disable with no resource should throw a NotFound exception
@@ -1072,10 +1053,7 @@ public class AppsServiceTest
     // Get perms with no app should throw exception
     pass = false;
     try { svc.getUserPermissions(rOwner1, fakeAppName, fakeUserName); }
-    catch (NotFoundException nfe)
-    {
-      pass = true;
-    }
+    catch (NotFoundException nfe) { pass = true; }
     Assert.assertTrue(pass);
 
     // Revoke perm with no app should return 0 changes
@@ -1085,10 +1063,7 @@ public class AppsServiceTest
     // Grant perm with no app should throw an exception
     pass = false;
     try { svc.grantUserPermissions(rOwner1, fakeAppName, fakeUserName, testPermsREADMODIFY, rawDataEmptyJson); }
-    catch (NotFoundException nfe)
-    {
-      pass = true;
-    }
+    catch (NotFoundException nfe) { pass = true; }
     Assert.assertTrue(pass);
   }
 
@@ -1136,6 +1111,46 @@ public class AppsServiceTest
 //    Assert.assertTrue(pass);
 //    app0.setExecSystemId(execSystemId1);
 //  }
+
+  // Test Locked app - deny put and patch
+  @Test
+  public void testLocked() throws Exception
+  {
+    // Create an app
+    App app0 = apps[10];
+    String app0Id = app0.getId();
+    String app0Version = app0.getVersion();
+    PatchApp patchApp = IntegrationUtils.makePatchAppFull();
+    svc.createApp(rOwner1, app0, rawDataEmptyJson);
+
+    // Make sure app starts off unlocked
+    App tmpApp = svc.getApp(rOwner1, app0Id, app0Version, false, null, null);
+    Assert.assertFalse(tmpApp.isLocked());
+
+    // Lock the app and confirm it is locked
+    svc.lockApp(rUser0, app0Id, app0Version);
+    tmpApp = svc.getApp(rOwner1, app0Id, app0Version, false, null, null);
+    Assert.assertTrue(tmpApp.isLocked());
+
+    // Deny PUT
+    boolean pass = false;
+    try { svc.putApp(rUser0, tmpApp, rawDataEmptyJson); }
+    catch (ForbiddenException e)
+    {
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH_LOCKED"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    // Deny PATCH
+    pass = false;
+    try { svc.patchApp(rUser0, app0Id, app0Version, patchApp, null); }
+    catch (ForbiddenException e)
+    {
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH_LOCKED"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+  }
 
   // Test Auth denials
   // owner1 - owner

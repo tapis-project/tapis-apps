@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
 import edu.utexas.tacc.tapis.apps.model.*;
@@ -265,6 +264,7 @@ public class AppsServiceImpl implements AppsService
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException
   {
     AppOperation op = AppOperation.modify;
+    String methodName = "patchApp";
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (patchApp == null) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
@@ -278,9 +278,17 @@ public class AppsServiceImpl implements AppsService
     }
 
     // App with given version must already exist and not be deleted
-    if (!dao.checkForAppVersion(resourceTenantId, appId, appVersion, false))
+    App origApp = dao.getApp(resourceTenantId, appId, appVersion);
+    if (origApp == null)
     {
       throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, appId, appVersion));
+    }
+
+    // ------------------------- Check for locked app -------------------------
+    if (origApp.isLocked())
+    {
+      // Not authorized, throw an exception
+      throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH_LOCKED", rUser, appId, appVersion, methodName));
     }
 
     // If needed process request to create list of env variables with proper defaults.
@@ -294,8 +302,7 @@ public class AppsServiceImpl implements AppsService
       patchApp.getJobAttributes().getParameterSet().setEnvVariables(envVars);
     }
 
-    // Retrieve the app being patched and create fully populated App with changes merged in
-    App origApp = dao.getApp(resourceTenantId, appId, appVersion);
+    // Create fully populated App with changes merged in
     App patchedApp = createPatchedApp(origApp, patchApp);
 
     // ------------------------- Check authorization -------------------------
@@ -332,6 +339,7 @@ public class AppsServiceImpl implements AppsService
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException
   {
     AppOperation op = AppOperation.modify;
+    String methodName = "putApp";
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (putApp == null) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
@@ -347,14 +355,23 @@ public class AppsServiceImpl implements AppsService
     }
 
     // App version must already exist and not be deleted
-    if (!dao.checkForAppVersion(tenant, appId, appVersion, false))
+    // App with given version must already exist and not be deleted
+    App origApp = dao.getApp(tenant, appId, appVersion);
+    if (origApp == null)
     {
       throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, appId, appVersion));
     }
 
-    // Retrieve the app being updated and create fully populated App with changes merged in
-    App origApp = dao.getApp(tenant, appId, appVersion);
+    // ------------------------- Check for locked app -------------------------
+    if (origApp.isLocked())
+    {
+      // Not authorized, throw an exception
+      throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH_LOCKED", rUser, appId, appVersion, methodName));
+    }
+
+    // Create fully populated App with changes merged in
     App updatedApp = createUpdatedApp(origApp, putApp);
+
 
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerKnown(rUser, op, appId, origApp.getOwner());
