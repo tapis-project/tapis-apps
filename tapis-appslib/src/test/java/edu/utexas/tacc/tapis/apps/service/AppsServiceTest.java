@@ -1128,13 +1128,13 @@ public class AppsServiceTest
     Assert.assertFalse(tmpApp.isLocked());
 
     // Lock the app and confirm it is locked
-    svc.lockApp(rUser0, app0Id, app0Version);
+    svc.lockApp(rOwner1, app0Id, app0Version);
     tmpApp = svc.getApp(rOwner1, app0Id, app0Version, false, null, null);
     Assert.assertTrue(tmpApp.isLocked());
 
     // Deny PUT
     boolean pass = false;
-    try { svc.putApp(rUser0, tmpApp, rawDataEmptyJson); }
+    try { svc.putApp(rOwner1, tmpApp, rawDataEmptyJson); }
     catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH_LOCKED"));
@@ -1142,14 +1142,20 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     // Deny PATCH
+    String patchAppRawData = "{\"testPatchLockedDeny\": \"1-patchTest\"}";
     pass = false;
-    try { svc.patchApp(rUser0, app0Id, app0Version, patchApp, null); }
+    try { svc.patchApp(rOwner1, app0Id, app0Version, patchApp, patchAppRawData); }
     catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH_LOCKED"));
       pass = true;
     }
     Assert.assertTrue(pass);
+    // Unlock app and confirm we can now do a PUT
+    svc.unlockApp(rOwner1, app0Id, app0Version);
+    tmpApp = svc.getApp(rOwner1, app0Id, app0Version, false, null, null);
+    Assert.assertFalse(tmpApp.isLocked());
+    svc.putApp(rOwner1, tmpApp, rawDataEmptyJson);
   }
 
   // Test Auth denials

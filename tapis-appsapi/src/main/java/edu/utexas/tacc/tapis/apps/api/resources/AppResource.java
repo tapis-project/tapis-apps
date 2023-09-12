@@ -576,7 +576,7 @@ public class AppResource
    * @return - response with change count as the result
    */
   @POST
-  @Path("{appId}/lock")
+  @Path("{appId}/{appVersion}/lock")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response lockApp(@PathParam("appId") String appId,
@@ -594,7 +594,7 @@ public class AppResource
    * @return - response with change count as the result
    */
   @POST
-  @Path("{appId}/disable")
+  @Path("{appId}/{appVersion}/unlock")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response unlockApp(@PathParam("appId") String appId,
