@@ -113,8 +113,8 @@ public final class App
   public static final String EXECSYSEXECDIR_FIELD = "execSystemExecDir";
   public static final String EXECSYSINDIR_FIELD = "execSystemInputDir";
   public static final String EXECSYSOUTDIR_FIELD = "execSystemOutputDir";
-  public static final String DTNSYSINDIR_FIELD = "dtnSystemInputStagingDir";
-  public static final String DTNSYSOUTDIR_FIELD = "dtnSystemOutputStagingDir";
+  public static final String DTNSYSINDIR_FIELD = "dtnSystemInputDir";
+  public static final String DTNSYSOUTDIR_FIELD = "dtnSystemOutputDir";
   public static final String EXECSYSLOGICALQ_FIELD = "execSystemLogicalQueue";
   public static final String ARCHIVESYSID_FIELD = "archiveSystemId";
   public static final String ARCHIVESYSDIR_FIELD = "archiveSystemDir";
@@ -219,8 +219,8 @@ public final class App
   private String execSystemInputDir;
   private String execSystemOutputDir;
   private String execSystemLogicalQueue;
-  private String dtnSystemInputStagingDir;
-  private String dtnSystemOutputStagingDir;
+  private String dtnSystemInputDir;
+  private String dtnSystemOutputDir;
   private String archiveSystemId;
   private String archiveSystemDir;
   private boolean archiveOnAppError;
@@ -309,8 +309,8 @@ public final class App
     execSystemExecDir = a.getExecSystemExecDir();
     execSystemInputDir = a.getExecSystemInputDir();
     execSystemOutputDir = a.getExecSystemOutputDir();
-    dtnSystemInputStagingDir = a.getDtnSystemInputStagingDir();
-    dtnSystemOutputStagingDir = a.getDtnSystemOutputStagingDir();
+    dtnSystemInputDir = a.getDtnSystemInputDir();
+    dtnSystemOutputDir = a.getDtnSystemOutputDir();
     execSystemLogicalQueue = a.getExecSystemLogicalQueue();
     archiveSystemId = a.getArchiveSystemId();
     archiveSystemDir = a.getArchiveSystemDir();
@@ -348,7 +348,7 @@ public final class App
              String jobDescription1, boolean dynamicExecSystem1,
              String[] execSystemConstraints1, String execSystemId1, String execSystemExecDir1,
              String execSystemInputDir1, String execSystemOutputDir1,
-             String dtnSystemInputStagingDir1, String dtnSystemOutputStagingDir1, String execSystemLogicalQueue1,
+             String dtnSystemInputDir1, String dtnSystemOutputDir1, String execSystemLogicalQueue1,
              String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1,
              boolean isMpi1, String mpiCmd1, String cmdPrefix1,
              ParameterSet parameterSet1, List<FileInput> fileInputs1, List<FileInputArray> fileInputArrays1,
@@ -382,8 +382,8 @@ public final class App
     execSystemExecDir = execSystemExecDir1;
     execSystemInputDir = execSystemInputDir1;
     execSystemOutputDir = execSystemOutputDir1;
-    dtnSystemInputStagingDir = dtnSystemInputStagingDir1;
-    dtnSystemOutputStagingDir = dtnSystemOutputStagingDir1;
+    dtnSystemInputDir = dtnSystemInputDir1;
+    dtnSystemOutputDir = dtnSystemOutputDir1;
     execSystemLogicalQueue = execSystemLogicalQueue1;
     archiveSystemId = archiveSystemId1;
     archiveSystemDir = archiveSystemDir1;
@@ -440,8 +440,8 @@ public final class App
     execSystemExecDir = a.getExecSystemExecDir();
     execSystemInputDir = a.getExecSystemInputDir();
     execSystemOutputDir = a.getExecSystemOutputDir();
-    dtnSystemInputStagingDir = a.getDtnSystemInputStagingDir();
-    dtnSystemOutputStagingDir = a.getDtnSystemOutputStagingDir();
+    dtnSystemInputDir = a.getDtnSystemInputDir();
+    dtnSystemOutputDir = a.getDtnSystemOutputDir();
     execSystemLogicalQueue = a.getExecSystemLogicalQueue();
     archiveSystemId = a.getArchiveSystemId();
     archiveSystemDir = a.getArchiveSystemDir();
@@ -581,7 +581,7 @@ public final class App
    * Check for attribute strings that exceed limits
    *   id, version, description, owner, runtimeVersion, containerImage, jobDescription,
    *   execSystemId, execSystemExecDir, execSystemInputDir, execSystemOutputDir,
-   *   dtnSystemInputStagingDir, dtnSystemOutputStagingDir, archiveSystemId, archiveSystemDir
+   *   dtnSystemInputDir, dtnSystemOutputDir, archiveSystemId, archiveSystemDir
    */
   private void checkAttrStringLengths(List<String> errMessages)
   {
@@ -640,12 +640,12 @@ public final class App
       errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + EXECSYSOUTDIR_FIELD, MAX_PATH_LEN));
     }
 
-    if (!StringUtils.isBlank(dtnSystemInputStagingDir) && dtnSystemInputStagingDir.length() > MAX_PATH_LEN)
+    if (!StringUtils.isBlank(dtnSystemInputDir) && dtnSystemInputDir.length() > MAX_PATH_LEN)
     {
       errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + DTNSYSINDIR_FIELD, MAX_PATH_LEN));
     }
 
-    if (!StringUtils.isBlank(dtnSystemOutputStagingDir) && dtnSystemOutputStagingDir.length() > MAX_PATH_LEN)
+    if (!StringUtils.isBlank(dtnSystemOutputDir) && dtnSystemOutputDir.length() > MAX_PATH_LEN)
     {
       errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + DTNSYSOUTDIR_FIELD, MAX_PATH_LEN));
     }
@@ -818,11 +818,11 @@ public final class App
   public String getExecSystemOutputDir() { return execSystemOutputDir; }
   public void setExecSystemOutputDir(String s) { execSystemOutputDir = s;  }
 
-  public String getDtnSystemInputStagingDir() { return dtnSystemInputStagingDir; }
-  public void setDtnSystemInputStagingDir(String s) { dtnSystemInputStagingDir = s;  }
+  public String getDtnSystemInputDir() { return dtnSystemInputDir; }
+  public void setDtnSystemInputDir(String s) { dtnSystemInputDir = s;  }
 
-  public String getDtnSystemOutputStagingDir() { return dtnSystemOutputStagingDir; }
-  public void setDtnSystemOutputStagingDir(String s) { dtnSystemOutputStagingDir = s;  }
+  public String getDtnSystemOutputDir() { return dtnSystemOutputDir; }
+  public void setDtnSystemOutputDir(String s) { dtnSystemOutputDir = s;  }
 
   public String getExecSystemLogicalQueue() { return execSystemLogicalQueue; }
   public void setExecSystemLogicalQueue(String s) { execSystemLogicalQueue = s;  }

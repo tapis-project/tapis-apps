@@ -278,8 +278,8 @@ public class AppsServiceTest
     app0.setExecSystemExecDir(execSystemExecDir2);
     app0.setExecSystemInputDir(execSystemInputDir2);
     app0.setExecSystemOutputDir(execSystemOutputDir2);
-    app0.setDtnSystemInputStagingDir(dtnSystemInputStagingDir2);
-    app0.setDtnSystemOutputStagingDir(dtnSystemOutputStagingDir2);
+    app0.setDtnSystemInputDir(dtnSystemInputDir2);
+    app0.setDtnSystemOutputDir(dtnSystemOutputDir2);
     app0.setExecSystemLogicalQueue(execSystemLogicalQueue2);
     app0.setArchiveSystemId(archiveSystemId2);
     app0.setArchiveSystemDir(archiveSystemDir2);
@@ -349,8 +349,8 @@ public class AppsServiceTest
     app0.setExecSystemExecDir(execSystemExecDir2);
     app0.setExecSystemInputDir(execSystemInputDir2);
     app0.setExecSystemOutputDir(execSystemOutputDir2);
-    app0.setDtnSystemInputStagingDir(dtnSystemInputStagingDir2);
-    app0.setDtnSystemOutputStagingDir(dtnSystemOutputStagingDir2);
+    app0.setDtnSystemInputDir(dtnSystemInputDir2);
+    app0.setDtnSystemOutputDir(dtnSystemOutputDir2);
     app0.setExecSystemLogicalQueue(execSystemLogicalQueue2);
     app0.setArchiveSystemId(archiveSystemId2);
     app0.setArchiveSystemDir(archiveSystemDir2);
@@ -1589,8 +1589,8 @@ public class AppsServiceTest
     Assert.assertEquals(tmpApp.getExecSystemExecDir(), app0.getExecSystemExecDir());
     Assert.assertEquals(tmpApp.getExecSystemInputDir(), app0.getExecSystemInputDir());
     Assert.assertEquals(tmpApp.getExecSystemOutputDir(), app0.getExecSystemOutputDir());
-    Assert.assertEquals(tmpApp.getDtnSystemInputStagingDir(), app0.getDtnSystemInputStagingDir());
-    Assert.assertEquals(tmpApp.getDtnSystemOutputStagingDir(), app0.getDtnSystemOutputStagingDir());
+    Assert.assertEquals(tmpApp.getDtnSystemInputDir(), app0.getDtnSystemInputDir());
+    Assert.assertEquals(tmpApp.getDtnSystemOutputDir(), app0.getDtnSystemOutputDir());
     Assert.assertEquals(tmpApp.getExecSystemLogicalQueue(), app0.getExecSystemLogicalQueue());
     Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
     Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
@@ -1755,8 +1755,8 @@ public class AppsServiceTest
 //    Assert.assertEquals(tmpApp.getExecSystemExecDir(), app0.getExecSystemExecDir());
 //    Assert.assertEquals(tmpApp.getExecSystemInputDir(), app0.getExecSystemInputDir());
 //    Assert.assertEquals(tmpApp.getExecSystemOutputDir(), app0.getExecSystemOutputDir());
-//    Assert.assertEquals(tmpApp.getDtnSystemInputStagingDir(), app0.getDtnSystemInputStagingDir());
-//    Assert.assertEquals(tmpApp.getDtnSystemOutputStagingDir(), app0.getDtnSystemOutputStagingDir());
+//    Assert.assertEquals(tmpApp.getDtnSystemInputDir(), app0.getDtnSystemInputDir());
+//    Assert.assertEquals(tmpApp.getDtnSystemOutputDir(), app0.getDtnSystemOutputDir());
 //    Assert.assertEquals(tmpApp.getExecSystemLogicalQueue(), app0.getExecSystemLogicalQueue());
 //    Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
 //    Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());

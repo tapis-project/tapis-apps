@@ -1944,8 +1944,8 @@ public class AppsServiceImpl implements AppsService
       if (jobAttrs.getExecSystemExecDir() != null) app1.setExecSystemExecDir(jobAttrs.getExecSystemExecDir());
       if (jobAttrs.getExecSystemInputDir() != null) app1.setExecSystemInputDir(jobAttrs.getExecSystemInputDir());
       if (jobAttrs.getExecSystemOutputDir() != null) app1.setExecSystemOutputDir(jobAttrs.getExecSystemOutputDir());
-      if (jobAttrs.getDtnSystemInputStagingDir() != null) app1.setDtnSystemInputStagingDir(jobAttrs.getDtnSystemInputStagingDir());
-      if (jobAttrs.getDtnSystemOutputStagingDir() != null) app1.setDtnSystemOutputStagingDir(jobAttrs.getDtnSystemOutputStagingDir());
+      if (jobAttrs.getDtnSystemInputDir() != null) app1.setDtnSystemInputDir(jobAttrs.getDtnSystemInputDir());
+      if (jobAttrs.getDtnSystemOutputDir() != null) app1.setDtnSystemOutputDir(jobAttrs.getDtnSystemOutputDir());
       if (jobAttrs.getExecSystemLogicalQueue() != null) app1.setExecSystemLogicalQueue(jobAttrs.getExecSystemLogicalQueue());
       if (jobAttrs.getArchiveSystemId() != null) app1.setArchiveSystemId(jobAttrs.getArchiveSystemId());
       if (jobAttrs.getArchiveSystemDir() != null) app1.setArchiveSystemDir(jobAttrs.getArchiveSystemDir());

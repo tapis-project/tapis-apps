@@ -19,8 +19,8 @@ public final class JobAttributes
   private final String execSystemExecDir;
   private final String execSystemInputDir;
   private final String execSystemOutputDir;
-  private final String dtnSystemInputStagingDir;
-  private final String dtnSystemOutputStagingDir;
+  private final String dtnSystemInputDir;
+  private final String dtnSystemOutputDir;
   private final String execSystemLogicalQueue;
   private final String archiveSystemId;
   private final String archiveSystemDir;
@@ -47,7 +47,7 @@ public final class JobAttributes
    */
   public JobAttributes(String description1, Boolean dynamicExecSystem1, String[] execSystemConstraints1,
                        String execSystemId1, String execSystemExecDir1, String execSystemInputDir1, String execSystemOutputDir1,
-                       String dtnSystemInputStagingDir1, String dtnSystemOutputStagingDir1,
+                       String dtnSystemInputDir1, String dtnSystemOutputDir1,
                        String execSystemLogicalQueue1, String archiveSystemId1, String archiveSystemDir1,
                        Boolean archiveOnAppError1, Boolean isMpi1, String mpiCmd1, String cmdPrefix1,
                        ParameterSet parameterSet1, List<FileInput> fileInputs1,
@@ -61,8 +61,8 @@ public final class JobAttributes
     execSystemExecDir = execSystemExecDir1;
     execSystemInputDir = execSystemInputDir1;
     execSystemOutputDir = execSystemOutputDir1;
-    dtnSystemInputStagingDir = dtnSystemInputStagingDir1;
-    dtnSystemOutputStagingDir = dtnSystemOutputStagingDir1;
+    dtnSystemInputDir = dtnSystemInputDir1;
+    dtnSystemOutputDir = dtnSystemOutputDir1;
     execSystemLogicalQueue = execSystemLogicalQueue1;
     archiveSystemId = archiveSystemId1;
     archiveSystemDir = archiveSystemDir1;
@@ -91,8 +91,8 @@ public final class JobAttributes
   public String getExecSystemExecDir() { return execSystemExecDir; }
   public String getExecSystemInputDir() { return execSystemInputDir; }
   public String getExecSystemOutputDir() { return execSystemOutputDir; }
-  public String getDtnSystemInputStagingDir() { return dtnSystemInputStagingDir; }
-  public String getDtnSystemOutputStagingDir() { return dtnSystemOutputStagingDir; }
+  public String getDtnSystemInputDir() { return dtnSystemInputDir; }
+  public String getDtnSystemOutputDir() { return dtnSystemOutputDir; }
   public String getExecSystemLogicalQueue() { return execSystemLogicalQueue; }
   public String getArchiveSystemId() { return archiveSystemId; }
   public String getArchiveSystemDir() { return archiveSystemDir; }
