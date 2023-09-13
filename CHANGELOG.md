@@ -9,12 +9,12 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 1.4.2 - 2023-09-07
+## 1.4.2 - 2023-09-13
 
-Code cleanup, update java version in docker builds.
+Code cleanup, update java version in docker builds, new feature.
 
 ### New features:
-- None
+- Add attribute *locked*. Supports locking a version of an application to prevent updates via PUT or PATCH. 
 
 ### Bug fixes:
 - None
