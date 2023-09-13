@@ -389,7 +389,8 @@ public class AppsDaoTest
   {
     String fakeAppId = "AMissingAppId";
     String fakeAppVersion = "AMissingAppVersion";
-    App patchedApp = new App(1, 1, tenantName, fakeAppId, fakeAppVersion, "description", JobType.BATCH, owner2, enabledTrue,
+    App patchedApp = new App(1, 1, tenantName, fakeAppId, fakeAppVersion, "description",
+            JobType.BATCH, owner2, enabledTrue, lockedFalse,
             containerizedTrue, runtime1, runtimeVersion1, runtimeOptions1, containerImage1,
             maxJobs1, maxJobsPerUser1, strictFileInputsFalse, IntegrationUtils.jobDescription1, dynamicExecSystemTrue,
             execSystemConstraints1, execSystemId1, execSystemExecDir1, execSystemInputDir1, execSystemOutputDir1,

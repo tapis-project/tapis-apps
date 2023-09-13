@@ -24,6 +24,7 @@ import static edu.utexas.tacc.tapis.apps.model.App.JOB_TYPE_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.DESCRIPTION_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.OWNER_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.ENABLED_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.LOCKED_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.TAGS_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.NOTES_FIELD;
 import static edu.utexas.tacc.tapis.apps.model.App.UUID_FIELD;
@@ -55,6 +56,7 @@ public final class TapisAppDTO
   public String description;
   public String owner;
   public boolean enabled;
+  public boolean locked;
 //  public boolean containerized;
   public Runtime runtime;
   public String runtimeVersion;
@@ -80,6 +82,7 @@ public final class TapisAppDTO
     description = a.getDescription();
     owner = a.getOwner();
     enabled = a.isEnabled();
+    locked = a.isLocked();
 //    containerized = a.isContainerized();
     runtime = a.getRuntime();
     runtimeVersion = a.getRuntimeVersion();
@@ -169,6 +172,7 @@ public final class TapisAppDTO
       case DESCRIPTION_FIELD ->jsonObject.addProperty(DESCRIPTION_FIELD, description);
       case OWNER_FIELD -> jsonObject.addProperty(OWNER_FIELD, owner);
       case ENABLED_FIELD -> jsonObject.addProperty(ENABLED_FIELD, Boolean.toString(enabled));
+      case LOCKED_FIELD -> jsonObject.addProperty(LOCKED_FIELD, Boolean.toString(locked));
 //      case CONTAINERIZED_FIELD -> jsonObject.addProperty(CONTAINERIZED_FIELD, Boolean.toString(containerized));
       case RUNTIME_FIELD -> jsonObject.addProperty(RUNTIME_FIELD, runtime.name());
       case RUNTIMEVER_FIELD -> jsonObject.addProperty(RUNTIMEVER_FIELD, runtimeVersion);

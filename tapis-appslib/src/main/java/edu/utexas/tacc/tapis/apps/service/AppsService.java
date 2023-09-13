@@ -39,6 +39,12 @@ public interface AppsService
   int disableApp(ResourceRequestUser rUser, String appId)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
+  int lockApp(ResourceRequestUser rUser, String appId, String appVersion)
+          throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;
+
+  int unlockApp(ResourceRequestUser rUser, String appId, String appVersion)
+          throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;
+
   int deleteApp(ResourceRequestUser rUser, String appId)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;
 

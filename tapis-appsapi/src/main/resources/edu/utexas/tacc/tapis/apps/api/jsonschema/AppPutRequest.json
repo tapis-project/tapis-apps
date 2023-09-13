@@ -11,6 +11,7 @@
     "description": { "type": ["string", "null"], "maxLength": 2048 },
     "owner": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/UserName" },
     "enabled": { "type": "boolean", "default": true },
+    "locked": { "type":  "boolean", "default": false },
     "runtime": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/RuntimeEnum" },
     "runtimeVersion": { "type": ["string", "null"], "maxLength": 128 },
     "runtimeOptions": { "$ref": "resource:///edu/utexas/tacc/tapis/apps/api/jsonschema/Definitions.json#/RuntimeOptions" },

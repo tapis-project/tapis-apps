@@ -7,12 +7,7 @@ import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 
 import java.util.List;
 
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_ENABLED;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NOTES;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_OWNER;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_RUNTIME;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_STRICT_FILE_INPUTS;
-import static edu.utexas.tacc.tapis.apps.model.App.EMPTY_STR_ARRAY;
+import static edu.utexas.tacc.tapis.apps.model.App.*;
 
 /*
  * Class representing all app attributes that can be set in an incoming create request json body
@@ -24,6 +19,7 @@ public final class ReqPostApp
   public String description;
   public String owner = DEFAULT_OWNER;
   public boolean enabled = DEFAULT_ENABLED;
+  public boolean locked = DEFAULT_LOCKED;
   public Runtime runtime = DEFAULT_RUNTIME;
   public String runtimeVersion;
   public List<RuntimeOption> runtimeOptions;

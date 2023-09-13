@@ -6,7 +6,7 @@
 #   $TAG            the tag for image identification
 #
 ##########################################################################
-FROM openjdk:17-jdk-bullseye
+FROM eclipse-temurin:17-jdk-jammy
 
 MAINTAINER CIC Support <cicsupport@tacc.utexas.edu>
 
