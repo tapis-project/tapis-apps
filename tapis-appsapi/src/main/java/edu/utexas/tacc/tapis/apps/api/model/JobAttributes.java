@@ -8,11 +8,7 @@ import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 
 import java.util.List;
 
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_CORES_PER_NODE;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_MAX_MINUTES;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_MEMORY_MB;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NODE_COUNT;
-import static edu.utexas.tacc.tapis.apps.model.App.EMPTY_STR_ARRAY;
+import static edu.utexas.tacc.tapis.apps.model.App.*;
 
 /*
  * Class for JobAttributes in an App definition contained in a request.
@@ -26,8 +22,8 @@ public final class JobAttributes
   public String execSystemExecDir;
   public String execSystemInputDir;
   public String execSystemOutputDir;
-  public String dtnSystemInputDir;
-  public String dtnSystemOutputDir;
+  public String dtnSystemInputDir = "";
+  public String dtnSystemOutputDir = "";
   public String execSystemLogicalQueue;
   public String archiveSystemId;
   public String archiveSystemDir;

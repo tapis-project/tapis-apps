@@ -20,7 +20,6 @@ public final class KeyValuePair
   // *********************** Constants **************************************
   // ************************************************************************
   public static final KeyValueInputMode DEFAULT_INPUT_MODE = KeyValueInputMode.INCLUDE_BY_DEFAULT;
-  public static final String VALUE_NOT_SET = "!tapis_not_set";
   public static final String RESERVED_PREFIX= "_tapis";
 
   // ************************************************************************
@@ -62,7 +61,7 @@ public final class KeyValuePair
     // Default depends on inputMode. If REQUIRED use special string, else empty string
     if (KeyValueInputMode.REQUIRED.equals(inputMode))
     {
-      value = (value1 == null) ? VALUE_NOT_SET : value1;
+      value = (value1 == null) ? App.VALUE_NOT_SET : value1;
 
     }
     else

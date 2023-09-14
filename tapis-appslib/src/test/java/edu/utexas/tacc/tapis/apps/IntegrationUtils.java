@@ -210,7 +210,7 @@ public final class IntegrationUtils
                                                                  new KeyValuePair("TMP","/tmp2", null, DEFAULT_INPUT_MODE, DEFAULT_NOTES),
                                                                  keyValuePairFull2);
   public static final List<KeyValuePair> envVariablesReject =
-          List.of(new KeyValuePair("rejectMe", KeyValuePair.VALUE_NOT_SET, null, KeyValueInputMode.FIXED, null));
+          List.of(new KeyValuePair("rejectMe", App.VALUE_NOT_SET, null, KeyValueInputMode.FIXED, null));
   public static final List<KeyValuePair> envVariablesNull = null;
   public static final String[] archiveIncludes1 = {"/include1A", "/include1B"};
   public static final String[] archiveIncludes2 = {"/include2A", "/include2B"};

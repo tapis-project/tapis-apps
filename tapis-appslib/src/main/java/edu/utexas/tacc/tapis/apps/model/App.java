@@ -19,7 +19,6 @@ import org.apache.commons.validator.routines.InetAddressValidator;
 
 import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.KeyValueInputMode.FIXED;
 import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.RESERVED_PREFIX;
-import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.VALUE_NOT_SET;
 
 
 /*
@@ -135,6 +134,7 @@ public final class App
   public static final String SHARED_APP_CTX_FIELD = "sharedAppCtx";
   public static final String IS_PUBLIC_FIELD = "isPublic";
   public static final String SHARED_WITH_USERS_FIELD = "sharedWithUsers";
+  public static final String VALUE_NOT_SET = "!tapis_not_set";
 
   // Message keys
   private static final String CREATE_MISSING_ATTR = "APPLIB_CREATE_MISSING_ATTR";

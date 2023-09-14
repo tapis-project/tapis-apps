@@ -9,6 +9,17 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.4.3 - 2023-??-??
+
+New feature.
+
+### New features:
+- Update DTN support. Add attributes dtnSystemInputDir, dtnSystemOutputDir
+
+### Bug fixes:
+- None
+
+---------------------------------------------------------------------------
 ## 1.4.2 - 2023-09-13
 
 Code cleanup, update java version in docker builds, new feature.
