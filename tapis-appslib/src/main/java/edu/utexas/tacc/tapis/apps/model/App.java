@@ -168,7 +168,7 @@ public final class App
   public enum AppOperation {create, read, modify, execute, delete, undelete, hardDelete, changeOwner,
                             enable, disable, getPerms, grantPerms, revokePerms, lock, unlock}
   public enum Permission {READ, MODIFY, EXECUTE}
-  public enum Runtime {DOCKER, SINGULARITY}
+  public enum Runtime {DOCKER, SINGULARITY, ZIP}
   // NOTE: RuntimeOption starts with NONE due to a bug in client code generation.
   //   Without an initial entry the prefix SINGULARITY_ gets stripped off the other 2 entries.
   //   See also https://github.com/tapis-project/openapi-apps/blob/dev/AppsAPI.yaml
@@ -668,6 +668,13 @@ public final class App
       {
         errMessages.add(LibUtils.getMsg("APPLIB_CONTAINERIZED_SING_OPT", SING_OPT_LIST));
       }
+    }
+
+    // If containerized and using ZIP runtime then reject as not yet supported
+    // Support for ZIP runtime coming soon, but not yet supported by jobs.
+    if (containerized && Runtime.ZIP.equals(runtime))
+    {
+      errMessages.add(LibUtils.getMsg("APPLIB_CONTAINERIZED_ZIP_ERR"));
     }
 
     // If dynamicExecSystem then execSystemConstraints must be given

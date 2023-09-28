@@ -9,7 +9,7 @@
   "UserName": { "type": "string", "minLength": 1, "maxLength": 60 },
   "DirPath": { "type": ["string", "null"], "minLength": 1, "maxLength": 4096 },
   "JobTypeEnum": { "type": ["string", "null"], "enum": [ "BATCH", "FORK", null ] },
-  "RuntimeEnum": { "type": "string", "enum": [ "SINGULARITY", "DOCKER" ] },
+  "RuntimeEnum": { "type": "string", "enum": [ "SINGULARITY", "DOCKER", "ZIP" ] },
   "RuntimeOptionEnum": { "type": "string", "enum": [ "NONE", "SINGULARITY_START", "SINGULARITY_RUN" ] },
   "DeliveryMethodEnum": { "type": "string", "enum": [ "WEBHOOK", "EMAIL" ] },
   "JobEventCategoryFilterEnum": { "type": "string",
