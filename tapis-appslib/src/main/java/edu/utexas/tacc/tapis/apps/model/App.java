@@ -670,13 +670,6 @@ public final class App
       }
     }
 
-    // If containerized and using ZIP runtime then reject as not yet supported
-    // Support for ZIP runtime coming soon, but not yet supported by jobs.
-    if (containerized && Runtime.ZIP.equals(runtime))
-    {
-      errMessages.add(LibUtils.getMsg("APPLIB_CONTAINERIZED_ZIP_ERR"));
-    }
-
     // If dynamicExecSystem then execSystemConstraints must be given
     if (dynamicExecSystem)
     {
