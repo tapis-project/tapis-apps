@@ -9,6 +9,17 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.5.0 - 2023-10-11
+
+New release
+
+### New features:
+- None
+
+### Bug fixes:
+- None
+
+---------------------------------------------------------------------------
 ## 1.4.3 - 2023-10-02
 
 ### New features:
