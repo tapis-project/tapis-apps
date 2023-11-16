@@ -82,7 +82,7 @@ public class AppsServiceTest
   private static final Set<Permission> testPermsMODIFY = new HashSet<>(Set.of(Permission.MODIFY));
 
   // Create test app definitions in memory
-  int numApps = 29; // UNUSED Apps (start with 0): 10, 21
+  int numApps = 29; // UNUSED Apps (start with 0): ALL IN USE
   App[] apps = IntegrationUtils.makeApps(numApps, testKey);
 
   @BeforeSuite
@@ -196,6 +196,24 @@ public class AppsServiceTest
     App tmpApp = svc.getApp(rOwner1, app0.getId(), app0.getVersion(), false, null, null);
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
     System.out.println("Found item: " + app0.getId());
+  }
+
+  @Test
+  public void testCreateAppZipRuntime() throws Exception
+  {
+    App app0 = apps[21];
+    app0.setRuntime(Runtime.ZIP);
+    app0.setContainerImage(containerImageAbsPath);
+    svc.createApp(rOwner1, app0, rawDataEmptyJson);
+    App tmpApp = svc.getApp(rOwner1, app0.getId(), app0.getVersion(), false, null, null);
+    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
+    System.out.println("Found item: " + app0.getId() + " containerImage: " + app0.getContainerImage());
+    // Rather than create a new app test containerImage of sourceUrl format using PUT
+    app0.setContainerImage(containerImageSourceUrl);
+    svc.putApp(rOwner1, app0, rawDataEmptyJson);
+    tmpApp = svc.getApp(rOwner1, app0.getId(), app0.getVersion(), false, null, null);
+    Assert.assertEquals(tmpApp.getContainerImage(), containerImageSourceUrl, "Failed to update item: " + app0.getId());
+    System.out.println("Found item: " + app0.getId() + " containerImage: " + app0.getContainerImage());
   }
 
   // Create an app using minimal attributes:
@@ -759,6 +777,19 @@ public class AppsServiceTest
     Assert.assertTrue(pass);
     // Reset in prep for continued checking
     app0.setRuntimeOptions(runtimeOptions1);
+    app0.setRuntime(runtime1);
+
+    // If containerized and ZIP then containerImage must be absolute path or sourceUrl
+    app0.setRuntime(Runtime.ZIP);
+    pass = false;
+    try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_CONTAINERIZED_ZIP_INVALID_IMAGE"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    // Reset in prep for continued checking
     app0.setRuntime(runtime1);
 
     // If dynamicExecSystem then execSystemConstraints must be given

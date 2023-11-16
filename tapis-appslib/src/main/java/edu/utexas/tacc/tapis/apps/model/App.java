@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -16,6 +18,8 @@ import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.commons.validator.routines.InetAddressValidator;
+
+import javax.validation.constraints.NotNull;
 
 import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.KeyValueInputMode.FIXED;
 import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.RESERVED_PREFIX;
@@ -38,6 +42,10 @@ public final class App
   // ************************************************************************
   // *********************** Constants **************************************
   // ************************************************************************
+
+  // Regex pattern for validating a file input sourceUrl.
+  // Based on pattern from files service. edu.utexas.tacc.tapis.files.lib.models.TransferURI
+  private static final Pattern SRC_URL_PATTERN = Pattern.compile("(http:\\/\\/|https:\\/\\/|tapis:\\/\\/)([\\w -\\.]+)\\/?(.*)");
 
   // Set of reserved application names
   public static final Set<String> RESERVED_ID_SET = new HashSet<>(Set.of("HEALTHCHECK", "READYCHECK", "SEARCH"));
@@ -644,6 +652,7 @@ public final class App
    * Check misc attribute restrictions
    *  If containerized is true then containerImage must be set
    *  If containerized and SINGULARITY then RuntimeOptions must include one of SINGULARITY_START or SINGULARITY_RUN
+   *  If containerized and runtime type is ZIP then validate entry - must be absolute path or valid sourceUrl
    *  If dynamicExecSystem then execSystemConstraints must be given
    *  If archiveSystem given then archive dir must be given
    *  If parameterSet.envVariables set then check that if inputMode=FIXED then value != "!tapis_not_set"
@@ -667,6 +676,15 @@ public final class App
            !(runtimeOptions.contains(RuntimeOption.SINGULARITY_RUN) || runtimeOptions.contains(RuntimeOption.SINGULARITY_START)))
       {
         errMessages.add(LibUtils.getMsg("APPLIB_CONTAINERIZED_SING_OPT", SING_OPT_LIST));
+      }
+    }
+
+    // If containerized and runtime type is ZIP then validate containerImage - must be absolute path or valid sourceUrl
+    if (containerized && Runtime.ZIP.equals(runtime) && !StringUtils.isBlank(containerImage))
+    {
+      if (!isZipContainerImageValid(containerImage))
+      {
+        errMessages.add(LibUtils.getMsg("APPLIB_CONTAINERIZED_ZIP_INVALID_IMAGE", containerImage));
       }
     }
 
@@ -706,18 +724,30 @@ public final class App
    * Validate an ID string.
    * Must start alphabetic and contain only alphanumeric and 4 special characters: - . _ ~
    */
-  private boolean isValidId(String id) { return id.matches(PATTERN_VALID_ID); }
+  private static boolean isValidId(String id) { return id.matches(PATTERN_VALID_ID); }
 
   /**
    * Validate a host string.
    * Check if a string is a valid hostname or IP address.
    * Use methods from org.apache.commons.validator.routines.
    */
-  private boolean isValidHost(String host)
+  private static boolean isValidHost(String host)
   {
     // First check for valid IP address, then for valid domain name
     if (DomainValidator.getInstance().isValid(host) || InetAddressValidator.getInstance().isValid(host)) return true;
     else return false;
+  }
+
+  /**
+   * Check to see if containerImage attribute for the case of a ZIP runtime app is valid.
+   * Must be absolute path or sourceUrl valid for a file transfer (except tapis_local).
+   */
+  private static boolean isZipContainerImageValid(String containerImage)
+  {
+    if (containerImage!=null && containerImage.startsWith("/")) return true;
+    Matcher matcher = SRC_URL_PATTERN.matcher(containerImage);
+    if (matcher.find()) return true;
+    return false;
   }
 
   // ************************************************************************

@@ -106,6 +106,8 @@ public final class IntegrationUtils
   public static final String containerImage1 = "containerImage";
   public static final String containerImage2 = "containerImage2";
   public static final String containerImageNull = null;
+  public static final String containerImageAbsPath = "/my/app/exec/script.sh";
+  public static final String containerImageSourceUrl = "tapis://my-system/my/app/exec/script.sh";
   public static final String jobDescription1 = "Description of job 1";
   public static final String jobDescription2 = "Description of job 2";
   public static final String jobDescriptionNull = null;
