@@ -9,15 +9,15 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 1.5.1 - 2023-??-??
+## 1.5.10 - 2023-11-20
 
-Incremental improvements.
+Incremental improvements and bug fix.
 
 ### New features:
 - Validate containerImage for case of ZIP runtime.
 
 ### Bug fixes:
-- None
+- Rebuild with latest shared code to fix JWT validation issue.
 
 ---------------------------------------------------------------------------
 ## 1.5.0 - 2023-10-11
