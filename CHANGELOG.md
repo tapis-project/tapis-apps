@@ -9,6 +9,17 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.5.11 - 2023-11-28
+
+Incremental improvements.
+
+### New features:
+- Validate sourceUrl attribute for file inputs defined in an application.
+
+### Bug fixes:
+- None
+
+---------------------------------------------------------------------------
 ## 1.5.10 - 2023-11-20
 
 Incremental improvements and bug fix.

@@ -236,20 +236,23 @@ public final class IntegrationUtils
 
   // FileInputs
   public static final FileInput fin1A = new FileInput("fin1A", "File input 1A", fileInputModeRequired, autoMountLocalTrue,
-          notes1Obj, "/src1A", "/target1A");
+          notes1Obj, "http://example.com/src1A", "/target1A");
   public static final FileInput fin1B = new FileInput("fin1B", "File input 1B", fileInputModeOptional, autoMountLocalFalse,
-          notes1Obj, "/src1B", "/target1B");
+          notes1Obj, "https://example.com/src1B", "/target1B");
   public static final List<FileInput> finList1 = new ArrayList<>(List.of(fin1A, fin1B));
   public static final FileInput fin2A = new FileInput("fin2A", "File input 2A", fileInputModeRequired, autoMountLocalTrue,
-          notes1Obj, "/src2A", "/target2A");
+          notes1Obj, "tapis://my-system/src2A", "/target2A");
   public static final FileInput fin2B = new FileInput("fin2B", "File input 2B", fileInputModeOptional, autoMountLocalFalse,
-          notes1Obj, "/src2B", "/targetBA");
+          notes1Obj, "tapislocal://exec.tapis/src2B", "/targetBA");
   public static final List<FileInput> finList2 = new ArrayList<>(List.of(fin2A, fin2B));
   public static final FileInput fin3A = new FileInput("fin3A", "File input 3A", fileInputModeOptional, autoMountLocalTrue,
-          notes1Obj, "/src3A", "/target3A");
+          notes1Obj, "tapis://my-system/src3A", "/target3A");
   public static final FileInput fin3B = new FileInput("fin3B", "File input 3B", fileInputModeFixed, autoMountLocalFalse,
-          notes1Obj, "/src3B", "/target3B");
+          notes1Obj, "tapis://my-system/src3B", "/target3B");
   public static final List<FileInput> finList3 = new ArrayList<>(List.of(fin3A, fin3B));
+  public static final FileInput finInvalid = new FileInput("finInvalid", "File input Invalid1", fileInputModeFixed, autoMountLocalFalse,
+          notes1Obj, "invalidSourceUrl", "/targetFile");
+  public static final List<FileInput> finListInvalid = new ArrayList<>(List.of(finInvalid));
   public static final List<FileInput> finListNull = null;
 
   // FileInputArrays

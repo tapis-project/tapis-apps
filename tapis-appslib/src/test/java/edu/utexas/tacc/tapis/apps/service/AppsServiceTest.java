@@ -733,6 +733,7 @@ public class AppsServiceTest
   // Note that these checks are in addition to other similar tests: testReservedNames, testCheckSystemsInvalid
   // - If containerized is true then containerImage must be set
   // - If containerized and SINGULARITY then RuntimeOptions must include one of SINGULARITY_START or SINGULARITY_RUN
+  // - If app contains file inputs then invalid sourceUrl entries are rejected.
   // - If dynamicExecSystem then execSystemConstraints must be given
   // - If not dynamicExecSystem then execSystemId must be given
   // - If archiveSystem given then archive dir must be given
@@ -785,12 +786,25 @@ public class AppsServiceTest
     try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
     catch (Exception e)
     {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_CONTAINERIZED_ZIP_INVALID_IMAGE"));
+      Assert.assertTrue(e.getMessage().contains("APPLIB_INVALID_CONTAINERIZED_ZIP_IMAGE"));
       pass = true;
     }
     Assert.assertTrue(pass);
     // Reset in prep for continued checking
     app0.setRuntime(runtime1);
+
+    // - If app contains file inputs then invalid sourceUrl entries are rejected.
+    app0.setFileInputs(finListInvalid);
+    pass = false;
+    try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_INVALID_FILEINPUT_SOURCEURL"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    // Reset in prep for continued checking
+    app0.setFileInputs(finList1);
 
     // If dynamicExecSystem then execSystemConstraints must be given
     app0.setExecSystemConstraints(null);

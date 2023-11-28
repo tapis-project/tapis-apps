@@ -13,13 +13,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
-
-import edu.utexas.tacc.tapis.apps.utils.LibUtils;
-import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
-import javax.validation.constraints.NotNull;
+import edu.utexas.tacc.tapis.apps.utils.LibUtils;
+import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 
 import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.KeyValueInputMode.FIXED;
 import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.RESERVED_PREFIX;
@@ -43,9 +41,10 @@ public final class App
   // *********************** Constants **************************************
   // ************************************************************************
 
-  // Regex pattern for validating a file input sourceUrl.
+  // Regex patterns for validating a file input sourceUrl.
   // Based on pattern from files service. edu.utexas.tacc.tapis.files.lib.models.TransferURI
   private static final Pattern SRC_URL_PATTERN = Pattern.compile("(http:\\/\\/|https:\\/\\/|tapis:\\/\\/)([\\w -\\.]+)\\/?(.*)");
+  private static final Pattern SRC_URL_LOCAL_PATTERN = Pattern.compile("(tapislocal:\\/\\/)([\\w -\\.]+)\\/?(.*)");
 
   // Set of reserved application names
   public static final Set<String> RESERVED_ID_SET = new HashSet<>(Set.of("HEALTHCHECK", "READYCHECK", "SEARCH"));
@@ -653,6 +652,7 @@ public final class App
    *  If containerized is true then containerImage must be set
    *  If containerized and SINGULARITY then RuntimeOptions must include one of SINGULARITY_START or SINGULARITY_RUN
    *  If containerized and runtime type is ZIP then validate entry - must be absolute path or valid sourceUrl
+   *  If app contains file inputs then validate sourceUrl attributes for each input.
    *  If dynamicExecSystem then execSystemConstraints must be given
    *  If archiveSystem given then archive dir must be given
    *  If parameterSet.envVariables set then check that if inputMode=FIXED then value != "!tapis_not_set"
@@ -684,9 +684,12 @@ public final class App
     {
       if (!isZipContainerImageValid(containerImage))
       {
-        errMessages.add(LibUtils.getMsg("APPLIB_CONTAINERIZED_ZIP_INVALID_IMAGE", containerImage));
+        errMessages.add(LibUtils.getMsg("APPLIB_INVALID_CONTAINERIZED_ZIP_IMAGE", containerImage));
       }
     }
+
+   // If app contains file inputs then validate sourceUrl attributes for each input.
+    if (fileInputs != null) { for (FileInput fin : fileInputs) checkFileInputSourceUrl(errMessages, fin); }
 
     // If dynamicExecSystem then execSystemConstraints must be given
     if (dynamicExecSystem)
@@ -740,12 +743,39 @@ public final class App
 
   /**
    * Check to see if containerImage attribute for the case of a ZIP runtime app is valid.
-   * Must be absolute path or sourceUrl valid for a file transfer (except tapis_local).
+   * Must be absolute path or sourceUrl valid for a file transfer (except tapislocal).
    */
   private static boolean isZipContainerImageValid(String containerImage)
   {
     if (containerImage!=null && containerImage.startsWith("/")) return true;
     Matcher matcher = SRC_URL_PATTERN.matcher(containerImage);
+    if (matcher.find()) return true;
+    return false;
+  }
+
+  /**
+   * Check to see if fileInput sourceUrl is valid
+   */
+  private static void checkFileInputSourceUrl(List<String> errMessages, FileInput fileInput)
+  {
+    // sourceUrl is optional, so skip check if not set.
+    if (StringUtils.isBlank(fileInput.getSourceUrl())) return;
+    if (!validFileInputSourceUrl(fileInput.getSourceUrl()))
+    {
+      errMessages.add(LibUtils.getMsg("APPLIB_INVALID_FILEINPUT_SOURCEURL", fileInput.getName(), fileInput.getSourceUrl()));
+    }
+  }
+
+  /**
+   * Check fileInput sourceUrl
+   */
+  private static boolean validFileInputSourceUrl(String sourceUrl)
+  {
+    // Must be empty, http/s://, tapis:// or tapislocal://
+    if (StringUtils.isBlank(sourceUrl)) return true;
+    Matcher matcher = SRC_URL_PATTERN.matcher(sourceUrl);
+    if (matcher.find()) return true;
+    matcher = SRC_URL_LOCAL_PATTERN.matcher(sourceUrl);
     if (matcher.find()) return true;
     return false;
   }
