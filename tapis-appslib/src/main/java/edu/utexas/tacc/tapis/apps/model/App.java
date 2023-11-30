@@ -85,6 +85,10 @@ public final class App
   public static final int DEFAULT_MEMORY_MB = 100;
   public static final int DEFAULT_MAX_MINUTES = 10;
 
+  // Special select strings used for determining what attributes are returned in a response
+  public static final String SEL_ALL_ATTRS = "allAttributes";
+  public static final String SEL_SUMMARY_ATTRS = "summaryAttributes";
+
   // Attribute names, also used as field names in Json
   public static final String TENANT_FIELD = "tenant";
   public static final String ID_FIELD = "id";

@@ -505,7 +505,8 @@ public class AppsServiceTest
   {
     App app0 = apps[4];
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
-    List<App> apps = svc.getApps(rOwner1, null, -1, null, -1, null, showDeletedFalse, ALL.name());
+    List<App> apps = svc.getApps(rOwner1, null, -1, null, -1, null,
+                                 showDeletedFalse, ALL.name(), fetchShareInfoFalse);
     for (App app : apps)
     {
       System.out.println("Found item with id: " + app.getId() + " and version: " + app.getVersion());
@@ -544,37 +545,37 @@ public class AppsServiceTest
     List<App> apps;
     // OWNED - should return 1
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
-                       showDeletedFalse, listTypeOwned.name());
+                       showDeletedFalse, listTypeOwned.name(), fetchShareInfoFalse);
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
     System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeOwned);
     Assert.assertEquals(apps.size(), 1, "Wrong number of returned apps for listType=" + listTypeOwned);
     // SHARED_PUBLIC - should return 1
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
-                       showDeletedFalse, listTypeSharedPublic.name());
+                       showDeletedFalse, listTypeSharedPublic.name(), fetchShareInfoFalse);
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
     System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeSharedPublic);
     Assert.assertEquals(apps.size(), 1, "Wrong number of returned apps for listType=" + listTypeSharedPublic);
     // SHARED_DIRECT - should return 1
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
-                       showDeletedFalse, listTypeSharedDirect.name());
+                       showDeletedFalse, listTypeSharedDirect.name(), fetchShareInfoFalse);
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
     System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeSharedDirect);
     Assert.assertEquals(apps.size(), 1, "Wrong number of returned apps for listType=" + listTypeSharedDirect);
     // READ_PERM - should return 1
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
-                       showDeletedFalse, listTypeReadPerm.name());
+                       showDeletedFalse, listTypeReadPerm.name(), fetchShareInfoFalse);
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
     System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeReadPerm);
     Assert.assertEquals(apps.size(), 1, "Wrong number of returned apps for listType=" + listTypeReadPerm);
     // MINE - should return 2
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
-                       showDeletedFalse, listTypeMine.name());
+                       showDeletedFalse, listTypeMine.name(), fetchShareInfoFalse);
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
     System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeMine);
     Assert.assertEquals(apps.size(), 2, "Wrong number of returned apps for listType=" + listTypeMine);
     // ALL - should return 4
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
-                       showDeletedFalse, listTypeAll.name());
+                       showDeletedFalse, listTypeAll.name(), fetchShareInfoFalse);
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
     System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeAll);
     Assert.assertEquals(apps.size(), 4, "Wrong number of returned apps for listType=" + listTypeAll);
@@ -599,7 +600,8 @@ public class AppsServiceTest
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
 
     // When retrieving apps as testUser5 only 2 should be returned
-    List<App> apps = svc.getApps(rUser5, searchListNull, -1, orderByListNull, -1, startAfterNull, showDeletedFalse, OWNED.name());
+    List<App> apps = svc.getApps(rUser5, searchListNull, -1, orderByListNull, -1, startAfterNull,
+                                 showDeletedFalse, OWNED.name(), fetchShareInfoFalse);
     System.out.println("Total number of apps retrieved: " + apps.size());
     Assert.assertEquals(apps.size(), 2);
     for (App app : apps)

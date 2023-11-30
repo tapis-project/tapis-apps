@@ -72,11 +72,11 @@ public interface AppsService
           throws TapisException, TapisClientException;
 
   List<App> getApps(ResourceRequestUser rUser, List<String> searchList, int limit, List<OrderBy> orderByList,
-                    int skip, String startAfter, boolean includeDeleted, String listType)
+                    int skip, String startAfter, boolean includeDeleted, String listType, boolean fetchShareInfo)
           throws TapisException, TapisClientException;
 
   List<App> getAppsUsingSqlSearchStr(ResourceRequestUser rUser, String searchStr, int limit, List<OrderBy> orderByList,
-                                     int skip, String startAfter, boolean includeDeleted, String listType)
+                                     int skip, String startAfter, boolean includeDeleted, String listType, boolean fetchShareInfo)
           throws TapisException, TapisClientException;
 
   String getAppOwner(ResourceRequestUser rUser, String appId)

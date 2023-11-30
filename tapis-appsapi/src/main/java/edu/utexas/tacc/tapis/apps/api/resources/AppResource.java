@@ -73,17 +73,7 @@ import edu.utexas.tacc.tapis.apps.api.responses.RespApps;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
 
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_CONTAINERIZED;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_CORES_PER_NODE;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_JOB_TYPE;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_MAX_JOBS;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_MAX_JOBS_PER_USER;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_MAX_MINUTES;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_MEMORY_MB;
-import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NODE_COUNT;
-import static edu.utexas.tacc.tapis.apps.model.App.ID_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.OWNER_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.VERSION_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.*;
 
 /*
  * JAX-RS REST resource for a Tapis App (edu.utexas.tacc.tapis.apps.model.App)
@@ -142,6 +132,8 @@ public class AppResource
   public static final List<String> SUMMARY_ATTRS =
           new ArrayList<>(List.of(ID_FIELD, VERSION_FIELD, OWNER_FIELD));
 
+  // Default for getApp
+  public static final List<String> DEFAULT_GETAPP_ATTRS = new ArrayList<>(List.of(SEL_ALL_ATTRS));
 
   // ************************************************************************
   // *********************** Fields *****************************************
@@ -345,6 +337,7 @@ public class AppResource
       _log.error(msg, e);
       throw new BadRequestException(msg);
     }
+
     // Create validator specification and validate the json against the schema
     JsonValidatorSpec spec = new JsonValidatorSpec(rawJson, FILE_APP_UPDATE_REQUEST);
     try { JsonValidator.validate(spec); }
@@ -688,6 +681,7 @@ public class AppResource
                                                    "resourceTenant="+resourceTenant);
 
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
+    if (selectList == null || selectList.isEmpty()) selectList = DEFAULT_GETAPP_ATTRS;
 
     App app;
     try
@@ -751,6 +745,7 @@ public class AppResource
                           "impersonationId="+impersonationId, "resourceTenant="+resourceTenant);
 
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
+    if (selectList == null || selectList.isEmpty()) selectList = DEFAULT_GETAPP_ATTRS;
 
     App app;
     try
@@ -1032,7 +1027,7 @@ public class AppResource
     }
 
     // App or history not found
-    if (appHistory == null || appHistory.size()==0)
+    if (appHistory == null || appHistory.isEmpty())
       throw new NotFoundException(ApiUtils.getMsgAuth(NOT_FOUND, rUser, appId));
 
     // ---------------------------- Success -------------------------------
@@ -1347,11 +1342,15 @@ public class AppResource
     String orderBy = srchParms.getOrderBy();
     List<OrderBy> orderByList = srchParms.getOrderByList();
 
+    // Determine if select contains shareInfo
+    boolean fetchShareInfo = isShareInfoRequested(selectList);
+
+    // Call service method to fetch apps
     if (StringUtils.isBlank(sqlSearchStr))
-      apps = service.getApps(rUser, searchList, limit, orderByList, skip, startAfter, showDeleted, listType);
+      apps = service.getApps(rUser, searchList, limit, orderByList, skip, startAfter, showDeleted, listType, fetchShareInfo);
     else
       apps = service.getAppsUsingSqlSearchStr(rUser, sqlSearchStr, limit, orderByList, skip,
-                                                  startAfter, showDeleted, listType);
+                                                  startAfter, showDeleted, listType, fetchShareInfo);
     if (apps == null) apps = Collections.emptyList();
     itemCountStr = String.format(APPS_CNT_STR, apps.size());
     if (computeTotal && limit <= 0) totalCount = apps.size();
@@ -1410,5 +1409,16 @@ public class AppResource
       app.setMemoryMB(DEFAULT_MEMORY_MB);
       app.setMaxMinutes(DEFAULT_MAX_MINUTES);
     }
+  }
+
+  /*
+   * Determine if selectList will trigger need to fetch shareInfo
+   */
+  private static boolean isShareInfoRequested(List<String> selectList)
+  {
+    if (selectList == null || selectList.isEmpty()) selectList = Collections.emptyList();
+    return (selectList.contains(IS_PUBLIC_FIELD) ||
+            selectList.contains(SHARED_WITH_USERS_FIELD) ||
+            selectList.contains(SEL_ALL_ATTRS));
   }
 }

@@ -387,6 +387,8 @@ public final class IntegrationUtils
   public static final String startAferEmpty = "";
   public static final boolean showDeletedFalse = false;
   public static final boolean showDeletedTrue = true;
+  public static final boolean fetchShareInfoFalse = false;
+  public static final boolean fetchShareInfoTrue = true;
   public static final boolean versionSpecifiedFalse = false;
   public static final AppsServiceImpl.AuthListType listTypeOwned = AppsServiceImpl.AuthListType.OWNED;
   public static final AppsServiceImpl.AuthListType listTypeSharedPublic = AppsServiceImpl.AuthListType.SHARED_PUBLIC;

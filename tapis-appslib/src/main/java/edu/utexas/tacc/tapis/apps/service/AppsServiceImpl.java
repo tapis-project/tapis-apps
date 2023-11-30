@@ -834,7 +834,7 @@ public class AppsServiceImpl implements AppsService
    */
   @Override
   public List<App> getApps(ResourceRequestUser rUser, List<String> searchList, int limit, List<OrderBy> orderByList,
-                           int skip, String startAfter, boolean includeDeleted, String listType)
+                           int skip, String startAfter, boolean includeDeleted, String listType, boolean fetchShareInfo)
           throws TapisException, TapisClientException
   {
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -842,7 +842,7 @@ public class AppsServiceImpl implements AppsService
     // Process listType. Figure out how we will filter based on authorization. OWNED, ALL, etc.
     // If no listType provided use the default
     if (StringUtils.isBlank(listType)) listType = DEFAULT_LIST_TYPE.name();
-    // Validate the listType enum (case insensitive).
+    // Validate the listType enum (case-insensitive).
     listType = listType.toUpperCase();
     if (!EnumUtils.isValidEnum(AuthListType.class, listType))
     {
@@ -895,11 +895,15 @@ public class AppsServiceImpl implements AppsService
     List<App> apps = dao.getApps(rUser, verifiedSearchList, null, limit, orderByList, skip, startAfter,
                                  versionSpecified, includeDeleted, listTypeEnum, viewableIDs, sharedIDs);
     // Update dynamically computed info.
-    for (App app : apps)
+    // Fetch share info only if requested by caller
+    if (fetchShareInfo)
     {
-      AppShare appShare = getAppShare(rUser, app.getId());
-      app.setIsPublic(appShare.isPublic());
-      app.setSharedWithUsers(appShare.getUserList());
+      for (App app : apps)
+      {
+        AppShare appShare = getAppShare(rUser, app.getId());
+        app.setIsPublic(appShare.isPublic());
+        app.setSharedWithUsers(appShare.getUserList());
+      }
     }
     return apps;
   }
@@ -917,19 +921,19 @@ public class AppsServiceImpl implements AppsService
   @Override
   public List<App> getAppsUsingSqlSearchStr(ResourceRequestUser rUser, String sqlSearchStr, int limit,
                                             List<OrderBy> orderByList, int skip, String startAfter,
-                                            boolean includeDeleted, String listType)
+                                            boolean includeDeleted, String listType, boolean fetchShareInfo)
           throws TapisException, TapisClientException
   {
     // If search string is empty delegate to getApps()
     if (StringUtils.isBlank(sqlSearchStr)) return getApps(rUser, null, limit, orderByList, skip, startAfter,
-                                                          includeDeleted, listType);
+                                                          includeDeleted, listType, fetchShareInfo);
 
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
 
     // Process listType. Figure out how we will filter based on authorization. OWNED, ALL, etc.
     // If no listType provided use the default
     if (StringUtils.isBlank(listType)) listType = DEFAULT_LIST_TYPE.name();
-    // Validate the listType enum (case insensitive).
+    // Validate the listType enum (case-insensitive).
     listType = listType.toUpperCase();
     if (!EnumUtils.isValidEnum(AuthListType.class, listType))
     {
@@ -982,12 +986,16 @@ public class AppsServiceImpl implements AppsService
     // Get all allowed apps matching the search conditions
     List<App> apps = dao.getApps(rUser, null, searchAST, limit, orderByList, skip, startAfter, versionSpecified,
                                  includeDeleted, listTypeEnum, viewableIDs, sharedIDs);
-    // Update dynamically computed flags.
-    for (App app : apps)
+    // Update dynamically computed info.
+    // Fetch share info only if requested by caller
+    if (fetchShareInfo)
     {
-      AppShare appShare = getAppShare(rUser, app.getId());
-      app.setIsPublic(appShare.isPublic());
-      app.setSharedWithUsers(appShare.getUserList());
+      for (App app : apps)
+      {
+        AppShare appShare = getAppShare(rUser, app.getId());
+        app.setIsPublic(appShare.isPublic());
+        app.setSharedWithUsers(appShare.getUserList());
+      }
     }
     return apps;
   }

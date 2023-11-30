@@ -13,31 +13,7 @@ import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
 import static edu.utexas.tacc.tapis.apps.api.resources.AppResource.SUMMARY_ATTRS;
-import static edu.utexas.tacc.tapis.apps.model.App.DELETED_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.IS_PUBLIC_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.SHARED_WITH_USERS_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.SHARED_APP_CTX_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.TENANT_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.ID_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.VERSION_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.JOB_TYPE_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.DESCRIPTION_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.OWNER_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.ENABLED_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.LOCKED_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.TAGS_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.NOTES_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.UUID_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.CONTAINERIMG_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.RUNTIME_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.RUNTIMEVER_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.RUNTIMEOPTS_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.MAX_JOBS_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.MAX_JOBS_PER_USER_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.STRICT_FILE_INPUTS_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.JOB_ATTRS_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.CREATED_FIELD;
-import static edu.utexas.tacc.tapis.apps.model.App.UPDATED_FIELD;
+import static edu.utexas.tacc.tapis.apps.model.App.*;
 
 /*
   Classes representing an App result to be returned
@@ -119,7 +95,7 @@ public final class TapisAppDTO
   public JsonObject getDisplayObject(List<String> selectList)
   {
     // Check for special case of returning all attributes
-    if (selectList == null || selectList.isEmpty() || selectList.contains("allAttributes"))
+    if (selectList == null || selectList.isEmpty() || selectList.contains(SEL_ALL_ATTRS))
     {
       return allAttrs();
     }
@@ -127,7 +103,7 @@ public final class TapisAppDTO
     var retObj = new JsonObject();
 
     // If summaryAttrs included then add them
-    if (selectList.contains("summaryAttributes")) addSummaryAttrs(retObj);
+    if (selectList.contains(SEL_SUMMARY_ATTRS)) addSummaryAttrs(retObj);
 
     // Include specified list of attributes
     // If ID not in list we add it anyway.
