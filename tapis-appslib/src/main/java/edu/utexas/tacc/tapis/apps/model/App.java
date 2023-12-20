@@ -183,7 +183,7 @@ public final class App
   // NOTE: RuntimeOption starts with NONE due to a bug in client code generation.
   //   Without an initial entry the prefix SINGULARITY_ gets stripped off the other 2 entries.
   //   See also https://github.com/tapis-project/openapi-apps/blob/dev/AppsAPI.yaml
-  public enum RuntimeOption {NONE, SINGULARITY_START, SINGULARITY_RUN}
+  public enum RuntimeOption {NONE, SINGULARITY_START, SINGULARITY_RUN, ZIP_SAVE}
   public enum FileInputMode {OPTIONAL, REQUIRED, FIXED}
   public enum ArgInputMode {REQUIRED, FIXED, INCLUDE_ON_DEMAND, INCLUDE_BY_DEFAULT}
 
