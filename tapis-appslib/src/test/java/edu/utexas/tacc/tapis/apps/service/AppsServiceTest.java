@@ -204,6 +204,7 @@ public class AppsServiceTest
     App app0 = apps[21];
     app0.setRuntime(Runtime.ZIP);
     app0.setContainerImage(containerImageAbsPath);
+    app0.setParameterSet(parameterSetZip);
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
     App tmpApp = svc.getApp(rOwner1, app0.getId(), app0.getVersion(), false, null, null);
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());

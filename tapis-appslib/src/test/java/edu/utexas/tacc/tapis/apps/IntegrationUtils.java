@@ -335,6 +335,9 @@ public final class IntegrationUtils
   public static final ArgSpec containerArg3B = new ArgSpec("argValue3B", "containerArg3B", "Container arg 3B",
           argInputModeFixed, argNotes3);
   public static final List<ArgSpec> containerArgList3 = new ArrayList<>(List.of(containerArg3A, containerArg3B));
+  public static final ArgSpec containerArgZip = new ArgSpec( "--tapis-zip-save","zipArg", "Container arg for ZIP",
+                                                            argInputModeRequired, argNotes1);
+  public static final List<ArgSpec> containerArgListZip = new ArrayList<>(List.of(containerArgZip));
   public static final List<ArgSpec> containerArgListNull = null;
 
   public static final ArgSpec schedulerOption1A = new ArgSpec("argValue1A", "schedulerOption1A", "Scheduler option 1A",
@@ -359,6 +362,9 @@ public final class IntegrationUtils
                                                                     envVariables2, archiveFilter2, logConfig2);
   public static final ParameterSet parameterSetReject = new ParameterSet(appArgList1, containerArgList1, schedulerOptionList1,
                                                                          envVariablesReject, archiveFilter1, logConfig1);
+  public static final ParameterSet parameterSetZip = new ParameterSet(appArgList1, containerArgListZip, schedulerOptionList1,
+                                                                      envVariables1, archiveFilter1, logConfig1);
+
   public static final ParameterSet parameterSetNull = null;
 
   public static final List<OrderBy> orderByListNull = null;

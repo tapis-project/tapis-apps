@@ -1,11 +1,7 @@
 package edu.utexas.tacc.tapis.apps.model;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,11 +36,6 @@ public final class App
   // ************************************************************************
   // *********************** Constants **************************************
   // ************************************************************************
-
-  // Regex patterns for validating a file input sourceUrl.
-  // Based on pattern from files service. edu.utexas.tacc.tapis.files.lib.models.TransferURI
-  private static final Pattern SRC_URL_PATTERN = Pattern.compile("(http:\\/\\/|https:\\/\\/|tapis:\\/\\/)([\\w -\\.]+)\\/?(.*)");
-  private static final Pattern SRC_URL_LOCAL_PATTERN = Pattern.compile("(tapislocal:\\/\\/)([\\w -\\.]+)\\/?(.*)");
 
   // Set of reserved application names
   public static final Set<String> RESERVED_ID_SET = new HashSet<>(Set.of("HEALTHCHECK", "READYCHECK", "SEARCH"));
@@ -145,6 +136,14 @@ public final class App
   public static final String IS_PUBLIC_FIELD = "isPublic";
   public static final String SHARED_WITH_USERS_FIELD = "sharedWithUsers";
 
+  // Regex patterns for validating a file input sourceUrl.
+  // Based on pattern from files service. edu.utexas.tacc.tapis.files.lib.models.TransferURI
+  private static final Pattern SRC_URL_PATTERN = Pattern.compile("(http:\\/\\/|https:\\/\\/|tapis:\\/\\/)([\\w -\\.]+)\\/?(.*)");
+  private static final Pattern SRC_URL_LOCAL_PATTERN = Pattern.compile("(tapislocal:\\/\\/)([\\w -\\.]+)\\/?(.*)");
+
+  // Special containerArg value. This argument may only be used for an app of runtime type ZIP.
+  private static final String ZIP_SAVE_CONTAINER_ARG = "--tapis-zip-save";
+
   // Message keys
   private static final String CREATE_MISSING_ATTR = "APPLIB_CREATE_MISSING_ATTR";
   private static final String INVALID_STR_ATTR = "APPLIB_INVALID_STR_ATTR";
@@ -183,7 +182,7 @@ public final class App
   // NOTE: RuntimeOption starts with NONE due to a bug in client code generation.
   //   Without an initial entry the prefix SINGULARITY_ gets stripped off the other 2 entries.
   //   See also https://github.com/tapis-project/openapi-apps/blob/dev/AppsAPI.yaml
-  public enum RuntimeOption {NONE, SINGULARITY_START, SINGULARITY_RUN, ZIP_SAVE}
+  public enum RuntimeOption {NONE, SINGULARITY_START, SINGULARITY_RUN}
   public enum FileInputMode {OPTIONAL, REQUIRED, FIXED}
   public enum ArgInputMode {REQUIRED, FIXED, INCLUDE_ON_DEMAND, INCLUDE_BY_DEFAULT}
 
@@ -660,6 +659,8 @@ public final class App
    *  If dynamicExecSystem then execSystemConstraints must be given
    *  If archiveSystem given then archive dir must be given
    *  If parameterSet.envVariables set then check that if inputMode=FIXED then value != "!tapis_not_set"
+   *  If runtime type is not ZIP then --tapis-zip-save is not allowed.
+   *  If runtime type is ZIP then we only support containerArg == --tapis-zip-save
    */
   private void checkAttrMisc(List<String> errMessages)
   {
@@ -709,19 +710,43 @@ public final class App
     {
       errMessages.add(LibUtils.getMsg("APPLIB_ARCHIVE_NODIR"));
     }
-    // Check for inputMode=FIXED and value == "!tapis_not_set"
-    // Check for variables that begin with "_tapis". This is not allowed. Jobs will not accept them.
-    if (parameterSet != null && parameterSet.getEnvVariables() != null)
+
+    // Checks involving parameterSet
+    if (parameterSet != null)
     {
-      for (KeyValuePair kv : parameterSet.getEnvVariables())
+      // Check env variables
+      if (parameterSet.getEnvVariables() != null)
       {
-        if (FIXED.equals(kv.getInputMode()) && VALUE_NOT_SET.equals(kv.getValue()))
+        for (KeyValuePair kv : parameterSet.getEnvVariables())
         {
-          errMessages.add(LibUtils.getMsg("APPLIB_ENV_VAR_FIXED_UNSET", kv.getKey(), kv.getValue()));
+          // Check for inputMode=FIXED and value == "!tapis_not_set"
+          if (FIXED.equals(kv.getInputMode()) && VALUE_NOT_SET.equals(kv.getValue()))
+          {
+            errMessages.add(LibUtils.getMsg("APPLIB_ENV_VAR_FIXED_UNSET", kv.getKey(), kv.getValue()));
+          }
+          // Check for variables that begin with "_tapis". This is not allowed. Jobs will not accept them.
+          if (StringUtils.startsWith(kv.getKey(), RESERVED_PREFIX))
+          {
+            errMessages.add(LibUtils.getMsg("APPLIB_ENV_VAR_INVALID_PREFIX", kv.getKey(), kv.getValue()));
+          }
         }
-        if (StringUtils.startsWith(kv.getKey(), RESERVED_PREFIX))
+      }
+      // Check container args
+      var containerArgs = parameterSet.getContainerArgs();
+      if (containerArgs != null)
+      {
+        for (ArgSpec argSpec : containerArgs)
         {
-          errMessages.add(LibUtils.getMsg("APPLIB_ENV_VAR_INVALID_PREFIX", kv.getKey(), kv.getValue()));
+          // If runtime type is not ZIP then --tapis-zip-save is not allowed.
+          if (runtime != Runtime.ZIP && ZIP_SAVE_CONTAINER_ARG.equals(argSpec.getArg()))
+          {
+            errMessages.add(LibUtils.getMsg("APPLIB_CON_ARG_NOT_SUPPORTED", runtime, argSpec.getArg()));
+          }
+          // If runtime type is ZIP then we only support containerArg == --tapis-zip-save
+          if (runtime == Runtime.ZIP && !ZIP_SAVE_CONTAINER_ARG.equals(argSpec.getArg()))
+          {
+            errMessages.add(LibUtils.getMsg("APPLIB_CON_ARG_NOT_SUPPORTED", runtime, argSpec.getArg()));
+          }
         }
       }
     }

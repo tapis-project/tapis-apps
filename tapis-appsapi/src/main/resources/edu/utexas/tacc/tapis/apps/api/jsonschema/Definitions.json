@@ -10,7 +10,7 @@
   "DirPath": { "type": ["string", "null"], "minLength": 1, "maxLength": 4096 },
   "JobTypeEnum": { "type": ["string", "null"], "enum": [ "BATCH", "FORK", null ] },
   "RuntimeEnum": { "type": "string", "enum": [ "SINGULARITY", "DOCKER", "ZIP" ] },
-  "RuntimeOptionEnum": { "type": "string", "enum": [ "NONE", "SINGULARITY_START", "SINGULARITY_RUN", "ZIP_SAVE" ] },
+  "RuntimeOptionEnum": { "type": "string", "enum": [ "NONE", "SINGULARITY_START", "SINGULARITY_RUN" ] },
   "DeliveryMethodEnum": { "type": "string", "enum": [ "WEBHOOK", "EMAIL" ] },
   "JobEventCategoryFilterEnum": { "type": "string",
     "enum": [ "ALL", "JOB_NEW_STATUS", "JOB_INPUT_TRANSACTION_ID", "JOB_ARCHIVE_TRANSACTION_ID",

@@ -9,14 +9,14 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 1.5.11 - 2024-??-??
+## 1.5.11 - 2024-01-11
 
 Incremental improvements.
 
 ### New features:
 - Validate sourceUrl attribute for file inputs defined in an application.
 - When fetching applications get shareInfo only when needed.
-- Add ZIP_SAVE to runtimeOptions.
+- Update support for ZIP runtime.
 
 ### Bug fixes:
 - None
