@@ -17,6 +17,7 @@ Incremental improvements.
 - Validate sourceUrl attribute for file inputs defined in an application.
 - When fetching applications get shareInfo only when needed.
 - Update support for ZIP runtime.
+- TODO/TBD: Check attributes for control characters. Reject create/update if found.
 
 ### Bug fixes:
 - None

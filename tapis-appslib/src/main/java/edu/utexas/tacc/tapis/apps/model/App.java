@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
+import edu.utexas.tacc.tapis.shared.utils.PathSanitizer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.DomainValidator;
@@ -148,6 +150,7 @@ public final class App
   private static final String CREATE_MISSING_ATTR = "APPLIB_CREATE_MISSING_ATTR";
   private static final String INVALID_STR_ATTR = "APPLIB_INVALID_STR_ATTR";
   private static final String TOO_LONG_ATTR = "APPLIB_TOO_LONG_ATTR";
+  private static final String CTL_CHR_ATTR = "APPLIB_CTL_CHR_ATTR";
 
   // Validation patterns
   //ID Must start alphanumeric and contain only alphanumeric and 4 special characters: - . _ ~
@@ -511,6 +514,7 @@ public final class App
     checkAttrRequired(errMessages);
     checkAttrValidity(errMessages);
     checkAttrStringLengths(errMessages);
+    checkAttrControlCharacters(errMessages);
     checkAttrMisc(errMessages);
     return errMessages;
   }
@@ -651,10 +655,102 @@ public final class App
   }
 
   /**
+   * Check for control characters for attributes that do not allow them.
+   */
+  private void checkAttrControlCharacters(List<String> errMessages)
+  {
+    checkForControlChars(errMessages, id, ID_FIELD);
+    checkForControlChars(errMessages, version, VERSION_FIELD);
+    checkForControlChars(errMessages, owner, OWNER_FIELD);
+    checkForControlChars(errMessages, tenant, TENANT_FIELD);
+    checkForControlChars(errMessages, runtimeVersion, RUNTIMEVER_FIELD);
+    checkForControlChars(errMessages, containerImage, CONTAINERIMG_FIELD);
+    // NOTE We use various checkForControlChars* methods to help code readability.
+    checkForControlCharsAppTags(errMessages); // TODO combine somehow with jobTags?
+    checkForControlCharsJobAttributes(errMessages);
+  }
+
+  /**
+   * Check for control characters in an attribute value.
+   * If one is found add a message to the error list.
+   */
+  private void checkForControlChars(List<String> errMessages, String attrValue, String attrName)
+  {
+
+    try { PathSanitizer.detectControlChars(attrValue); }
+    catch (TapisException e)
+    {
+      String logAttrValue = PathSanitizer.replaceControlChars(attrValue, '?');
+      errMessages.add(LibUtils.getMsg(CTL_CHR_ATTR, attrName, logAttrValue, e.getMessage()));
+    }
+  }
+
+  /**
+   * Check for control characters in top level tags attributean attribute value.
+   */
+  private void checkForControlCharsAppTags(List<String> errMessages)
+  {
+    // TODO
+    ???
+  }
+
+  /**
+   * Check for control characters in jobAttributes
+   */
+  private void checkForControlCharsJobAttributes(List<String> errMessages)
+  {
+    // TODO
+    // TODO move these to  checkAttrControlCharactersJobAttributes(); for readability
+    checkForControlCharsExecSystemConstraints();
+    checkForControlChars(errMessages, execSystemId, EXECSYSID_FIELD);
+    checkForControlChars(errMessages, execSystemExecDir, EXECSYSEXECDIR_FIELD);
+    checkForControlChars(errMessages, execSystemInputDir, EXECSYSINDIR_FIELD);
+    checkForControlChars(errMessages, execSystemOutputDir, EXECSYSOUTDIR_FIELD);
+    checkForControlChars(errMessages, archiveSystemId, ARCHIVESYSID_FIELD);
+    checkForControlChars(errMessages, archiveSystemDir, ARCHIVESYSDIR_FIELD);
+    checkForControlChars(errMessages, execSystemLogicalQueue, EXECSYSLOGICALQ_FIELD);
+    checkForControlChars(errMessages, mpiCmd, MPI_CMD_FIELD);
+    checkForControlCharsParameterSet(errMessages);
+    checkAttrControlCharactersFileInputs(errMessages); // TODO fileInputs and fileInputArrays
+    checkAttrControlCharactersSubscriptions(errMessages); // TODO/TBD needed? only attr to check would be delivery address.
+    checkAttrControlCharactersJobTags(errMessages); // TODO combine with AppTags?
+  }
+
+  /**
+   * Check for control characters in parameterSet
+   */
+  private void checkForControlCharsParameterSet(List<String> errMessages)
+  {
+    checkForControlCharsAppArgs(); // TODO break out or do all in argSpec types in this method? Will probably have common method for argSpec
+    checkAttrControlCharactersContainerArgs();
+    checkAttrControlCharactersSchedulerOptions();
+    checkAttrControlCharactersEnvVariables();
+    checkForControlCharsArchiveFilter(errMessages);
+    checkForControlCharsLogConfig(errMessages);
+  }
+
+  /**
+   * Check for control characters in archiveFilter
+   */
+  private void checkForControlCharsArchiveFilter(List<String> errMessages)
+  {
+    checkAttrControlCharactersIncludes(); // TODO/TBD may not need to take the levels very deep. e.g., maybe do all archiveFilter checks in one method
+    checkAttrControlCharactersExcludes();
+  }
+
+  /**
+   * Check for control characters in logConfig
+   */
+  private void checkForControlCharsLogConfig(List<String> errMessages)
+  {
+    // TODO stdoutFilename, stderrFilename
+  }
+
+  /**
    * Check misc attribute restrictions
    *  If containerized is true then containerImage must be set
    *  If containerized and SINGULARITY then RuntimeOptions must include one of SINGULARITY_START or SINGULARITY_RUN
-   *  If containerized and runtime type is ZIP then validate entry - must be absolute path or valid sourceUrl
+   *  If containerized and ZIP then validate entry - must be absolute path or valid sourceUrl
    *  If app contains file inputs then validate sourceUrl attributes for each input.
    *  If dynamicExecSystem then execSystemConstraints must be given
    *  If archiveSystem given then archive dir must be given
@@ -684,7 +780,7 @@ public final class App
       }
     }
 
-    // If containerized and runtime type is ZIP then validate containerImage - must be absolute path or valid sourceUrl
+    // If containerized and ZIP then validate containerImage - must be absolute path or valid sourceUrl
     if (containerized && Runtime.ZIP.equals(runtime) && !StringUtils.isBlank(containerImage))
     {
       if (!isZipContainerImageValid(containerImage))
