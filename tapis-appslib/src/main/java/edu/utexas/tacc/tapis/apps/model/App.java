@@ -11,6 +11,7 @@ import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.utils.PathSanitizer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.Arg;
 import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
@@ -262,9 +263,9 @@ public final class App
    */
   public App(String id1, String version1, String containerImage1)
   {
-    id = id1;
-    version = version1;
-    containerImage = containerImage1;
+    id = LibUtils.stripStr(id1);
+    version = LibUtils.stripStr(version1);
+    containerImage = LibUtils.stripStr(containerImage1);
   }
 
   /**
@@ -274,10 +275,10 @@ public final class App
              String owner1, boolean enabled1, boolean containerized1, boolean deleted1)
   {
     seqId = seqId1;
-    tenant = tenant1;
-    id = id1;
-    version = version1;
-    owner = owner1;
+    tenant = LibUtils.stripStr(tenant1);
+    id = LibUtils.stripStr(id1);
+    version = LibUtils.stripStr(version1);
+    owner = LibUtils.stripStr(owner1);
     enabled = enabled1;
     containerized = containerized1;
     deleted = deleted1;
@@ -291,22 +292,22 @@ public final class App
   {
     if (a==null || StringUtils.isBlank(tenant1) || StringUtils.isBlank(id1) || StringUtils.isBlank(version1))
       throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT"));
-    tenant = tenant1;
-    id = id1;
-    version = version1;
+    tenant = LibUtils.stripStr(tenant1);
+    id = LibUtils.stripStr(id1);
+    version = LibUtils.stripStr(version1);
 
     seqId = a.getSeqId();
     created = a.getCreated();
     updated = a.getUpdated();
     description = a.getDescription();
-    owner = a.getOwner();
+    owner = LibUtils.stripStr(a.getOwner());
     enabled = a.isEnabled();
     locked = a.isLocked();
     containerized = a.isContainerized();
     runtime = a.getRuntime();
-    runtimeVersion = a.getRuntimeVersion();
+    runtimeVersion = LibUtils.stripStr(a.getRuntimeVersion());
     runtimeOptions = a.getRuntimeOptions();
-    containerImage = a.getContainerImage();
+    containerImage = LibUtils.stripStr(a.getContainerImage());
     jobType = a.getJobType();
     maxJobs = a.getMaxJobs();
     maxJobsPerUser = a.getMaxJobsPerUser();
@@ -314,16 +315,16 @@ public final class App
     jobDescription = a.getJobDescription();
     dynamicExecSystem = a.isDynamicExecSystem();
     execSystemConstraints = a.getExecSystemConstraints();
-    execSystemId = a.getExecSystemId();
-    execSystemExecDir = a.getExecSystemExecDir();
-    execSystemInputDir = a.getExecSystemInputDir();
-    execSystemOutputDir = a.getExecSystemOutputDir();
-    execSystemLogicalQueue = a.getExecSystemLogicalQueue();
-    archiveSystemId = a.getArchiveSystemId();
-    archiveSystemDir = a.getArchiveSystemDir();
+    execSystemId = LibUtils.stripStr(a.getExecSystemId());
+    execSystemExecDir = LibUtils.stripStr(a.getExecSystemExecDir());
+    execSystemInputDir = LibUtils.stripStr(a.getExecSystemInputDir());
+    execSystemOutputDir = LibUtils.stripStr(a.getExecSystemOutputDir());
+    execSystemLogicalQueue = LibUtils.stripStr(a.getExecSystemLogicalQueue());
+    archiveSystemId = LibUtils.stripStr(a.getArchiveSystemId());
+    archiveSystemDir = LibUtils.stripStr(a.getArchiveSystemDir());
     archiveOnAppError = a.isArchiveOnAppError();
     isMpi = a.getIsMpi();
-    mpiCmd = a.getMpiCmd();
+    mpiCmd = LibUtils.stripStr(a.getMpiCmd());
     cmdPrefix = a.getCmdPrefix();
     parameterSet = a.getParameterSet();
     fileInputs = a.getFileInputs();
@@ -336,11 +337,13 @@ public final class App
     jobTags = a.getJobTags();
     tags = (a.getTags() == null) ? EMPTY_STR_ARRAY : a.getTags().clone();
     notes = a.getNotes();
-    sharedAppCtx = a.getSharedAppCtx();
+    sharedAppCtx = LibUtils.stripStr(a.getSharedAppCtx());
     isPublic = a.isPublic();
     sharedWithUsers = a.getSharedWithUsers();
     uuid = a.getUuid();
     deleted = a.isDeleted();
+    // Strip whitespace as appropriate for string attributes.
+    stripWhitespace();
   }
 
   /**
@@ -365,35 +368,35 @@ public final class App
   {
     seqId = seqId1;
     verSeqId = verSeqId1;
-    tenant = tenant1;
-    id = id1;
-    version = version1;
+    tenant = LibUtils.stripStr(tenant1);
+    id = LibUtils.stripStr(id1);
+    version = LibUtils.stripStr(version1);
     description = description1;
     jobType = (jobType1 == null) ? DEFAULT_JOB_TYPE : jobType1;
-    owner = owner1;
+    owner = LibUtils.stripStr(owner1);
     enabled = enabled1;
     locked = locked1;
     containerized = containerized1;
     runtime = (runtime1 == null) ? DEFAULT_RUNTIME : runtime1;
-    runtimeVersion = runtimeVersion1;
+    runtimeVersion = LibUtils.stripStr(runtimeVersion1);
     runtimeOptions = (runtimeOptions1 == null) ? null : new ArrayList<>(runtimeOptions1);
-    containerImage = containerImage1;
+    containerImage = LibUtils.stripStr(containerImage1);
     maxJobs = maxJobs1;
     maxJobsPerUser = maxJobsPerUser1;
     strictFileInputs = strictFileInputs1;
     jobDescription = jobDescription1;
     dynamicExecSystem = dynamicExecSystem1;
     execSystemConstraints = (execSystemConstraints1 == null) ? null : execSystemConstraints1.clone();
-    execSystemId = execSystemId1;
-    execSystemExecDir = execSystemExecDir1;
-    execSystemInputDir = execSystemInputDir1;
-    execSystemOutputDir = execSystemOutputDir1;
-    execSystemLogicalQueue = execSystemLogicalQueue1;
-    archiveSystemId = archiveSystemId1;
-    archiveSystemDir = archiveSystemDir1;
+    execSystemId = LibUtils.stripStr(execSystemId1);
+    execSystemExecDir = LibUtils.stripStr(execSystemExecDir1);
+    execSystemInputDir = LibUtils.stripStr(execSystemInputDir1);
+    execSystemOutputDir = LibUtils.stripStr(execSystemOutputDir1);
+    execSystemLogicalQueue = LibUtils.stripStr(execSystemLogicalQueue1);
+    archiveSystemId = LibUtils.stripStr(archiveSystemId1);
+    archiveSystemDir = LibUtils.stripStr(archiveSystemDir1);
     archiveOnAppError = archiveOnAppError1;
     isMpi = isMpi1;
-    mpiCmd = mpiCmd1;
+    mpiCmd = LibUtils.stripStr(mpiCmd1);
     cmdPrefix = cmdPrefix1;
     parameterSet = parameterSet1;
     fileInputs = (fileInputs1 == null) ? null : new ArrayList<>(fileInputs1);
@@ -410,6 +413,8 @@ public final class App
     deleted = deleted1;
     created = created1;
     updated = updated1;
+    // Strip whitespace as appropriate for string attributes.
+    stripWhitespace();
   }
 
   /**
@@ -421,18 +426,18 @@ public final class App
     if (a==null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT"));
     seqId = a.getSeqId();
     verSeqId = a.getVerSeqId();
-    tenant = a.getTenant();
-    id = a.getId();
-    version = a.getVersion();
+    tenant = LibUtils.stripStr(a.getTenant());
+    id = LibUtils.stripStr(a.getId());
+    version = LibUtils.stripStr(a.getVersion());
     description = a.getDescription();
-    owner = a.getOwner();
+    owner = LibUtils.stripStr(a.getOwner());
     enabled = a.isEnabled();
     locked = a.isLocked();
     containerized = a.isContainerized();
     runtime = a.getRuntime();
-    runtimeVersion = a.getRuntimeVersion();
+    runtimeVersion = LibUtils.stripStr(a.getRuntimeVersion());
     runtimeOptions = a.getRuntimeOptions();
-    containerImage = a.getContainerImage();
+    containerImage = LibUtils.stripStr(a.getContainerImage());
     jobType = a.getJobType();
     maxJobs = a.getMaxJobs();
     maxJobsPerUser = a.getMaxJobsPerUser();
@@ -440,16 +445,16 @@ public final class App
     jobDescription = a.getJobDescription();
     dynamicExecSystem = a.isDynamicExecSystem();
     execSystemConstraints = a.getExecSystemConstraints();
-    execSystemId = a.getExecSystemId();
-    execSystemExecDir = a.getExecSystemExecDir();
-    execSystemInputDir = a.getExecSystemInputDir();
-    execSystemOutputDir = a.getExecSystemOutputDir();
-    execSystemLogicalQueue = a.getExecSystemLogicalQueue();
-    archiveSystemId = a.getArchiveSystemId();
-    archiveSystemDir = a.getArchiveSystemDir();
+    execSystemId = LibUtils.stripStr(a.getExecSystemId());
+    execSystemExecDir = LibUtils.stripStr(a.getExecSystemExecDir());
+    execSystemInputDir = LibUtils.stripStr(a.getExecSystemInputDir());
+    execSystemOutputDir = LibUtils.stripStr(a.getExecSystemOutputDir());
+    execSystemLogicalQueue = LibUtils.stripStr(a.getExecSystemLogicalQueue());
+    archiveSystemId = LibUtils.stripStr(a.getArchiveSystemId());
+    archiveSystemDir = LibUtils.stripStr(a.getArchiveSystemDir());
     archiveOnAppError = a.isArchiveOnAppError();
     isMpi = a.getIsMpi();
-    mpiCmd = a.getMpiCmd();
+    mpiCmd = LibUtils.stripStr(a.getMpiCmd());
     cmdPrefix = a.getCmdPrefix();
     parameterSet = a.getParameterSet();
     fileInputs = a.getFileInputs();
@@ -462,13 +467,15 @@ public final class App
     jobTags = a.getJobTags();
     tags = a.getTags();
     notes = a.getNotes();
-    sharedAppCtx = a.getSharedAppCtx();
+    sharedAppCtx = LibUtils.stripStr(a.getSharedAppCtx());
     isPublic = a.isPublic();
     sharedWithUsers = a.getSharedWithUsers();
     uuid = a.getUuid();
     deleted = a.isDeleted();
     created = a.getCreated();
     updated = a.getUpdated();
+    // Strip whitespace as appropriate for string attributes.
+    stripWhitespace();
   }
 
   // ************************************************************************
@@ -666,32 +673,35 @@ public final class App
     checkForControlChars(errMessages, runtimeVersion, RUNTIMEVER_FIELD);
     checkForControlChars(errMessages, containerImage, CONTAINERIMG_FIELD);
     // NOTE We use various checkForControlChars* methods to help code readability.
-    checkForControlCharsAppTags(errMessages); // TODO combine somehow with jobTags?
+    checkForControlCharsStrArray(errMessages, tags, TAGS_FIELD);
     checkForControlCharsJobAttributes(errMessages);
   }
 
   /**
    * Check for control characters in an attribute value.
    * If one is found add a message to the error list.
+   * Construct 2 part label for message.
    */
-  private void checkForControlChars(List<String> errMessages, String attrValue, String attrName)
+  // TODO: use for checks where there is a 2 part label, such as in AppArgs, e.g. appArg.<appArgName>
+  private void checkForControlChars(List<String> errMessages, String attrValue, String attrName, String fieldName)
+  {
+    String label = String.format("%s.%s", fieldName, attrName);
+    checkForControlChars(errMessages, attrValue, label);
+  }
+
+  /**
+   * Check for control characters in an attribute value.
+   * If one is found add a message to the error list.
+   */
+  private void checkForControlChars(List<String> errMessages, String attrValue, String label)
   {
 
     try { PathSanitizer.detectControlChars(attrValue); }
     catch (TapisException e)
     {
       String logAttrValue = PathSanitizer.replaceControlChars(attrValue, '?');
-      errMessages.add(LibUtils.getMsg(CTL_CHR_ATTR, attrName, logAttrValue, e.getMessage()));
+      errMessages.add(LibUtils.getMsg(CTL_CHR_ATTR, label, logAttrValue, e.getMessage()));
     }
-  }
-
-  /**
-   * Check for control characters in top level tags attributean attribute value.
-   */
-  private void checkForControlCharsAppTags(List<String> errMessages)
-  {
-    // TODO
-    ???
   }
 
   /**
@@ -699,9 +709,7 @@ public final class App
    */
   private void checkForControlCharsJobAttributes(List<String> errMessages)
   {
-    // TODO
-    // TODO move these to  checkAttrControlCharactersJobAttributes(); for readability
-    checkForControlCharsExecSystemConstraints();
+    checkForControlCharsStrArray(errMessages, execSystemConstraints, EXECSYS_CONSTRAINTS_FIELD);
     checkForControlChars(errMessages, execSystemId, EXECSYSID_FIELD);
     checkForControlChars(errMessages, execSystemExecDir, EXECSYSEXECDIR_FIELD);
     checkForControlChars(errMessages, execSystemInputDir, EXECSYSINDIR_FIELD);
@@ -711,9 +719,9 @@ public final class App
     checkForControlChars(errMessages, execSystemLogicalQueue, EXECSYSLOGICALQ_FIELD);
     checkForControlChars(errMessages, mpiCmd, MPI_CMD_FIELD);
     checkForControlCharsParameterSet(errMessages);
-    checkAttrControlCharactersFileInputs(errMessages); // TODO fileInputs and fileInputArrays
-    checkAttrControlCharactersSubscriptions(errMessages); // TODO/TBD needed? only attr to check would be delivery address.
-    checkAttrControlCharactersJobTags(errMessages); // TODO combine with AppTags?
+    checkForControlCharsFileInputs(errMessages); // fileInputs and fileInputArrays
+//    checkForControlCharsSubscriptions(errMessages); // TODO/TBD needed? only attr to check would be delivery address. check with Rich?
+    checkForControlCharsStrArray(errMessages, jobTags, "JobTags"); // TODO hard coded string
   }
 
   /**
@@ -721,10 +729,11 @@ public final class App
    */
   private void checkForControlCharsParameterSet(List<String> errMessages)
   {
-    checkForControlCharsAppArgs(); // TODO break out or do all in argSpec types in this method? Will probably have common method for argSpec
-    checkAttrControlCharactersContainerArgs();
-    checkAttrControlCharactersSchedulerOptions();
-    checkAttrControlCharactersEnvVariables();
+    if (parameterSet == null) return;
+    checkForControlCharsArgSpecList(errMessages, parameterSet.getAppArgs(), APP_ARGS_FIELD);
+    checkForControlCharsArgSpecList(errMessages, parameterSet.getContainerArgs(), CONTAINER_ARGS_FIELD);
+    checkForControlCharsArgSpecList(errMessages, parameterSet.getSchedulerOptions(), SCHED_OPTS_FIELD);
+//    checkAttrControlCharactersEnvVariables(errMessages); // TODO/TBD Jobs skips these, check with Rich?
     checkForControlCharsArchiveFilter(errMessages);
     checkForControlCharsLogConfig(errMessages);
   }
@@ -734,8 +743,8 @@ public final class App
    */
   private void checkForControlCharsArchiveFilter(List<String> errMessages)
   {
-    checkAttrControlCharactersIncludes(); // TODO/TBD may not need to take the levels very deep. e.g., maybe do all archiveFilter checks in one method
-    checkAttrControlCharactersExcludes();
+ // TODO   checkAttrControlCharactersIncludes(); // TODO/TBD may not need to take the levels very deep. e.g., maybe do all archiveFilter checks in one method
+// TODO    checkAttrControlCharactersExcludes();
   }
 
   /**
@@ -744,6 +753,58 @@ public final class App
   private void checkForControlCharsLogConfig(List<String> errMessages)
   {
     // TODO stdoutFilename, stderrFilename
+  }
+
+  /**
+   * Check for control characters in file inputs
+   */
+  private void checkForControlCharsFileInputs(List<String> errMessages)
+  {
+    // TODO
+    if (fileInputs != null)
+    {
+      for (FileInput fi : fileInputs)
+      {
+        // TODO/TBD: check name also? Jobs skips name, check with Rich?
+//        checkForControlChars(errMessages, fi.getName(), fieldName);
+//        checkForControlChars(errMessages, fi.getSourceUrl(), fieldName);
+//        checkForControlChars(errMessages, fi.getTargetPath(), fieldName);
+      }
+    }
+    if (fileInputArrays != null)
+    {
+      for (FileInputArray fia : fileInputArrays)
+      {
+        // TODO/TBD: check name also?
+//        checkForControlChars(errMessages, fia.getName(), fieldName);
+//        checkForControlChars(errMessages, fia.getTargetDir(), fieldName);
+        if (fia.getSourceUrls() == null) continue;
+// TODO        for (String srcUrl : fia.getSourceUrls()) { checkForControlChars(errMessages, srcUrl, fieldName); }
+      }
+    }
+
+  }
+
+  /**
+   * Check for control characters for a list of ArgSpec entries
+   */
+  private void checkForControlCharsArgSpecList(List<String> errMessages, List<ArgSpec> argSpecs, String fieldName)
+  {
+    if (argSpecs == null) return;
+    for (ArgSpec argSpec : argSpecs)
+    {
+      checkForControlChars(errMessages, argSpec.getName(), fieldName); // TODO Jobs skips name. check with Rich
+      checkForControlChars(errMessages, argSpec.getArg(), fieldName); // TODO diff fieldName?
+    }
+  }
+
+  /*
+   * Check for control characters in an array of strings.
+   */
+  private void checkForControlCharsStrArray(List<String> errMessages, String[] strArray, String label)
+  {
+    if (strArray == null) return;
+    for (String tag : strArray) { checkForControlChars(errMessages, tag, label); }
   }
 
   /**
@@ -849,6 +910,52 @@ public final class App
   }
 
   /**
+   * Strip whitespace as appropriate for string attributes.
+   * For: tags, jobTags, execSystemConstraints
+   * Stripping for other handled by the classes: parameterSet, fileInputs, fileInputArrays, subscriptions
+   */
+  private void stripWhitespace()
+  {
+    tags = LibUtils.stripWhitespaceStrArray(tags);
+    jobTags = LibUtils.stripWhitespaceStrArray(jobTags);
+    execSystemConstraints = LibUtils.stripWhitespaceStrArray(execSystemConstraints);
+  }
+
+// TODO
+//  /**
+//   * Strip whitespace for ParameterSet attributes
+//   * appArgs, containerArgs, schedulerOptions, envVariables, archiveFilter, logConfig;
+//   */
+//  private void stripWhitespaceParameterSet()
+//  {
+//// TODO not needed? handled in ArgSpec constructor?
+////    stripWhitespaceArgSpecList(parameterSet.getAppArgs());
+////    stripWhitespaceArgSpecList(parameterSet.getContainerArgs());
+////    stripWhitespaceArgSpecList(parameterSet.getSchedulerOptions());
+//
+//  }
+//
+//  /**
+//   * Strip whitespace for ParameterSet attributes
+//   */
+//  private void stripWhitespaceParameterSet()
+//  {
+//  }
+//
+// TODO not needed? handled in ArgSpec constructor?
+//  /**
+//   * Strip whitespace from attributes of an ArgSpec list
+//   */
+//  private void stripWhitespaceArgSpecList(List<ArgSpec> asList)
+//  {
+//    if (asList == null || asList.isEmpty()) return;
+//    for (var as : asList)
+//    {
+//      as.as.getName());
+//    }
+//  }
+
+  /**
    * Validate an ID string.
    * Must start alphabetic and contain only alphanumeric and 4 special characters: - . _ ~
    */
@@ -932,7 +1039,7 @@ public final class App
   public void setDescription(String d) { description = d;  }
 
   public String getOwner() { return owner; }
-  public void setOwner(String s) { owner = s;  }
+  public void setOwner(String s) { owner = LibUtils.stripStr(s);  }
 
   public boolean isEnabled() { return enabled; }
   public void setEnabled(boolean b) { enabled = b;   }
@@ -947,7 +1054,7 @@ public final class App
   public void setRuntime(Runtime r) { runtime = r; }
 
   public String getRuntimeVersion() { return runtimeVersion; }
-  public void setRuntimeVersion(String s) { runtimeVersion = s;  }
+  public void setRuntimeVersion(String s) { runtimeVersion = LibUtils.stripStr(s);  }
 
   public List<RuntimeOption> getRuntimeOptions()
   {
@@ -959,7 +1066,7 @@ public final class App
   }
 
   public String getContainerImage() { return containerImage; }
-  public void setContainerImage(String s) { containerImage = s;  }
+  public void setContainerImage(String s) { containerImage = LibUtils.stripStr(s);  }
 
   public boolean isDynamicExecSystem() { return dynamicExecSystem; }
   public void setDynamicExecSystem(boolean b) {dynamicExecSystem = b;  }
@@ -971,25 +1078,25 @@ public final class App
   }
 
   public String getExecSystemId() { return execSystemId; }
-  public void setExecSystemId(String s) { execSystemId = s;  }
+  public void setExecSystemId(String s) { execSystemId = LibUtils.stripStr(s);  }
 
   public String getExecSystemExecDir() { return execSystemExecDir; }
-  public void setExecSystemExecDir(String s) { execSystemExecDir = s;  }
+  public void setExecSystemExecDir(String s) { execSystemExecDir = LibUtils.stripStr(s);  }
 
   public String getExecSystemInputDir() { return execSystemInputDir; }
-  public void setExecSystemInputDir(String s) { execSystemInputDir = s;  }
+  public void setExecSystemInputDir(String s) { execSystemInputDir = LibUtils.stripStr(s);  }
 
   public String getExecSystemOutputDir() { return execSystemOutputDir; }
-  public void setExecSystemOutputDir(String s) { execSystemOutputDir = s;  }
+  public void setExecSystemOutputDir(String s) { execSystemOutputDir = LibUtils.stripStr(s);  }
 
   public String getExecSystemLogicalQueue() { return execSystemLogicalQueue; }
-  public void setExecSystemLogicalQueue(String s) { execSystemLogicalQueue = s;  }
+  public void setExecSystemLogicalQueue(String s) { execSystemLogicalQueue = LibUtils.stripStr(s);  }
 
   public String getArchiveSystemId() { return archiveSystemId; }
-  public void setArchiveSystemId(String s) { archiveSystemId = s;  }
+  public void setArchiveSystemId(String s) { archiveSystemId = LibUtils.stripStr(s);  }
 
   public String getArchiveSystemDir() { return archiveSystemDir; }
-  public void setArchiveSystemDir(String s) { archiveSystemDir = s;  }
+  public void setArchiveSystemDir(String s) { archiveSystemDir = LibUtils.stripStr(s);  }
 
   public boolean isArchiveOnAppError() { return archiveOnAppError; }
   public void setArchiveOnAppError(boolean b) { archiveOnAppError = b;  }
@@ -998,7 +1105,7 @@ public final class App
   public void setIsMpi(boolean b) { isMpi = b;  }
 
   public String getMpiCmd() { return mpiCmd; }
-  public void setMpiCmd(String s) { mpiCmd = s; }
+  public void setMpiCmd(String s) { mpiCmd = LibUtils.stripStr(s); }
 
   public String getCmdPrefix() { return cmdPrefix; }
   public void setCmdPrefix(String s) { cmdPrefix = s; }
@@ -1094,7 +1201,7 @@ public final class App
   public boolean isDeleted() { return deleted; }
 
   public String getSharedAppCtx() { return sharedAppCtx; }
-  public void setSharedAppCtx(String s) { sharedAppCtx = s;  }
+  public void setSharedAppCtx(String s) { sharedAppCtx = LibUtils.stripStr(s); }
 
   public boolean isPublic() { return isPublic; }
   public void setIsPublic(boolean b) { isPublic = b;  }

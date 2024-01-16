@@ -28,7 +28,7 @@ public final class DeliveryTarget
   public DeliveryTarget(NotifDeliveryMethod method1, String deliveryAddress1)
   {
     deliveryMethod = method1;
-    deliveryAddress = deliveryAddress1;
+    deliveryAddress = deliveryAddress1.strip();
   }
 
   /* ********************************************************************** */

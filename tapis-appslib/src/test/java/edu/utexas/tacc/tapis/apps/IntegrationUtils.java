@@ -86,6 +86,9 @@ public final class IntegrationUtils
   public static final ArgInputMode argInputModeFixed = ArgInputMode.FIXED;
   public static final ArgInputMode argInputModeDefault = ArgInputMode.INCLUDE_ON_DEMAND;
 
+  public static final String stringWithCtrlChar = "Start\u0001Finish"; // TODO String containing a control-A character
+  public static final String stringWithCtrlChar2 = "StartFinish\n"; // TODO String containing a newline at end
+
   // Sets for testing of search listType query parameter.
   public static final Set<String> viewableIDsNull = null;
   public static final Set<String> viewableIDsEmpty = Collections.emptySet();

@@ -50,8 +50,8 @@ public final class ArgSpec
   // Constructor setting all attributes
   public ArgSpec(String arg1, String name1, String description1, ArgInputMode mode1, JsonObject notes1)
   {
-    arg = arg1;
-    name = name1;
+    arg = arg1.strip();
+    name = name1.strip();
     description = description1;
     inputMode = (mode1 == null) ? DEFAULT_INPUT_MODE : mode1;
     notes = (notes1 == null) ? DEFAULT_NOTES : notes1;

@@ -28,8 +28,8 @@ public final class LogConfig
    */
   public LogConfig(String stdout1, String stderr1)
   {
-    stdoutFilename = (StringUtils.isBlank(stdout1)) ? "" : stdout1;
-    stderrFilename = (StringUtils.isBlank(stderr1)) ? "" : stderr1;
+    stdoutFilename = (StringUtils.isBlank(stdout1)) ? "" : stdout1.strip();
+    stderrFilename = (StringUtils.isBlank(stderr1)) ? "" : stderr1.strip();
   }
 
   /**
@@ -39,8 +39,8 @@ public final class LogConfig
   {
     if (lc != null)
     {
-      stdoutFilename = lc.getStdoutFilename();
-      stderrFilename = lc.getStderrFilename();
+      stdoutFilename = lc.getStdoutFilename().strip();
+      stderrFilename = lc.getStderrFilename().strip();
     }
   }
 
@@ -48,9 +48,9 @@ public final class LogConfig
   /*                               Accessors                                */
   /* ********************************************************************** */
   public String getStdoutFilename() { return stdoutFilename; }
-  public void setStdoutFilename(String s) { stdoutFilename = s; }
+  public void setStdoutFilename(String s) { stdoutFilename = s.strip(); }
   public String getStderrFilename() { return stderrFilename; }
-  public void setStderrFilename(String s) { stderrFilename = s; }
+  public void setStderrFilename(String s) { stderrFilename = s.strip(); }
 
   @Override
   public String toString() {return TapisUtils.toString(this);}

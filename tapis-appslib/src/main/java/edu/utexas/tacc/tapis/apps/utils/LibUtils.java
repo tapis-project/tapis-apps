@@ -5,11 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,6 +181,36 @@ public class LibUtils
       String msg = MsgUtils.getMsg("DB_FAILED_CONNECTION_CLOSE");
       _log.error(msg, e);
     }
+  }
+
+  /**
+   * Strip whitespace from all strings in a String[]
+   */
+  public static String[] stripWhitespaceStrArray(String[] strArray)
+  {
+    if (strArray == null || strArray.length == 0) return strArray;
+    var retArray = new String[strArray.length];
+    for (int i = 0; i < strArray.length; i++) { retArray[i] = strArray[i].strip(); }
+    return retArray;
+  }
+
+  /**
+   * Strip whitespace from all strings in a List
+   */
+  public static List<String> stripWhitespaceStrList(List<String> strList)
+  {
+    if (strList == null || strList.isEmpty()) return strList;
+    var retList = new ArrayList<String>(strList.size());
+    for (var s : strList) { retList.add(s.strip()); }
+    return retList;
+  }
+
+  /**
+   * Strip whitespace from all strings in a String[]
+   */
+  public static String stripStr(String s)
+  {
+    if (s == null) return s; else return s.strip();
   }
 
 // NOTE: If these are ever needed they may need to be updated to handle the description attribute

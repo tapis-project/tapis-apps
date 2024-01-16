@@ -980,6 +980,39 @@ public class AppsServiceTest
 //    app0.setExecSystemLogicalQueue(tmpExecSystemLogicalQueue);
   }
 
+  // Test that attempting to create an app with control characters in attributes
+  @Test
+  public void testCreateInvalidControlCharactersFail()
+  {
+    App app0 = apps[25];
+    // If execSystemId has a control char then create should fail.
+    String tmpStr = app0.getExecSystemId();
+    app0.setExecSystemId(stringWithCtrlChar);
+    boolean pass = false;
+    try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_CTL_CHR_ATTR"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    // Reset in prep for continued checking
+    app0.setExecSystemId(tmpStr);
+    pass = false;
+
+    // TODO If ??? has control char
+    app0.setRuntimeVersion(stringWithCtrlChar2); // TODO Char2 uses newline at end
+    try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_CTL_CHR_ATTR"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    app0.setRuntimeVersion(runtimeVersion1);
+    pass = false;
+  }
+
   // Test creating, reading and deleting user permissions for an app
   @Test
   public void testUserPerms() throws Exception

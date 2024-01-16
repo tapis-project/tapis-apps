@@ -1,5 +1,6 @@
 package edu.utexas.tacc.tapis.apps.model;
 
+import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 
 /*
@@ -39,8 +40,8 @@ public final class ArchiveFilter
    */
   public ArchiveFilter(ArchiveFilter a)
   {
-    includes = a.getIncludes();
-    excludes = a.getExcludes();
+    includes = LibUtils.stripWhitespaceStrArray(a.getIncludes());
+    excludes = LibUtils.stripWhitespaceStrArray(a.getExcludes());
     includeLaunchFiles = a.isIncludeLaunchFiles();
   }
 
@@ -48,9 +49,9 @@ public final class ArchiveFilter
 /*                               Accessors                                */
 /* ********************************************************************** */
   public String[] getIncludes() { return (includes == null) ? null : includes.clone(); }
-  public void setIncludes(String[] sa) { includes = sa; }
+  public void setIncludes(String[] sa) { includes = LibUtils.stripWhitespaceStrArray(sa); }
   public String[] getExcludes() { return (excludes == null) ? null : excludes.clone(); }
-  public void setExcludes(String[] sa) { excludes = sa; }
+  public void setExcludes(String[] sa) { excludes = LibUtils.stripWhitespaceStrArray(sa); }
   public Boolean isIncludeLaunchFiles() { return includeLaunchFiles; }
   public void setIncludeLaunchFiles(Boolean b) { includeLaunchFiles = b; }
 

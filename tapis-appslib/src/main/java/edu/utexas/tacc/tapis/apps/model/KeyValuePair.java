@@ -57,17 +57,16 @@ public final class KeyValuePair
 
   public KeyValuePair(String key1, String value1, String description1, KeyValueInputMode inputMode1, JsonObject notes1)
   {
-    key = key1;
+    key = key1.strip();
     inputMode = (inputMode1 == null) ? DEFAULT_INPUT_MODE : inputMode1;
     // Default depends on inputMode. If REQUIRED use special string, else empty string
     if (KeyValueInputMode.REQUIRED.equals(inputMode))
     {
-      value = (value1 == null) ? VALUE_NOT_SET : value1;
-
+      value = (value1 == null) ? VALUE_NOT_SET : value1.strip();
     }
     else
     {
-      value = StringUtils.isBlank(value1) ? "" : value1;
+      value = StringUtils.isBlank(value1) ? "" : value1.strip();
     }
     description = StringUtils.isBlank(description1) ? "" : description1;
     notes = (notes1 == null) ? DEFAULT_NOTES : notes1;

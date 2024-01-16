@@ -2,6 +2,7 @@ package edu.utexas.tacc.tapis.apps.model;
 
 import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.apps.model.App.FileInputMode;
+import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,7 @@ public final class FileInputArray
 
   private final String name;
   private final String description;
-  private FileInputMode inputMode;
+  private final FileInputMode inputMode;
   private final JsonObject notes; // metadata as json
   private final List<String> sourceUrls;
   private final String targetDir;
@@ -56,12 +57,12 @@ public final class FileInputArray
   public FileInputArray(String name1, String description1, FileInputMode inputMode1, JsonObject notes1,
                         List<String> sourceUrls1, String targetDir1)
   {
-    name = name1;
+    name = name1.strip();
     description = description1;
     inputMode = (inputMode1 == null) ? DEFAULT_INPUT_MODE : inputMode1;
     notes = (notes1 == null) ? DEFAULT_NOTES : notes1;
-    sourceUrls = sourceUrls1;
-    targetDir = targetDir1;
+    sourceUrls = LibUtils.stripWhitespaceStrList(sourceUrls1);
+    targetDir = targetDir1.strip();
   }
 
   /* ********************************************************************** */

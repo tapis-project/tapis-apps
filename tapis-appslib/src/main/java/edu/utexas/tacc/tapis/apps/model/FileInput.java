@@ -57,13 +57,13 @@ public final class FileInput
   public FileInput(String name1, String description1, FileInputMode inputMode1, Boolean autoMountLocal1,
                    JsonObject notes1, String sourceUrl1, String targetPath1)
   {
-    name = name1;
+    name = name1.strip();
     description = description1;
     inputMode = (inputMode1 == null) ? DEFAULT_INPUT_MODE : inputMode1;
     autoMountLocal = (autoMountLocal1 == null) ? DEFAULT_AUTO_MOUNT_LOCAL : autoMountLocal1;
     notes = (notes1 == null) ? DEFAULT_NOTES : notes1;
-    sourceUrl = sourceUrl1;
-    targetPath = targetPath1;
+    sourceUrl = sourceUrl1.strip();
+    targetPath = targetPath1.strip();
   }
 
   /* ********************************************************************** */
