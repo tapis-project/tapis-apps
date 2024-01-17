@@ -11,7 +11,6 @@ import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.utils.PathSanitizer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.validator.Arg;
 import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
@@ -107,10 +106,17 @@ public final class App
   public static final String SCHED_OPTS_FIELD = "schedulerOptions";
   public static final String ENV_VARS_FIELD = "envVariables";
   public static final String ARCHIVE_FILTER_FIELD = "archiveFilter";
-  public static final String ARCHIVE_INCLUDES_FIELDS = "includes";
-  public static final String ARCHIVE_EXCLUDES_FIELDS = "excludes";
+  public static final String ARCHIVE_INCLUDES_FIELD = "includes";
+  public static final String ARCHIVE_EXCLUDES_FIELD = "excludes";
+  public static final String LOGCONFIG_FIELD = "logConfig";
+  public static final String LOGCONFIG_OUT_FIELD = "stdoutFilename";
+  public static final String LOGCONFIG_ERR_FIELD = "stderrFilename";
   public static final String FILE_INPUTS_FIELD = "fileInputs";
+  public static final String FILE_INPUTS_SRC_FIELD = "sourceUrl";
+  public static final String FILE_INPUTS_DST_FIELD = "targetPath";
   public static final String FILE_INPUT_ARRAYS_FIELD = "fileInputArrays";
+  public static final String FILE_INPUT_ARRAYS_TARGET_FIELD = "targetDir";
+  public static final String FILE_INPUT_ARRAYS_SRC_FIELD = "sourceUrls";
   public static final String JOB_FIELD_PREFIX = "Job-";
   public static final String IS_DYNAMIC_EXEC_SYS_FIELD = "dynamicExecSystem";
   public static final String EXECSYSID_FIELD = "execSystemId";
@@ -138,6 +144,10 @@ public final class App
   public static final String SHARED_APP_CTX_FIELD = "sharedAppCtx";
   public static final String IS_PUBLIC_FIELD = "isPublic";
   public static final String SHARED_WITH_USERS_FIELD = "sharedWithUsers";
+
+  // Private field names used only in this class for messages.
+  private static final String NAME_FIELD = "name";
+  private static final String VALUE_FIELD = "value";
 
   // Regex patterns for validating a file input sourceUrl.
   // Based on pattern from files service. edu.utexas.tacc.tapis.files.lib.models.TransferURI
@@ -172,6 +182,9 @@ public final class App
   private static final Integer MAX_QUEUENAME_LEN = 128;
   private static final Integer MAX_HPCQUEUENAME_LEN = 128;
   private static final Integer MAX_TAG_LEN = 128;
+
+  // Label to use when ArgSpec or FileInput name is missing.
+  private static final String UNNAMED = "unnamed";
 
   // ************************************************************************
   // *********************** Enums ******************************************
@@ -521,8 +534,8 @@ public final class App
     checkAttrRequired(errMessages);
     checkAttrValidity(errMessages);
     checkAttrStringLengths(errMessages);
-    checkAttrControlCharacters(errMessages);
     checkAttrMisc(errMessages);
+    checkAttrControlCharacters(errMessages);
     return errMessages;
   }
 
@@ -672,26 +685,193 @@ public final class App
     checkForControlChars(errMessages, tenant, TENANT_FIELD);
     checkForControlChars(errMessages, runtimeVersion, RUNTIMEVER_FIELD);
     checkForControlChars(errMessages, containerImage, CONTAINERIMG_FIELD);
-    // NOTE We use various checkForControlChars* methods to help code readability.
-    checkForControlCharsStrArray(errMessages, tags, TAGS_FIELD);
+    // NOTE Use various checkForControlChars* methods to help code readability.
+    checkForControlCharsStrArray(errMessages, tags, TAGS_FIELD, null);
     checkForControlCharsJobAttributes(errMessages);
   }
 
   /**
-   * Check for control characters in an attribute value.
-   * If one is found add a message to the error list.
-   * Construct 2 part label for message.
+   * Check for control characters in jobAttributes
    */
-  // TODO: use for checks where there is a 2 part label, such as in AppArgs, e.g. appArg.<appArgName>
-  private void checkForControlChars(List<String> errMessages, String attrValue, String attrName, String fieldName)
+  private void checkForControlCharsJobAttributes(List<String> errMessages)
   {
-    String label = String.format("%s.%s", fieldName, attrName);
+    checkForControlCharsStrArray(errMessages, execSystemConstraints, EXECSYS_CONSTRAINTS_FIELD, null);
+    checkForControlChars(errMessages, execSystemId, EXECSYSID_FIELD);
+    checkForControlChars(errMessages, execSystemExecDir, EXECSYSEXECDIR_FIELD);
+    checkForControlChars(errMessages, execSystemInputDir, EXECSYSINDIR_FIELD);
+    checkForControlChars(errMessages, execSystemOutputDir, EXECSYSOUTDIR_FIELD);
+    checkForControlChars(errMessages, archiveSystemId, ARCHIVESYSID_FIELD);
+    checkForControlChars(errMessages, archiveSystemDir, ARCHIVESYSDIR_FIELD);
+    checkForControlChars(errMessages, execSystemLogicalQueue, EXECSYSLOGICALQ_FIELD);
+    checkForControlChars(errMessages, mpiCmd, MPI_CMD_FIELD);
+    checkForControlCharsStrArray(errMessages, jobTags, JOB_ATTRS_FIELD, TAGS_FIELD);
+    checkForControlCharsParameterSet(errMessages);
+    checkForControlCharsFileInputs(errMessages);
+    checkForControlCharsFileInputArrays(errMessages);
+    checkForControlCharsSubscriptions(errMessages);
+  }
+
+  /**
+   * Check for control characters in parameterSet
+   */
+  private void checkForControlCharsParameterSet(List<String> errMessages)
+  {
+    if (parameterSet == null) return;
+    checkForControlCharsArgSpecList(errMessages, parameterSet.getAppArgs(), APP_ARGS_FIELD);
+    checkForControlCharsArgSpecList(errMessages, parameterSet.getContainerArgs(), CONTAINER_ARGS_FIELD);
+    checkForControlCharsArgSpecList(errMessages, parameterSet.getSchedulerOptions(), SCHED_OPTS_FIELD);
+    checkForControlCharsEnvVariables(errMessages, parameterSet.getEnvVariables());
+    checkForControlCharsArchiveFilter(errMessages, parameterSet.getArchiveFilter());
+    checkForControlCharsLogConfig(errMessages, parameterSet.getLogConfig());
+  }
+
+  /**
+   * Check for control characters in env variables
+   */
+  private void checkForControlCharsEnvVariables(List<String> errMessages, List<KeyValuePair> envVariables)
+  {
+    if (envVariables == null || envVariables.isEmpty()) return;
+    for (var envVar : envVariables)
+    {
+      String name = envVar.getKey(); // NOTE: Previous check ensures name is not empty.
+      String value = envVar.getValue();
+      checkForControlChars(errMessages, name, ENV_VARS_FIELD, NAME_FIELD);
+      checkForControlChars(errMessages, value, ENV_VARS_FIELD, VALUE_FIELD);
+    }
+  }
+
+  /**
+   * Check for control characters in archiveFilter
+   */
+  private void checkForControlCharsArchiveFilter(List<String> errMessages, ArchiveFilter archiveFilter) {
+    if (archiveFilter == null) return;
+    if (archiveFilter.getIncludes() != null)
+    {
+      for (var fileName : archiveFilter.getIncludes())
+      {
+        checkForControlChars(errMessages, fileName, ARCHIVE_FILTER_FIELD, ARCHIVE_INCLUDES_FIELD);
+      }
+    }
+    if (archiveFilter.getExcludes() != null)
+    {
+      for (var fileName : archiveFilter.getExcludes())
+      {
+        checkForControlChars(errMessages, fileName, ARCHIVE_FILTER_FIELD, ARCHIVE_EXCLUDES_FIELD);
+      }
+    }
+  }
+
+  /**
+   * Check for control characters in logConfig
+   */
+  private void checkForControlCharsLogConfig(List<String> errMessages, LogConfig logConfig)
+  {
+    if (logConfig == null) return;
+    checkForControlChars(errMessages, logConfig.getStdoutFilename(), LOGCONFIG_FIELD, LOGCONFIG_OUT_FIELD);
+    checkForControlChars(errMessages, logConfig.getStderrFilename(), LOGCONFIG_FIELD, LOGCONFIG_ERR_FIELD);
+  }
+
+  /**
+   * Check for control characters in file inputs
+   */
+  private void checkForControlCharsFileInputs(List<String> errMessages)
+  {
+    if (fileInputs == null || fileInputs.isEmpty()) return;
+    for (FileInput fi : fileInputs)
+    {
+      String name = StringUtils.isBlank(fi.getName()) ? UNNAMED : fi.getName();
+      String src = fi.getSourceUrl();
+      String dst = fi.getTargetPath();
+      checkForControlChars(errMessages, name, FILE_INPUTS_FIELD, NAME_FIELD);
+      checkForControlChars(errMessages, src, FILE_INPUTS_FIELD, name, FILE_INPUTS_SRC_FIELD);
+      checkForControlChars(errMessages, dst, FILE_INPUTS_FIELD, name, FILE_INPUTS_DST_FIELD);
+    }
+  }
+
+  /**
+   * Check for control characters in file input arrays
+   */
+  private void checkForControlCharsFileInputArrays(List<String> errMessages)
+  {
+    if (fileInputArrays == null || fileInputArrays.isEmpty()) return;
+    for (FileInputArray fia : fileInputArrays)
+    {
+      String name = StringUtils.isBlank(fia.getName()) ? UNNAMED : fia.getName();
+      String targetDir = fia.getTargetDir();
+      List<String> srcUrls = fia.getSourceUrls();
+      checkForControlChars(errMessages, name, FILE_INPUT_ARRAYS_FIELD, NAME_FIELD);
+      checkForControlChars(errMessages, targetDir, FILE_INPUT_ARRAYS_FIELD, name, FILE_INPUT_ARRAYS_TARGET_FIELD);
+
+      if (srcUrls == null || srcUrls.isEmpty()) return;
+      for (String srcUrl : srcUrls)
+      {
+        checkForControlChars(errMessages, srcUrl, FILE_INPUTS_FIELD, name, FILE_INPUT_ARRAYS_SRC_FIELD);
+      }
+    }
+  }
+
+  /**
+   * Check for control characters in subscriptions
+   */
+  private void checkForControlCharsSubscriptions(List<String> errMessages)
+  {
+    // TODO
+    if (subscriptions == null || subscriptions.isEmpty()) return;
+    for (ReqSubscribe sub : subscriptions)
+    {
+      // TODO
+    }
+  }
+
+  /**
+   * Check for control characters for a list of ArgSpec entries
+   */
+  private void checkForControlCharsArgSpecList(List<String> errMessages, List<ArgSpec> argSpecs, String label1)
+  {
+    if (argSpecs == null) return;
+    for (ArgSpec argSpec : argSpecs)
+    {
+      String name = StringUtils.isBlank(argSpec.getName()) ? UNNAMED : argSpec.getName();
+      String value = argSpec.getArg();
+      checkForControlChars(errMessages, name, label1, NAME_FIELD);
+      checkForControlChars(errMessages, value, label1, name, VALUE_FIELD);
+    }
+  }
+
+  /*
+   * Check for control characters in an array of strings.
+   */
+  private void checkForControlCharsStrArray(List<String> errMessages, String[] strArray, String label1, String label2)
+  {
+    if (strArray == null) return;
+    for (String s : strArray)
+    {
+      checkForControlChars(errMessages, s, label1, label2);
+    }
+  }
+
+  /**
+   * Check for control characters in an attribute value. Use 3 part label.
+   */
+  private void checkForControlChars(List<String> errMessages, String attrValue, String label1, String label2, String label3)
+  {
+    String label = String.format("%s.%s.%s", label1, label2, label3);
+    checkForControlChars(errMessages, attrValue, label);
+  }
+
+  /**
+   * Check for control characters in an attribute value. Use 1 or 2 part label for message.
+   */
+  private void checkForControlChars(List<String> errMessages, String attrValue, String label1, String label2)
+  {
+    String label = label1;
+    if (!StringUtils.isBlank(label2)) label = String.format("%s.%s", label1, label2);
     checkForControlChars(errMessages, attrValue, label);
   }
 
   /**
    * Check for control characters in an attribute value.
-   * If one is found add a message to the error list.
+   * If one is found add a message to the error list using provided label.
    */
   private void checkForControlChars(List<String> errMessages, String attrValue, String label)
   {
@@ -705,109 +885,6 @@ public final class App
   }
 
   /**
-   * Check for control characters in jobAttributes
-   */
-  private void checkForControlCharsJobAttributes(List<String> errMessages)
-  {
-    checkForControlCharsStrArray(errMessages, execSystemConstraints, EXECSYS_CONSTRAINTS_FIELD);
-    checkForControlChars(errMessages, execSystemId, EXECSYSID_FIELD);
-    checkForControlChars(errMessages, execSystemExecDir, EXECSYSEXECDIR_FIELD);
-    checkForControlChars(errMessages, execSystemInputDir, EXECSYSINDIR_FIELD);
-    checkForControlChars(errMessages, execSystemOutputDir, EXECSYSOUTDIR_FIELD);
-    checkForControlChars(errMessages, archiveSystemId, ARCHIVESYSID_FIELD);
-    checkForControlChars(errMessages, archiveSystemDir, ARCHIVESYSDIR_FIELD);
-    checkForControlChars(errMessages, execSystemLogicalQueue, EXECSYSLOGICALQ_FIELD);
-    checkForControlChars(errMessages, mpiCmd, MPI_CMD_FIELD);
-    checkForControlCharsParameterSet(errMessages);
-    checkForControlCharsFileInputs(errMessages); // fileInputs and fileInputArrays
-//    checkForControlCharsSubscriptions(errMessages); // TODO/TBD needed? only attr to check would be delivery address. check with Rich?
-    checkForControlCharsStrArray(errMessages, jobTags, "JobTags"); // TODO hard coded string
-  }
-
-  /**
-   * Check for control characters in parameterSet
-   */
-  private void checkForControlCharsParameterSet(List<String> errMessages)
-  {
-    if (parameterSet == null) return;
-    checkForControlCharsArgSpecList(errMessages, parameterSet.getAppArgs(), APP_ARGS_FIELD);
-    checkForControlCharsArgSpecList(errMessages, parameterSet.getContainerArgs(), CONTAINER_ARGS_FIELD);
-    checkForControlCharsArgSpecList(errMessages, parameterSet.getSchedulerOptions(), SCHED_OPTS_FIELD);
-//    checkAttrControlCharactersEnvVariables(errMessages); // TODO/TBD Jobs skips these, check with Rich?
-    checkForControlCharsArchiveFilter(errMessages);
-    checkForControlCharsLogConfig(errMessages);
-  }
-
-  /**
-   * Check for control characters in archiveFilter
-   */
-  private void checkForControlCharsArchiveFilter(List<String> errMessages)
-  {
- // TODO   checkAttrControlCharactersIncludes(); // TODO/TBD may not need to take the levels very deep. e.g., maybe do all archiveFilter checks in one method
-// TODO    checkAttrControlCharactersExcludes();
-  }
-
-  /**
-   * Check for control characters in logConfig
-   */
-  private void checkForControlCharsLogConfig(List<String> errMessages)
-  {
-    // TODO stdoutFilename, stderrFilename
-  }
-
-  /**
-   * Check for control characters in file inputs
-   */
-  private void checkForControlCharsFileInputs(List<String> errMessages)
-  {
-    // TODO
-    if (fileInputs != null)
-    {
-      for (FileInput fi : fileInputs)
-      {
-        // TODO/TBD: check name also? Jobs skips name, check with Rich?
-//        checkForControlChars(errMessages, fi.getName(), fieldName);
-//        checkForControlChars(errMessages, fi.getSourceUrl(), fieldName);
-//        checkForControlChars(errMessages, fi.getTargetPath(), fieldName);
-      }
-    }
-    if (fileInputArrays != null)
-    {
-      for (FileInputArray fia : fileInputArrays)
-      {
-        // TODO/TBD: check name also?
-//        checkForControlChars(errMessages, fia.getName(), fieldName);
-//        checkForControlChars(errMessages, fia.getTargetDir(), fieldName);
-        if (fia.getSourceUrls() == null) continue;
-// TODO        for (String srcUrl : fia.getSourceUrls()) { checkForControlChars(errMessages, srcUrl, fieldName); }
-      }
-    }
-
-  }
-
-  /**
-   * Check for control characters for a list of ArgSpec entries
-   */
-  private void checkForControlCharsArgSpecList(List<String> errMessages, List<ArgSpec> argSpecs, String fieldName)
-  {
-    if (argSpecs == null) return;
-    for (ArgSpec argSpec : argSpecs)
-    {
-      checkForControlChars(errMessages, argSpec.getName(), fieldName); // TODO Jobs skips name. check with Rich
-      checkForControlChars(errMessages, argSpec.getArg(), fieldName); // TODO diff fieldName?
-    }
-  }
-
-  /*
-   * Check for control characters in an array of strings.
-   */
-  private void checkForControlCharsStrArray(List<String> errMessages, String[] strArray, String label)
-  {
-    if (strArray == null) return;
-    for (String tag : strArray) { checkForControlChars(errMessages, tag, label); }
-  }
-
-  /**
    * Check misc attribute restrictions
    *  If containerized is true then containerImage must be set
    *  If containerized and SINGULARITY then RuntimeOptions must include one of SINGULARITY_START or SINGULARITY_RUN
@@ -815,7 +892,9 @@ public final class App
    *  If app contains file inputs then validate sourceUrl attributes for each input.
    *  If dynamicExecSystem then execSystemConstraints must be given
    *  If archiveSystem given then archive dir must be given
-   *  If parameterSet.envVariables set then check that if inputMode=FIXED then value != "!tapis_not_set"
+   *  If parameterSet.envVariables set then check:
+   *    - key is not empty.
+   *    - if inputMode=FIXED then value != "!tapis_not_set"
    *  If runtime type is not ZIP then --tapis-zip-save is not allowed.
    *  If runtime type is ZIP then we only support containerArg == --tapis-zip-save
    */
@@ -876,6 +955,11 @@ public final class App
       {
         for (KeyValuePair kv : parameterSet.getEnvVariables())
         {
+          // Name must not be empty
+          if (StringUtils.isBlank(kv.getKey()))
+          {
+            errMessages.add(LibUtils.getMsg("APPLIB_ENV_VAR_NO_NAME", kv.getValue()));
+          }
           // Check for inputMode=FIXED and value == "!tapis_not_set"
           if (FIXED.equals(kv.getInputMode()) && VALUE_NOT_SET.equals(kv.getValue()))
           {
@@ -920,40 +1004,6 @@ public final class App
     jobTags = LibUtils.stripWhitespaceStrArray(jobTags);
     execSystemConstraints = LibUtils.stripWhitespaceStrArray(execSystemConstraints);
   }
-
-// TODO
-//  /**
-//   * Strip whitespace for ParameterSet attributes
-//   * appArgs, containerArgs, schedulerOptions, envVariables, archiveFilter, logConfig;
-//   */
-//  private void stripWhitespaceParameterSet()
-//  {
-//// TODO not needed? handled in ArgSpec constructor?
-////    stripWhitespaceArgSpecList(parameterSet.getAppArgs());
-////    stripWhitespaceArgSpecList(parameterSet.getContainerArgs());
-////    stripWhitespaceArgSpecList(parameterSet.getSchedulerOptions());
-//
-//  }
-//
-//  /**
-//   * Strip whitespace for ParameterSet attributes
-//   */
-//  private void stripWhitespaceParameterSet()
-//  {
-//  }
-//
-// TODO not needed? handled in ArgSpec constructor?
-//  /**
-//   * Strip whitespace from attributes of an ArgSpec list
-//   */
-//  private void stripWhitespaceArgSpecList(List<ArgSpec> asList)
-//  {
-//    if (asList == null || asList.isEmpty()) return;
-//    for (var as : asList)
-//    {
-//      as.as.getName());
-//    }
-//  }
 
   /**
    * Validate an ID string.

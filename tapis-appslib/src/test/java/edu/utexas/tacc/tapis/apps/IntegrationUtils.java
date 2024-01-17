@@ -86,8 +86,9 @@ public final class IntegrationUtils
   public static final ArgInputMode argInputModeFixed = ArgInputMode.FIXED;
   public static final ArgInputMode argInputModeDefault = ArgInputMode.INCLUDE_ON_DEMAND;
 
-  public static final String stringWithCtrlChar = "Start\u0001Finish"; // TODO String containing a control-A character
-  public static final String stringWithCtrlChar2 = "StartFinish\n"; // TODO String containing a newline at end
+  public static final String stringWithCtrlChar = "Start\u0001Finish"; // String containing a control-A character
+  public static final String stringWithNewlineAtEnd = "StartFinish\n"; // String containing a newline at end
+  public static final String[] tagsWithCtrlChar = {"Start\u0001Finish", "tag 2"};
 
   // Sets for testing of search listType query parameter.
   public static final Set<String> viewableIDsNull = null;
@@ -210,6 +211,7 @@ public final class IntegrationUtils
                                                                  keyValuePairFull2);
   public static final List<KeyValuePair> envVariablesReject =
           List.of(new KeyValuePair("rejectMe", KeyValuePair.VALUE_NOT_SET, null, KeyValueInputMode.FIXED, null));
+  public static final List<KeyValuePair> envVariablesWithCtrlChar = List.of(new KeyValuePair(stringWithCtrlChar,stringWithCtrlChar, null, DEFAULT_INPUT_MODE, DEFAULT_NOTES));
   public static final List<KeyValuePair> envVariablesNull = null;
   public static final String[] archiveIncludes1 = {"/include1A", "/include1B"};
   public static final String[] archiveIncludes2 = {"/include2A", "/include2B"};
@@ -321,6 +323,9 @@ public final class IntegrationUtils
   public static final ArgSpec appArg3A = new ArgSpec("argValue3A", "appArg3A", "App arg 3A", argInputModeRequired, argNotes3);
   public static final ArgSpec appArg3B = new ArgSpec("argValue3B", "appArg3B", "App arg 3B", argInputModeFixed, argNotes3);
   public static final List<ArgSpec> appArgList3 = new ArrayList<>(List.of(appArg3A, appArg3B));
+
+  public static final ArgSpec appArgCtrlChar = new ArgSpec(stringWithCtrlChar, stringWithCtrlChar, "App arg name and value have a CtrlChar", argInputModeRequired, argNotes1);
+  public static final List<ArgSpec> appArgListWithCtrlChar = new ArrayList<>(List.of(appArgCtrlChar));
   public static final List<ArgSpec> appArgListNull = null;
 
   public static final ArgSpec containerArg1A = new ArgSpec("argValue1A", "containerArg1A", "Container arg 1A",
@@ -367,6 +372,8 @@ public final class IntegrationUtils
                                                                          envVariablesReject, archiveFilter1, logConfig1);
   public static final ParameterSet parameterSetZip = new ParameterSet(appArgList1, containerArgListZip, schedulerOptionList1,
                                                                       envVariables1, archiveFilter1, logConfig1);
+  public static final ParameterSet parameterSetWithCtrlChars = new ParameterSet(appArgListWithCtrlChar, containerArgList1, schedulerOptionList1,
+                                                                                envVariablesWithCtrlChar, archiveFilter1, logConfig1);
 
   public static final ParameterSet parameterSetNull = null;
 

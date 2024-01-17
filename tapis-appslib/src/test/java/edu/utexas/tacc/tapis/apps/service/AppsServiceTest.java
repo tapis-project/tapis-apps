@@ -1000,8 +1000,8 @@ public class AppsServiceTest
     app0.setExecSystemId(tmpStr);
     pass = false;
 
-    // TODO If ??? has control char
-    app0.setRuntimeVersion(stringWithCtrlChar2); // TODO Char2 uses newline at end
+    // If runtimeVersion has a control char then create should fail.
+    app0.setRuntimeVersion(stringWithCtrlChar);
     try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
     catch (Exception e)
     {
@@ -1010,6 +1010,29 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
     app0.setRuntimeVersion(runtimeVersion1);
+    pass = false;
+
+    // Do similar checks for a tag, an appArg and an env var
+    app0.setTags(tagsWithCtrlChar);
+    try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_CTL_CHR_ATTR"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    app0.setTags(tags1);
+    pass = false;
+    app0.setParameterSet(parameterSetWithCtrlChars);
+    try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
+    catch (Exception e)
+    {
+      // TODO check that error message contains expected strings
+      Assert.assertTrue(e.getMessage().contains("APPLIB_CTL_CHR_ATTR"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    app0.setParameterSet(parameterSet1);
     pass = false;
   }
 
