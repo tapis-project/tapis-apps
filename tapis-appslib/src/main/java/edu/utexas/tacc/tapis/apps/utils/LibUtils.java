@@ -206,7 +206,7 @@ public class LibUtils
   }
 
   /**
-   * Strip whitespace from all strings in a String[]
+   * Strip whitespace from a string.
    */
   public static String stripStr(String s)
   {

@@ -21,7 +21,6 @@ import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.KeyValueInputMode.FI
 import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.RESERVED_PREFIX;
 import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.VALUE_NOT_SET;
 
-
 /*
  * Tapis Application
  * Each app is associated with a specific tenant.
