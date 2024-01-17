@@ -117,6 +117,8 @@ public final class App
   public static final String FILE_INPUT_ARRAYS_FIELD = "fileInputArrays";
   public static final String FILE_INPUT_ARRAYS_TARGET_FIELD = "targetDir";
   public static final String FILE_INPUT_ARRAYS_SRC_FIELD = "sourceUrls";
+  public static final String SUBSCRIPTIONS_FIELD = "subscriptions";
+  public static final String SUBSCRIPTIONS_DLVRY_ADDR_FIELD = "deliveryAddress";
   public static final String JOB_FIELD_PREFIX = "Job-";
   public static final String IS_DYNAMIC_EXEC_SYS_FIELD = "dynamicExecSystem";
   public static final String EXECSYSID_FIELD = "execSystemId";
@@ -815,11 +817,16 @@ public final class App
    */
   private void checkForControlCharsSubscriptions(List<String> errMessages)
   {
-    // TODO
     if (subscriptions == null || subscriptions.isEmpty()) return;
     for (ReqSubscribe sub : subscriptions)
     {
-      // TODO
+      var deliveryTargets = sub.getDeliveryTargets();
+      if (deliveryTargets == null || deliveryTargets.isEmpty()) continue;
+      for (var deliveryTarget : deliveryTargets)
+      {
+        String deliveryAddress = deliveryTarget.getDeliveryAddress();
+        checkForControlChars(errMessages, deliveryAddress, SUBSCRIPTIONS_FIELD, SUBSCRIPTIONS_DLVRY_ADDR_FIELD);
+      }
     }
   }
 
@@ -852,6 +859,7 @@ public final class App
 
   /**
    * Check for control characters in an attribute value. Use 3 part label.
+   * Labels should never be null.
    */
   private void checkForControlChars(List<String> errMessages, String attrValue, String label1, String label2, String label3)
   {
@@ -861,6 +869,7 @@ public final class App
 
   /**
    * Check for control characters in an attribute value. Use 1 or 2 part label for message.
+   * label2 can be null.
    */
   private void checkForControlChars(List<String> errMessages, String attrValue, String label1, String label2)
   {
