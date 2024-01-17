@@ -841,6 +841,9 @@ public final class App
       String name = StringUtils.isBlank(argSpec.getName()) ? UNNAMED : argSpec.getName();
       String value = argSpec.getArg();
       checkForControlChars(errMessages, name, label1, NAME_FIELD);
+      // Since we use name as a label, we need to replace any control characters in it, so we do not
+      // log any strings with control characters.
+      name = PathSanitizer.replaceControlChars(name, '?');
       checkForControlChars(errMessages, value, label1, name, VALUE_FIELD);
     }
   }

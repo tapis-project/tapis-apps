@@ -9,7 +9,7 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 1.5.11 - 2024-01-11
+## 1.5.11 - 2024-01-17
 
 Incremental improvements.
 
@@ -17,7 +17,8 @@ Incremental improvements.
 - Validate sourceUrl attribute for file inputs defined in an application.
 - When fetching applications get shareInfo only when needed.
 - Update support for ZIP runtime.
-- TODO/TBD: Check attributes for control characters. Reject create/update if found.
+- Trim whitespace from attributes during updates.
+- Check attributes for control characters. Reject create/update if found.
 
 ### Bug fixes:
 - None

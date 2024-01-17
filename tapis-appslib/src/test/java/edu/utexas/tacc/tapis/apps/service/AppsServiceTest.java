@@ -985,31 +985,21 @@ public class AppsServiceTest
   public void testCreateInvalidControlCharactersFail()
   {
     App app0 = apps[25];
-    // If execSystemId has a control char then create should fail.
-    String tmpStr = app0.getExecSystemId();
-    app0.setExecSystemId(stringWithCtrlChar);
+    // If runtimeVersion has a control char then create should fail.
+    String tmpStr = app0.getRuntimeVersion();
+    app0.setRuntimeVersion(stringWithCtrlChar);
     boolean pass = false;
     try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
     catch (Exception e)
     {
+      // Check that error message contains expected strings
       Assert.assertTrue(e.getMessage().contains("APPLIB_CTL_CHR_ATTR"));
+      Assert.assertTrue(e.getMessage().contains("Attribute Name: runtimeVersion"));
       pass = true;
     }
     Assert.assertTrue(pass);
     // Reset in prep for continued checking
-    app0.setExecSystemId(tmpStr);
-    pass = false;
-
-    // If runtimeVersion has a control char then create should fail.
-    app0.setRuntimeVersion(stringWithCtrlChar);
-    try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
-    catch (Exception e)
-    {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_CTL_CHR_ATTR"));
-      pass = true;
-    }
-    Assert.assertTrue(pass);
-    app0.setRuntimeVersion(runtimeVersion1);
+    app0.setRuntimeVersion(tmpStr);
     pass = false;
 
     // Do similar checks for a tag, an appArg and an env var
@@ -1017,7 +1007,9 @@ public class AppsServiceTest
     try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
     catch (Exception e)
     {
+      // Check that error message contains expected strings
       Assert.assertTrue(e.getMessage().contains("APPLIB_CTL_CHR_ATTR"));
+      Assert.assertTrue(e.getMessage().contains("Attribute Name: tags"));
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -1027,8 +1019,12 @@ public class AppsServiceTest
     try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
     catch (Exception e)
     {
-      // TODO check that error message contains expected strings
+      // Check that error message contains expected strings
       Assert.assertTrue(e.getMessage().contains("APPLIB_CTL_CHR_ATTR"));
+      Assert.assertTrue(e.getMessage().contains("Attribute Name: appArgs.name"));
+      Assert.assertTrue(e.getMessage().contains("Attribute Name: appArgs.Start"));
+      Assert.assertTrue(e.getMessage().contains("Attribute Name: envVariables.name"));
+      Assert.assertTrue(e.getMessage().contains("Attribute Name: envVariables.value"));
       pass = true;
     }
     Assert.assertTrue(pass);
