@@ -57,12 +57,12 @@ public final class FileInputArray
   public FileInputArray(String name1, String description1, FileInputMode inputMode1, JsonObject notes1,
                         List<String> sourceUrls1, String targetDir1)
   {
-    name = name1.strip();
+    name = LibUtils.stripStr(name1);
     description = description1;
     inputMode = (inputMode1 == null) ? DEFAULT_INPUT_MODE : inputMode1;
     notes = (notes1 == null) ? DEFAULT_NOTES : notes1;
     sourceUrls = LibUtils.stripWhitespaceStrList(sourceUrls1);
-    targetDir = targetDir1.strip();
+    targetDir = LibUtils.stripStr(targetDir1);
   }
 
   /* ********************************************************************** */

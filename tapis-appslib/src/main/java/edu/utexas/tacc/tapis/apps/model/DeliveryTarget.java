@@ -1,5 +1,6 @@
 package edu.utexas.tacc.tapis.apps.model;
 
+import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,7 @@ public final class DeliveryTarget
   public DeliveryTarget(NotifDeliveryMethod method1, String deliveryAddress1)
   {
     deliveryMethod = method1;
-    deliveryAddress = deliveryAddress1.strip();
+    deliveryAddress = LibUtils.stripStr(deliveryAddress1);
   }
 
   /* ********************************************************************** */

@@ -1,6 +1,7 @@
 package edu.utexas.tacc.tapis.apps.model;
 
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.apps.model.App.ArgInputMode;
 
@@ -50,8 +51,8 @@ public final class ArgSpec
   // Constructor setting all attributes
   public ArgSpec(String arg1, String name1, String description1, ArgInputMode mode1, JsonObject notes1)
   {
-    arg = arg1.strip();
-    name = name1.strip();
+    arg = LibUtils.stripStr(arg1);
+    name = LibUtils.stripStr(name1);
     description = description1;
     inputMode = (mode1 == null) ? DEFAULT_INPUT_MODE : mode1;
     notes = (notes1 == null) ? DEFAULT_NOTES : notes1;
