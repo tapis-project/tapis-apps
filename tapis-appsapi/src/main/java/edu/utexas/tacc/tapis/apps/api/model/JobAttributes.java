@@ -26,6 +26,8 @@ public final class JobAttributes
   public String execSystemExecDir;
   public String execSystemInputDir;
   public String execSystemOutputDir;
+  public String dtnSystemInputDir;
+  public String dtnSystemOutputDir;
   public String execSystemLogicalQueue;
   public String archiveSystemId;
   public String archiveSystemDir;

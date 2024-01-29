@@ -9,6 +9,17 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.6.1 - 2024-??-??
+
+???
+
+### New features:
+- ???When fetching systems get shareInfo only when needed.
+
+### Bug fixes:
+- None.???
+
+---------------------------------------------------------------------------
 ## 1.6.0 - 2024-01-17
 
 Incremental improvements.

@@ -6,7 +6,7 @@
   <parent>
     <groupId>edu.utexas.tacc.tapis</groupId>
     <artifactId>tapis-apps</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
   </parent>
 
   <artifactId>tapis-appslib</artifactId>
@@ -175,6 +175,7 @@
         <url>${db.url}</url>
         <user>${db.username}</user>
         <password>${db.password}</password>
+        <cleanDisabled>false</cleanDisabled>
         <schemas>
           <schema>${db.schema}</schema>
         </schemas>
