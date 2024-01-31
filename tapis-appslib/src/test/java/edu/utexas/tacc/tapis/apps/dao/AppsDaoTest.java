@@ -94,6 +94,7 @@ public class AppsDaoTest
     Assert.assertEquals(tmpApp.getJobType().name(), app0.getJobType().name());
     Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
     Assert.assertEquals(tmpApp.isEnabled(), app0.isEnabled());
+    Assert.assertEquals(tmpApp.isVersionEnabled(), app0.isVersionEnabled());
     Assert.assertEquals(tmpApp.getRuntime().name(), app0.getRuntime().name());
     Assert.assertEquals(tmpApp.getRuntimeVersion(), app0.getRuntimeVersion());
     // Verify runtimeOptions

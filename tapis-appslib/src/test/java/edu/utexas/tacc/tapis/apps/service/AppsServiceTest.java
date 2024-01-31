@@ -622,6 +622,7 @@ public class AppsServiceTest
     String appId = app0.getId();
     String appVer = app0.getVersion();
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
+    // Test app top level attribute - enabled
     // Enabled should start off true, then become false and finally true again.
     App tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
     Assert.assertTrue(tmpApp.isEnabled());
@@ -636,6 +637,19 @@ public class AppsServiceTest
     tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
     Assert.assertTrue(tmpApp.isEnabled());
     Assert.assertTrue(svc.isEnabled(rOwner1, appId));
+
+    // Test app version level attribute - enabled
+    // Enabled should start off true, then become false and finally true again.
+    tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
+    Assert.assertTrue(tmpApp.isVersionEnabled());
+    changeCount = svc.disableApp(rOwner1, appId, appVer);
+    Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
+    tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
+    Assert.assertFalse(tmpApp.isVersionEnabled());
+    changeCount = svc.enableApp(rOwner1, appId, appVer);
+    Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
+    tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
+    Assert.assertTrue(tmpApp.isVersionEnabled());
 
     // Locked should start off false, then become true and finally false again.
     tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);

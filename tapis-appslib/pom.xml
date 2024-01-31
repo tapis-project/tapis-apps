@@ -180,6 +180,7 @@
         <url>${db.url}</url>
         <user>${db.username}</user>
         <password>${db.password}</password>
+        <cleanDisabled>false</cleanDisabled>
         <schemas>
           <schema>${db.schema}</schema>
         </schemas>
