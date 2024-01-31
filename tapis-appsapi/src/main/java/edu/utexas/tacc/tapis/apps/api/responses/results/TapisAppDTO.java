@@ -32,6 +32,7 @@ public final class TapisAppDTO
   public String description;
   public String owner;
   public boolean enabled;
+  public boolean versionEnabled;
   public boolean locked;
 //  public boolean containerized;
   public Runtime runtime;
@@ -58,6 +59,7 @@ public final class TapisAppDTO
     description = a.getDescription();
     owner = a.getOwner();
     enabled = a.isEnabled();
+    versionEnabled = a.isVersionEnabled();
     locked = a.isLocked();
 //    containerized = a.isContainerized();
     runtime = a.getRuntime();
@@ -148,6 +150,7 @@ public final class TapisAppDTO
       case DESCRIPTION_FIELD ->jsonObject.addProperty(DESCRIPTION_FIELD, description);
       case OWNER_FIELD -> jsonObject.addProperty(OWNER_FIELD, owner);
       case ENABLED_FIELD -> jsonObject.addProperty(ENABLED_FIELD, Boolean.toString(enabled));
+      case VERSION_ENABLED_FIELD -> jsonObject.addProperty(VERSION_ENABLED_FIELD, Boolean.toString(versionEnabled));
       case LOCKED_FIELD -> jsonObject.addProperty(LOCKED_FIELD, Boolean.toString(locked));
 //      case CONTAINERIZED_FIELD -> jsonObject.addProperty(CONTAINERIZED_FIELD, Boolean.toString(containerized));
       case RUNTIME_FIELD -> jsonObject.addProperty(RUNTIME_FIELD, runtime.name());

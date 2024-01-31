@@ -184,6 +184,7 @@ public class AppsServiceImpl implements AppsService
     String tenant = app.getTenant();
     String appId = app.getId();
     String appVersion = app.getVersion();
+    if (StringUtils.isBlank(appVersion)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
     // ---------------------------- Check inputs ------------------------------------
     // Required app attributes: id, version
@@ -208,8 +209,8 @@ public class AppsServiceImpl implements AppsService
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerKnown(rUser, op, appId, app.getOwner());
 
-    // ---------------- Check for reserved names ------------------------
-    checkReservedIds(rUser, appId);
+    // ---------------- Check for reserved names or versions -------------------
+    checkReservedIds(rUser, appId, appVersion);
 
     // ---------------- Check constraints on App attributes ------------------------
     validateApp(rUser, app);
@@ -389,35 +390,37 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Update enabled to true for an app
+   * Update enabled to true for entire app or specific app version
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - name of app
+   * @param appVersion - version of app (optional)
    * @return Number of items updated
    *
    * @throws TapisException - for Tapis related exceptions
    * @throws IllegalArgumentException - invalid parameter passed in
    */
   @Override
-  public int enableApp(ResourceRequestUser rUser, String appId)
+  public int enableApp(ResourceRequestUser rUser, String appId, String appVersion)
           throws TapisException, IllegalArgumentException, TapisClientException
   {
-    return updateEnabled(rUser, appId, AppOperation.enable);
+    return updateEnabled(rUser, appId, appVersion, AppOperation.enable);
   }
 
   /**
-   * Update enabled to false for an app
+   * Update enabled to false for entire app or specific app version
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - name of app
+   * @param appVersion - version of app (optional)
    * @return Number of items updated
    *
    * @throws TapisException - for Tapis related exceptions
    * @throws IllegalArgumentException - invalid parameter passed in
    */
   @Override
-  public int disableApp(ResourceRequestUser rUser, String appId)
+  public int disableApp(ResourceRequestUser rUser, String appId, String appVersion)
           throws TapisException, IllegalArgumentException, TapisClientException
   {
-    return updateEnabled(rUser, appId, AppOperation.disable);
+    return updateEnabled(rUser, appId, appVersion, AppOperation.disable);
   }
 
   /**
@@ -1428,16 +1431,17 @@ public class AppsServiceImpl implements AppsService
   // ************************************************************************
 
   /**
-   * Update enabled attribute for an app
+   * Update enabled attribute for entire app or specific app version
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - name of app
+   * @param appVersion - version of app (optional)
    * @param appOp - operation, enable or disable
    * @return Number of items updated
    *
    * @throws TapisException - for Tapis related exceptions
    * @throws IllegalArgumentException - invalid parameter passed in
    */
-  private int updateEnabled(ResourceRequestUser rUser, String appId, AppOperation appOp)
+  private int updateEnabled(ResourceRequestUser rUser, String appId, String appVersion, AppOperation appOp)
           throws TapisException, IllegalArgumentException, TapisClientException
   {
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -1455,9 +1459,9 @@ public class AppsServiceImpl implements AppsService
 
     // ----------------- Make update --------------------
     if (appOp == AppOperation.enable)
-      dao.updateEnabled(rUser, resourceTenantId, appId, true);
+      dao.updateEnabled(rUser, resourceTenantId, appId, appVersion, true);
     else
-      dao.updateEnabled(rUser, resourceTenantId, appId, false);
+      dao.updateEnabled(rUser, resourceTenantId, appId, appVersion, false);
     return 1;
   }
 
@@ -1598,11 +1602,16 @@ public class AppsServiceImpl implements AppsService
    * @param id - the id to check
    * @throws IllegalStateException - if attempt to create a resource with a reserved name
    */
-  private void checkReservedIds(ResourceRequestUser rUser, String id) throws IllegalStateException
+  private void checkReservedIds(ResourceRequestUser rUser, String id, String version) throws IllegalStateException
   {
     if (App.RESERVED_ID_SET.contains(id.toUpperCase()))
     {
       String msg = LibUtils.getMsgAuth("APPLIB_CREATE_RESERVED", rUser, id);
+      throw new IllegalStateException(msg);
+    }
+    if (App.RESERVED_VER_SET.contains(version.toUpperCase()))
+    {
+      String msg = LibUtils.getMsgAuth("APPLIB_CREATE_VER_RESERVED", rUser, id, version);
       throw new IllegalStateException(msg);
     }
   }
@@ -1916,6 +1925,7 @@ public class AppsServiceImpl implements AppsService
     App updatedApp = new App(putApp, origApp.getTenant(), origApp.getId(), origApp.getVersion());
     updatedApp.setOwner(origApp.getOwner());
     updatedApp.setEnabled(origApp.isEnabled());
+    updatedApp.setVersionEnabled(origApp.isVersionEnabled());
     updatedApp.setLocked(origApp.isLocked());
     return updatedApp;
   }

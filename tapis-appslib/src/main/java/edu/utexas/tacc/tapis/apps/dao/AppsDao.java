@@ -25,7 +25,7 @@ public interface AppsDao
   void putApp(ResourceRequestUser rUser, App putApp, String changeDescription, String rawData)
           throws TapisException, IllegalStateException;
 
-  void updateEnabled(ResourceRequestUser rUser, String tenantId, String id, boolean enabled) throws TapisException;
+  void updateEnabled(ResourceRequestUser rUser, String tenantId, String id, String version, boolean enabled) throws TapisException;
 
   void updateLocked(ResourceRequestUser rUser, String tenantId, String id, String version, boolean locked) throws TapisException;
 

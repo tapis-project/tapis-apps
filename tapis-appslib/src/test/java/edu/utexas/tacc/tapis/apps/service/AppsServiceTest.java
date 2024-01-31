@@ -626,12 +626,12 @@ public class AppsServiceTest
     App tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
     Assert.assertTrue(tmpApp.isEnabled());
     Assert.assertTrue(svc.isEnabled(rOwner1, appId));
-    int changeCount = svc.disableApp(rOwner1, appId);
+    int changeCount = svc.disableApp(rOwner1, appId, appVersionNull);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
     tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
     Assert.assertFalse(tmpApp.isEnabled());
     Assert.assertFalse(svc.isEnabled(rOwner1, appId));
-    changeCount = svc.enableApp(rOwner1, appId);
+    changeCount = svc.enableApp(rOwner1, appId, appVersionNull);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
     tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
     Assert.assertTrue(tmpApp.isEnabled());
@@ -668,11 +668,11 @@ public class AppsServiceTest
     catch (NotFoundException nfe) { pass = true; }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.disableApp(rOwner1, appId); }
+    try { svc.disableApp(rOwner1, appId, appVersionNull); }
     catch (NotFoundException nfe) { pass = true; }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.enableApp(rOwner1, appId); }
+    try { svc.enableApp(rOwner1, appId, appVersionNull); }
     catch (NotFoundException nfe) { pass = true; }
     Assert.assertTrue(pass);
 
@@ -1128,11 +1128,11 @@ public class AppsServiceTest
     catch (NotFoundException nfe) { pass = true; }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.enableApp(rOwner1, fakeAppName); }
+    try { svc.enableApp(rOwner1, fakeAppName, appVersionNull); }
     catch (NotFoundException nfe) { pass = true; }
     Assert.assertTrue(pass);
     pass = false;
-    try { svc.disableApp(rOwner1, fakeAppName); }
+    try { svc.disableApp(rOwner1, fakeAppName, appVersionNull); }
     catch (NotFoundException nfe) { pass = true; }
     Assert.assertTrue(pass);
 

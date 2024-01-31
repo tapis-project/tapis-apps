@@ -33,10 +33,10 @@ public interface AppsService
   void putApp(ResourceRequestUser rUser, App putApp, String rawData)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
-  int enableApp(ResourceRequestUser rUser, String appId)
+  int enableApp(ResourceRequestUser rUser, String appId, String appVersion)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
-  int disableApp(ResourceRequestUser rUser, String appId)
+  int disableApp(ResourceRequestUser rUser, String appId, String appVersion)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;
 
   int lockApp(ResourceRequestUser rUser, String appId, String appVersion)
