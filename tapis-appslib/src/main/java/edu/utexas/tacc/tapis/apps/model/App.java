@@ -1178,7 +1178,7 @@ public final class App
   public void setExecSystemOutputDir(String s) { execSystemOutputDir = LibUtils.stripStr(s);  }
 
   public String getDtnSystemInputDir() { return dtnSystemInputDir; }
-  public void setDtnSystemInputDir(String s) { dtnSystemOutputDir = LibUtils.stripStr(s);  }
+  public void setDtnSystemInputDir(String s) { dtnSystemInputDir = LibUtils.stripStr(s);  }
 
   public String getDtnSystemOutputDir() { return dtnSystemOutputDir; }
   public void setDtnSystemOutputDir(String s) { dtnSystemOutputDir = LibUtils.stripStr(s);  }

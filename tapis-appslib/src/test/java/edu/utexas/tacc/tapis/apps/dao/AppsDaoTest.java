@@ -125,6 +125,8 @@ public class AppsDaoTest
     Assert.assertEquals(tmpApp.getExecSystemExecDir(), app0.getExecSystemExecDir());
     Assert.assertEquals(tmpApp.getExecSystemInputDir(), app0.getExecSystemInputDir());
     Assert.assertEquals(tmpApp.getExecSystemOutputDir(), app0.getExecSystemOutputDir());
+    Assert.assertEquals(tmpApp.getDtnSystemInputDir(), app0.getDtnSystemInputDir());
+    Assert.assertEquals(tmpApp.getDtnSystemOutputDir(), app0.getDtnSystemOutputDir());
     Assert.assertEquals(tmpApp.getExecSystemLogicalQueue(), app0.getExecSystemLogicalQueue());
     Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
     Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());

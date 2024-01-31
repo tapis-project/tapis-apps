@@ -63,6 +63,8 @@ public final class JobAttributes
     execSystemExecDir = a.getExecSystemExecDir();
     execSystemInputDir = a.getExecSystemInputDir();
     execSystemOutputDir = a.getExecSystemOutputDir();
+    dtnSystemInputDir = a.getDtnSystemInputDir();
+    dtnSystemOutputDir = a.getDtnSystemOutputDir();
     execSystemLogicalQueue = a.getExecSystemLogicalQueue();
     archiveSystemId = a.getArchiveSystemId();
     archiveSystemDir = a.getArchiveSystemDir();
