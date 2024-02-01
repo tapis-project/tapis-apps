@@ -38,8 +38,11 @@ public final class App
   // *********************** Constants **************************************
   // ************************************************************************
 
-  // Set of reserved application names
-  public static final Set<String> RESERVED_ID_SET = new HashSet<>(Set.of("HEALTHCHECK", "READYCHECK", "SEARCH"));
+  // Set of reserved application IDs and versions
+  public static final Set<String> RESERVED_ID_SET
+          = new HashSet<>(Set.of("HEALTHCHECK", "READYCHECK", "SEARCH", "SHARE", "UNSHARE", "SHARE_PUBLIC", "UNSHARE_PUBLIC"));
+  public static final Set<String> RESERVED_VER_SET
+          = new HashSet<>(Set.of("ISENABLED", "ENABLE", "DISABLE", "DELETE", "UNDELETE", "HISTORY", "CHANGEOWNER"));
 
   // Set of attributes (i.e. column names) not supported in searches
   public static final Set<String> SEARCH_ATTRS_UNSUPPORTED =

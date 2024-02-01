@@ -261,6 +261,12 @@ public class AppResource
         _log.warn(msg);
         return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
       }
+      else if (e.getMessage().contains("APPLIB_CREATE_VER_RESERVED"))
+      {
+        msg = ApiUtils.getMsgAuth("APPAPI_CREATE_VER_RESERVED", rUser, appId, app.getVersion());
+        _log.warn(msg);
+        return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+      }
       else
       {
         // IllegalStateException indicates an Invalid App was passed in

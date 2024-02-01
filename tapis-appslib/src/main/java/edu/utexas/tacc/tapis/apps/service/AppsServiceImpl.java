@@ -184,6 +184,7 @@ public class AppsServiceImpl implements AppsService
     String tenant = app.getTenant();
     String appId = app.getId();
     String appVersion = app.getVersion();
+    if (StringUtils.isBlank(appVersion)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
     // ---------------------------- Check inputs ------------------------------------
     // Required app attributes: id, version
@@ -208,8 +209,8 @@ public class AppsServiceImpl implements AppsService
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerKnown(rUser, op, appId, app.getOwner());
 
-    // ---------------- Check for reserved names ------------------------
-    checkReservedIds(rUser, appId);
+    // ---------------- Check for reserved names or versions -------------------
+    checkReservedIds(rUser, appId, appVersion);
 
     // ---------------- Check constraints on App attributes ------------------------
     validateApp(rUser, app);
@@ -1598,11 +1599,16 @@ public class AppsServiceImpl implements AppsService
    * @param id - the id to check
    * @throws IllegalStateException - if attempt to create a resource with a reserved name
    */
-  private void checkReservedIds(ResourceRequestUser rUser, String id) throws IllegalStateException
+  private void checkReservedIds(ResourceRequestUser rUser, String id, String version) throws IllegalStateException
   {
     if (App.RESERVED_ID_SET.contains(id.toUpperCase()))
     {
       String msg = LibUtils.getMsgAuth("APPLIB_CREATE_RESERVED", rUser, id);
+      throw new IllegalStateException(msg);
+    }
+    if (App.RESERVED_VER_SET.contains(version.toUpperCase()))
+    {
+      String msg = LibUtils.getMsgAuth("APPLIB_CREATE_VER_RESERVED", rUser, id, version);
       throw new IllegalStateException(msg);
     }
   }
