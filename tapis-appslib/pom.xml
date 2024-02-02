@@ -112,11 +112,15 @@
       <artifactId>maven-artifact</artifactId>
       <version>3.6.3</version>
     </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
   </dependencies>
 
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
-
     <plugins>
       <!-- Capture the git commit hash and branch identifiers. -->
       <!-- See parent pom for configuration details. -->
@@ -159,6 +163,10 @@
   <!--   Then unless flyway will be making the updates make sure the DB at   -->
   <!--     db.url has the correct schema. May need to drop the current       -->
   <!--     the schema if flyway is still on V001__init.sql                   -->
+  <!--   To drop the schema:                                                 -->
+  <!--     DROP SCHEMA IF EXISTS tapis_app CASCADE;                          -->
+  <!--     CREATE SCHEMA IF NOT EXISTS tapis_app AUTHORIZATION tapis_app;    -->
+  <!--     ALTER ROLE tapis_app SET search_path = 'tapis_app';               -->
   <!-- Finally run:                                                          -->
   <!--   cd lib                                                              -->
   <!--   mvn clean install -Pdb-update                                       -->
