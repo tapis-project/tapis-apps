@@ -52,7 +52,6 @@ public final class App
   // Constants indicating app version, uuid or seq_id is not relevant.
   public static final int INVALID_SEQ_ID = -1;
   public static final UUID INVALID_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
-  public static final String NO_APP_VERSION = null;
 
   public static final String PERMISSION_WILDCARD = "*";
   // Allowed substitution variables

@@ -65,7 +65,6 @@ import static edu.utexas.tacc.tapis.search.SearchUtils.SearchOperator.CONTAINS;
 import static edu.utexas.tacc.tapis.search.SearchUtils.SearchOperator.NCONTAINS;
 import static edu.utexas.tacc.tapis.apps.model.App.INVALID_SEQ_ID;
 import static edu.utexas.tacc.tapis.apps.model.App.INVALID_UUID;
-import static edu.utexas.tacc.tapis.apps.model.App.NO_APP_VERSION;
 
 /*
  * Class to handle persistence and queries for Tapis App objects.
@@ -548,7 +547,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     // AppOperation needed for recording the update
     AppOperation appOp = enabled ? AppOperation.enable : AppOperation.disable;
-    String versionStr = NO_APP_VERSION;
+    String versionStr = null;
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -665,7 +664,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .where(APPS.TENANT.eq(tenantId),APPS.ID.eq(appId)).execute();
       // Persist update record
       String changeDescription = "{\"deleted\":" +  deleted + "}";
-      addUpdate(db, rUser, tenantId, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+      addUpdate(db, rUser, tenantId, appId, null, INVALID_SEQ_ID, INVALID_SEQ_ID,
               appOp, changeDescription , null, INVALID_UUID);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -707,7 +706,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .where(APPS.TENANT.eq(tenantId),APPS.ID.eq(appId)).execute();
       // Persist update record
       String changeDescription = "{\"owner\":\"" +  newOwnerName + "\"}";
-      addUpdate(db, rUser, tenantId, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+      addUpdate(db, rUser, tenantId, appId, null, INVALID_SEQ_ID, INVALID_SEQ_ID,
                 AppOperation.changeOwner, changeDescription , null, INVALID_UUID);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);

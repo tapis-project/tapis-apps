@@ -1137,7 +1137,7 @@ public class AppResource
    * Note that userName only used for changeOwner
    * @param opName Name of operation.
    * @param appId Id of app to update
-   * @param appVersion - version of the app
+   * @param appVersion - version of the app (optional)
    * @param userName new owner name for op changeOwner
    * @param securityContext Security context from client call
    * @return Response to be returned to the client.
@@ -1146,7 +1146,6 @@ public class AppResource
                                        SecurityContext securityContext)
           throws TapisClientException
   {
-    // TODO review enable/disable full app vs specific version
     // ------------------------- Retrieve and validate thread context -------------------------
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId

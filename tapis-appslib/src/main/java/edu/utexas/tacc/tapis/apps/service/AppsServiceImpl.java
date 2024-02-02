@@ -49,7 +49,6 @@ import edu.utexas.tacc.tapis.systems.client.SystemsClient;
 import edu.utexas.tacc.tapis.systems.client.gen.model.TapisSystem;
 
 import static edu.utexas.tacc.tapis.shared.TapisConstants.APPS_SERVICE;
-import static edu.utexas.tacc.tapis.apps.model.App.NO_APP_VERSION;
 
 /*
  * Service level methods for Apps.
@@ -1108,7 +1107,7 @@ public class AppsServiceImpl implements AppsService
     // Construct Json string representing the update
     String updateJsonStr = TapisGsonUtils.getGson().toJson(permissions);
     // Create a record of the update
-    dao.addUpdateRecord(rUser, oboTenant, appId, NO_APP_VERSION, op, updateJsonStr, rawData);
+    dao.addUpdateRecord(rUser, oboTenant, appId, null, op, updateJsonStr, rawData);
   }
 
   /**
@@ -1191,7 +1190,7 @@ public class AppsServiceImpl implements AppsService
     // Construct Json string representing the update
     String updateJsonStr = TapisGsonUtils.getGson().toJson(permissions);
     // Create a record of the update
-    dao.addUpdateRecord(rUser, oboTenant, appId, NO_APP_VERSION, op, updateJsonStr, rawData);
+    dao.addUpdateRecord(rUser, oboTenant, appId, null, op, updateJsonStr, rawData);
     return changeCount;
   }
 
