@@ -216,6 +216,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.EXEC_SYSTEM_EXEC_DIR, app.getExecSystemExecDir())
               .set(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR, app.getExecSystemInputDir())
               .set(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR, app.getExecSystemOutputDir())
+              .set(APPS_VERSIONS.DTN_SYSTEM_INPUT_DIR, app.getDtnSystemInputDir())
+              .set(APPS_VERSIONS.DTN_SYSTEM_OUTPUT_DIR, app.getDtnSystemOutputDir())
               .set(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE, app.getExecSystemLogicalQueue())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, app.getArchiveSystemId())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, app.getArchiveSystemDir())
@@ -355,6 +357,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.EXEC_SYSTEM_EXEC_DIR, putApp.getExecSystemExecDir())
               .set(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR, putApp.getExecSystemInputDir())
               .set(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR, putApp.getExecSystemOutputDir())
+              .set(APPS_VERSIONS.DTN_SYSTEM_INPUT_DIR, putApp.getDtnSystemInputDir())
+              .set(APPS_VERSIONS.DTN_SYSTEM_OUTPUT_DIR, putApp.getDtnSystemOutputDir())
               .set(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE, putApp.getExecSystemLogicalQueue())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, putApp.getArchiveSystemId())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, putApp.getArchiveSystemDir())
@@ -485,6 +489,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.EXEC_SYSTEM_EXEC_DIR, patchedApp.getExecSystemExecDir())
               .set(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR, patchedApp.getExecSystemInputDir())
               .set(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR, patchedApp.getExecSystemOutputDir())
+              .set(APPS_VERSIONS.DTN_SYSTEM_INPUT_DIR, patchedApp.getDtnSystemInputDir())
+              .set(APPS_VERSIONS.DTN_SYSTEM_OUTPUT_DIR, patchedApp.getDtnSystemOutputDir())
               .set(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE, patchedApp.getExecSystemLogicalQueue())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, patchedApp.getArchiveSystemId())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, patchedApp.getArchiveSystemDir())
@@ -1805,6 +1811,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             r.get(APPS_VERSIONS.DYNAMIC_EXEC_SYSTEM), r.get(APPS_VERSIONS.EXEC_SYSTEM_CONSTRAINTS),
             r.get(APPS_VERSIONS.EXEC_SYSTEM_ID), r.get(APPS_VERSIONS.EXEC_SYSTEM_EXEC_DIR),
             r.get(APPS_VERSIONS.EXEC_SYSTEM_INPUT_DIR), r.get(APPS_VERSIONS.EXEC_SYSTEM_OUTPUT_DIR),
+            r.get(APPS_VERSIONS.DTN_SYSTEM_INPUT_DIR), r.get(APPS_VERSIONS.DTN_SYSTEM_OUTPUT_DIR),
             r.get(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE), r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_ID),
             r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR), r.get(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR),
             r.get(APPS_VERSIONS.IS_MPI), r.get(APPS_VERSIONS.MPI_CMD), r.get(APPS_VERSIONS.CMD_PREFIX),

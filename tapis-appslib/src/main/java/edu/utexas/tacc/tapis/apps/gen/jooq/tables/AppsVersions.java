@@ -280,6 +280,16 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
      */
     public final TableField<AppsVersionsRecord, Boolean> LOCKED = createField(DSL.name("locked"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("false", SQLDataType.BOOLEAN)), this, "");
 
+    /**
+     * The column <code>tapis_app.apps_versions.dtn_system_input_dir</code>.
+     */
+    public final TableField<AppsVersionsRecord, String> DTN_SYSTEM_INPUT_DIR = createField(DSL.name("dtn_system_input_dir"), SQLDataType.CLOB, this, "");
+
+    /**
+     * The column <code>tapis_app.apps_versions.dtn_system_output_dir</code>.
+     */
+    public final TableField<AppsVersionsRecord, String> DTN_SYSTEM_OUTPUT_DIR = createField(DSL.name("dtn_system_output_dir"), SQLDataType.CLOB, this, "");
+
     private AppsVersions(Name alias, Table<AppsVersionsRecord> aliased) {
         this(alias, aliased, null);
     }
