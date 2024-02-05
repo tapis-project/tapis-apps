@@ -11,10 +11,11 @@ https://tapis-project.github.io/live-docs
 ---------------------------------------------------------------------------
 ## 1.6.1 - 2024-??-??
 
-???
+Incremental improvements.
 
 ### New features:
-- ???When fetching systems get shareInfo only when needed.
+- Add DTN attributes dtnSystemInputDir, dtnSystemInputDir.
+- Use shared code TapisUtils.weaklyValidateUri() for additional validation of file inputs.
 
 ### Bug fixes:
 - None.???

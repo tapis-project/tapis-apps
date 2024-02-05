@@ -1630,9 +1630,9 @@ public class AppsServiceImpl implements AppsService
   {
     // Make api level checks, i.e. checks that do not involve a dao or service call.
     List<String> errMessages = app.checkAttributeRestrictions();
-    var systemsClient = getSystemsClient(rUser);
 
     // Now make checks that do require a dao or service call.
+    var systemsClient = getSystemsClient(rUser);
     // If execSystemId is set verify it
     if (!StringUtils.isBlank(app.getExecSystemId())) checkExecSystem(systemsClient, app, errMessages);
 

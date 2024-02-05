@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.utils.PathSanitizer;
+import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.DomainValidator;
@@ -1071,9 +1072,7 @@ public final class App
   private static boolean isZipContainerImageValid(String containerImage)
   {
     if (containerImage!=null && containerImage.startsWith("/")) return true;
-    Matcher matcher = SRC_URL_PATTERN.matcher(containerImage);
-    if (matcher.find()) return true;
-    return false;
+    return TapisUtils.weaklyValidateUri(containerImage);
   }
 
   /**
@@ -1094,8 +1093,9 @@ public final class App
    */
   private static boolean validFileInputSourceUrl(String sourceUrl)
   {
-    // Must be empty, http/s://, tapis:// or tapislocal://
-    if (StringUtils.isBlank(sourceUrl)) return true;
+    // First perform a weak validation, according to our shared TapisUtils method.
+    if (!TapisUtils.weaklyValidateUri(sourceUrl)) return false;
+    // In addition, check that it is http/s://, tapis:// or tapislocal://
     Matcher matcher = SRC_URL_PATTERN.matcher(sourceUrl);
     if (matcher.find()) return true;
     matcher = SRC_URL_LOCAL_PATTERN.matcher(sourceUrl);
