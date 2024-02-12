@@ -94,6 +94,7 @@ public class AppsDaoTest
     Assert.assertEquals(tmpApp.getJobType().name(), app0.getJobType().name());
     Assert.assertEquals(tmpApp.getOwner(), app0.getOwner());
     Assert.assertEquals(tmpApp.isEnabled(), app0.isEnabled());
+    Assert.assertEquals(tmpApp.isVersionEnabled(), app0.isVersionEnabled());
     Assert.assertEquals(tmpApp.getRuntime().name(), app0.getRuntime().name());
     Assert.assertEquals(tmpApp.getRuntimeVersion(), app0.getRuntimeVersion());
     // Verify runtimeOptions
@@ -267,10 +268,10 @@ public class AppsDaoTest
     // Enabled should start off true, then become false and finally true again.
     App tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion());
     Assert.assertTrue(tmpApp.isEnabled());
-    dao.updateEnabled(rOwner1, tenantName, app0.getId(), false);
+    dao.updateEnabled(rOwner1, tenantName, app0.getId(), appVersionNull, false);
     tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion());
     Assert.assertFalse(tmpApp.isEnabled());
-    dao.updateEnabled(rOwner1, tenantName, app0.getId(), true);
+    dao.updateEnabled(rOwner1, tenantName, app0.getId(), appVersionNull, true);
     tmpApp = dao.getApp(app0.getTenant(), app0.getId(), app0.getVersion());
     Assert.assertTrue(tmpApp.isEnabled());
 
@@ -390,7 +391,7 @@ public class AppsDaoTest
     String fakeAppId = "AMissingAppId";
     String fakeAppVersion = "AMissingAppVersion";
     App patchedApp = new App(1, 1, tenantName, fakeAppId, fakeAppVersion, "description",
-            JobType.BATCH, owner2, enabledTrue, lockedFalse,
+            JobType.BATCH, owner2, enabledTrue, versionEnabledTrue, lockedFalse,
             containerizedTrue, runtime1, runtimeVersion1, runtimeOptions1, containerImage1,
             maxJobs1, maxJobsPerUser1, strictFileInputsFalse, IntegrationUtils.jobDescription1, dynamicExecSystemTrue,
             execSystemConstraints1, execSystemId1, execSystemExecDir1, execSystemInputDir1, execSystemOutputDir1,

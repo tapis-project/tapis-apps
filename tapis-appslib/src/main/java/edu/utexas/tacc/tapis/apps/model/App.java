@@ -54,7 +54,6 @@ public final class App
   // Constants indicating app version, uuid or seq_id is not relevant.
   public static final int INVALID_SEQ_ID = -1;
   public static final UUID INVALID_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
-  public static final String NO_APP_VERSION = null;
 
   public static final String PERMISSION_WILDCARD = "*";
   // Allowed substitution variables
@@ -95,6 +94,7 @@ public final class App
   public static final String DESCRIPTION_FIELD = "description";
   public static final String OWNER_FIELD = "owner";
   public static final String ENABLED_FIELD = "enabled";
+  public static final String VERSION_ENABLED_FIELD = "versionEnabled";
   public static final String LOCKED_FIELD = "locked";
   public static final String CONTAINERIZED_FIELD = "containerized";
   public static final String RUNTIME_FIELD = "runtime";
@@ -227,6 +227,7 @@ public final class App
   private final String id;       // Name of the app
   private String owner;      // User who owns the app and has full privileges
   private boolean enabled; // Indicates if app is currently enabled
+  private boolean versionEnabled; // Indicates if specific app version is currently enabled
   private boolean containerized;
   private boolean deleted;
   // === End fields in table apps =============================================
@@ -327,6 +328,7 @@ public final class App
     description = a.getDescription();
     owner = LibUtils.stripStr(a.getOwner());
     enabled = a.isEnabled();
+    versionEnabled = a.isVersionEnabled();
     locked = a.isLocked();
     containerized = a.isContainerized();
     runtime = a.getRuntime();
@@ -378,7 +380,7 @@ public final class App
    * Also useful for testing
    */
   public App(int seqId1, int verSeqId1, String tenant1, String id1, String version1, String description1,
-             JobType jobType1, String owner1, boolean enabled1, boolean locked1, boolean containerized1,
+             JobType jobType1, String owner1, boolean enabled1, boolean versionEnabled1, boolean locked1, boolean containerized1,
              Runtime runtime1, String runtimeVersion1, List<RuntimeOption> runtimeOptions1, String containerImage1,
              int maxJobs1, int maxJobsPerUser1, boolean strictFileInputs1,
              // == Start jobAttributes
@@ -404,6 +406,7 @@ public final class App
     jobType = (jobType1 == null) ? DEFAULT_JOB_TYPE : jobType1;
     owner = LibUtils.stripStr(owner1);
     enabled = enabled1;
+    versionEnabled = versionEnabled1;
     locked = locked1;
     containerized = containerized1;
     runtime = (runtime1 == null) ? DEFAULT_RUNTIME : runtime1;
@@ -463,6 +466,7 @@ public final class App
     description = a.getDescription();
     owner = LibUtils.stripStr(a.getOwner());
     enabled = a.isEnabled();
+    versionEnabled = a.isVersionEnabled();
     locked = a.isLocked();
     containerized = a.isContainerized();
     runtime = a.getRuntime();
@@ -1134,6 +1138,9 @@ public final class App
 
   public boolean isEnabled() { return enabled; }
   public void setEnabled(boolean b) { enabled = b;   }
+
+  public boolean isVersionEnabled() { return versionEnabled; }
+  public void setVersionEnabled(boolean b) { versionEnabled = b;   }
 
   public boolean isLocked() { return locked; }
   public void setLocked(boolean b) { locked = b;   }

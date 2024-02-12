@@ -49,7 +49,6 @@ import edu.utexas.tacc.tapis.systems.client.SystemsClient;
 import edu.utexas.tacc.tapis.systems.client.gen.model.TapisSystem;
 
 import static edu.utexas.tacc.tapis.shared.TapisConstants.APPS_SERVICE;
-import static edu.utexas.tacc.tapis.apps.model.App.NO_APP_VERSION;
 
 /*
  * Service level methods for Apps.
@@ -390,35 +389,37 @@ public class AppsServiceImpl implements AppsService
   }
 
   /**
-   * Update enabled to true for an app
+   * Update enabled to true for entire app or specific app version
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - name of app
+   * @param appVersion - version of app (optional)
    * @return Number of items updated
    *
    * @throws TapisException - for Tapis related exceptions
    * @throws IllegalArgumentException - invalid parameter passed in
    */
   @Override
-  public int enableApp(ResourceRequestUser rUser, String appId)
+  public int enableApp(ResourceRequestUser rUser, String appId, String appVersion)
           throws TapisException, IllegalArgumentException, TapisClientException
   {
-    return updateEnabled(rUser, appId, AppOperation.enable);
+    return updateEnabled(rUser, appId, appVersion, AppOperation.enable);
   }
 
   /**
-   * Update enabled to false for an app
+   * Update enabled to false for entire app or specific app version
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - name of app
+   * @param appVersion - version of app (optional)
    * @return Number of items updated
    *
    * @throws TapisException - for Tapis related exceptions
    * @throws IllegalArgumentException - invalid parameter passed in
    */
   @Override
-  public int disableApp(ResourceRequestUser rUser, String appId)
+  public int disableApp(ResourceRequestUser rUser, String appId, String appVersion)
           throws TapisException, IllegalArgumentException, TapisClientException
   {
-    return updateEnabled(rUser, appId, AppOperation.disable);
+    return updateEnabled(rUser, appId, appVersion, AppOperation.disable);
   }
 
   /**
@@ -1106,7 +1107,7 @@ public class AppsServiceImpl implements AppsService
     // Construct Json string representing the update
     String updateJsonStr = TapisGsonUtils.getGson().toJson(permissions);
     // Create a record of the update
-    dao.addUpdateRecord(rUser, oboTenant, appId, NO_APP_VERSION, op, updateJsonStr, rawData);
+    dao.addUpdateRecord(rUser, oboTenant, appId, null, op, updateJsonStr, rawData);
   }
 
   /**
@@ -1189,7 +1190,7 @@ public class AppsServiceImpl implements AppsService
     // Construct Json string representing the update
     String updateJsonStr = TapisGsonUtils.getGson().toJson(permissions);
     // Create a record of the update
-    dao.addUpdateRecord(rUser, oboTenant, appId, NO_APP_VERSION, op, updateJsonStr, rawData);
+    dao.addUpdateRecord(rUser, oboTenant, appId, null, op, updateJsonStr, rawData);
     return changeCount;
   }
 
@@ -1429,16 +1430,17 @@ public class AppsServiceImpl implements AppsService
   // ************************************************************************
 
   /**
-   * Update enabled attribute for an app
+   * Update enabled attribute for entire app or specific app version
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - name of app
+   * @param appVersion - version of app (optional)
    * @param appOp - operation, enable or disable
    * @return Number of items updated
    *
    * @throws TapisException - for Tapis related exceptions
    * @throws IllegalArgumentException - invalid parameter passed in
    */
-  private int updateEnabled(ResourceRequestUser rUser, String appId, AppOperation appOp)
+  private int updateEnabled(ResourceRequestUser rUser, String appId, String appVersion, AppOperation appOp)
           throws TapisException, IllegalArgumentException, TapisClientException
   {
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
@@ -1456,9 +1458,9 @@ public class AppsServiceImpl implements AppsService
 
     // ----------------- Make update --------------------
     if (appOp == AppOperation.enable)
-      dao.updateEnabled(rUser, resourceTenantId, appId, true);
+      dao.updateEnabled(rUser, resourceTenantId, appId, appVersion, true);
     else
-      dao.updateEnabled(rUser, resourceTenantId, appId, false);
+      dao.updateEnabled(rUser, resourceTenantId, appId, appVersion, false);
     return 1;
   }
 
@@ -1922,6 +1924,7 @@ public class AppsServiceImpl implements AppsService
     App updatedApp = new App(putApp, origApp.getTenant(), origApp.getId(), origApp.getVersion());
     updatedApp.setOwner(origApp.getOwner());
     updatedApp.setEnabled(origApp.isEnabled());
+    updatedApp.setVersionEnabled(origApp.isVersionEnabled());
     updatedApp.setLocked(origApp.isLocked());
     return updatedApp;
   }

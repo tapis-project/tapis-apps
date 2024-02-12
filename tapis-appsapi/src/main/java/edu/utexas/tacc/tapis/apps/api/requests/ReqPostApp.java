@@ -19,6 +19,7 @@ public final class ReqPostApp
   public String description;
   public String owner = DEFAULT_OWNER;
   public boolean enabled = DEFAULT_ENABLED;
+  public boolean versionEnabled = DEFAULT_ENABLED;
   public boolean locked = DEFAULT_LOCKED;
   public Runtime runtime = DEFAULT_RUNTIME;
   public String runtimeVersion;

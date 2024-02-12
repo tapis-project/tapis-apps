@@ -568,6 +568,42 @@ public class AppResource
   }
 
   /**
+   * Enable an app version
+   * @param appId - name of the app
+   * @param appVersion - version of the app
+   * @param securityContext - user identity
+   * @return - response with change count as the result
+   */
+  @POST
+  @Path("{appId}/{appVersion}/enable")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response enableAppVersion(@PathParam("appId") String appId,
+                          @PathParam("appVersion") String appVersion,
+                          @Context SecurityContext securityContext) throws TapisClientException
+  {
+    return postAppSingleUpdate(OP_ENABLE, appId, appVersion, null, securityContext);
+  }
+
+  /**
+   * Disable an app version
+   * @param appId - name of the app
+   * @param appVersion - version of the app
+   * @param securityContext - user identity
+   * @return - response with change count as the result
+   */
+  @POST
+  @Path("{appId}/{appVersion}/disable")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response disableAppVersion(@PathParam("appId") String appId,
+                            @PathParam("appVersion") String appVersion,
+                            @Context SecurityContext securityContext) throws TapisClientException
+  {
+    return postAppSingleUpdate(OP_DISABLE, appId, appVersion, null, securityContext);
+  }
+
+  /**
    * Lock an app version
    * @param appId - name of the app
    * @param appVersion - version of the app
@@ -1101,7 +1137,7 @@ public class AppResource
    * Note that userName only used for changeOwner
    * @param opName Name of operation.
    * @param appId Id of app to update
-   * @param appVersion - version of the app
+   * @param appVersion - version of the app (optional)
    * @param userName new owner name for op changeOwner
    * @param securityContext Security context from client call
    * @return Response to be returned to the client.
@@ -1124,9 +1160,12 @@ public class AppResource
     if (_log.isTraceEnabled())
     {
       // Parameters to log depend on operation
+      // Changeowner involves a username but not app version.
+      // Lock/unlock has version.
+      // Enable/disable may or may not have version.
       if (OP_CHANGEOWNER.equals(opName))
         ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId, "userName="+userName);
-      else if (OP_LOCK.equals(opName) || OP_UNLOCK.equals(opName))
+      else if (!StringUtils.isBlank(appVersion))
         ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId, "appVersion="+appVersion);
       else
         ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId);
@@ -1138,9 +1177,9 @@ public class AppResource
     try
     {
       if (OP_ENABLE.equals(opName))
-        changeCount = service.enableApp(rUser, appId);
+        changeCount = service.enableApp(rUser, appId, appVersion);
       else if (OP_DISABLE.equals(opName))
-        changeCount = service.disableApp(rUser, appId);
+        changeCount = service.disableApp(rUser, appId, appVersion);
       else if (OP_LOCK.equals(opName))
         changeCount = service.lockApp(rUser, appId, appVersion);
       else if (OP_UNLOCK.equals(opName))
@@ -1199,7 +1238,7 @@ public class AppResource
 
     // Create App
     var app = new App(-1, -1, tenantId, req.id, req.version, req.description, req.jobType, req.owner, req.enabled,
-          req.locked, DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
+          req.versionEnabled, req.locked, DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
           apiJobAttrs.description, apiJobAttrs.dynamicExecSystem, apiJobAttrs.execSystemConstraints, apiJobAttrs.execSystemId,
           apiJobAttrs.execSystemExecDir, apiJobAttrs.execSystemInputDir, apiJobAttrs.execSystemOutputDir,
@@ -1228,9 +1267,10 @@ public class AppResource
     // NOTE: Following attributes are not updatable and must be filled in on service side.
     String owner = null;
     boolean enabled = App.DEFAULT_ENABLED;
+    boolean versionEnabled = App.DEFAULT_LOCKED;
     boolean locked = App.DEFAULT_LOCKED;
-    var app = new App(-1, -1, tenantId, id, version, req.description, req.jobType, owner, enabled, locked,
-          DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
+    var app = new App(-1, -1, tenantId, id, version, req.description, req.jobType, owner, enabled,
+          versionEnabled, locked, DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
           apiJobAttrs.description, apiJobAttrs.dynamicExecSystem, apiJobAttrs.execSystemConstraints, apiJobAttrs.execSystemId,
           apiJobAttrs.execSystemExecDir, apiJobAttrs.execSystemInputDir, apiJobAttrs.execSystemOutputDir,

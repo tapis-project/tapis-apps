@@ -290,6 +290,11 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
      */
     public final TableField<AppsVersionsRecord, String> DTN_SYSTEM_OUTPUT_DIR = createField(DSL.name("dtn_system_output_dir"), SQLDataType.CLOB, this, "");
 
+    /**
+     * The column <code>tapis_app.apps_versions.enabled</code>.
+     */
+    public final TableField<AppsVersionsRecord, Boolean> ENABLED = createField(DSL.name("enabled"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("true", SQLDataType.BOOLEAN)), this, "");
+
     private AppsVersions(Name alias, Table<AppsVersionsRecord> aliased) {
         this(alias, aliased, null);
     }

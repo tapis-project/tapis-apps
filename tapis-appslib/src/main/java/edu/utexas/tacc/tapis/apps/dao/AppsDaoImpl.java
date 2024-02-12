@@ -65,7 +65,6 @@ import static edu.utexas.tacc.tapis.search.SearchUtils.SearchOperator.CONTAINS;
 import static edu.utexas.tacc.tapis.search.SearchUtils.SearchOperator.NCONTAINS;
 import static edu.utexas.tacc.tapis.apps.model.App.INVALID_SEQ_ID;
 import static edu.utexas.tacc.tapis.apps.model.App.INVALID_UUID;
-import static edu.utexas.tacc.tapis.apps.model.App.NO_APP_VERSION;
 
 /*
  * Class to handle persistence and queries for Tapis App objects.
@@ -545,7 +544,8 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * Update attribute enabled for an app given app Id and value
    */
   @Override
-  public void updateEnabled(ResourceRequestUser rUser, String tenantId, String appId, boolean enabled) throws TapisException
+  public void updateEnabled(ResourceRequestUser rUser, String tenantId, String appId, String appVersion, boolean enabled)
+          throws TapisException
   {
     String opName = "updateEnabled";
     // ------------------------- Check Input -------------------------
@@ -553,6 +553,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     // AppOperation needed for recording the update
     AppOperation appOp = enabled ? AppOperation.enable : AppOperation.disable;
+    String versionStr = null;
 
     // ------------------------- Call SQL ----------------------------
     Connection conn = null;
@@ -561,13 +562,25 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       // Get a database connection.
       conn = getConnection();
       DSLContext db = DSL.using(conn);
-      db.update(APPS)
-              .set(APPS.ENABLED, enabled)
-              .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
-              .where(APPS.TENANT.eq(tenantId),APPS.ID.eq(appId)).execute();
+      // If no version given update APPS table, else update APPS_VERSIONS table
+      if (StringUtils.isBlank(appVersion))
+      {
+        db.update(APPS)
+                .set(APPS.ENABLED, enabled)
+                .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
+                .where(APPS.TENANT.eq(tenantId), APPS.ID.eq(appId)).execute();
+      }
+      else
+      {
+        versionStr = appVersion;
+        db.update(APPS_VERSIONS)
+                .set(APPS_VERSIONS.ENABLED, enabled)
+                .set(APPS_VERSIONS.UPDATED, TapisUtils.getUTCTimeNow())
+                .where(APPS_VERSIONS.TENANT.eq(tenantId), APPS_VERSIONS.ID.eq(appId), APPS_VERSIONS.VERSION.eq(appVersion)).execute();
+      }
       // Persist update record
       String changeDescription = "{\"enabled\":" +  enabled + "}";
-      addUpdate(db, rUser, tenantId, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+      addUpdate(db, rUser, tenantId, appId, versionStr, INVALID_SEQ_ID, INVALID_SEQ_ID,
                 appOp, changeDescription , null, INVALID_UUID);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -657,7 +670,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .where(APPS.TENANT.eq(tenantId),APPS.ID.eq(appId)).execute();
       // Persist update record
       String changeDescription = "{\"deleted\":" +  deleted + "}";
-      addUpdate(db, rUser, tenantId, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+      addUpdate(db, rUser, tenantId, appId, null, INVALID_SEQ_ID, INVALID_SEQ_ID,
               appOp, changeDescription , null, INVALID_UUID);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -699,7 +712,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .where(APPS.TENANT.eq(tenantId),APPS.ID.eq(appId)).execute();
       // Persist update record
       String changeDescription = "{\"owner\":\"" +  newOwnerName + "\"}";
-      addUpdate(db, rUser, tenantId, appId, NO_APP_VERSION, INVALID_SEQ_ID, INVALID_SEQ_ID,
+      addUpdate(db, rUser, tenantId, appId, null, INVALID_SEQ_ID, INVALID_SEQ_ID,
                 AppOperation.changeOwner, changeDescription , null, INVALID_UUID);
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);
@@ -1804,7 +1817,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             Arrays.asList(TapisGsonUtils.getGson().fromJson(subscriptionsJsonElement, ReqSubscribe[].class));
     app = new App(appSeqId, appVerSeqId, r.get(APPS.TENANT), r.get(APPS.ID), r.get(APPS_VERSIONS.VERSION),
             r.get(APPS_VERSIONS.DESCRIPTION), r.get(APPS_VERSIONS.JOB_TYPE), r.get(APPS.OWNER),
-            r.get(APPS.ENABLED), r.get(APPS_VERSIONS.LOCKED), r.get(APPS.CONTAINERIZED),
+            r.get(APPS.ENABLED), r.get(APPS_VERSIONS.ENABLED), r.get(APPS_VERSIONS.LOCKED), r.get(APPS.CONTAINERIZED),
             r.get(APPS_VERSIONS.RUNTIME), r.get(APPS_VERSIONS.RUNTIME_VERSION), runtimeOptions,
             r.get(APPS_VERSIONS.CONTAINER_IMAGE), r.get(APPS_VERSIONS.MAX_JOBS), r.get(APPS_VERSIONS.MAX_JOBS_PER_USER),
             r.get(APPS_VERSIONS.STRICT_FILE_INPUTS), r.get(APPS_VERSIONS.JOB_DESCRIPTION),
