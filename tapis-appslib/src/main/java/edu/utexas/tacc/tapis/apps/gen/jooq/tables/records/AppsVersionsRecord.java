@@ -652,7 +652,7 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
         set(43, value);
     }
 
-        return (Boolean) get(43);
+    /**
      * Getter for <code>tapis_app.apps_versions.dtn_system_input_dir</code>.
      */
     public String getDtnSystemInputDir() {
@@ -677,11 +677,15 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
      * Setter for <code>tapis_app.apps_versions.enabled</code>.
      */
     public void setEnabled(Boolean value) {
+        set(45, value);
+    }
 
     /**
      * Getter for <code>tapis_app.apps_versions.enabled</code>.
      */
     public Boolean getEnabled() {
+        return (Boolean) get(45);
+    }
 
     // -------------------------------------------------------------------------
     // Primary key information
