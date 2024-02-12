@@ -2,6 +2,7 @@ package edu.utexas.tacc.tapis.apps.model;
 
 import java.util.Objects;
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.shared.TapisConstants;
 import org.apache.commons.lang3.StringUtils;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NOTES;
 
@@ -20,7 +21,7 @@ public final class KeyValuePair
   // *********************** Constants **************************************
   // ************************************************************************
   public static final KeyValueInputMode DEFAULT_INPUT_MODE = KeyValueInputMode.INCLUDE_BY_DEFAULT;
-  public static final String VALUE_NOT_SET = "!tapis_not_set";
+  public static final String VALUE_NOT_SET = TapisConstants.TAPIS_NOT_SET;
   public static final String RESERVED_PREFIX= "_tapis";
 
   // ************************************************************************

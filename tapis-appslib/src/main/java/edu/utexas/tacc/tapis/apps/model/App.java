@@ -7,8 +7,10 @@ import java.util.regex.Pattern;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.utils.PathSanitizer;
+import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.DomainValidator;
@@ -78,6 +80,8 @@ public final class App
   public static final int DEFAULT_CORES_PER_NODE = 1;
   public static final int DEFAULT_MEMORY_MB = 100;
   public static final int DEFAULT_MAX_MINUTES = 10;
+  public static final String DEFAULT_DTNSYS_INDIR = TapisConstants.TAPIS_NOT_SET;
+  public static final String DEFAULT_DTNSYS_OUTDIR = TapisConstants.TAPIS_NOT_SET;
 
   // Special select strings used for determining what attributes are returned in a response
   public static final String SEL_ALL_ATTRS = "allAttributes";
@@ -128,6 +132,8 @@ public final class App
   public static final String EXECSYSEXECDIR_FIELD = "execSystemExecDir";
   public static final String EXECSYSINDIR_FIELD = "execSystemInputDir";
   public static final String EXECSYSOUTDIR_FIELD = "execSystemOutputDir";
+  public static final String DTNSYSINDIR_FIELD = "dtnSystemInputDir";
+  public static final String DTNSYSOUTDIR_FIELD = "dtnSystemOutputDir";
   public static final String EXECSYSLOGICALQ_FIELD = "execSystemLogicalQueue";
   public static final String ARCHIVESYSID_FIELD = "archiveSystemId";
   public static final String ARCHIVESYSDIR_FIELD = "archiveSystemDir";
@@ -248,6 +254,8 @@ public final class App
   private String execSystemExecDir;
   private String execSystemInputDir;
   private String execSystemOutputDir;
+  private String dtnSystemInputDir = DEFAULT_DTNSYS_INDIR;
+  private String dtnSystemOutputDir = DEFAULT_DTNSYS_OUTDIR;
   private String execSystemLogicalQueue;
   private String archiveSystemId;
   private String archiveSystemDir;
@@ -338,6 +346,8 @@ public final class App
     execSystemExecDir = LibUtils.stripStr(a.getExecSystemExecDir());
     execSystemInputDir = LibUtils.stripStr(a.getExecSystemInputDir());
     execSystemOutputDir = LibUtils.stripStr(a.getExecSystemOutputDir());
+    dtnSystemInputDir = LibUtils.stripStr(a.getDtnSystemInputDir());
+    dtnSystemOutputDir = LibUtils.stripStr(a.getDtnSystemOutputDir());
     execSystemLogicalQueue = LibUtils.stripStr(a.getExecSystemLogicalQueue());
     archiveSystemId = LibUtils.stripStr(a.getArchiveSystemId());
     archiveSystemDir = LibUtils.stripStr(a.getArchiveSystemDir());
@@ -376,7 +386,9 @@ public final class App
              // == Start jobAttributes
              String jobDescription1, boolean dynamicExecSystem1,
              String[] execSystemConstraints1, String execSystemId1, String execSystemExecDir1,
-             String execSystemInputDir1, String execSystemOutputDir1, String execSystemLogicalQueue1,
+             String execSystemInputDir1, String execSystemOutputDir1,
+             String dtnSystemInputDir1, String dtnSystemOutputDir1,
+             String execSystemLogicalQueue1,
              String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1,
              boolean isMpi1, String mpiCmd1, String cmdPrefix1,
              ParameterSet parameterSet1, List<FileInput> fileInputs1, List<FileInputArray> fileInputArrays1,
@@ -411,6 +423,8 @@ public final class App
     execSystemExecDir = LibUtils.stripStr(execSystemExecDir1);
     execSystemInputDir = LibUtils.stripStr(execSystemInputDir1);
     execSystemOutputDir = LibUtils.stripStr(execSystemOutputDir1);
+    dtnSystemInputDir = (dtnSystemInputDir1 == null) ? DEFAULT_DTNSYS_INDIR : LibUtils.stripStr(dtnSystemInputDir1);
+    dtnSystemOutputDir = (dtnSystemOutputDir1 == null) ? DEFAULT_DTNSYS_OUTDIR : LibUtils.stripStr(dtnSystemOutputDir1);
     execSystemLogicalQueue = LibUtils.stripStr(execSystemLogicalQueue1);
     archiveSystemId = LibUtils.stripStr(archiveSystemId1);
     archiveSystemDir = LibUtils.stripStr(archiveSystemDir1);
@@ -470,6 +484,8 @@ public final class App
     execSystemExecDir = LibUtils.stripStr(a.getExecSystemExecDir());
     execSystemInputDir = LibUtils.stripStr(a.getExecSystemInputDir());
     execSystemOutputDir = LibUtils.stripStr(a.getExecSystemOutputDir());
+    dtnSystemInputDir = LibUtils.stripStr(a.getDtnSystemInputDir());
+    dtnSystemOutputDir = LibUtils.stripStr(a.getDtnSystemOutputDir());
     execSystemLogicalQueue = LibUtils.stripStr(a.getExecSystemLogicalQueue());
     archiveSystemId = LibUtils.stripStr(a.getArchiveSystemId());
     archiveSystemDir = LibUtils.stripStr(a.getArchiveSystemDir());
@@ -671,6 +687,16 @@ public final class App
       errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + EXECSYSOUTDIR_FIELD, MAX_PATH_LEN));
     }
 
+    if (!StringUtils.isBlank(dtnSystemInputDir) && dtnSystemInputDir.length() > MAX_PATH_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + DTNSYSINDIR_FIELD, MAX_PATH_LEN));
+    }
+
+    if (!StringUtils.isBlank(dtnSystemOutputDir) && dtnSystemOutputDir.length() > MAX_PATH_LEN)
+    {
+      errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + DTNSYSOUTDIR_FIELD, MAX_PATH_LEN));
+    }
+
     if (!StringUtils.isBlank(archiveSystemId) && archiveSystemId.length() > MAX_ID_LEN)
     {
       errMessages.add(LibUtils.getMsg(TOO_LONG_ATTR, JOB_FIELD_PREFIX + ARCHIVESYSID_FIELD, MAX_ID_LEN));
@@ -708,6 +734,8 @@ public final class App
     checkForControlChars(errMessages, execSystemExecDir, EXECSYSEXECDIR_FIELD);
     checkForControlChars(errMessages, execSystemInputDir, EXECSYSINDIR_FIELD);
     checkForControlChars(errMessages, execSystemOutputDir, EXECSYSOUTDIR_FIELD);
+    checkForControlChars(errMessages, dtnSystemInputDir, DTNSYSINDIR_FIELD);
+    checkForControlChars(errMessages, dtnSystemOutputDir, DTNSYSOUTDIR_FIELD);
     checkForControlChars(errMessages, archiveSystemId, ARCHIVESYSID_FIELD);
     checkForControlChars(errMessages, archiveSystemDir, ARCHIVESYSDIR_FIELD);
     checkForControlChars(errMessages, execSystemLogicalQueue, EXECSYSLOGICALQ_FIELD);
@@ -1048,9 +1076,7 @@ public final class App
   private static boolean isZipContainerImageValid(String containerImage)
   {
     if (containerImage!=null && containerImage.startsWith("/")) return true;
-    Matcher matcher = SRC_URL_PATTERN.matcher(containerImage);
-    if (matcher.find()) return true;
-    return false;
+    return TapisUtils.weaklyValidateUri(containerImage);
   }
 
   /**
@@ -1071,8 +1097,9 @@ public final class App
    */
   private static boolean validFileInputSourceUrl(String sourceUrl)
   {
-    // Must be empty, http/s://, tapis:// or tapislocal://
-    if (StringUtils.isBlank(sourceUrl)) return true;
+    // First perform a weak validation, according to our shared TapisUtils method.
+    if (!TapisUtils.weaklyValidateUri(sourceUrl)) return false;
+    // In addition, check that it is http/s://, tapis:// or tapislocal://
     Matcher matcher = SRC_URL_PATTERN.matcher(sourceUrl);
     if (matcher.find()) return true;
     matcher = SRC_URL_LOCAL_PATTERN.matcher(sourceUrl);
@@ -1159,6 +1186,12 @@ public final class App
 
   public String getExecSystemOutputDir() { return execSystemOutputDir; }
   public void setExecSystemOutputDir(String s) { execSystemOutputDir = LibUtils.stripStr(s);  }
+
+  public String getDtnSystemInputDir() { return dtnSystemInputDir; }
+  public void setDtnSystemInputDir(String s) { dtnSystemInputDir = LibUtils.stripStr(s);  }
+
+  public String getDtnSystemOutputDir() { return dtnSystemOutputDir; }
+  public void setDtnSystemOutputDir(String s) { dtnSystemOutputDir = LibUtils.stripStr(s);  }
 
   public String getExecSystemLogicalQueue() { return execSystemLogicalQueue; }
   public void setExecSystemLogicalQueue(String s) { execSystemLogicalQueue = LibUtils.stripStr(s);  }

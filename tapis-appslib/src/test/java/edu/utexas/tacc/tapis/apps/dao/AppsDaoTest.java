@@ -126,6 +126,8 @@ public class AppsDaoTest
     Assert.assertEquals(tmpApp.getExecSystemExecDir(), app0.getExecSystemExecDir());
     Assert.assertEquals(tmpApp.getExecSystemInputDir(), app0.getExecSystemInputDir());
     Assert.assertEquals(tmpApp.getExecSystemOutputDir(), app0.getExecSystemOutputDir());
+    Assert.assertEquals(tmpApp.getDtnSystemInputDir(), app0.getDtnSystemInputDir());
+    Assert.assertEquals(tmpApp.getDtnSystemOutputDir(), app0.getDtnSystemOutputDir());
     Assert.assertEquals(tmpApp.getExecSystemLogicalQueue(), app0.getExecSystemLogicalQueue());
     Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
     Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
@@ -393,6 +395,7 @@ public class AppsDaoTest
             containerizedTrue, runtime1, runtimeVersion1, runtimeOptions1, containerImage1,
             maxJobs1, maxJobsPerUser1, strictFileInputsFalse, IntegrationUtils.jobDescription1, dynamicExecSystemTrue,
             execSystemConstraints1, execSystemId1, execSystemExecDir1, execSystemInputDir1, execSystemOutputDir1,
+            dtnSystemInputDir1, dtnSystemOutputDir1,
             execSystemLogicalQueue1, archiveSystemIdNull, archiveSystemDir1, archiveOnAppErrorTrue,
             isMpiTrue, mpiCmd1, cmdPrefix1,
             parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMB1, maxMinutes1, notifList1, jobTags1,

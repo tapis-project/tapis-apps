@@ -1632,9 +1632,9 @@ public class AppsServiceImpl implements AppsService
   {
     // Make api level checks, i.e. checks that do not involve a dao or service call.
     List<String> errMessages = app.checkAttributeRestrictions();
-    var systemsClient = getSystemsClient(rUser);
 
     // Now make checks that do require a dao or service call.
+    var systemsClient = getSystemsClient(rUser);
     // If execSystemId is set verify it
     if (!StringUtils.isBlank(app.getExecSystemId())) checkExecSystem(systemsClient, app, errMessages);
 
@@ -1961,6 +1961,8 @@ public class AppsServiceImpl implements AppsService
       if (jobAttrs.getExecSystemExecDir() != null) app1.setExecSystemExecDir(jobAttrs.getExecSystemExecDir());
       if (jobAttrs.getExecSystemInputDir() != null) app1.setExecSystemInputDir(jobAttrs.getExecSystemInputDir());
       if (jobAttrs.getExecSystemOutputDir() != null) app1.setExecSystemOutputDir(jobAttrs.getExecSystemOutputDir());
+      if (jobAttrs.getDtnSystemInputDir() != null) app1.setDtnSystemInputDir(jobAttrs.getDtnSystemInputDir());
+      if (jobAttrs.getDtnSystemOutputDir() != null) app1.setDtnSystemOutputDir(jobAttrs.getDtnSystemOutputDir());
       if (jobAttrs.getExecSystemLogicalQueue() != null) app1.setExecSystemLogicalQueue(jobAttrs.getExecSystemLogicalQueue());
       if (jobAttrs.getArchiveSystemId() != null) app1.setArchiveSystemId(jobAttrs.getArchiveSystemId());
       if (jobAttrs.getArchiveSystemDir() != null) app1.setArchiveSystemDir(jobAttrs.getArchiveSystemDir());

@@ -28,7 +28,7 @@ To update the schema and re-create the jooq code:
 
 5. Run the maven profile to re-create the schema and generate/update the jooq source code:
    a. cd tapis-appslib
-   b. mvn clean install -Pdb-update
+   b. mvn install -Pdb-update
 
 6. If necessary fix any compile errors (such as in the Dao)
 

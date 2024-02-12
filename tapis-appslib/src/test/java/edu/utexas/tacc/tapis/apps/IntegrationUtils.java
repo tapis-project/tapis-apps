@@ -136,6 +136,12 @@ public final class IntegrationUtils
   public static final String execSystemOutputDir1 = "execSystemOutputDir1";
   public static final String execSystemOutputDir2 = "execSystemOutputDir2";
   public static final String execSystemOutputDirNull = null;
+  public static final String dtnSystemInputDir1 = "dtnSystemInputDir1";
+  public static final String dtnSystemInputDir2 = "dtnSystemInputDir2";
+  public static final String dtnSystemInputDirNull = null;
+  public static final String dtnSystemOutputDir1 = "dtnSystemOutputDir1";
+  public static final String dtnSystemOutputDir2 = "dtnSystemOutputDir2";
+  public static final String dtnSystemOutputDirNull = null;
   public static final String execSystemLogicalQueue1 = "dsnormal"; // A LogicalQueue defined for tapisv3-exec3
   public static final String execSystemLogicalQueue2 = "dslarge";
   public static final String execSystemLogicalQueueNull = null;
@@ -438,6 +444,7 @@ public final class IntegrationUtils
                  containerImage1 +suffix, maxJobs1, maxJobsPerUser1, strictFileInputsFalse,
                  jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
                  execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
+                 dtnSystemInputDir1 +suffix, dtnSystemOutputDir1 +suffix,
                  execSystemLogicalQueue1, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
                  isMpiTrue, mpiCmd1, cmdPrefix1,
                  parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMB1, maxMinutes1, notifList1, jobTags1,
@@ -459,6 +466,7 @@ public final class IntegrationUtils
             containerImage1, App.DEFAULT_MAX_JOBS, App.DEFAULT_MAX_JOBS_PER_USER, App.DEFAULT_STRICT_FILE_INPUTS,
             jobDescriptionNull, dynamicExecSystemDefault, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
+            dtnSystemInputDirNull, dtnSystemOutputDirNull,
             execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorDefault,
             isMpiDefault, mpiCmdNull, cmdPrefixNull, parameterSetNull, finListNull, fiaListNull, App.DEFAULT_NODE_COUNT,
             App.DEFAULT_CORES_PER_NODE, App.DEFAULT_MEMORY_MB, App.DEFAULT_MAX_MINUTES, notifListNull, jobTagsNull,
@@ -475,7 +483,8 @@ public final class IntegrationUtils
             app.isEnabled(), app.isVersionEnabled(), app.isLocked(), app.isContainerized(), runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
             maxJobs2, maxJobsPerUser2, strictFileInputsTrue,
             jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
-            execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
+            execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2,
+            dtnSystemInputDir2, dtnSystemOutputDir2, execSystemLogicalQueue2,
             archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse,
             isMpiFalse, mpiCmd2, cmdPrefix2,
             parameterSet2, finList2, fiaList2, nodeCount2, coresPerNode2, memoryMB2, maxMinutes2, notifList2, jobTags2,
@@ -490,7 +499,8 @@ public final class IntegrationUtils
   public static PatchApp makePatchAppFull()
   {
     JobAttributes jobAttributes = new JobAttributes(jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
-            execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2, execSystemLogicalQueue2,
+            execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2,
+            dtnSystemInputDir2, dtnSystemOutputDir2, execSystemLogicalQueue2,
             archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse,
             isMpiFalse, mpiCmd2, cmdPrefix2,
             parameterSet2, finList2, fiaList2, nodeCount2,
@@ -507,7 +517,8 @@ public final class IntegrationUtils
   public static PatchApp makePatchAppPartial1()
   {
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
-            execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
+            execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
+            dtnSystemInputDirNull, dtnSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
             isMpiNull, mpiCmdNull, cmdPrefixNull,
             parameterSetNull, finListNull, fiaListNull, nodeCountNull,
@@ -527,7 +538,8 @@ public final class IntegrationUtils
     ParameterSet parameterSet = new ParameterSet(appArgListNull, containerArgList3, schedulerOptionListNull,
                                                  envVariablesNull, archiveFilterNull, logConfigNull);
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
-            execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
+            execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
+            dtnSystemInputDirNull, dtnSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
             isMpiNull, mpiCmdNull, cmdPrefixNull,
             parameterSet, finList3, fiaList3, nodeCountNull,
@@ -545,7 +557,8 @@ public final class IntegrationUtils
     ParameterSet parameterSet = new ParameterSet(appArgList3, containerArgListNull, schedulerOptionListNull,
                                                  envVariablesNull, archiveFilterNull, logConfigNull);
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
-            execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull, execSystemLogicalQueueNull,
+            execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
+            dtnSystemInputDirNull, dtnSystemOutputDirNull, execSystemLogicalQueueNull,
             archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
             isMpiNull, mpiCmdNull, cmdPrefixNull,
             parameterSet, finListNull, fiaListNull, nodeCountNull,

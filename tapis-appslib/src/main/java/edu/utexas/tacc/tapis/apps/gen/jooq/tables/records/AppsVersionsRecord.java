@@ -646,18 +646,42 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
     }
 
     /**
+     * Setter for <code>tapis_app.apps_versions.dtn_system_input_dir</code>.
+     */
+    public void setDtnSystemInputDir(String value) {
+        set(43, value);
+    }
+
+        return (Boolean) get(43);
+     * Getter for <code>tapis_app.apps_versions.dtn_system_input_dir</code>.
+     */
+    public String getDtnSystemInputDir() {
+        return (String) get(43);
+    }
+
+    /**
+     * Setter for <code>tapis_app.apps_versions.dtn_system_output_dir</code>.
+     */
+    public void setDtnSystemOutputDir(String value) {
+        set(44, value);
+    }
+
+    /**
+     * Getter for <code>tapis_app.apps_versions.dtn_system_output_dir</code>.
+     */
+    public String getDtnSystemOutputDir() {
+        return (String) get(44);
+    }
+
+    /**
      * Setter for <code>tapis_app.apps_versions.enabled</code>.
      */
     public void setEnabled(Boolean value) {
-        set(43, value);
-    }
 
     /**
      * Getter for <code>tapis_app.apps_versions.enabled</code>.
      */
     public Boolean getEnabled() {
-        return (Boolean) get(43);
-    }
 
     // -------------------------------------------------------------------------
     // Primary key information
@@ -682,7 +706,7 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
     /**
      * Create a detached, initialised AppsVersionsRecord
      */
-    public AppsVersionsRecord(Integer seqId, Integer appSeqId, String tenant, String id, String version, String description, Runtime runtime, String runtimeVersion, String[] runtimeOptions, String containerImage, JobType jobType, Integer maxJobs, Integer maxJobsPerUser, Boolean strictFileInputs, String jobDescription, Boolean dynamicExecSystem, String[] execSystemConstraints, String execSystemId, String execSystemExecDir, String execSystemInputDir, String execSystemOutputDir, String execSystemLogicalQueue, String archiveSystemId, String archiveSystemDir, Boolean archiveOnAppError, Boolean isMpi, String mpiCmd, String cmdPrefix, JsonElement parameterSet, JsonElement fileInputs, JsonElement fileInputArrays, Integer nodeCount, Integer coresPerNode, Integer memoryMb, Integer maxMinutes, JsonElement subscriptions, String[] jobTags, String[] tags, JsonElement notes, UUID uuid, LocalDateTime created, LocalDateTime updated, Boolean locked, Boolean enabled) {
+    public AppsVersionsRecord(Integer seqId, Integer appSeqId, String tenant, String id, String version, String description, Runtime runtime, String runtimeVersion, String[] runtimeOptions, String containerImage, JobType jobType, Integer maxJobs, Integer maxJobsPerUser, Boolean strictFileInputs, String jobDescription, Boolean dynamicExecSystem, String[] execSystemConstraints, String execSystemId, String execSystemExecDir, String execSystemInputDir, String execSystemOutputDir, String execSystemLogicalQueue, String archiveSystemId, String archiveSystemDir, Boolean archiveOnAppError, Boolean isMpi, String mpiCmd, String cmdPrefix, JsonElement parameterSet, JsonElement fileInputs, JsonElement fileInputArrays, Integer nodeCount, Integer coresPerNode, Integer memoryMb, Integer maxMinutes, JsonElement subscriptions, String[] jobTags, String[] tags, JsonElement notes, UUID uuid, LocalDateTime created, LocalDateTime updated, Boolean locked, String dtnSystemInputDir, String dtnSystemOutputDir, Boolean enabled) {
         super(AppsVersions.APPS_VERSIONS);
 
         setSeqId(seqId);
@@ -728,6 +752,8 @@ public class AppsVersionsRecord extends UpdatableRecordImpl<AppsVersionsRecord> 
         setCreated(created);
         setUpdated(updated);
         setLocked(locked);
+        setDtnSystemInputDir(dtnSystemInputDir);
+        setDtnSystemOutputDir(dtnSystemOutputDir);
         setEnabled(enabled);
     }
 }
