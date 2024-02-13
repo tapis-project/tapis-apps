@@ -60,7 +60,7 @@ public interface AppsService
   boolean checkForApp(ResourceRequestUser rUser, String appId, boolean includeDeleted)
           throws TapisException, TapisClientException;
 
-  boolean isEnabled(ResourceRequestUser rUser, String appId)
+  boolean isEnabled(ResourceRequestUser rUser, String appId, String appVersion)
           throws TapisException, TapisClientException;
 
   App getApp(ResourceRequestUser rUser, String appId, String appVersion, boolean requireExecPerm,

@@ -927,11 +927,12 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
   /**
    * isEnabled - check if app with specified Id is enabled
    * @param appId - app name
+   * @param appVersion - (optional) version of the app
    * @return true if enabled else false
    * @throws TapisException - on error
    */
   @Override
-  public boolean isEnabled(String tenant, String appId) throws TapisException {
+  public boolean isEnabled(String tenant, String appId, String appVersion) throws TapisException {
     // Initialize result.
     boolean result = false;
     // ------------------------- Call SQL ----------------------------
@@ -942,9 +943,20 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
       // Run the sql
-      Boolean b = db.selectFrom(APPS)
-              .where(APPS.TENANT.eq(tenant),APPS.ID.eq(appId),APPS.DELETED.eq(false))
-              .fetchOne(APPS.ENABLED);
+      Boolean b;
+      // If not getting specific version, check top level table, else check apps_versions table.
+      if (StringUtils.isBlank(appVersion))
+      {
+        b = db.selectFrom(APPS)
+                .where(APPS.TENANT.eq(tenant), APPS.ID.eq(appId), APPS.DELETED.eq(false))
+                .fetchOne(APPS.ENABLED);
+      }
+      else
+      {
+        b = db.selectFrom(APPS_VERSIONS)
+                .where(APPS_VERSIONS.TENANT.eq(tenant), APPS_VERSIONS.ID.eq(appId), APPS_VERSIONS.VERSION.eq(appVersion))
+                .fetchOne(APPS_VERSIONS.ENABLED);
+      }
       if (b != null) result = b;
       // Close out and commit
       LibUtils.closeAndCommitDB(conn, null, null);

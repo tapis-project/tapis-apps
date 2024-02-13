@@ -1082,6 +1082,7 @@ public class AppResource
    * isEnabled
    * Check if application is enabled.
    * @param appId - name of the app
+   * @param appVersion - (optional) version of the app
    * @param securityContext - user identity
    * @return Response with boolean result
    */
@@ -1090,7 +1091,8 @@ public class AppResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response isEnabled(@PathParam("appId") String appId,
-                         @Context SecurityContext securityContext) throws TapisClientException
+                            @QueryParam("appVersion") String appVersion,
+                            @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "isEnabled";
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -1108,7 +1110,7 @@ public class AppResource
     boolean isEnabled;
     try
     {
-      isEnabled = service.isEnabled(rUser, appId);
+      isEnabled = service.isEnabled(rUser, appId, appVersion);
     }
     // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }

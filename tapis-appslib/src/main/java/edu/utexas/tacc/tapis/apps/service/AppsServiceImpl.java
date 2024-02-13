@@ -640,11 +640,12 @@ public class AppsServiceImpl implements AppsService
    * isEnabled
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - Name of the app
-   * @return true if app is enabled, false otherwise
+   * @param appVersion - (optional) version of the app
+   * @return true if app or appVersion is enabled, false otherwise
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
-  public boolean isEnabled(ResourceRequestUser rUser, String appId)
+  public boolean isEnabled(ResourceRequestUser rUser, String appId, String appVersion)
           throws TapisException, TapisClientException
   {
     AppOperation op = AppOperation.read;
@@ -658,7 +659,7 @@ public class AppsServiceImpl implements AppsService
 
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, op, appId);
-    return dao.isEnabled(resourceTenantId, appId);
+    return dao.isEnabled(resourceTenantId, appId, appVersion);
   }
 
   /**
