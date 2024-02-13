@@ -626,34 +626,40 @@ public class AppsServiceTest
     String appId = app0.getId();
     String appVer = app0.getVersion();
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
+
     // Test app top level attribute - enabled
     // Enabled should start off true, then become false and finally true again.
+    // Check attribute using getApp and isEnabled
     App tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
     Assert.assertTrue(tmpApp.isEnabled());
-    Assert.assertTrue(svc.isEnabled(rOwner1, appId));
+    Assert.assertTrue(svc.isEnabled(rOwner1, appId, appVersionNull));
     int changeCount = svc.disableApp(rOwner1, appId, appVersionNull);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
     tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
     Assert.assertFalse(tmpApp.isEnabled());
-    Assert.assertFalse(svc.isEnabled(rOwner1, appId));
+    Assert.assertFalse(svc.isEnabled(rOwner1, appId, appVersionNull));
     changeCount = svc.enableApp(rOwner1, appId, appVersionNull);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
     tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
     Assert.assertTrue(tmpApp.isEnabled());
-    Assert.assertTrue(svc.isEnabled(rOwner1, appId));
+    Assert.assertTrue(svc.isEnabled(rOwner1, appId, appVersionNull));
 
     // Test app version level attribute - enabled
     // Enabled should start off true, then become false and finally true again.
+    // Check attribute using getApp and isEnabled
     tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
     Assert.assertTrue(tmpApp.isVersionEnabled());
+    Assert.assertTrue(svc.isEnabled(rOwner1, appId, appVer));
     changeCount = svc.disableApp(rOwner1, appId, appVer);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
     tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
     Assert.assertFalse(tmpApp.isVersionEnabled());
+    Assert.assertFalse(svc.isEnabled(rOwner1, appId, appVer));
     changeCount = svc.enableApp(rOwner1, appId, appVer);
     Assert.assertEquals(changeCount, 1, "Change count incorrect when updating the app.");
     tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
     Assert.assertTrue(tmpApp.isVersionEnabled());
+    Assert.assertTrue(svc.isEnabled(rOwner1, appId, appVer));
 
     // Locked should start off false, then become true and finally false again.
     tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
@@ -682,7 +688,7 @@ public class AppsServiceTest
     // When deleted isEnabled, disable and enable should throw NotFound exception
     svc.deleteApp(rOwner1, appId);
     boolean pass = false;
-    try { svc.isEnabled(rOwner1, appId); }
+    try { svc.isEnabled(rOwner1, appId, appVersionNull); }
     catch (NotFoundException nfe) { pass = true; }
     Assert.assertTrue(pass);
     pass = false;
@@ -1142,7 +1148,7 @@ public class AppsServiceTest
 
     // isEnabled, enable, disable with no resource should throw a NotFound exception
     pass = false;
-    try { svc.isEnabled(rOwner1, fakeAppName); }
+    try { svc.isEnabled(rOwner1, fakeAppName, appVersionNull); }
     catch (NotFoundException nfe) { pass = true; }
     Assert.assertTrue(pass);
     pass = false;
