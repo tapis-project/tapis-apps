@@ -1082,7 +1082,7 @@ public class AppResource
    * isEnabled
    * Check if application is enabled.
    * @param appId - name of the app
-   * @param appVersion - (optional) version of the app
+   * @param version - (optional) version of the app
    * @param securityContext - user identity
    * @return Response with boolean result
    */
@@ -1091,7 +1091,7 @@ public class AppResource
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response isEnabled(@PathParam("appId") String appId,
-                            @QueryParam("appVersion") String appVersion,
+                            @QueryParam("version") String version,
                             @Context SecurityContext securityContext) throws TapisClientException
   {
     String opName = "isEnabled";
@@ -1105,12 +1105,13 @@ public class AppResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId);
+    if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(),
+            "appId="+appId, "version="+version);
 
     boolean isEnabled;
     try
     {
-      isEnabled = service.isEnabled(rUser, appId, appVersion);
+      isEnabled = service.isEnabled(rUser, appId, version);
     }
     // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
