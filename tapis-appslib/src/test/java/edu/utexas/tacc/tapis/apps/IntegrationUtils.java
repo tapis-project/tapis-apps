@@ -667,6 +667,7 @@ public final class IntegrationUtils
       Assert.assertEquals(fetchedFileInput.getDescription(), origFileInput.getDescription());
       Assert.assertEquals(fetchedFileInput.getInputMode(), origFileInput.getInputMode());
       Assert.assertEquals(fetchedFileInput.isAutoMountLocal(), origFileInput.isAutoMountLocal());
+      Assert.assertEquals(fetchedFileInput.getEnvKey(), origFileInput.getEnvKey());
     }
   }
 
@@ -689,10 +690,11 @@ public final class IntegrationUtils
       FileInputArray fetchedItem = fetchedMap.get(fiaName);
       FileInputArray origItem = origMap.get(fiaName);
       System.out.println("Found fetched FileInputArray: " + fiaName);
-//      Assert.assertEquals(fetchedFia.getSourceUrl(), origFia.getSourceUrl());
+      Assert.assertEquals(fetchedItem.getSourceUrls().size(), origItem.getSourceUrls().size());
       Assert.assertEquals(fetchedItem.getTargetDir(), origItem.getTargetDir());
       Assert.assertEquals(fetchedItem.getDescription(), origItem.getDescription());
       Assert.assertEquals(fetchedItem.getInputMode(), origItem.getInputMode());
+      Assert.assertEquals(fetchedItem.getEnvKey(), origItem.getEnvKey());
     }
   }
 
