@@ -35,6 +35,7 @@ public final class FileInputArray
   private final String name;
   private final String description;
   private final FileInputMode inputMode;
+  private final String envKey;
   private final JsonObject notes; // metadata as json
   private final List<String> sourceUrls;
   private final String targetDir;
@@ -49,17 +50,19 @@ public final class FileInputArray
     name = null;
     description = null;
     inputMode = DEFAULT_INPUT_MODE;
+    envKey = null;
     notes = DEFAULT_NOTES;
     sourceUrls = null;
     targetDir = null;
   }
 
-  public FileInputArray(String name1, String description1, FileInputMode inputMode1, JsonObject notes1,
+  public FileInputArray(String name1, String description1, FileInputMode inputMode1, String envKey1, JsonObject notes1,
                         List<String> sourceUrls1, String targetDir1)
   {
     name = LibUtils.stripStr(name1);
     description = description1;
     inputMode = (inputMode1 == null) ? DEFAULT_INPUT_MODE : inputMode1;
+    envKey = envKey1;
     notes = (notes1 == null) ? DEFAULT_NOTES : notes1;
     sourceUrls = LibUtils.stripWhitespaceStrList(sourceUrls1);
     targetDir = LibUtils.stripStr(targetDir1);
@@ -71,6 +74,7 @@ public final class FileInputArray
   public String getName() { return name; }
   public String getDescription() { return description; }
   public FileInputMode getInputMode() { return inputMode; }
+  public String getEnvKey() { return envKey; }
   public JsonObject getNotes() { return notes; }
   public List<String> getSourceUrls() { return (sourceUrls == null) ? null : new ArrayList<>(sourceUrls); }
   public String getTargetDir() { return targetDir; }

@@ -2,8 +2,8 @@ package edu.utexas.tacc.tapis.apps.model;
 
 import java.util.Objects;
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.shared.TapisConstants;
 import org.apache.commons.lang3.StringUtils;
+import edu.utexas.tacc.tapis.shared.TapisConstants;
 import static edu.utexas.tacc.tapis.apps.model.App.DEFAULT_NOTES;
 
 /*
