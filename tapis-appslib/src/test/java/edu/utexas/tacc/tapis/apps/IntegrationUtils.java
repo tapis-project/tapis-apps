@@ -84,6 +84,7 @@ public final class IntegrationUtils
   public static final FileInputMode fileInputModeOptional = FileInputMode.OPTIONAL;
   public static final FileInputMode fileInputModeFixed = FileInputMode.FIXED;
   public static final FileInputMode fileInputModeDefault = FileInputMode.OPTIONAL;
+  public static final String fileInputEnvKey1 = "finEnvKey1";
   public static final ArgInputMode argInputModeRequired = ArgInputMode.REQUIRED;
   public static final ArgInputMode argInputModeFixed = ArgInputMode.FIXED;
   public static final ArgInputMode argInputModeDefault = ArgInputMode.INCLUDE_ON_DEMAND;
@@ -249,41 +250,41 @@ public final class IntegrationUtils
 
   // FileInputs
   public static final FileInput fin1A = new FileInput("fin1A", "File input 1A", fileInputModeRequired, autoMountLocalTrue,
-          notes1Obj, "http://example.com/src1A", "/target1A");
+          fileInputEnvKey1, notes1Obj, "http://example.com/src1A", "/target1A");
   public static final FileInput fin1B = new FileInput("fin1B", "File input 1B", fileInputModeOptional, autoMountLocalFalse,
-          notes1Obj, "https://example.com/src1B", "/target1B");
+          fileInputEnvKey1, notes1Obj, "https://example.com/src1B", "/target1B");
   public static final List<FileInput> finList1 = new ArrayList<>(List.of(fin1A, fin1B));
   public static final FileInput fin2A = new FileInput("fin2A", "File input 2A", fileInputModeRequired, autoMountLocalTrue,
-          notes1Obj, "tapis://my-system/src2A", "/target2A");
+          fileInputEnvKey1, notes1Obj, "tapis://my-system/src2A", "/target2A");
   public static final FileInput fin2B = new FileInput("fin2B", "File input 2B", fileInputModeOptional, autoMountLocalFalse,
-          notes1Obj, "tapislocal://exec.tapis/src2B", "/targetBA");
+          fileInputEnvKey1, notes1Obj, "tapislocal://exec.tapis/src2B", "/targetBA");
   public static final List<FileInput> finList2 = new ArrayList<>(List.of(fin2A, fin2B));
   public static final FileInput fin3A = new FileInput("fin3A", "File input 3A", fileInputModeOptional, autoMountLocalTrue,
-          notes1Obj, "tapis://my-system/src3A", "/target3A");
+          fileInputEnvKey1, notes1Obj, "tapis://my-system/src3A", "/target3A");
   public static final FileInput fin3B = new FileInput("fin3B", "File input 3B", fileInputModeFixed, autoMountLocalFalse,
-          notes1Obj, "tapis://my-system/src3B", "/target3B");
+          fileInputEnvKey1, notes1Obj, "tapis://my-system/src3B", "/target3B");
   public static final List<FileInput> finList3 = new ArrayList<>(List.of(fin3A, fin3B));
   public static final FileInput finInvalid = new FileInput("finInvalid", "File input Invalid1", fileInputModeFixed, autoMountLocalFalse,
-          notes1Obj, "invalidSourceUrl", "/targetFile");
+          fileInputEnvKey1, notes1Obj, "invalidSourceUrl", "/targetFile");
   public static final List<FileInput> finListInvalid = new ArrayList<>(List.of(finInvalid));
   public static final List<FileInput> finListNull = null;
 
   // FileInputArrays
-  public static final FileInputArray fia1A = new FileInputArray("fia1A", "File input array 1A", fileInputModeRequired, notes1Obj,
-          List.of("/src1Aa","/src1Ab"), "/targetDir1A");
-  public static final FileInputArray fia1B = new FileInputArray("fia1B", "File input array 1B", fileInputModeOptional, notes1Obj,
-          List.of("/src1Ba","/src1Bb"), "/targetDir1B");
+  public static final FileInputArray fia1A = new FileInputArray("fia1A", "File input array 1A",
+          fileInputModeRequired, fileInputEnvKey1,  notes1Obj, List.of("http://example.com/src1Aa","http://example.com/src1Ab"), "/targetDir1A");
+  public static final FileInputArray fia1B = new FileInputArray("fia1B", "File input array 1B", fileInputModeOptional,
+          fileInputEnvKey1, notes1Obj, List.of("http://example.com/src1Ba","http://example.com/src1Bb"), "/targetDir1B");
   public static final List<FileInputArray> fiaList1 = new ArrayList<>(List.of(fia1A, fia1B));
-  public static final FileInputArray fia2A = new FileInputArray("fia2A", "File input array 2A", fileInputModeRequired, notes1Obj,
-          List.of("/src2Aa","/src2Ab"), "/targetDir2A");
-  public static final FileInputArray fia2B = new FileInputArray("fia2B", "File input array 2B", fileInputModeOptional, notes1Obj,
-          List.of("/src2Ba","/src2Bb"), "/targetDir2B");
+  public static final FileInputArray fia2A = new FileInputArray("fia2A", "File input array 2A", fileInputModeRequired,
+          fileInputEnvKey1, notes1Obj, List.of("http://example.com/src2Aa","http://example.com/src2Ab"), "/targetDir2A");
+  public static final FileInputArray fia2B = new FileInputArray("fia2B", "File input array 2B", fileInputModeOptional,
+          fileInputEnvKey1, notes1Obj, List.of("http://example.com/src2Ba","http://example.com/src2Bb"), "/targetDir2B");
   public static final List<FileInputArray> fiaList2 = new ArrayList<>(List.of(fia2A, fia2B));
 
-  public static final FileInputArray fia3A = new FileInputArray("fia3A", "File input array 3A", fileInputModeRequired, notes1Obj,
-          List.of("/src3Aa","/src3Ab"), "/targetDir3A");
-  public static final FileInputArray fia3B = new FileInputArray("fia3B", "File input array 3B", fileInputModeOptional, notes1Obj,
-          List.of("/src3Ba","/src3Bb"), "/targetDir3B");
+  public static final FileInputArray fia3A = new FileInputArray("fia3A", "File input array 3A", fileInputModeRequired,
+          fileInputEnvKey1, notes1Obj, List.of("http://example.com/src3Aa","http://example.com/src3Ab"), "/targetDir3A");
+  public static final FileInputArray fia3B = new FileInputArray("fia3B", "File input array 3B", fileInputModeOptional,
+          fileInputEnvKey1, notes1Obj, List.of("http://example.com/src3Ba","http://example.com/src3Bb"), "/targetDir3B");
   public static final List<FileInputArray> fiaList3 = new ArrayList<>(List.of(fia3A, fia3B));
 
   public static final List<FileInputArray> fiaListNull = null;
@@ -666,6 +667,7 @@ public final class IntegrationUtils
       Assert.assertEquals(fetchedFileInput.getDescription(), origFileInput.getDescription());
       Assert.assertEquals(fetchedFileInput.getInputMode(), origFileInput.getInputMode());
       Assert.assertEquals(fetchedFileInput.isAutoMountLocal(), origFileInput.isAutoMountLocal());
+      Assert.assertEquals(fetchedFileInput.getEnvKey(), origFileInput.getEnvKey());
     }
   }
 
@@ -688,10 +690,11 @@ public final class IntegrationUtils
       FileInputArray fetchedItem = fetchedMap.get(fiaName);
       FileInputArray origItem = origMap.get(fiaName);
       System.out.println("Found fetched FileInputArray: " + fiaName);
-//      Assert.assertEquals(fetchedFia.getSourceUrl(), origFia.getSourceUrl());
+      Assert.assertEquals(fetchedItem.getSourceUrls().size(), origItem.getSourceUrls().size());
       Assert.assertEquals(fetchedItem.getTargetDir(), origItem.getTargetDir());
       Assert.assertEquals(fetchedItem.getDescription(), origItem.getDescription());
       Assert.assertEquals(fetchedItem.getInputMode(), origItem.getInputMode());
+      Assert.assertEquals(fetchedItem.getEnvKey(), origItem.getEnvKey());
     }
   }
 

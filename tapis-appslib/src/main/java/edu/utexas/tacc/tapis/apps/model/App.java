@@ -118,6 +118,7 @@ public final class App
   public static final String LOGCONFIG_OUT_FIELD = "stdoutFilename";
   public static final String LOGCONFIG_ERR_FIELD = "stderrFilename";
   public static final String FILE_INPUTS_FIELD = "fileInputs";
+  public static final String ENVKEY_FIELD = "envKey";
   public static final String FILE_INPUTS_SRC_FIELD = "sourceUrl";
   public static final String FILE_INPUTS_DST_FIELD = "targetPath";
   public static final String FILE_INPUT_ARRAYS_FIELD = "fileInputArrays";
@@ -163,6 +164,8 @@ public final class App
   // Based on pattern from files service. edu.utexas.tacc.tapis.files.lib.models.TransferURI
   private static final Pattern SRC_URL_PATTERN = Pattern.compile("(http:\\/\\/|https:\\/\\/|tapis:\\/\\/)([\\w -\\.]+)\\/?(.*)");
   private static final Pattern SRC_URL_LOCAL_PATTERN = Pattern.compile("(tapislocal:\\/\\/)([\\w -\\.]+)\\/?(.*)");
+  // Limit environment variable key names to alphanumeric and "_", starting with an alpha or _.
+  private static final String ENV_VAR_NAME_PATTERN = "^[a-zA-Z_][a-zA-Z0-9_]*";
 
   // Special containerArg value. This argument may only be used for an app of runtime type ZIP.
   private static final String ZIP_SAVE_CONTAINER_ARG = "--tapis-zip-save";
@@ -816,9 +819,11 @@ public final class App
     for (FileInput fi : fileInputs)
     {
       String name = StringUtils.isBlank(fi.getName()) ? UNNAMED : fi.getName();
+      String envKey = fi.getEnvKey();
       String src = fi.getSourceUrl();
       String dst = fi.getTargetPath();
       checkForControlChars(errMessages, name, FILE_INPUTS_FIELD, NAME_FIELD);
+      checkForControlChars(errMessages, envKey, FILE_INPUTS_FIELD, ENVKEY_FIELD);
       checkForControlChars(errMessages, src, FILE_INPUTS_FIELD, name, FILE_INPUTS_SRC_FIELD);
       checkForControlChars(errMessages, dst, FILE_INPUTS_FIELD, name, FILE_INPUTS_DST_FIELD);
     }
@@ -833,9 +838,11 @@ public final class App
     for (FileInputArray fia : fileInputArrays)
     {
       String name = StringUtils.isBlank(fia.getName()) ? UNNAMED : fia.getName();
+      String envKey = fia.getEnvKey();
       String targetDir = fia.getTargetDir();
       List<String> srcUrls = fia.getSourceUrls();
       checkForControlChars(errMessages, name, FILE_INPUT_ARRAYS_FIELD, NAME_FIELD);
+      checkForControlChars(errMessages, envKey, FILE_INPUT_ARRAYS_FIELD, ENVKEY_FIELD);
       checkForControlChars(errMessages, targetDir, FILE_INPUT_ARRAYS_FIELD, name, FILE_INPUT_ARRAYS_TARGET_FIELD);
 
       if (srcUrls == null || srcUrls.isEmpty()) return;
@@ -935,14 +942,19 @@ public final class App
    *  If containerized is true then containerImage must be set
    *  If containerized and SINGULARITY then RuntimeOptions must include one of SINGULARITY_START or SINGULARITY_RUN
    *  If containerized and ZIP then validate entry - must be absolute path or valid sourceUrl
-   *  If app contains file inputs then validate sourceUrl attributes for each input.
    *  If dynamicExecSystem then execSystemConstraints must be given
    *  If archiveSystem given then archive dir must be given
    *  If parameterSet.envVariables set then check:
    *    - key is not empty.
+   *    - key is a valid linux env variable name
+   *    - key does not begin with _tapis
    *    - if inputMode=FIXED then value != "!tapis_not_set"
    *  If runtime type is not ZIP then --tapis-zip-save is not allowed.
    *  If runtime type is ZIP then we only support containerArg == --tapis-zip-save
+   *  For any file inputs or file input arrays check:
+   *    - sourceUrl attributes for each input.
+   *    - envKey for each input
+   *    NOTE: This check must happen after parameterSet.envVariables checks, so we can look for env var name collisions.
    */
   private void checkAttrMisc(List<String> errMessages)
   {
@@ -975,9 +987,6 @@ public final class App
       }
     }
 
-   // If app contains file inputs then validate sourceUrl attributes for each input.
-    if (fileInputs != null) { for (FileInput fin : fileInputs) checkFileInputSourceUrl(errMessages, fin); }
-
     // If dynamicExecSystem then execSystemConstraints must be given
     if (dynamicExecSystem)
     {
@@ -994,27 +1003,39 @@ public final class App
     }
 
     // Checks involving parameterSet
+    var envVarNameSet = new HashSet<String>();
     if (parameterSet != null)
     {
       // Check env variables
       if (parameterSet.getEnvVariables() != null)
       {
+        // Keep a set of all env var names so when checking envKey in file inputs and file input arrays
+        //   we can check for name collisions.
         for (KeyValuePair kv : parameterSet.getEnvVariables())
         {
-          // Name must not be empty
-          if (StringUtils.isBlank(kv.getKey()))
+          String name = kv.getKey();
+          // If env var name not empty add it to the set for later collision checking.
+          if (!StringUtils.isBlank(name)) envVarNameSet.add(name);
+
+          // Name must not be empty and must be a valid linux env var name
+          if (StringUtils.isBlank(name))
           {
             errMessages.add(LibUtils.getMsg("APPLIB_ENV_VAR_NO_NAME", kv.getValue()));
           }
+          else if (!isValidEnvVarKey(name))
+          {
+            errMessages.add(LibUtils.getMsg("APPLIB_ENV_VAR_INVALID_NAME", name, kv.getValue()));
+          }
+          // Check for variable names that begin with "_tapis". This is not allowed. Jobs will not accept them.
+          if (StringUtils.startsWith(name, RESERVED_PREFIX))
+          {
+            errMessages.add(LibUtils.getMsg("APPLIB_ENV_VAR_INVALID_PREFIX", name, kv.getValue()));
+          }
+
           // Check for inputMode=FIXED and value == "!tapis_not_set"
           if (FIXED.equals(kv.getInputMode()) && VALUE_NOT_SET.equals(kv.getValue()))
           {
-            errMessages.add(LibUtils.getMsg("APPLIB_ENV_VAR_FIXED_UNSET", kv.getKey(), kv.getValue()));
-          }
-          // Check for variables that begin with "_tapis". This is not allowed. Jobs will not accept them.
-          if (StringUtils.startsWith(kv.getKey(), RESERVED_PREFIX))
-          {
-            errMessages.add(LibUtils.getMsg("APPLIB_ENV_VAR_INVALID_PREFIX", kv.getKey(), kv.getValue()));
+            errMessages.add(LibUtils.getMsg("APPLIB_ENV_VAR_FIXED_UNSET", name, kv.getValue()));
           }
         }
       }
@@ -1037,6 +1058,17 @@ public final class App
         }
       }
     }
+
+    // For any file inputs or file input arrays check:
+    //   - sourceUrl attributes for each input.
+    //   - envKey for each input
+    // NOTE: This check must happen after parameterSet.envVariables checks, so we can look for env var name collisions.
+
+    // If app contains file inputs then validate sourceUrl attributes for each input.
+    if (fileInputs != null) { for (FileInput fin : fileInputs) checkFileInput(errMessages, fin, envVarNameSet); }
+
+    // If app contains file input arrays then validate sourceUrl attributes for each input.
+    if (fileInputArrays != null) { for (FileInputArray fia : fileInputArrays) checkFileInputArrays(errMessages, fia, envVarNameSet); }
   }
 
   /**
@@ -1056,6 +1088,12 @@ public final class App
    * Must start alphabetic and contain only alphanumeric and 4 special characters: - . _ ~
    */
   private static boolean isValidId(String id) { return id.matches(PATTERN_VALID_ID); }
+
+  /**
+   * Validate env variable key
+   * Must start alphabetic or _ and contain only alphanumeric or _
+   */
+  private static boolean isValidEnvVarKey(String key) { return key.matches(ENV_VAR_NAME_PATTERN); }
 
   /**
    * Validate a host string.
@@ -1080,15 +1118,80 @@ public final class App
   }
 
   /**
-   * Check to see if fileInput sourceUrl is valid
+   * Check a fileInput
+   *  - check for valid sourceUrl
+   *  - check envKey for name collision
+   *  - check envKey is a valid linux env variable name
    */
-  private static void checkFileInputSourceUrl(List<String> errMessages, FileInput fileInput)
+  private static void checkFileInput(List<String> errMessages, FileInput fileInput, Set<String> envVarNameSet)
   {
+    String name = fileInput.getName();
+    String srcUrl = fileInput.getSourceUrl();
+    String envKey = fileInput.getEnvKey();
     // sourceUrl is optional, so skip check if not set.
-    if (StringUtils.isBlank(fileInput.getSourceUrl())) return;
-    if (!validFileInputSourceUrl(fileInput.getSourceUrl()))
+    if (StringUtils.isBlank(srcUrl)) return;
+    if (!validFileInputSourceUrl(srcUrl))
     {
-      errMessages.add(LibUtils.getMsg("APPLIB_INVALID_FILEINPUT_SOURCEURL", fileInput.getName(), fileInput.getSourceUrl()));
+      errMessages.add(LibUtils.getMsg("APPLIB_INVALID_FILEINPUT_SOURCEURL", name, srcUrl));
+    }
+    // Check envKey if present
+    if (StringUtils.isBlank(envKey)) return;
+    // check for name collision
+    if (envVarNameSet.contains(envKey))
+    {
+      errMessages.add(LibUtils.getMsg("APPLIB_INVALID_FILEINPUT_ENVKEY_COLLISION", name, envKey));
+    }
+    // check for valid env var name
+    if (!isValidEnvVarKey(envKey))
+    {
+      errMessages.add(LibUtils.getMsg("APPLIB_INVALID_FILEINPUT_INVALID_ENVKEY", name, envKey));
+    }
+    // Check for variable names that begin with "_tapis". This is not allowed. Jobs will not accept them.
+    if (StringUtils.startsWith(envKey, RESERVED_PREFIX))
+    {
+      errMessages.add(LibUtils.getMsg("APPLIB_INVALID_FILEINPUT_INVALID_PREFIX", name, envKey));
+    }
+  }
+
+  /**
+   * Check a fileInputArray
+   *  - check for valid sourceUrls
+   *  - check envKey for name collision
+   *  - check envKey is a valid linux env variable name
+   */
+  private static void checkFileInputArrays(List<String> errMessages, FileInputArray fia, Set<String> envVarNameSet)
+  {
+    List<String> srcUrls = fia.getSourceUrls();
+    String name = fia.getName();
+    String envKey = fia.getEnvKey();
+    // If nothing to check we are done
+    if (srcUrls == null || srcUrls.isEmpty()) return;
+    // Check each srcUrl in the FileInputArray
+    for (String srcUrl : srcUrls)
+    {
+      // sourceUrl is optional, so skip check if not set.
+      if (StringUtils.isBlank(srcUrl)) continue;
+      if (!validFileInputSourceUrl(srcUrl))
+      {
+        errMessages.add(LibUtils.getMsg("APPLIB_INVALID_FILEINPUTARRAY_SOURCEURL", name, srcUrl));
+      }
+    }
+    // Check envKey if present
+    if (StringUtils.isBlank(envKey)) return;
+    // check for name collision
+    if (envVarNameSet.contains(envKey))
+    {
+      errMessages.add(LibUtils.getMsg("APPLIB_INVALID_FILEINPUTARRAY_ENVKEY_COLLISION", name, envKey));
+    }
+    // check for valid env var name
+    if (!isValidEnvVarKey(envKey))
+    {
+      errMessages.add(LibUtils.getMsg("APPLIB_INVALID_FILEINPUTARRAY_INVALID_ENVKEY", name, envKey));
+    }
+    // Check for variable names that begin with "_tapis". This is not allowed. Jobs will not accept them.
+    if (StringUtils.startsWith(envKey, RESERVED_PREFIX))
+    {
+      errMessages.add(LibUtils.getMsg("APPLIB_INVALID_FILEINPUTARRAY_INVALID_PREFIX", name, envKey));
     }
   }
 

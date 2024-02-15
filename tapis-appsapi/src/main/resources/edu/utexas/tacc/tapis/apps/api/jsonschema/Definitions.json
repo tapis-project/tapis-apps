@@ -113,6 +113,7 @@
       "description": { "type":  ["string", "null"], "maxLength": 8096 },
       "inputMode": { "$ref": "#/FileInputModeEnum" },
       "autoMountLocal": { "type": "boolean", "default": true },
+      "envKey": { "type": "string", "minLength": 1 },
       "notes": { "type": "object" },
       "sourceUrl": { "type": ["string", "null"], "minLength": 1, "format": "uri" },
       "targetPath": { "type": "string", "minLength": 1 }
@@ -126,6 +127,7 @@
       "name": { "type": "string", "minLength": 1, "maxLength": 80 },
       "description": { "type":  ["string", "null"], "maxLength": 8096 },
       "inputMode": { "$ref": "#/FileInputModeEnum" },
+      "envKey": { "type": "string", "minLength": 1 },
       "notes": { "type": "object" },
       "sourceUrls": { "type": ["array", "null"], "items": { "type": "string", "format": "uri" } },
       "targetDir": {"type": "string", "minLength": 1 }

@@ -9,16 +9,17 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 1.6.1 - 2024-??-??
+## 1.6.1 - 2024-02-14
 
 Incremental improvements.
 
 ### New features:
 - Add DTN attributes dtnSystemInputDir, dtnSystemInputDir.
 - Use shared code TapisUtils.weaklyValidateUri() for additional validation of file inputs.
+- Allow attribute *enabled* for specific application versions. Allows for specific version to be disabled.
 
 ### Bug fixes:
-- None.???
+- None.
 
 ---------------------------------------------------------------------------
 ## 1.6.0 - 2024-01-17
