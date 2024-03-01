@@ -1277,7 +1277,7 @@ public class AppResource
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
           apiJobAttrs.description, apiJobAttrs.dynamicExecSystem, apiJobAttrs.execSystemConstraints, apiJobAttrs.execSystemId,
           apiJobAttrs.execSystemExecDir, apiJobAttrs.execSystemInputDir, apiJobAttrs.execSystemOutputDir,
-          apiJobAttrs.dtnSystemInputDir, apiJobAttrs.dtnSystemInputDir,
+          apiJobAttrs.dtnSystemInputDir, apiJobAttrs.dtnSystemOutputDir,
           apiJobAttrs.execSystemLogicalQueue, apiJobAttrs.archiveSystemId, apiJobAttrs.archiveSystemDir, apiJobAttrs.archiveOnAppError,
           apiJobAttrs.isMpi, apiJobAttrs.mpiCmd, apiJobAttrs.cmdPrefix,
           apiJobAttrs.parameterSet, apiJobAttrs.fileInputs, apiJobAttrs.fileInputArrays, apiJobAttrs.nodeCount, apiJobAttrs.coresPerNode,
