@@ -1384,10 +1384,10 @@ public class AppResource
     List<String> selectList = srchParms.getSelectList();
     if (selectList == null || selectList.isEmpty()) selectList = SUMMARY_ATTRS;
 
-    // If limit was not specified then use the default
+    // If limit or skip not specified then use defaults
     int limit = (srchParms.getLimit() == null) ? SearchParameters.DEFAULT_LIMIT : srchParms.getLimit();
+    int skip = (srchParms.getSkip() == null) ? SearchParameters.DEFAULT_SKIP : srchParms.getSkip();
     // Set some variables to make code easier to read
-    int skip = srchParms.getSkip();
     String startAfter = srchParms.getStartAfter();
     boolean computeTotal = srchParms.getComputeTotal();
     String orderBy = srchParms.getOrderBy();
