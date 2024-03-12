@@ -10,7 +10,12 @@ FROM eclipse-temurin:17-jdk-jammy
 
 MAINTAINER CIC Support <cicsupport@tacc.utexas.edu>
 
-WORKDIR /app
+# Install less. Add user tapis
+RUN apt update && apt install -y less && useradd -m tapis
+
+USER tapis
+
+WORKDIR /home/tapis/app
 
 # Copy jar file into place
 COPY "apps.jar" .
@@ -30,13 +35,14 @@ ENV JAVA_MODULE_OPTS --add-opens java.base/java.lang=ALL-UNNAMED --add-opens jav
                      --add-opens java.base/java.util=ALL-UNNAMED
 
 # Options for JVM
+# Most options are for allowing jmx and remote debug access
+# Option -Dp6spy.config.modulelist= is for turning off verbose SQL logging
 ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n \
                       -Djava.rmi.server.hostname=0.0.0.0 -Dcom.sun.management.jmxremote \
                       -Dcom.sun.management.jmxremote.port=9090  -Dcom.sun.management.jmxremote.rmi.port=9090 \
                       -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false \
                       -Dcom.sun.management.jmxremote.ssl=false \
                       -Dp6spy.config.modulelist=
-# ENV JAVA_TOOL_OPTIONS -Dp6spy.config.modulelist=
 
 # Server port, debug port and jmx port
 EXPOSE 8080 8000 9090
