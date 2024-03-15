@@ -262,6 +262,10 @@ public class SearchDaoTest
     // Escaped comma in a list of values
     validCaseInputs.put(110,new CaseData(1, Arrays.asList(appIdLikeAll, "runtime_version.in." + "noSuchDir," + escapedCommanInListValue)));
 
+    // Additional tests for new features
+    validCaseInputs.put(120,new CaseData(numApps, Arrays.asList(appIdLikeAll, "versionEnabled.eq.true")));  // All are enabled
+    validCaseInputs.put(121,new CaseData(0, Arrays.asList(appIdLikeAll, "versionEnabled.eq.false")));  // All are enabled
+
     // Iterate over valid cases
     for (Map.Entry<Integer,CaseData> item : validCaseInputs.entrySet())
     {

@@ -574,7 +574,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       {
         versionStr = appVersion;
         db.update(APPS_VERSIONS)
-                .set(APPS_VERSIONS.ENABLED, enabled)
+                .set(APPS_VERSIONS.VERSION_ENABLED, enabled)
                 .set(APPS_VERSIONS.UPDATED, TapisUtils.getUTCTimeNow())
                 .where(APPS_VERSIONS.TENANT.eq(tenantId), APPS_VERSIONS.ID.eq(appId), APPS_VERSIONS.VERSION.eq(appVersion)).execute();
       }
@@ -955,7 +955,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       {
         b = db.selectFrom(APPS_VERSIONS)
                 .where(APPS_VERSIONS.TENANT.eq(tenant), APPS_VERSIONS.ID.eq(appId), APPS_VERSIONS.VERSION.eq(appVersion))
-                .fetchOne(APPS_VERSIONS.ENABLED);
+                .fetchOne(APPS_VERSIONS.VERSION_ENABLED);
       }
       if (b != null) result = b;
       // Close out and commit
@@ -1829,7 +1829,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             Arrays.asList(TapisGsonUtils.getGson().fromJson(subscriptionsJsonElement, ReqSubscribe[].class));
     app = new App(appSeqId, appVerSeqId, r.get(APPS.TENANT), r.get(APPS.ID), r.get(APPS_VERSIONS.VERSION),
             r.get(APPS_VERSIONS.DESCRIPTION), r.get(APPS_VERSIONS.JOB_TYPE), r.get(APPS.OWNER),
-            r.get(APPS.ENABLED), r.get(APPS_VERSIONS.ENABLED), r.get(APPS_VERSIONS.LOCKED), r.get(APPS.CONTAINERIZED),
+            r.get(APPS.ENABLED), r.get(APPS_VERSIONS.VERSION_ENABLED), r.get(APPS_VERSIONS.LOCKED), r.get(APPS.CONTAINERIZED),
             r.get(APPS_VERSIONS.RUNTIME), r.get(APPS_VERSIONS.RUNTIME_VERSION), runtimeOptions,
             r.get(APPS_VERSIONS.CONTAINER_IMAGE), r.get(APPS_VERSIONS.MAX_JOBS), r.get(APPS_VERSIONS.MAX_JOBS_PER_USER),
             r.get(APPS_VERSIONS.STRICT_FILE_INPUTS), r.get(APPS_VERSIONS.JOB_DESCRIPTION),
