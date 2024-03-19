@@ -510,8 +510,8 @@ public class AppsServiceTest
   {
     App app0 = apps[4];
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
-    List<App> apps = svc.getApps(rOwner1, null, -1, null, -1, null,
-                                 showDeletedFalse, ALL.name(), fetchShareInfoFalse);
+    List<App> apps = svc.getApps(rOwner1, null, -1, null, -1, null, showDeletedFalse, ALL.name(),
+                                 fetchShareInfoFalse, impersonationIdNull);
     for (App app : apps)
     {
       System.out.println("Found item with id: " + app.getId() + " and version: " + app.getVersion());
@@ -519,6 +519,7 @@ public class AppsServiceTest
   }
 
   // Test getApps using listType parameter
+  //   also test impersonation by tenant admin user or a service.
   @Test
   public void testGetAppsByListType() throws Exception
   {
@@ -550,41 +551,54 @@ public class AppsServiceTest
     List<App> apps;
     // OWNED - should return 1
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
-                       showDeletedFalse, listTypeOwned.name(), fetchShareInfoFalse);
+                       showDeletedFalse, listTypeOwned.name(), fetchShareInfoFalse, impersonationIdNull);
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
     System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeOwned);
     Assert.assertEquals(apps.size(), 1, "Wrong number of returned apps for listType=" + listTypeOwned);
     // SHARED_PUBLIC - should return 1
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
-                       showDeletedFalse, listTypeSharedPublic.name(), fetchShareInfoFalse);
+                       showDeletedFalse, listTypeSharedPublic.name(), fetchShareInfoFalse, impersonationIdNull);
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
     System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeSharedPublic);
     Assert.assertEquals(apps.size(), 1, "Wrong number of returned apps for listType=" + listTypeSharedPublic);
     // SHARED_DIRECT - should return 1
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
-                       showDeletedFalse, listTypeSharedDirect.name(), fetchShareInfoFalse);
+                       showDeletedFalse, listTypeSharedDirect.name(), fetchShareInfoFalse, impersonationIdNull);
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
     System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeSharedDirect);
     Assert.assertEquals(apps.size(), 1, "Wrong number of returned apps for listType=" + listTypeSharedDirect);
     // READ_PERM - should return 1
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
-                       showDeletedFalse, listTypeReadPerm.name(), fetchShareInfoFalse);
+                       showDeletedFalse, listTypeReadPerm.name(), fetchShareInfoFalse, impersonationIdNull);
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
     System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeReadPerm);
     Assert.assertEquals(apps.size(), 1, "Wrong number of returned apps for listType=" + listTypeReadPerm);
     // MINE - should return 2
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
-                       showDeletedFalse, listTypeMine.name(), fetchShareInfoFalse);
+                       showDeletedFalse, listTypeMine.name(), fetchShareInfoFalse, impersonationIdNull);
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
     System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeMine);
     Assert.assertEquals(apps.size(), 2, "Wrong number of returned apps for listType=" + listTypeMine);
     // ALL - should return 4
     apps = svc.getApps(rOwner3, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
-                       showDeletedFalse, listTypeAll.name(), fetchShareInfoFalse);
+                       showDeletedFalse, listTypeAll.name(), fetchShareInfoFalse, impersonationIdNull);
     Assert.assertNotNull(apps, "Returned list of apps should not be null");
     System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeAll);
     Assert.assertEquals(apps.size(), 4, "Wrong number of returned apps for listType=" + listTypeAll);
-  }
+
+    // Test tenant admin impersonating rOwner5 - should see 2 (1 owned + 1 public)
+    apps = svc.getApps(rAdminUser, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
+           showDeletedFalse, listTypeAll.name(), fetchShareInfoFalse, owner5);
+    Assert.assertNotNull(apps, "Returned list of apps should not be null");
+    System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeAll);
+    Assert.assertEquals(apps.size(), 2, "Wrong number of returned apps tenant for admin impersonation");
+
+    // Test service impersonating rOwner5 - should see 2 (1 owned + 1 public)
+    apps = svc.getApps(rJobsSvc1, searchListNull, limitNone, orderByListNull, skipZero, startAferEmpty,
+                       showDeletedFalse, listTypeAll.name(), fetchShareInfoFalse, owner5);
+    Assert.assertNotNull(apps, "Returned list of systems should not be null");
+    System.out.printf("getApps returned %d items using listType = %s%n", apps.size(), listTypeAll);
+    Assert.assertEquals(apps.size(), 2, "Wrong number of returned apps for service impersonation");  }
 
   // Check that user only sees apps they are authorized to see.
   @Test
@@ -606,7 +620,7 @@ public class AppsServiceTest
 
     // When retrieving apps as testUser5 only 2 should be returned
     List<App> apps = svc.getApps(rUser5, searchListNull, -1, orderByListNull, -1, startAfterNull,
-                                 showDeletedFalse, OWNED.name(), fetchShareInfoFalse);
+                                 showDeletedFalse, OWNED.name(), fetchShareInfoFalse, impersonationIdNull);
     System.out.println("Total number of apps retrieved: " + apps.size());
     Assert.assertEquals(apps.size(), 2);
     for (App app : apps)
@@ -627,7 +641,7 @@ public class AppsServiceTest
     String appVer = app0.getVersion();
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
 
-    // Test app top level attribute - enabled
+    // Test app top level attribute - enabled.
     // Enabled should start off true, then become false and finally true again.
     // Check attribute using getApp and isEnabled
     App tmpApp = svc.getApp(rOwner1, appId, appVer, false, null, null);
@@ -1448,12 +1462,32 @@ public class AppsServiceTest
     }
     Assert.assertTrue(pass);
 
-    // User should not be able to impersonate another user.
+    // Regular (non-admin) user should not be able to impersonate another user.
     pass = false;
-    try { svc.getApp(rUser2, app0Id, null, false, owner1, null); }
+    try { svc.getApp(rUser2, app0Id, null, false, impersonationIdTestUser9, null); }
     catch (ForbiddenException e)
     {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH_IMPERSONATE"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
+    // Regular (non-admin) user should not be able to set the resource tenant.
+    pass = false;
+    try { svc.getApp(rUser2, app0Id, null, false, impersonationIdNull,"dev2"); }
+    catch (ForbiddenException e)
+    {
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH_RESOURCETENANT"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+
+    // Admin user should not be able to set the resource tenant.
+    pass = false;
+    try { svc.getApp(rAdminUser, app0Id, null, false, impersonationIdNull, "dev2"); }
+    catch (ForbiddenException e)
+    {
+      Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH_RESOURCETENANT"));
       pass = true;
     }
     Assert.assertTrue(pass);

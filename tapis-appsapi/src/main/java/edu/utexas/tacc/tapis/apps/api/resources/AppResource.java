@@ -821,6 +821,7 @@ public class AppResource
    * @param securityContext - user identity
    * @param showDeleted - whether to included resources that have been marked as deleted.
    * @param listType - allows for filtering results based on authorization: OWNED, SHARED_PUBLIC, ALL
+   * @param impersonationId - use provided Tapis username instead of oboUser when checking auth
    * @return - list of apps accessible by requester and matching search conditions.
    */
   @GET
@@ -828,7 +829,8 @@ public class AppResource
   @Produces(MediaType.APPLICATION_JSON)
   public Response getApps(@Context SecurityContext securityContext,
                           @QueryParam("showDeleted") @DefaultValue("false") boolean showDeleted,
-                          @QueryParam("listType") @DefaultValue("OWNED") String listType) throws TapisClientException
+                          @QueryParam("listType") @DefaultValue("OWNED") String listType,
+                          @QueryParam("impersonationId") String impersonationId) throws TapisClientException
   {
     String opName = "getApps";
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
@@ -841,8 +843,9 @@ public class AppResource
     ResourceRequestUser rUser = new ResourceRequestUser((AuthenticatedUser) securityContext.getUserPrincipal());
 
     // Trace this request.
-    if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted,
-                                                   "listType="+listType);
+    if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(),
+                                                   "showDeleted="+showDeleted, "listType="+listType,
+                                                   "impersonationId="+impersonationId);
 
     // ThreadContext designed to never return null for SearchParameters
     SearchParameters srchParms = threadContext.getSearchParameters();
@@ -851,7 +854,7 @@ public class AppResource
     Response successResponse;
     try
     {
-      successResponse = getSearchResponse(rUser, null, srchParms, showDeleted, listType);
+      successResponse = getSearchResponse(rUser, null, srchParms, showDeleted, listType, impersonationId);
     }
     // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
@@ -919,7 +922,7 @@ public class AppResource
     Response successResponse;
     try
     {
-      successResponse = getSearchResponse(rUser, null, srchParms, showDeleted, listType);
+      successResponse = getSearchResponse(rUser, null, srchParms, showDeleted, listType, null);
     }
     // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
@@ -1012,7 +1015,7 @@ public class AppResource
     Response successResponse;
     try
     {
-      successResponse = getSearchResponse(rUser, sqlSearchStr, srchParms, showDeleted, listType);
+      successResponse = getSearchResponse(rUser, sqlSearchStr, srchParms, showDeleted, listType, null);
     }
     // Pass through "not found" or "not auth" exceptions to let exception mapper handle it.
     catch (NotFoundException | NotAuthorizedException | ForbiddenException | TapisClientException e) { throw e; }
@@ -1372,7 +1375,7 @@ public class AppResource
    *  One of srchParms.searchList or sqlSearchStr must be non-null
    */
   private Response getSearchResponse(ResourceRequestUser rUser, String sqlSearchStr, SearchParameters srchParms,
-                                     boolean showDeleted, String listType)
+                                     boolean showDeleted, String listType, String impersonationId)
           throws TapisException, TapisClientException
   {
     RespAbstract resp1;
@@ -1398,7 +1401,8 @@ public class AppResource
 
     // Call service method to fetch apps
     if (StringUtils.isBlank(sqlSearchStr))
-      apps = service.getApps(rUser, searchList, limit, orderByList, skip, startAfter, showDeleted, listType, fetchShareInfo);
+      apps = service.getApps(rUser, searchList, limit, orderByList, skip, startAfter, showDeleted, listType,
+                             fetchShareInfo, impersonationId);
     else
       apps = service.getAppsUsingSqlSearchStr(rUser, sqlSearchStr, limit, orderByList, skip,
                                                   startAfter, showDeleted, listType, fetchShareInfo);
@@ -1412,7 +1416,8 @@ public class AppResource
     //   compared to attempting to fold everything into getApps().
     if (computeTotal && limit > 0)
     {
-      totalCount = service.getAppsTotalCount(rUser, searchList, orderByList, startAfter, showDeleted, listType);
+      totalCount = service.getAppsTotalCount(rUser, searchList, orderByList, startAfter, showDeleted,
+                                             listType, impersonationId);
     }
 
     // ---------------------------- Success -------------------------------

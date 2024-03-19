@@ -281,7 +281,7 @@ public class SearchDaoTest
         verifiedSearchList.add(verifiedCondStr);
       }
       System.out.println("  For case    # " + caseNum + " VerfiedInput: " + verifiedSearchList);
-      List<App> searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull,
+      List<App> searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull,
                                             DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse,
                                             listTypeAll, viewableIDsAll, sharedIDsNull);
       System.out.println("  Result size: " + searchResults.size());
@@ -301,60 +301,60 @@ public class SearchDaoTest
     List<App> searchResults;
 
     int limit = -1;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned, viewableIDsNull, sharedIDsNull);
     assertEquals(searchResults.size(), numApps/2, "Incorrect result count");
     limit = 0;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned, viewableIDsNull, sharedIDsNull);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
     limit = 1;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned,  viewableIDsNull, sharedIDsNull);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
     limit = 5;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned,  viewableIDsNull, sharedIDsNull);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
     limit = 9;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned,  viewableIDsNull, sharedIDsNull);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
     limit = 10;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned,  viewableIDsNull, sharedIDsNull);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
     limit = 200;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned,  viewableIDsNull, sharedIDsNull);
     assertEquals(searchResults.size(), numApps/2, "Incorrect result count");
     // Test limit + skip combination that reduces result size
     int resultSize = 3;
     limit = numApps/2;
     int skip = limit - resultSize;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListNull, skip, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListNull, skip, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned, null, null);
     assertEquals(searchResults.size(), resultSize, "Incorrect result count");
 
     // Check some corner cases
     limit = 100;
     skip = 0;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListNull, skip, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListNull, skip, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned, null, null);
     assertEquals(searchResults.size(), numApps/2, "Incorrect result count");
     limit = 0;
     skip = 1;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListNull, skip, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListNull, skip, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned, null, null);
     assertEquals(searchResults.size(), 0, "Incorrect result count");
     limit = 10;
     skip = 7;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListNull, skip, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListNull, skip, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned, null, null);
     assertEquals(searchResults.size(), numApps/2 - skip, "Incorrect result count");
     limit = 10;
     skip = 100;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListNull, skip, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListNull, skip, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned, null, null);
     assertEquals(searchResults.size(), 0, "Incorrect result count");
   }
@@ -373,47 +373,47 @@ public class SearchDaoTest
     int limit;
     int skip;
     // Sort and check order with no limit or skip
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListAsc, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByListAsc, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsAll, null);
     assertEquals(searchResults.size(), numApps, "Incorrect result count");
     checkOrder(searchResults, 1, numApps);
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListDesc, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByListDesc, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsAll, null);
     assertEquals(searchResults.size(), numApps, "Incorrect result count");
     checkOrder(searchResults, numApps, 1);
     // Sort and check order with limit and no skip
     limit = 4;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListAsc, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListAsc, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsAll, null);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
     checkOrder(searchResults, 1, limit);
     limit = 19;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListDesc, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListDesc, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsAll, null);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
     checkOrder(searchResults, numApps, numApps - (limit-1));
     // Sort and check order with limit and skip
     limit = 2;
     skip = 5;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListAsc, skip, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListAsc, skip, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsAll, null);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
     // Should get systems named SrchGet_006 to SrchGet_007
     checkOrder(searchResults, skip + 1, skip + limit);
     limit = 4;
     skip = 3;
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListDesc, skip, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListDesc, skip, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsAll, null);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
     // Should get systems named SrchGet_017 to SrchGet_014
     checkOrder(searchResults, numApps - skip, numApps - limit);
 
     // Sort and check multiple orderBy
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByList2Asc, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByList2Asc, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsAll, null);
     assertEquals(searchResults.size(), numApps, "Incorrect result count");
     checkOrder(searchResults, 1, numApps);
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByList2Desc, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByList2Desc, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsAll, null);
     assertEquals(searchResults.size(), numApps, "Incorrect result count");
     checkOrder(searchResults, numApps, 1);
@@ -437,7 +437,7 @@ public class SearchDaoTest
     limit = 2;
     startAfterIdx = 5;
     startAfter = getAppName(testKey, startAfterIdx);
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListAsc, DEFAULT_SKIP, startAfter,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListAsc, DEFAULT_SKIP, startAfter,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsAll, null);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
     // Should get systems named SrchGet_006 to SrchGet_007
@@ -446,7 +446,7 @@ public class SearchDaoTest
     startAfterIdx = 18;
     int startWith = numApps - startAfterIdx + 1;
     startAfter = getAppName(testKey, startAfterIdx);
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByListDesc, DEFAULT_SKIP, startAfter,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByListDesc, DEFAULT_SKIP, startAfter,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsAll, null);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
     // Should get apps named SrchGet_017 to SrchGet_014
@@ -457,7 +457,7 @@ public class SearchDaoTest
     limit = 2;
     startAfterIdx = 5;
     startAfter = getAppName(testKey, startAfterIdx);
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByList3Asc, DEFAULT_SKIP, startAfter,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByList3Asc, DEFAULT_SKIP, startAfter,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsAll, null);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
     // Should get systems named SrchGet_006 to SrchGet_007
@@ -466,7 +466,7 @@ public class SearchDaoTest
     startAfterIdx = 18;
     startWith = numApps - startAfterIdx + 1;
     startAfter = getContainerImage(testKey, startAfterIdx);
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, limit, orderByList3Desc, DEFAULT_SKIP, startAfter,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, limit, orderByList3Desc, DEFAULT_SKIP, startAfter,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsAll, null);
     assertEquals(searchResults.size(), limit, "Incorrect result count");
     // Should get systems named SrchGet_017 to SrchGet_014
@@ -488,35 +488,35 @@ public class SearchDaoTest
     List<App> searchResults;
 
     // OWNED should always return all apps owned by owner1 not matter what sets are passed in.
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned, viewableIDsNull, sharedIDsNull);
     assertEquals(searchResults.size(), numApps/2, "Incorrect result count");
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned, viewableIDsEmpty, sharedIDsEmpty);
     assertEquals(searchResults.size(), numApps/2, "Incorrect result count");
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeOwned, viewableIDsNotOwner1, sharedIDsAll);
     assertEquals(searchResults.size(), numApps/2, "Incorrect result count");
 
     // Using SHARED_PUBLIC should only see ones that are in the sharedIDs list
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeSharedPublic, viewableIDsNull, sharedIDsNotOwner1);
     assertEquals(searchResults.size(), numApps/2, "Incorrect result count");
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeSharedPublic, viewableIDsNull, sharedIDsNotOwner1Half1);
     assertEquals(searchResults.size(), (numApps/4), "Incorrect result count");
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeSharedPublic, viewableIDsNull, sharedIDsNotOwner1Half2);
     assertEquals(searchResults.size(), (numApps/4), "Incorrect result count");
 
     // Using ALL should see extra beyond owned. All or half of items where not the owner.
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsNotOwner1, sharedIDsNull);
     assertEquals(searchResults.size(), numApps, "Incorrect result count");
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsNotOwner1Half1, sharedIDsNull);
     assertEquals(searchResults.size(), (numApps/2 + numApps/4), "Incorrect result count");
-    searchResults = dao.getApps(rOwner1, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
+    searchResults = dao.getApps(rOwner1, null, verifiedSearchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP, startAfterNull,
                                 versionSpecifiedNull, showDeletedFalse, listTypeAll, viewableIDsNotOwner1Half2, sharedIDsNull);
     assertEquals(searchResults.size(), (numApps/2 + numApps/4), "Incorrect result count");
   }

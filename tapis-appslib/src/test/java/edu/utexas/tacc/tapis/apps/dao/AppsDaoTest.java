@@ -247,7 +247,7 @@ public class AppsDaoTest
     boolean appCreated = dao.createApp(rOwner1, app0, gson.toJson(app0), rawDataEmptyJson);
     Assert.assertTrue(appCreated, "Item not created, id: " + app0.getId() + " version: " + app0.getVersion());
     System.out.println("Created item, id: " + app0.getId() + " version: " + app0.getVersion());
-    List<App> apps = dao.getApps(rOwner1, null, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
+    List<App> apps = dao.getApps(rOwner1, null, null, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
                                  startAfterNull, versionSpecifiedNull, showDeletedFalse, listTypeOwned,
                                  setOfIDsNull, setOfIDsNull);
     for (App app : apps)
@@ -359,7 +359,7 @@ public class AppsDaoTest
 
     // Use search to pick out an app and make sure we get just the latest version
     var searchList = Collections.singletonList("id.eq." + app1a.getId());
-    List<App> apps = dao.getApps(rOwner1, searchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
+    List<App> apps = dao.getApps(rOwner1, null, searchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
                                  startAfterNull, versionSpecifiedNull, showDeletedFalse, listTypeOwned,
                                  setOfIDsNull, setOfIDsNull);
     Assert.assertEquals(apps.size(), 1);
@@ -370,7 +370,7 @@ public class AppsDaoTest
 
     // Now add version to the searchList and confirm we get back all versions
     searchList = Arrays.asList("id.eq." + app1a.getId(), "version.like.%");
-    apps = dao.getApps(rOwner1, searchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
+    apps = dao.getApps(rOwner1, null, searchList, null, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
                        startAfterNull, versionSpecifiedNull, showDeletedFalse, listTypeOwned, setOfIDsNull, setOfIDsNull);
     Assert.assertEquals(apps.size(), 2);
     for (App app : apps) {
