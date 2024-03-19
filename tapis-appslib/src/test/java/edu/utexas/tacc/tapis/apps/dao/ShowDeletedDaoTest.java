@@ -100,18 +100,18 @@ public class ShowDeletedDaoTest
     // None deleted yet so should have all apps
 
     // First check counts. showDeleted = true or false should have total number of resources.
-    int count = dao.getAppsCount(rOwner1, searchListAll, searchASTNull, orderByListNull, startAfterNull,
+    int count = dao.getAppsCount(rOwner1, null, searchListAll, searchASTNull, orderByListNull, startAfterNull,
                                  versionSpecifiedNull, showDeletedFalse, listTypeOwned, setOfIDsNull, setOfIDsNull);
     assertEquals(count, numApps, "Incorrect count for getAppsCount/showDel=false before delete of app");
-    count = dao.getAppsCount(rOwner1, searchListAll, searchASTNull, orderByListNull, startAfterNull, versionSpecifiedNull,
+    count = dao.getAppsCount(rOwner1, null, searchListAll, searchASTNull, orderByListNull, startAfterNull, versionSpecifiedNull,
                              showDeletedTrue, listTypeOwned, setOfIDsNull, setOfIDsNull);
     assertEquals(count, numApps, "Incorrect count for getAppsCount/showDel=true before delete of app");
     // Check retrieving all apps
-    List<App> searchResults = dao.getApps(rOwner1, searchListAll, searchASTNull, DEFAULT_LIMIT, orderByListNull,
+    List<App> searchResults = dao.getApps(rOwner1, null, searchListAll, searchASTNull, DEFAULT_LIMIT, orderByListNull,
                                           DEFAULT_SKIP, startAfterNull, versionSpecifiedNull, showDeletedFalse,
                                           listTypeOwned, setOfIDsNull, setOfIDsNull);
     assertEquals(searchResults.size(), numApps, "Incorrect result count for getApps/showDel=false before delete of app");
-    searchResults = dao.getApps(rOwner1, searchListAll, searchASTNull, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
+    searchResults = dao.getApps(rOwner1, null, searchListAll, searchASTNull, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
                                 startAfterNull, versionSpecifiedNull, showDeletedTrue, listTypeOwned,
                                 setOfIDsNull, setOfIDsNull);
     assertEquals(searchResults.size(), numApps, "Incorrect result count for getApps/showDel=true before delete of app");
@@ -125,19 +125,19 @@ public class ShowDeletedDaoTest
     dao.updateDeleted(rOwner1, tenantName, app0Id, true);
 
     // First check counts. showDeleted = false should return 1 less than total.
-    count = dao.getAppsCount(rOwner1, searchListAll, searchASTNull, orderByListNull, startAfterNull, versionSpecifiedNull,
+    count = dao.getAppsCount(rOwner1, null, searchListAll, searchASTNull, orderByListNull, startAfterNull, versionSpecifiedNull,
                              showDeletedFalse, listTypeOwned, setOfIDsNull, setOfIDsNull);
     assertEquals(count, numApps-1, "Incorrect count for getAppsCount/showDel=false after delete of app");
-    count = dao.getAppsCount(rOwner1, searchListAll, searchASTNull, orderByListNull, startAfterNull, versionSpecifiedNull,
+    count = dao.getAppsCount(rOwner1, null, searchListAll, searchASTNull, orderByListNull, startAfterNull, versionSpecifiedNull,
                              showDeletedTrue, listTypeOwned, setOfIDsNull, setOfIDsNull);
     assertEquals(count, numApps, "Incorrect count for getAppsCount/showDel=true after delete of app");
 
     // Check retrieving all apps
-    searchResults = dao.getApps(rOwner1, searchListAll, searchASTNull, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
+    searchResults = dao.getApps(rOwner1, null, searchListAll, searchASTNull, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
                                 startAfterNull, versionSpecifiedNull, showDeletedFalse, listTypeOwned,
                                 setOfIDsNull, setOfIDsNull);
     assertEquals(searchResults.size(), numApps-1, "Incorrect result count for getApps after delete of app");
-    searchResults = dao.getApps(rOwner1, searchListAll, searchASTNull, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
+    searchResults = dao.getApps(rOwner1, null, searchListAll, searchASTNull, DEFAULT_LIMIT, orderByListNull, DEFAULT_SKIP,
                                 startAfterNull, versionSpecifiedNull, showDeletedTrue, listTypeOwned,
                                 setOfIDsNull, setOfIDsNull);
     assertEquals(searchResults.size(), numApps, "Incorrect result count for getApps after delete of app");

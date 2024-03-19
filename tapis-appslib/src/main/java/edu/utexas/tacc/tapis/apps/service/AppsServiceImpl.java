@@ -6,18 +6,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
-
-import edu.utexas.tacc.tapis.apps.model.*;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import edu.utexas.tacc.tapis.security.client.model.SKShareHasPrivilegeParms;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
@@ -26,6 +22,7 @@ import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
 import edu.utexas.tacc.tapis.systems.client.gen.model.LogicalQueue;
 import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
+import edu.utexas.tacc.tapis.apps.model.*;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
@@ -670,7 +667,7 @@ public class AppsServiceImpl implements AppsService
    * @param appVersion - Version of the app, null or blank for latest version
    * @param requireExecPerm - check for EXECUTE permission as well as READ permission
    * @param impersonationId - use provided Tapis username instead of oboUser when checking auth
-   * @param resourceTenant - use provided tenant instead of oboTenant which fetching resource
+   * @param resourceTenant - use provided tenant instead of oboTenant when fetching resource
    * @return populated instance of an App or null if not found or user not authorized.
    * @throws TapisException - for Tapis related exceptions
    */
@@ -682,18 +679,24 @@ public class AppsServiceImpl implements AppsService
     AppOperation op = AppOperation.read;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
-    // Extract various names for convenience
+    // For clarity and convenience
+    // Allow for option of impersonation. Auth checked below.
     String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
-    String oboOrResourceTenant = StringUtils.isBlank(resourceTenant) ? rUser.getOboTenantId() : resourceTenant;
 
-    // If impersonationId set confirm that it is allowed and determine final obo user.
-    if (!StringUtils.isBlank(impersonationId)) checkImpersonationAllowed(rUser, op, appId, impersonationId);
+    // Determine the tenant for the resource. For user request always oboTenant, for svc request may be overridden
+    String resTenant;
+    if (!rUser.isServiceRequest()) resTenant = rUser.getOboTenantId();
+    else resTenant = (StringUtils.isBlank(resourceTenant)) ? rUser.getOboTenantId() : resourceTenant;
+
+    // If impersonationId set confirm that it is allowed.
+    //  - allowed for certain Tapis services and for a tenant admin
+    if (!StringUtils.isBlank(impersonationId)) checkImpersonateUserAllowed(rUser, op, appId, impersonationId, resTenant);
     // If resourceTenant set confirm it is allowed
     if (!StringUtils.isBlank(resourceTenant)) checkResourceTenantAllowed(rUser, op, appId, resourceTenant);
 
     // Fetch the app. We need to make sure it exists and is not deleted.
     // Also, knowing app owner is useful here. We can skip auth checking.
-    App app = dao.getApp(oboOrResourceTenant, appId, appVersion);
+    App app = dao.getApp(resTenant, appId, appVersion);
     if (app == null) return null;
 
     // ------------------------- Check authorization -------------------------
@@ -738,7 +741,10 @@ public class AppsServiceImpl implements AppsService
     app.setSharedWithUsers(appShare.getUserList());
     // Update sharedAppCtx unless owner is making the request
     // NOTE: Grantor is always app owner
-    if (!isOwner && (sharedWithUser || appShare.isPublic())) app.setSharedAppCtx(owner);
+    if (!isOwner && (sharedWithUser || appShare.isPublic()))
+    {
+      app.setSharedAppCtx(owner);
+    }
 
     return app;
   }
@@ -752,20 +758,30 @@ public class AppsServiceImpl implements AppsService
    * @param startAfter - where to start when sorting, e.g. orderBy=id(asc)&startAfter=101 (may not be used with skip)
    * @param includeDeleted - whether to included resources that have been marked as deleted.
    * @param listType - allows for filtering results based on authorization: OWNED, SHARED_PUBLIC, ALL
+   * @param impersonationId - use provided Tapis username instead of oboUser when checking auth
    * @return Count of App objects
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
   public int getAppsTotalCount(ResourceRequestUser rUser, List<String> searchList, List<OrderBy> orderByList,
-                               String startAfter, boolean includeDeleted, String listType)
+                               String startAfter, boolean includeDeleted, String listType, String impersonationId)
           throws TapisException, TapisClientException
   {
+    AppOperation op = AppOperation.read;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+
+    // For convenience and clarity
+    String tenant = rUser.getOboTenantId();
+    // Allow for option of impersonation.
+    String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
+    // If impersonationId set confirm that it is allowed
+    //  - allowed for certain Tapis services and for a tenant admin
+    if (!StringUtils.isBlank(impersonationId)) checkImpersonateUserAllowed(rUser, op, null, impersonationId, tenant);
 
     // Process listType. Figure out how we will filter based on authorization. OWNED, ALL, etc.
     // If no listType provided use the default
     if (StringUtils.isBlank(listType)) listType = DEFAULT_LIST_TYPE.name();
-    // Validate the listType enum (case insensitive).
+    // Validate the listType enum (case-insensitive).
     listType = listType.toUpperCase();
     if (!EnumUtils.isValidEnum(AuthListType.class, listType))
     {
@@ -780,7 +796,7 @@ public class AppsServiceImpl implements AppsService
     boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum); // Include only publicly shared
     boolean sharedOnly = AuthListType.SHARED_DIRECT.equals(listTypeEnum); // Include only shared directly with user
     boolean mine = AuthListType.MINE.equals(listTypeEnum);                // Include owned and directly shared with user
-    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);       // Include only directly granted READ/MODIFY
+    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);   // Include only directly granted READ/MODIFY
 
     // Build verified list of search conditions and check if any search conditions involve the version attribute
     boolean versionSpecified = false;
@@ -807,17 +823,17 @@ public class AppsServiceImpl implements AppsService
 
     // If needed, get IDs for items for which requester has READ or MODIFY permission
     Set<String> viewableIDs = new HashSet<>();
-    if (allItems || readPermOnly) viewableIDs = getViewableAppIDs(rUser);
+    if (allItems || readPermOnly) viewableIDs = getViewableAppIDs(rUser, oboOrImpersonatedUser);
 
     // If needed, get IDs for items shared with the requester or only shared publicly.
     Set<String> sharedIDs = new HashSet<>();
-    if (allItems) sharedIDs = getSharedAppIDs(rUser, false, false);
-    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, true, false);
-    else if (sharedOnly || mine) sharedIDs = getSharedAppIDs(rUser, false, true);
+    if (allItems) sharedIDs = getSharedAppIDs(rUser, oboOrImpersonatedUser, false, false);
+    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, oboOrImpersonatedUser, true, false);
+    else if (sharedOnly || mine) sharedIDs = getSharedAppIDs(rUser, oboOrImpersonatedUser, false, true);
 
     // Count all allowed systems matching the search conditions
-    return dao.getAppsCount(rUser, verifiedSearchList, null, orderByList, startAfter, versionSpecified, includeDeleted,
-                            listTypeEnum, viewableIDs, sharedIDs);
+    return dao.getAppsCount(rUser, oboOrImpersonatedUser, verifiedSearchList, null, orderByList, startAfter,
+                            versionSpecified, includeDeleted, listTypeEnum, viewableIDs, sharedIDs);
   }
 
   /**
@@ -832,15 +848,27 @@ public class AppsServiceImpl implements AppsService
    * @param startAfter - where to start when sorting, e.g. limit=10&orderBy=id(asc)&startAfter=101 (may not be used with skip)
    * @param includeDeleted - whether to included resources that have been marked as deleted.
    * @param listType - allows for filtering results based on authorization: OWNED, SHARED_PUBLIC, ALL
+   * @param fetchShareInfo - indicates if sharing info should be fetched
+   * @param impersonationId - use provided Tapis username instead of oboUser when checking auth
    * @return List of App objects
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
   public List<App> getApps(ResourceRequestUser rUser, List<String> searchList, int limit, List<OrderBy> orderByList,
-                           int skip, String startAfter, boolean includeDeleted, String listType, boolean fetchShareInfo)
+                           int skip, String startAfter, boolean includeDeleted, String listType, boolean fetchShareInfo,
+                           String impersonationId)
           throws TapisException, TapisClientException
   {
+    AppOperation op = AppOperation.read;
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+
+    // For convenience and clarity
+    String tenant = rUser.getOboTenantId();
+    // Allow for option of impersonation.
+    String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
+    // If impersonationId set confirm that it is allowed
+    //  - allowed for certain Tapis services and for a tenant admin
+    if (!StringUtils.isBlank(impersonationId)) checkImpersonateUserAllowed(rUser, op, null, impersonationId, tenant);
 
     // Process listType. Figure out how we will filter based on authorization. OWNED, ALL, etc.
     // If no listType provided use the default
@@ -887,15 +915,15 @@ public class AppsServiceImpl implements AppsService
 
     // If needed, get IDs for items for which requester has READ or MODIFY permission
     Set<String> viewableIDs = new HashSet<>();
-    if (allItems || readPermOnly) viewableIDs = getViewableAppIDs(rUser);
+    if (allItems || readPermOnly) viewableIDs = getViewableAppIDs(rUser, oboOrImpersonatedUser);
 
     // If needed, get IDs for items shared with the requester or only shared publicly.
     Set<String> sharedIDs = new HashSet<>();
-    if (allItems) sharedIDs = getSharedAppIDs(rUser, false, false);
-    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, true, false);
-    else if (sharedOnly || mine) sharedIDs = getSharedAppIDs(rUser, false, true);
+    if (allItems) sharedIDs = getSharedAppIDs(rUser, oboOrImpersonatedUser, false, false);
+    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, oboOrImpersonatedUser, true, false);
+    else if (sharedOnly || mine) sharedIDs = getSharedAppIDs(rUser, oboOrImpersonatedUser, false, true);
 
-    List<App> apps = dao.getApps(rUser, verifiedSearchList, null, limit, orderByList, skip, startAfter,
+    List<App> apps = dao.getApps(rUser, oboOrImpersonatedUser, verifiedSearchList, null, limit, orderByList, skip, startAfter,
                                  versionSpecified, includeDeleted, listTypeEnum, viewableIDs, sharedIDs);
     // Update dynamically computed info.
     // Fetch share info only if requested by caller
@@ -929,7 +957,7 @@ public class AppsServiceImpl implements AppsService
   {
     // If search string is empty delegate to getApps()
     if (StringUtils.isBlank(sqlSearchStr)) return getApps(rUser, null, limit, orderByList, skip, startAfter,
-                                                          includeDeleted, listType, fetchShareInfo);
+                                                          includeDeleted, listType, fetchShareInfo, null);
 
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
 
@@ -975,19 +1003,19 @@ public class AppsServiceImpl implements AppsService
 
     // If needed, get IDs for items for which requester has READ or MODIFY permission
     Set<String> viewableIDs = new HashSet<>();
-    if (allItems || readPermOnly) viewableIDs = getViewableAppIDs(rUser);
+    if (allItems || readPermOnly) viewableIDs = getViewableAppIDs(rUser, rUser.getOboUserId());
 
     // If needed, get IDs for items shared with the requester or only shared publicly.
     Set<String> sharedIDs = new HashSet<>();
-    if (allItems) sharedIDs = getSharedAppIDs(rUser, false, false);
-    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, true, false);
-    else if (sharedOnly || mine) sharedIDs = getSharedAppIDs(rUser, false, true);
+    if (allItems) sharedIDs = getSharedAppIDs(rUser, rUser.getOboUserId(), false, false);
+    else if (publicOnly) sharedIDs = getSharedAppIDs(rUser, rUser.getOboUserId(), true, false);
+    else if (sharedOnly || mine) sharedIDs = getSharedAppIDs(rUser, rUser.getOboUserId(), false, true);
 
     // Pass in null for versionSpecified since the Dao makes the same call we would make, so no time saved doing it here.
     Boolean versionSpecified = null;
 
     // Get all allowed apps matching the search conditions
-    List<App> apps = dao.getApps(rUser, null, searchAST, limit, orderByList, skip, startAfter, versionSpecified,
+    List<App> apps = dao.getApps(rUser, null, null, searchAST, limit, orderByList, skip, startAfter, versionSpecified,
                                  includeDeleted, listTypeEnum, viewableIDs, sharedIDs);
     // Update dynamically computed info.
     // Fetch share info only if requested by caller
@@ -1749,13 +1777,14 @@ public class AppsServiceImpl implements AppsService
   /**
    * Determine all apps for which the user has READ or MODIFY permission.
    */
-  private Set<String> getViewableAppIDs(ResourceRequestUser rUser) throws TapisException, TapisClientException
+  private Set<String> getViewableAppIDs(ResourceRequestUser rUser, String oboUser)
+          throws TapisException, TapisClientException
   {
     var appIDs = new HashSet<String>();
     // Use implies to filter permissions returned. Without implies all permissions for apps, etc. are returned.
     String impliedBy = null;
     String implies = String.format("%s:%s:*:*", PERM_SPEC_PREFIX, rUser.getOboTenantId());
-    var userPerms = getSKClient().getUserPerms(rUser.getOboTenantId(), rUser.getOboUserId(), implies, impliedBy);
+    var userPerms = getSKClient().getUserPerms(rUser.getOboTenantId(), oboUser, implies, impliedBy);
     // Check each perm to see if it allows user READ access.
     for (String userPerm : userPerms)
     {
@@ -1790,16 +1819,16 @@ public class AppsServiceImpl implements AppsService
   /**
    * Determine apps that are shared with a user.
    * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param oboUser - Since tenant admin can impersonate, this might be different from rUser.getOboUser()
    * @param publicOnly - Include only items shared public
    * @param directOnly - Include only items shared directly with user. Exclude publicly shared items
    */
-  private Set<String> getSharedAppIDs(ResourceRequestUser rUser, boolean publicOnly, boolean directOnly)
+  private Set<String> getSharedAppIDs(ResourceRequestUser rUser, String oboUser, boolean publicOnly, boolean directOnly)
           throws TapisException, TapisClientException
   {
     var appIDs = new HashSet<String>();
     // Extract various names for convenience
     String oboTenantId = rUser.getOboTenantId();
-    String oboUserId = rUser.getOboUserId();
 
     // ------------------- Make a call to retrieve the app sharing -----------------------
     // Create SKShareGetSharesParms needed for SK calls.
@@ -1808,7 +1837,7 @@ public class AppsServiceImpl implements AppsService
     skParms.setTenant(oboTenantId);
     // Set grantee based on whether we want just public or not.
     if (publicOnly) skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
-    else skParms.setGrantee(oboUserId);
+    else skParms.setGrantee(oboUser);
 
     // Determine if we should include public or not.
     if (directOnly) skParms.setIncludePublicGrantees(false);
@@ -2418,21 +2447,33 @@ public class AppsServiceImpl implements AppsService
   /**
    * Confirm that caller is allowed to impersonate a Tapis user.
    * Must be a service request from a service allowed to impersonate
+   * impersonationId and resourceTenant used for logging only.
    *
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param op - operation name
    * @param appId - name of the app
    */
-  private void checkImpersonationAllowed(ResourceRequestUser rUser, AppOperation op, String appId, String impersonationId)
+  private void checkImpersonateUserAllowed(ResourceRequestUser rUser, AppOperation op, String appId,
+                                           String impersonationId, String resourceTenant)
+  throws TapisException, TapisClientException
   {
+    // If a user request and user is a tenant admin then log message and allow.
+    if (!rUser.isServiceRequest() && hasAdminRole(rUser))
+    {
+      // A tenant admin is impersonating, log message and allow
+      _log.info(LibUtils.getMsgAuth("APPLIB_AUTH_USR_IMPERSONATE", rUser, appId, op.name(), impersonationId, resourceTenant));
+      return;
+    }
     // If a service request the username will be the service name. E.g. files, jobs, streams, etc
     String svcName = rUser.getJwtUserId();
-    if (!rUser.isServiceRequest() || !SVCLIST_IMPERSONATE.contains(svcName))
+    // If a service request and service is in the allowed list then log message and allow.
+    if (rUser.isServiceRequest() && SVCLIST_IMPERSONATE.contains(svcName))
     {
-      throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH_IMPERSONATE", rUser, appId, op.name(), impersonationId));
+      _log.info(LibUtils.getMsgAuth("APPLIB_AUTH_SVC_IMPERSONATE", rUser, appId, op.name(), impersonationId, resourceTenant));
+      return;
     }
-    // An allowed service is impersonating, log it
-    _log.info(LibUtils.getMsgAuth("APPLIB_AUTH_IMPERSONATE", rUser, appId, op.name(), impersonationId));
+    // Deny authorization
+    throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH_IMPERSONATE", rUser, appId, op.name(), impersonationId, resourceTenant));
   }
 
   /**
@@ -2447,12 +2488,14 @@ public class AppsServiceImpl implements AppsService
   {
     // If a service request the username will be the service name. E.g. files, jobs, streams, etc
     String svcName = rUser.getJwtUserId();
-    if (!rUser.isServiceRequest() || !SVCLIST_RESOURCETENANT.contains(svcName))
+    // If a service request and service is in the allowed list then log message and allow.
+    if (rUser.isServiceRequest() && SVCLIST_RESOURCETENANT.contains(svcName))
     {
-      throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH_RESOURCETENANT", rUser, appId, op.name(), resourceTenant));
+      _log.trace(LibUtils.getMsgAuth("APPLIB_AUTH_RESOURCETENANT", rUser, appId, op.name(), resourceTenant));
+      return;
     }
-    // An allowed service is impersonating, log it
-    _log.trace(LibUtils.getMsgAuth("APPLIB_AUTH_RESOURCETENANT", rUser, appId, op.name(), resourceTenant));
+    // Deny authorization
+    throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH_RESOURCETENANT", rUser, appId, op.name(), resourceTenant));
   }
 
   /**

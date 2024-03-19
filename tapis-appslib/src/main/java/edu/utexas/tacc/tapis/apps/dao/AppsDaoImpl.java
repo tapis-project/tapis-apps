@@ -1074,6 +1074,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * NOTE: Use versionSpecified = null to indicate this method should determine if a search condition specifies
    *       which versions to retrieve.
    * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param oboUser - since a tenant admin can impersonate, obo User is not always rUser.getOboUser()
    * @param searchList - optional list of conditions used for searching
    * @param searchAST - AST containing search conditions
    * @param orderByList - orderBy entries for sorting, e.g. orderBy=created(desc).
@@ -1088,7 +1089,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @throws TapisException - on error
    */
   @Override
-  public int getAppsCount(ResourceRequestUser rUser, List<String> searchList, ASTNode searchAST,
+  public int getAppsCount(ResourceRequestUser rUser, String oboUser, List<String> searchList, ASTNode searchAST,
                           List<OrderBy> orderByList, String startAfter, Boolean versionSpecified, boolean includeDeleted,
                           AuthListType listType, Set<String> viewableIDs, Set<String> sharedIDs)
           throws TapisException
@@ -1097,13 +1098,15 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
     if (listType == null) listType = DEFAULT_LIST_TYPE;
     // For convenience
     String oboTenant = rUser.getOboTenantId();
-    String oboUser = rUser.getOboUserId();
     boolean allItems = AuthListType.ALL.equals(listType);
     boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listType);
     boolean ownedOnly = AuthListType.OWNED.equals(listType);
     boolean sharedOnly = AuthListType.SHARED_DIRECT.equals(listType);
     boolean mine = AuthListType.MINE.equals(listType);
     boolean readPermOnly = AuthListType.READ_PERM.equals(listType);
+
+    // Make sure we have an oboUser
+    if (StringUtils.isBlank(oboUser)) oboUser = rUser.getOboUserId();
 
     // If only looking for public items or only looking for directly shared items
     //   and there are none in the list we are done.
@@ -1264,6 +1267,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    *       which versions to retrieve.
    * WARNING: If both searchList and searchAST provided only searchList is used.
    * @param rUser - ResourceRequestUser containing tenant, user and request info
+   * @param oboUser - since a tenant admin can impersonate, obo User is not always rUser.getOboUser()
    * @param searchList - optional list of conditions used for searching
    * @param searchAST - AST containing search conditions
    * @param limit - indicates maximum number of results to be included, -1 for unlimited
@@ -1280,7 +1284,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
    * @throws TapisException - on error
    */
   @Override
-  public List<App> getApps(ResourceRequestUser rUser, List<String> searchList, ASTNode searchAST, int limit,
+  public List<App> getApps(ResourceRequestUser rUser, String oboUser, List<String> searchList, ASTNode searchAST, int limit,
                            List<OrderBy> orderByList, int skip, String startAfter, Boolean versionSpecified,
                            boolean includeDeleted, AuthListType listType, Set<String> viewableIDs, Set<String> sharedIDs)
           throws TapisException
@@ -1293,13 +1297,15 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
 
     // For convenience
     String oboTenant = rUser.getOboTenantId();
-    String oboUser = rUser.getOboUserId();
     boolean allItems = AuthListType.ALL.equals(listType);
     boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listType);
     boolean ownedOnly = AuthListType.OWNED.equals(listType);
     boolean sharedOnly = AuthListType.SHARED_DIRECT.equals(listType);
     boolean mine = AuthListType.MINE.equals(listType);
     boolean readPermOnly = AuthListType.READ_PERM.equals(listType);
+
+    // Make sure we have an oboUser
+    if (StringUtils.isBlank(oboUser)) oboUser = rUser.getOboUserId();
 
     // If only looking for public items or only looking for directly shared items
     //   and there are none in the list we are done.

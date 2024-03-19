@@ -56,12 +56,12 @@ public interface AppsDao
 
   App getApp(String tenant, String id, String version, boolean includeDeleted) throws TapisException;
 
-  int getAppsCount(ResourceRequestUser rUser, List<String> searchList, ASTNode searchAST, List<OrderBy> orderByList,
+  int getAppsCount(ResourceRequestUser rUser, String oboUser, List<String> searchList, ASTNode searchAST, List<OrderBy> orderByList,
                    String startAfter, Boolean versionSpecified, boolean showDeleted, AuthListType listType,
                    Set<String> viewableAppIDs, Set<String> sharedAppIDs)
           throws TapisException;
 
-  List<App> getApps(ResourceRequestUser rUser, List<String> searchList, ASTNode searchAST, int limit,
+  List<App> getApps(ResourceRequestUser rUser, String oboUser, List<String> searchList, ASTNode searchAST, int limit,
                     List<OrderBy> orderByList, int skip, String startAfter, Boolean versionSpecified,
                     boolean showDeleted, AuthListType listType, Set<String> viewableAppIDs, Set<String> sharedAppIDs)
           throws TapisException;
