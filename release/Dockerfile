@@ -2,25 +2,22 @@
 # Dockerfile for Tapis Applications service
 # This file must be placed in the build directory (api/target)
 #   before docker build is run.
-#
-#   $TAG            the tag for image identification
-#
 ##########################################################################
 FROM eclipse-temurin:17-jdk-jammy
 
 MAINTAINER CIC Support <cicsupport@tacc.utexas.edu>
 
 # Install less. Add user tapis
-RUN apt update && apt install -y less && useradd -m tapis
+RUN apt update && apt install -y less vim-tiny && useradd -m tapis
 
 USER tapis
 
 WORKDIR /home/tapis/app
 
 # Copy jar file into place
-COPY "apps.jar" .
-COPY /dependencies dependencies
-
+COPY --chown=tapis:tapis "apps.jar" .
+COPY --chown=tapis:tapis "logback.xml" .
+COPY --chown=tapis:tapis /dependencies dependencies
 
 # Environment variables for testing without JWT
 # ENV TAPIS_ENVONLY_ALLOW_TEST_HEADER_PARMS true
@@ -47,4 +44,4 @@ ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,address=8000,server=y,s
 # Server port, debug port and jmx port
 EXPOSE 8080 8000 9090
 
-CMD java -Xms4g -Xmx4g ${JAVA_MODULE_OPTS} -cp "apps.jar:dependencies/*" edu.utexas.tacc.tapis.apps.api.AppsApplication
+CMD java -Xms4g -Xmx4g ${JAVA_MODULE_OPTS} -Dlogback.configurationFile=./logback.xml -cp "apps.jar:dependencies/*" edu.utexas.tacc.tapis.apps.api.AppsApplication
