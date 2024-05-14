@@ -8,13 +8,14 @@ https://tapis.readthedocs.io/en/latest/technical/apps.html
 You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
-## 1.6.2 - 2024-03-19
+## 1.6.2 - 2024-04-24
 
 Incremental improvements.
 
 ### New features:
-- Run service in docker container as non-root user.
 - Allow tenant admin to impersonate a Tapis user when calling getApp, getApps.
+- Run service in docker container as non-root user.
+- Set default log level to INFO. Allow for dynamic changing of log level.
 
 ### Bug fixes:
 - Fix bug with searching on versionEnabled attribute.
