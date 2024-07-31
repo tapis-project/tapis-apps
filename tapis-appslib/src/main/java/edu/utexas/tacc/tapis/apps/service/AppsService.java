@@ -12,7 +12,6 @@ import edu.utexas.tacc.tapis.apps.model.AppShare;
 
 import org.jvnet.hk2.annotations.Contract;
 
-import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Set;

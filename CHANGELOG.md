@@ -8,6 +8,18 @@ https://tapis.readthedocs.io/en/latest/technical/apps.html
 You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
+## 1.6.3 - 2024-??-??
+
+Incremental improvements.
+Add logging of warning messages when authorization is denied.
+
+### New features:
+- None
+
+### Bug fixes:
+- None
+
+---------------------------------------------------------------------------
 ## 1.6.2 - 2024-04-24
 
 Incremental improvements.

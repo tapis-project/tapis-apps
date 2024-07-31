@@ -193,7 +193,9 @@ public class AppsServiceImpl implements AppsService
     // Check if app with id+version already exists
     if (dao.checkForApp(tenant, appId, appVersion, true))
     {
-      throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_EXISTS", rUser, appId, appVersion));
+      String msg = LibUtils.getMsgAuth("APPLIB_APP_EXISTS", rUser, appId, appVersion);
+      _log.warn(msg);
+      throw new IllegalStateException(msg);
     }
 
     // Make sure owner, notes and tags are all set
@@ -285,11 +287,13 @@ public class AppsServiceImpl implements AppsService
     if (origApp.isLocked())
     {
       // Not authorized, throw an exception
-      throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH_LOCKED", rUser, appId, appVersion, methodName));
+      String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH_LOCKED", rUser, appId, appVersion, methodName);
+      _log.warn(msg);
+      throw new ForbiddenException(msg);
     }
 
     // If needed process request to create list of env variables with proper defaults.
-    // Note that because this is a patch DO NOT fill in with non-null unless it is in the request.
+    // Note that because this is a patch, DO NOT fill in with non-null unless it is in the request.
     // On service side we rely on null to indicate it was not in the patch request.
     if (patchApp.getJobAttributes() != null &&
         patchApp.getJobAttributes().getParameterSet() != null &&
@@ -363,7 +367,9 @@ public class AppsServiceImpl implements AppsService
     if (origApp.isLocked())
     {
       // Not authorized, throw an exception
-      throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH_LOCKED", rUser, appId, appVersion, methodName));
+      String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH_LOCKED", rUser, appId, appVersion, methodName);
+      _log.warn(msg);
+      throw new ForbiddenException(msg);
     }
 
     // Create fully populated App with changes merged in
@@ -725,7 +731,9 @@ public class AppsServiceImpl implements AppsService
       // If not permitted or shared then deny
       if (!isPermitted && !sharedWithUser)
       {
-        throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()));
+        String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name());
+        _log.warn(msg);
+        throw new ForbiddenException(msg);
       }
 
       // If flag is set to also require EXECUTE perm then make explicit auth call to make sure user has exec perm
@@ -1768,8 +1776,18 @@ public class AppsServiceImpl implements AppsService
       // Unfortunately this means auth check for svc in 2 places but not clear how to avoid it.
       //   On the bright side it means at worst operation will be denied when maybe it should be allowed which is better
       //   than the other way around.
-      if (rUser.isServiceRequest()) throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, id, opStr));
-      else throw new TapisException(LibUtils.getMsgAuth("APPLIB_PERM_OWNER_UPDATE", rUser, id, opStr));
+      if (rUser.isServiceRequest())
+      {
+        String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, id, opStr);
+        _log.warn(msg);
+        throw new ForbiddenException(msg);
+      }
+      else
+      {
+        String msg = LibUtils.getMsgAuth("APPLIB_PERM_OWNER_UPDATE", rUser, id, opStr);
+        _log.warn(msg);
+        throw new TapisException(msg);
+      }
     }
     return owner;
   }
@@ -2313,7 +2331,11 @@ public class AppsServiceImpl implements AppsService
   {
     // If ever called and not a svc request then fall back to denied
     if (!rUser.isServiceRequest())
-      throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()));
+    {
+      String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name());
+      _log.warn(msg);
+      throw new ForbiddenException(msg);
+    }
 
     // This is a service request. The username will be the service name. E.g. files, jobs, streams, etc
     String svcName = rUser.getJwtUserId();
@@ -2415,7 +2437,9 @@ public class AppsServiceImpl implements AppsService
         break;
     }
     // Not authorized, throw an exception
-    throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name()));
+    String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name());
+    _log.warn(msg);
+    throw new ForbiddenException(msg);
   }
 
   /**
@@ -2473,7 +2497,9 @@ public class AppsServiceImpl implements AppsService
       return;
     }
     // Deny authorization
-    throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH_IMPERSONATE", rUser, appId, op.name(), impersonationId, resourceTenant));
+    String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH_IMPERSONATE", rUser, appId, op.name(), impersonationId, resourceTenant);
+    _log.warn(msg);
+    throw new ForbiddenException(msg);
   }
 
   /**
@@ -2495,7 +2521,9 @@ public class AppsServiceImpl implements AppsService
       return;
     }
     // Deny authorization
-    throw new ForbiddenException(LibUtils.getMsgAuth("APPLIB_UNAUTH_RESOURCETENANT", rUser, appId, op.name(), resourceTenant));
+    String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH_RESOURCETENANT", rUser, appId, op.name(), resourceTenant);
+    _log.warn(msg);
+    throw new ForbiddenException(msg);
   }
 
   /**
