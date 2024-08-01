@@ -280,7 +280,9 @@ public class AppsServiceImpl implements AppsService
     App origApp = dao.getApp(resourceTenantId, appId, appVersion);
     if (origApp == null)
     {
-      throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, appId, appVersion));
+      String msg = LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, appId, appVersion);
+      _log.debug(msg);
+      throw new NotFoundException(msg);
     }
 
     // ------------------------- Check for locked app -------------------------
@@ -360,7 +362,9 @@ public class AppsServiceImpl implements AppsService
     App origApp = dao.getApp(tenant, appId, appVersion);
     if (origApp == null)
     {
-      throw new NotFoundException(LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, appId, appVersion));
+      String msg = LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, appId, appVersion);
+      _log.debug(msg);
+      throw new NotFoundException(msg);
     }
 
     // ------------------------- Check for locked app -------------------------
@@ -517,8 +521,7 @@ public class AppsServiceImpl implements AppsService
          throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", rUser, appId));
 
     // App must already exist and not be deleted
-    if (!dao.checkForApp(resourceTenantId, appId, false))
-         throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+    checkForAppWithThrow(rUser,resourceTenantId, appId, false);
 
     // Retrieve the old owner
     String oldOwnerName = dao.getAppOwner(resourceTenantId, appId);
@@ -657,8 +660,7 @@ public class AppsServiceImpl implements AppsService
     String resourceTenantId = rUser.getOboTenantId();
 
     // Resource must exist and not be deleted
-    if (!dao.checkForApp(resourceTenantId, appId, false))
-      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+    checkForAppWithThrow(rUser,resourceTenantId, appId, false);
 
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, op, appId);
@@ -1091,8 +1093,7 @@ public class AppsServiceImpl implements AppsService
     String oboTenant = rUser.getOboTenantId();
 
     // If system does not exist or has been deleted then throw an exception
-    if (!dao.checkForApp(oboTenant, appId, false))
-      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+    checkForAppWithThrow(rUser, oboTenant, appId, false);
 
     // Check to see if owner is trying to update permissions for themselves.
     // If so throw an exception because this would be confusing since owner always has full permissions.
@@ -1252,8 +1253,7 @@ public class AppsServiceImpl implements AppsService
     String resourceTenantId = rUser.getOboTenantId();
 
     // If app does not exist or has been deleted then throw an exception
-    if (!dao.checkForApp(resourceTenantId, appId, false))
-      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+    checkForAppWithThrow(rUser, resourceTenantId, appId, false);
 
     // ------------------------- Check authorization -------------------------
     checkAuth(rUser, op, appId, nullOwner, targetUser, nullPermSet);
@@ -1379,8 +1379,7 @@ public class AppsServiceImpl implements AppsService
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
     // App must already exist and not be deleted
-    if (!dao.checkForApp(resourceTenantId, appId, false))
-      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+    checkForAppWithThrow(rUser, resourceTenantId, appId, false);
 
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, op, appId);
@@ -1403,8 +1402,7 @@ public class AppsServiceImpl implements AppsService
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
     // App must already exist and not be deleted
-    if (!dao.checkForApp(resourceTenantId, appId, false))
-      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+    checkForAppWithThrow(rUser, resourceTenantId, appId, false);
 
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, op, appId);
@@ -1426,8 +1424,7 @@ public class AppsServiceImpl implements AppsService
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
     // App must already exist and not be deleted
-    if (!dao.checkForApp(resourceTenantId, appId, false))
-      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+    checkForAppWithThrow(rUser, resourceTenantId, appId, false);
 
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, op, appId);
@@ -1450,8 +1447,7 @@ public class AppsServiceImpl implements AppsService
       throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
     // App must already exist and not be deleted
-    if (!dao.checkForApp(resourceTenantId, appId, false))
-      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+    checkForAppWithThrow(rUser, resourceTenantId, appId, false);
 
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, op, appId);
@@ -1465,6 +1461,25 @@ public class AppsServiceImpl implements AppsService
   // ************************************************************************
   // **************************  Private Methods  ***************************
   // ************************************************************************
+
+  /**
+   * Use dao to see if app exists. If not throw NOT_FOUND exception.
+   * @param rUser - user making the request
+   * @param resourceTenantId - tenant
+   * @param appId - app id
+   * @param includeDeleted - indicates if deleted records should be included
+   */
+  private void checkForAppWithThrow(ResourceRequestUser rUser, String resourceTenantId, String appId,
+                                    boolean includeDeleted)
+          throws TapisException
+  {
+    if (!dao.checkForApp(resourceTenantId, appId, includeDeleted))
+    {
+      String msg = LibUtils.getMsgAuth(NOT_FOUND, rUser, appId);
+      _log.debug(msg);
+      throw new NotFoundException(msg);
+    }
+  }
 
   /**
    * Update enabled attribute for entire app or specific app version
@@ -1487,8 +1502,7 @@ public class AppsServiceImpl implements AppsService
     String resourceTenantId = rUser.getOboTenantId();
 
     // App must already exist and not be deleted
-    if (!dao.checkForApp(resourceTenantId, appId, false))
-      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+    checkForAppWithThrow(rUser, resourceTenantId, appId, false);
 
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, appOp, appId);
@@ -1522,8 +1536,7 @@ public class AppsServiceImpl implements AppsService
     String resourceTenantId = rUser.getOboTenantId();
 
     // App must already exist and not be deleted
-    if (!dao.checkForApp(resourceTenantId, appId, false))
-      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+    checkForAppWithThrow(rUser, resourceTenantId, appId, false);
 
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, appOp, appId);
@@ -1556,8 +1569,7 @@ public class AppsServiceImpl implements AppsService
     String resourceTenantId = rUser.getOboTenantId();
 
     // App must exist
-    if (!dao.checkForApp(resourceTenantId, appId, true))
-      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
+    checkForAppWithThrow(rUser, resourceTenantId, appId, true);
 
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, appOp, appId);
@@ -2598,11 +2610,6 @@ public class AppsServiceImpl implements AppsService
     }
 
     String oboTenantId = rUser.getOboTenantId();
-
-    // We need owner to check auth and if app not there cannot find owner, so
-    // if app does not exist then return null
-    if (!dao.checkForApp(oboTenantId, appId, true))
-      throw new NotFoundException(LibUtils.getMsgAuth(NOT_FOUND, rUser, appId));
 
     // ------------------------- Check authorization -------------------------
     checkAuthOwnerUnknown(rUser, op, appId);

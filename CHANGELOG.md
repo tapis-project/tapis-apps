@@ -11,7 +11,7 @@ https://tapis-project.github.io/live-docs
 ## 1.6.3 - 2024-??-??
 
 Incremental improvements.
-Add logging of warning messages when authorization is denied.
+Add log messages for when access is denied or resource not found.
 
 ### New features:
 - None
