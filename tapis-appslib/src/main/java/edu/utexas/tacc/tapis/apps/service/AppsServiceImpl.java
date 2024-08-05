@@ -281,7 +281,7 @@ public class AppsServiceImpl implements AppsService
     if (origApp == null)
     {
       String msg = LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, appId, appVersion);
-      _log.debug(msg);
+      _log.info(msg);
       throw new NotFoundException(msg);
     }
 
@@ -363,7 +363,7 @@ public class AppsServiceImpl implements AppsService
     if (origApp == null)
     {
       String msg = LibUtils.getMsgAuth("APPLIB_VER_NOT_FOUND", rUser, appId, appVersion);
-      _log.debug(msg);
+      _log.info(msg);
       throw new NotFoundException(msg);
     }
 
@@ -734,7 +734,7 @@ public class AppsServiceImpl implements AppsService
       if (!isPermitted && !sharedWithUser)
       {
         String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name());
-        _log.warn(msg);
+        _log.info(msg);
         throw new ForbiddenException(msg);
       }
 
@@ -1476,7 +1476,7 @@ public class AppsServiceImpl implements AppsService
     if (!dao.checkForApp(resourceTenantId, appId, includeDeleted))
     {
       String msg = LibUtils.getMsgAuth(NOT_FOUND, rUser, appId);
-      _log.debug(msg);
+      _log.info(msg);
       throw new NotFoundException(msg);
     }
   }
@@ -1791,13 +1791,13 @@ public class AppsServiceImpl implements AppsService
       if (rUser.isServiceRequest())
       {
         String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, id, opStr);
-        _log.warn(msg);
+        _log.info(msg);
         throw new ForbiddenException(msg);
       }
       else
       {
         String msg = LibUtils.getMsgAuth("APPLIB_PERM_OWNER_UPDATE", rUser, id, opStr);
-        _log.warn(msg);
+        _log.info(msg);
         throw new TapisException(msg);
       }
     }
@@ -2450,7 +2450,7 @@ public class AppsServiceImpl implements AppsService
     }
     // Not authorized, throw an exception
     String msg = LibUtils.getMsgAuth("APPLIB_UNAUTH", rUser, appId, op.name());
-    _log.warn(msg);
+    _log.info(msg);
     throw new ForbiddenException(msg);
   }
 
@@ -2529,7 +2529,7 @@ public class AppsServiceImpl implements AppsService
     // If a service request and service is in the allowed list then log message and allow.
     if (rUser.isServiceRequest() && SVCLIST_RESOURCETENANT.contains(svcName))
     {
-      _log.trace(LibUtils.getMsgAuth("APPLIB_AUTH_RESOURCETENANT", rUser, appId, op.name(), resourceTenant));
+      _log.info(LibUtils.getMsgAuth("APPLIB_AUTH_RESOURCETENANT", rUser, appId, op.name(), resourceTenant));
       return;
     }
     // Deny authorization

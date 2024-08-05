@@ -8,7 +8,7 @@ https://tapis.readthedocs.io/en/latest/technical/apps.html
 You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
-## 1.6.3 - 2024-??-??
+## 1.6.3 - 2024-08-05
 
 Incremental improvements.
 Add log messages for when access is denied or resource not found.
