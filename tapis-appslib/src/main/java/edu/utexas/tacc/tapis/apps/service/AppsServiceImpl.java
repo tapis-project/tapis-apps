@@ -2367,7 +2367,7 @@ public class AppsServiceImpl implements AppsService
    * A check should be made for app existence before calling this method.
    * If no owner is passed in and one cannot be found then an error is logged and authorization is denied.
    * Operations:
-   *  Create -      must be owner or have admin role
+   *  Create -      must be owner or have admin role or have MODIFY permission (to allow for new app versions)
    *  Delete -      must be owner or have admin role
    *  ChangeOwner - must be owner or have admin role
    *  GrantPerm -   must be owner or have admin role
@@ -2408,7 +2408,6 @@ public class AppsServiceImpl implements AppsService
       throw new TapisException(msg);
     }
     switch(op) {
-      case create:
       case enable:
       case disable:
       case lock:
@@ -2429,6 +2428,11 @@ public class AppsServiceImpl implements AppsService
       case getPerms:
         if (owner.equals(oboOrImpersonatedUser) || hasAdminRole(rUser) ||
                 isPermittedAny(rUser, oboTenant, oboOrImpersonatedUser, appId, READMODIFY_PERMS))
+          return;
+        break;
+      case create:
+        if (owner.equals(oboOrImpersonatedUser) || hasAdminRole(rUser) ||
+                isPermitted(rUser, oboTenant, oboOrImpersonatedUser, appId, Permission.MODIFY))
           return;
         break;
       case modify:

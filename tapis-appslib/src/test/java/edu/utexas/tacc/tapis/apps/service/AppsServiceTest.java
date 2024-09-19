@@ -1505,6 +1505,9 @@ public class AppsServiceTest
 
   // Test Auth allow
   // Many cases covered during other tests
+  // Test that MODIFY allows for:
+  //    - updating existing version via PUT or PATCH
+  //    - creating new version of existing app
   // Test special cases here:
   //    MODIFY implies READ
 
@@ -1515,6 +1518,7 @@ public class AppsServiceTest
   @Test
   public void testAuthAllow() throws Exception
   {
+    App a;
     App app0 = apps[14];
     // Create app for remaining auth access tests
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
@@ -1523,12 +1527,25 @@ public class AppsServiceTest
     svc.grantUserPermissions(rOwner1, app0.getId(), testUser4, testPermsMODIFY, rawDataEmptyJson);
 
     // READ - allow owner, service, with READ only, with MODIFY only
-    svc.getApp(rOwner1, app0.getId(), app0.getVersion(), false, null, null);
+    a = svc.getApp(rOwner1, app0.getId(), app0.getVersion(), false, null, null);
     svc.getApp(rOwner1, app0.getId(), app0.getVersion(), true, null, null);
     svc.getApp(rFilesSvc, app0.getId(), app0.getVersion(), false, null, null);
     svc.getApp(rUser3, app0.getId(), app0.getVersion(), false, null, null);
     svc.getApp(rUser3, app0.getId(), app0.getVersion(), true, null, null);
     svc.getApp(rUser4, app0.getId(), app0.getVersion(), false, null, null);
+
+    // MODIFY - allow testUser4 to put, patch, create new version
+    // PUT update
+    svc.putApp(rUser4, a, rawDataEmptyJson);
+    // PATCH update
+    PatchApp patchApp = new PatchApp(a.getDescription(), a.getRuntime(), a.getRuntimeVersion(), a.getRuntimeOptions(),
+                                     a.getContainerImage(), a.getJobType(), a.getMaxJobs(), a.getMaxJobsPerUser(),
+                                     a.isStrictFileInputs(), null, a.getTags(), a.getNotes());
+    svc.patchApp(rUser4, app0.getId(), app0.getVersion(), patchApp, rawDataEmptyJson);
+    // Create new version
+    App newAppVersion = new App(a, a.getTenant(), a.getId(), a.getVersion() + "a");
+    svc.createApp(rUser4, newAppVersion, rawDataEmptyJson);
+
     // Jobs should be allowed to impersonate another user
     svc.getApp(rJobsSvc, app0.getId(), null, false, testUser3, null);
   }

@@ -165,7 +165,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       conn = getConnection();
       DSLContext db = DSL.using(conn);
 
-      // Check to see if app exists (even if deleted). If yes then throw IllegalStateException
+      // Check to see if app exists and is deleted. If yes then throw IllegalStateException
       if (isDeleted(db, app.getTenant(), app.getId()))
         throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_DELETED", rUser, app.getId()));
 

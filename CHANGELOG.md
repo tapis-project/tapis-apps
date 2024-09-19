@@ -9,6 +9,17 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.7.1 - 2024-09-18
+
+Bug fix
+
+### New features:
+- None
+
+### Bug fixes:
+- Allow user with MODIFY permission to create new app versions.
+
+---------------------------------------------------------------------------
 ## 1.7.0 - 2024-09-09
 
 New release
