@@ -1593,7 +1593,7 @@ public class AppsServiceTest
     String appId = app0.getId();
     String appVer = app0.getVersion();
     app0 = svc.getApp(rOwner, appId, app0.getVersion(), false, null, null);
-    Assert.assertNull(app0.getSharedAppCtx());
+    Assert.assertNotNull(app0.getSharedAppCtx());
     Assert.assertFalse(app0.isPublic());
 
     //  Create an AppShare from the json

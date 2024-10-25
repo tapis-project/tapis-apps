@@ -749,9 +749,15 @@ public class AppsServiceImpl implements AppsService
     AppShare appShare = getAppShare(rUser, appId, impersonationId, resourceTenant);
     app.setIsPublic(appShare.isPublic());
     app.setSharedWithUsers(appShare.getUserList());
-    // Update sharedAppCtx unless owner is making the request
+    // Update sharedAppCtx.
+    // If owner is making the request we always consider it shared so downstream services (i.e. jobs)
+    //    behave appropriately. Earlier versions of the service did not do this.
+    //    If we do not do this then when owner shares with another user the other user can end up with more privileges
+    //    than the app owner.
+    //    E.g., we would have this scenario if a job is run where the execSystemId has a static effectiveUserId and
+    //    the exec system is not owned by the app owner.
     // NOTE: Grantor is always app owner
-    if (!isOwner && (sharedWithUser || appShare.isPublic()))
+    if (isOwner || sharedWithUser || appShare.isPublic())
     {
       app.setSharedAppCtx(owner);
     }
