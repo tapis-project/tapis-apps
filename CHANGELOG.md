@@ -9,6 +9,17 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.7.2 - 2024-10-25
+
+Bug fix
+
+### New features:
+- None
+
+### Bug fixes:
+- When an app is fetched and the requesting user is the owner, always set the shared app context.
+
+---------------------------------------------------------------------------
 ## 1.7.1 - 2024-09-18
 
 Bug fix
