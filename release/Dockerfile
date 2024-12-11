@@ -3,7 +3,7 @@
 # This file must be placed in the build directory (api/target)
 #   before docker build is run.
 ##########################################################################
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:21-jdk-jammy
 
 MAINTAINER CIC Support <cicsupport@tacc.utexas.edu>
 
