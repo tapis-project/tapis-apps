@@ -9,6 +9,17 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 1.8.1 - 2024-12-12
+
+Update from Java jdk-17 to jdk-21
+
+### New features:
+- None
+
+### Bug fixes:
+- Fix issue with updating maxMinutes using putApp.
+
+---------------------------------------------------------------------------
 ## 1.8.0 - 2024-11-26
 
 New release
