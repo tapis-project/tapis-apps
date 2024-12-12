@@ -1452,9 +1452,9 @@ public class AppResource
     if (topObj.has(App.JOB_ATTRS_FIELD))
     {
       JsonObject jobAttrObj = topObj.getAsJsonObject(App.JOB_ATTRS_FIELD);
-      if (!jobAttrObj.has(App.NODE_COUNT_FIELD)) app.setMaxMinutes(DEFAULT_NODE_COUNT);
-      if (!jobAttrObj.has(App.CORES_PER_NODE_FIELD)) app.setMaxMinutes(DEFAULT_CORES_PER_NODE);
-      if (!jobAttrObj.has(App.MEMORY_MB_FIELD)) app.setMaxMinutes(DEFAULT_MEMORY_MB);
+      if (!jobAttrObj.has(App.NODE_COUNT_FIELD)) app.setNodeCount(DEFAULT_NODE_COUNT);
+      if (!jobAttrObj.has(App.CORES_PER_NODE_FIELD)) app.setCoresPerNode(DEFAULT_CORES_PER_NODE);
+      if (!jobAttrObj.has(App.MEMORY_MB_FIELD)) app.setMemoryMB(DEFAULT_MEMORY_MB);
       if (!jobAttrObj.has(App.MAX_MINUTES_FIELD)) app.setMaxMinutes(DEFAULT_MAX_MINUTES);
     }
     else
