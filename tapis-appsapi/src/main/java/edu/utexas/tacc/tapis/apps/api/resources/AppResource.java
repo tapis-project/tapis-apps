@@ -125,9 +125,6 @@ public class AppResource
   private static final String OP_DELETE = "deleteApp";
   private static final String OP_UNDELETE = "undeleteApp";
 
-  // Always return a nicely formatted response
-  private static final boolean PRETTY = true;
-
   // Top level summary attributes to be included by default in some cases.
   public static final List<String> SUMMARY_ATTRS =
           new ArrayList<>(List.of(ID_FIELD, VERSION_FIELD, OWNER_FIELD));
@@ -182,7 +179,7 @@ public class AppResource
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -253,19 +250,19 @@ public class AppResource
         // IllegalStateException with msg containing APP_EXISTS indicates object exists - return 409 - Conflict
         msg = ApiUtils.getMsgAuth("APPAPI_APP_EXISTS", rUser, appId, app.getVersion());
         _log.warn(msg);
-        return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+        return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg)).build();
       }
       else if (e.getMessage().contains("APPLIB_CREATE_RESERVED"))
       {
         msg = ApiUtils.getMsgAuth("APPAPI_CREATE_RESERVED", rUser, appId);
         _log.warn(msg);
-        return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+        return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg)).build();
       }
       else if (e.getMessage().contains("APPLIB_CREATE_VER_RESERVED"))
       {
         msg = ApiUtils.getMsgAuth("APPAPI_CREATE_VER_RESERVED", rUser, appId, app.getVersion());
         _log.warn(msg);
-        return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg, PRETTY)).build();
+        return Response.status(Status.CONFLICT).entity(TapisRestUtils.createErrorResponse(msg)).build();
       }
       else
       {
@@ -322,7 +319,7 @@ public class AppResource
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -439,7 +436,7 @@ public class AppResource
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -710,7 +707,7 @@ public class AppResource
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -774,7 +771,7 @@ public class AppResource
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -836,7 +833,7 @@ public class AppResource
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -889,7 +886,7 @@ public class AppResource
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -962,7 +959,7 @@ public class AppResource
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -1047,7 +1044,7 @@ public class AppResource
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -1101,7 +1098,7 @@ public class AppResource
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -1156,7 +1153,7 @@ public class AppResource
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get();
     // Check that we have all we need from the context, the jwtTenantId and jwtUserId
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -1434,7 +1431,7 @@ public class AppResource
    */
   private static Response createSuccessResponse(Status status, String msg, RespAbstract resp)
   {
-    return Response.status(status).entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp)).build();
+    return Response.status(status).entity(TapisRestUtils.createSuccessResponse(msg, resp)).build();
   }
 
   /*

@@ -67,9 +67,6 @@ public class PermsResource
   // Field names used in Json
   private static final String PERMISSIONS_FIELD = "permissions";
 
-  // Always return a nicely formatted response
-  private static final boolean PRETTY = true;
-
   // ************************************************************************
   // *********************** Fields *****************************************
   // ************************************************************************
@@ -114,7 +111,7 @@ public class PermsResource
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
     // Check that we have all we need from the context
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -126,7 +123,7 @@ public class PermsResource
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
-    resp = ApiUtils.checkAppExists(appsService, rUser, appId, PRETTY, "grantUserPerms");
+    resp = ApiUtils.checkAppExists(appsService, rUser, appId, "grantUserPerms");
     if (resp != null) return resp;
 
     // Read the payload into a string.
@@ -166,7 +163,7 @@ public class PermsResource
     RespBasic resp1 = new RespBasic();
     msg = ApiUtils.getMsgAuth("APPAPI_PERMS_GRANTED", rUser, appId, userName, permsListStr);
     return Response.status(Status.CREATED)
-      .entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp1))
+      .entity(TapisRestUtils.createSuccessResponse(msg, resp1))
       .build();
   }
 
@@ -186,7 +183,7 @@ public class PermsResource
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
     // Check that we have all we need from the context
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -198,7 +195,7 @@ public class PermsResource
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
-    resp = ApiUtils.checkAppExists(appsService, rUser, appId, PRETTY, "getUserPerms");
+    resp = ApiUtils.checkAppExists(appsService, rUser, appId, "getUserPerms");
     if (resp != null) return resp;
 
     // ------------------------- Perform the operation -------------------------
@@ -223,7 +220,7 @@ public class PermsResource
     names.names = permNames.toArray(App.EMPTY_STR_ARRAY);
     RespNameArray resp1 = new RespNameArray(names);
     return Response.status(Status.OK).entity(TapisRestUtils.createSuccessResponse(
-      MsgUtils.getMsg("TAPIS_FOUND", "App permissions", perms.size() + " items"), PRETTY, resp1)).build();
+      MsgUtils.getMsg("TAPIS_FOUND", "App permissions", perms.size() + " items"), resp1)).build();
   }
 
   /**
@@ -243,7 +240,7 @@ public class PermsResource
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
     // Check that we have all we need from the context
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -255,7 +252,7 @@ public class PermsResource
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
-    resp = ApiUtils.checkAppExists(appsService, rUser, appId, PRETTY, "revokeUserPerm");
+    resp = ApiUtils.checkAppExists(appsService, rUser, appId, "revokeUserPerm");
     if (resp != null) return resp;
 
     // ------------------------- Perform the operation -------------------------
@@ -288,7 +285,7 @@ public class PermsResource
     RespBasic resp1 = new RespBasic();
     msg = ApiUtils.getMsgAuth("APPAPI_PERMS_REVOKED", rUser, appId, userName, permissionStr);
     return Response.status(Status.CREATED)
-      .entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp1))
+      .entity(TapisRestUtils.createSuccessResponse(msg, resp1))
       .build();
   }
 
@@ -311,7 +308,7 @@ public class PermsResource
     TapisThreadContext threadContext = TapisThreadLocal.tapisThreadContext.get(); // Local thread context
     // Check that we have all we need from the context
     // Utility method returns null if all OK and appropriate error response if there was a problem.
-    Response resp = ApiUtils.checkContext(threadContext, PRETTY);
+    Response resp = ApiUtils.checkContext(threadContext);
     if (resp != null) return resp;
 
     // Create a user that collects together tenant, user and request information needed by the service call
@@ -323,7 +320,7 @@ public class PermsResource
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
-    resp = ApiUtils.checkAppExists(appsService, rUser, appId, PRETTY, "revokeUserPerms");
+    resp = ApiUtils.checkAppExists(appsService, rUser, appId, "revokeUserPerms");
     if (resp != null) return resp;
 
     // Read the payload into a string.
@@ -363,7 +360,7 @@ public class PermsResource
     RespBasic resp1 = new RespBasic();
     msg = ApiUtils.getMsgAuth("APPAPI_PERMS_REVOKED", rUser, appId, userName, permsListStr);
     return Response.status(Status.CREATED)
-      .entity(TapisRestUtils.createSuccessResponse(msg, PRETTY, resp1))
+      .entity(TapisRestUtils.createSuccessResponse(msg, resp1))
       .build();
   }
 

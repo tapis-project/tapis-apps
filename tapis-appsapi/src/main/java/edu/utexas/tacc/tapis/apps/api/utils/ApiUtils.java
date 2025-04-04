@@ -132,27 +132,24 @@ public class ApiUtils
    * If all OK return null, else return error response.
    *
    * @param threadContext - thread context to check
-   * @param prettyPrint - flag for pretty print of response
    * @return null if OK, else error response
    */
-  public static Response checkContext(TapisThreadContext threadContext, boolean prettyPrint)
+  public static Response checkContext(TapisThreadContext threadContext)
   {
     if (threadContext.validate()) return null;
     String msg = MsgUtils.getMsg("TAPIS_INVALID_THREADLOCAL_VALUE", "validate");
     _log.error(msg);
-    return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+    return Response.status(Response.Status.BAD_REQUEST).entity(TapisRestUtils.createErrorResponse(msg)).build();
   }
 
   /**
    * Check that app exists
    * @param rUser - principal user containing tenant and user info
    * @param appId - name of the app to check
-   * @param prettyPrint - print flag used to construct response
    * @param opName - operation name, for constructing response msg
    * @return - null if all checks OK else Response containing info
    */
-  public static Response checkAppExists(AppsService appsService, ResourceRequestUser rUser,
-                                           String appId, boolean prettyPrint, String opName)
+  public static Response checkAppExists(AppsService appsService, ResourceRequestUser rUser, String appId, String opName)
   {
     String msg;
     boolean appExists;
@@ -161,13 +158,13 @@ public class ApiUtils
     {
       msg = ApiUtils.getMsgAuth("APPAPI_CHECK_ERROR", rUser, appId, opName, e.getMessage());
       _log.error(msg, e);
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(TapisRestUtils.createErrorResponse(msg)).build();
     }
     if (!appExists)
     {
       msg = ApiUtils.getMsgAuth("APPAPI_NOAPP", rUser, appId, opName);
       _log.error(msg);
-      return Response.status(Response.Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg, prettyPrint)).build();
+      return Response.status(Response.Status.NOT_FOUND).entity(TapisRestUtils.createErrorResponse(msg)).build();
     }
     return null;
   }
