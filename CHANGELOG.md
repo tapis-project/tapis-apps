@@ -14,7 +14,7 @@ https://tapis-project.github.io/live-docs
 Incremental improvements. Remove unused pretty-print option from resource classes.
 
 ### New features:
-- None
+- Ignore expired JWTs older than 90 days.
 
 ### Bug fixes:
 - None
