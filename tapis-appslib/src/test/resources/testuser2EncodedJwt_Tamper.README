@@ -1,0 +1,25 @@
+The file testuser2EncodedJwt_Tamper.dat contains a base64 encoded JWT where
+the body has been modified but the signature has not.
+The encoded JWT should decode (without verification) to this:
+HEADER:
+{
+  "alg": "RS256",
+  "typ": "JWT"
+}
+BODY:
+{
+  "jti": "84b33dfb-b838-47c1-b57d-cc57b062042c",
+  "iss": "https://dev.develop.tapis.io/v3/tokens",
+  "sub": "testuser3@dev",
+  "tapis/tenant_id": "dev",
+  "tapis/token_type": "access",
+  "tapis/delegation": false,
+  "tapis/delegation_sub": null,
+  "tapis/username": "testuser2",
+  "tapis/account_type": "user",
+  "exp": 1866806145
+}
+
+Note that the "sub" has been modified from "testuser2@dev" to "testuser3@dev"
+
+The encoded JWT should fail verification.
