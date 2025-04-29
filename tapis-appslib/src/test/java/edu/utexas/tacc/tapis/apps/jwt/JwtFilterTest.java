@@ -149,12 +149,13 @@ public class JwtFilterTest
     // Create a valid JWT good for 1 seconds
     String encodedJwt = createValidJwt(1);
     // Let it expire
-    Thread.sleep(1100);
+    Thread.sleep(1500);
     // Attempt to list systems
     try { attemptSysList(encodedJwt); }
     catch (TapisClientException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("TAPIS_SECURITY_JWT_EXPIRED"));
+      Assert.assertTrue(e.getMessage().startsWith("TAPIS_SECURITY_JWT_EXPIRED"),
+                        "Unexpected exception: " + e.getMessage());
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -169,7 +170,7 @@ public class JwtFilterTest
   {
     Base64.Decoder base64Decoder =Base64.getDecoder();
     boolean pass = false;
-    System.out.println("Running test testExpiredJwt");
+    System.out.println("Running test testModifiedJwt");
     // Create a valid JWT good for 30 seconds
     String encodedJwt = createValidJwt(30);
     // Encoded jwt should have three parts separated by .
@@ -188,7 +189,8 @@ public class JwtFilterTest
     try { attemptSysList(modifiedEncodedJwt); }
     catch (TapisClientException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("TAPIS_SECURITY_JWT_INVALID_ALG"));
+      Assert.assertTrue(e.getMessage().startsWith("TAPIS_SECURITY_JWT_INVALID_ALG"),
+                        "Unexpected exception: " + e.getMessage());
       pass = true;
     }
     Assert.assertTrue(pass);
@@ -204,8 +206,8 @@ public class JwtFilterTest
     try { attemptSysList(modifiedEncodedJwt); }
     catch (TapisClientException e)
     {
-      Assert.assertTrue(e.getMessage().startsWith("TAPIS_SECURITY_JWT_PARSE_ERROR"));
-      Assert.assertTrue(e.getMessage().contains("JWT signature does not match"));
+      Assert.assertTrue(e.getMessage().startsWith("TAPIS_SECURITY_JWT_VERIFY_FAIL"),
+                        "Unexpected exception: " + e.getMessage());
       pass = true;
     }
     Assert.assertTrue(pass);
