@@ -13,7 +13,7 @@ import edu.utexas.tacc.tapis.apps.gen.jooq.tables.FlywaySchemaHistory;
 /**
  * Convenience access to all tables in tapis_app.
  */
-@SuppressWarnings({ "all", "unchecked", "rawtypes" })
+@SuppressWarnings({ "all", "unchecked", "rawtypes", "this-escape" })
 public class Tables {
 
     /**

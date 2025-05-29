@@ -105,8 +105,6 @@ public final class IntegrationUtils
   public static final Runtime runtime2 = Runtime.SINGULARITY;
   public static final Runtime runtimeNull = null;
   public static final List<RuntimeOption> runtimeOptions1 = new ArrayList<>(List.of(RuntimeOption.SINGULARITY_RUN));
-  public static final List<RuntimeOption> runtimeOptions2 = new ArrayList<>(List.of(RuntimeOption.SINGULARITY_START));
-  public static final List<RuntimeOption> runtimeOptionsSingBoth = new ArrayList<>(List.of(RuntimeOption.SINGULARITY_START, RuntimeOption.SINGULARITY_RUN));
   public static final List<RuntimeOption> runtimeOptionsSingNeither = new ArrayList<>();
   public static final List<RuntimeOption> runtimeOptionsNull = null;
   public static final String runtimeVersion1 = "0.0.1";
@@ -483,7 +481,7 @@ public final class IntegrationUtils
   public static App makePutAppFull(App app)
   {
     App putApp = new App(-1, -1, tenantName, app.getId(), app.getVersion(), description2, jobType2, app.getOwner(),
-            app.isEnabled(), app.isVersionEnabled(), app.isLocked(), app.isContainerized(), runtime2, runtimeVersion2, runtimeOptions2, containerImage2,
+            app.isEnabled(), app.isVersionEnabled(), app.isLocked(), app.isContainerized(), runtime2, runtimeVersion2, runtimeOptions1, containerImage2,
             maxJobs2, maxJobsPerUser2, strictFileInputsTrue,
             jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
             execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2,
@@ -509,7 +507,7 @@ public final class IntegrationUtils
             parameterSet2, finList2, fiaList2, nodeCount2,
             coresPerNode2, memoryMB2, maxMinutes2, notifList2, jobTags2);
 
-    return new PatchApp(description2, runtime2, runtimeVersion2, runtimeOptions2, containerImage2, jobType2,
+    return new PatchApp(description2, runtime2, runtimeVersion2, runtimeOptions1, containerImage2, jobType2,
              maxJobs2, maxJobsPerUser2, strictFileInputsTrue, jobAttributes, tags2, notes2);
   }
 

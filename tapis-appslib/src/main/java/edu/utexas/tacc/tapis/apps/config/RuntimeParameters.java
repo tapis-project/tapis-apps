@@ -398,11 +398,10 @@ public final class RuntimeParameters
 	 * that the various job programs and utilities that rely on this class can
 	 * print their configuration parameters, including those from this class, 
 	 * when they start up.  
-	 * 
-	 * @param buf
 	 */
-	public void getRuntimeInfo(StringBuilder buf)
+	public String getRuntimeInfo()
 	{
+		var buf = new StringBuilder();
 		buf.append("\n------- Logging -----------------------------------");
 		buf.append("\ntapis.log.directory: ");
 		buf.append(this.getLogDirectory());
@@ -499,6 +498,9 @@ public final class RuntimeParameters
 		buf.append(formatter.format(Runtime.getRuntime().totalMemory()));
 		buf.append("\nfreeMemory: ");
 		buf.append(formatter.format(Runtime.getRuntime().freeMemory()));
+
+		buf.append("\n\n");
+		return buf.toString();
 	}
 	
     /* ********************************************************************** */
