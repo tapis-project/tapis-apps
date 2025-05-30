@@ -284,7 +284,7 @@ public class AppsServiceTest
     app0.setDescription(description2);
     app0.setRuntime(runtime2);
     app0.setRuntimeVersion(runtimeVersion2);
-    app0.setRuntimeOptions(runtimeOptions1);
+    app0.setRuntimeOptions(runtimeOptions2);
     app0.setContainerImage(containerImage2);
     app0.setJobType(jobType2);
     app0.setMaxJobs(maxJobs2);
@@ -355,7 +355,7 @@ public class AppsServiceTest
     app0.setDescription(description2);
     app0.setRuntime(runtime2);
     app0.setRuntimeVersion(runtimeVersion2);
-    app0.setRuntimeOptions(runtimeOptions1);
+    app0.setRuntimeOptions(runtimeOptions2);
     app0.setContainerImage(containerImage2);
     app0.setJobType(jobType2);
     app0.setMaxJobs(maxJobs2);
@@ -797,6 +797,26 @@ public class AppsServiceTest
     // Reset in prep for continued checking
     app0.setContainerImage(containerImage1);
 
+    // If containerized and SINGULARITY then RuntimeOptions may not include SINGULARITY_START
+    app0.setRuntime(Runtime.SINGULARITY);
+    app0.setRuntimeOptions(runtimeOptionsSingStart);
+    pass = false;
+    try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_CONTAINERIZED_SING_OPT"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
+    app0.setRuntimeOptions(runtimeOptionsSingBoth);
+    pass = false;
+    try { svc.createApp(rOwner1, app0, rawDataEmptyJson); }
+    catch (Exception e)
+    {
+      Assert.assertTrue(e.getMessage().contains("APPLIB_CONTAINERIZED_SING_OPT"));
+      pass = true;
+    }
+    Assert.assertTrue(pass);
     // Reset in prep for continued checking
     app0.setRuntimeOptions(runtimeOptions1);
     app0.setRuntime(runtime1);
