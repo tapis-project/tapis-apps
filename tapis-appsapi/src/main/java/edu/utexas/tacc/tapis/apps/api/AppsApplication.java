@@ -65,9 +65,13 @@ public class AppsApplication extends ResourceConfig
   // For all logging use println or similar, so we do not have a dependency on a logging subsystem.
   public AppsApplication()
   {
-    // Log our existence.
+    // Get runtime parameters
+    RuntimeParameters runParms = RuntimeParameters.getInstance();
+
     // Output version information on startup
-    System.out.println("**** Starting Applications Service. Version: " + TapisUtils.getTapisFullVersion() + " ****");
+    System.out.printf("**** Starting Applications Service. Version: %s ****%n", TapisUtils.getTapisFullVersion());
+    // Log our config
+    System.out.println(runParms.getRuntimeInfo());
 
     // Needed for properly returning timestamps
     // Also allows for setting a breakpoint when response is being constructed.
@@ -93,9 +97,6 @@ public class AppsApplication extends ResourceConfig
 
     // Perform remaining init steps in try block, so we can print a fatal error message if something goes wrong.
     try {
-      // Get runtime parameters
-      RuntimeParameters runParms = RuntimeParameters.getInstance();
-
       // Set site on which we are running. This is a required runtime parameter.
       siteId = runParms.getSiteId();
 

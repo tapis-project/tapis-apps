@@ -180,8 +180,7 @@ public final class App
   //ID Must start alphanumeric and contain only alphanumeric and 4 special characters: - . _ ~
   private static final String PATTERN_VALID_ID = "^[a-zA-Z0-9]([a-zA-Z0-9]|[-\\._~])*";
 
-  private static final String SING_OPT_LIST = String.format("%s,%s", RuntimeOption.SINGULARITY_RUN,
-                                                                     RuntimeOption.SINGULARITY_START);
+  private static final String SING_OPT_LIST = String.format("%s", RuntimeOption.SINGULARITY_RUN);
 
   // Validation constants
   private static final Integer MAX_ID_LEN = 80;
@@ -210,9 +209,9 @@ public final class App
   public enum Permission {READ, MODIFY, EXECUTE}
   public enum Runtime {DOCKER, SINGULARITY, ZIP}
   // NOTE: RuntimeOption starts with NONE due to a bug in client code generation.
-  //   Without an initial entry the prefix SINGULARITY_ gets stripped off the other 2 entries.
+  //   Without an initial entry the prefix SINGULARITY_ gets stripped off the other entries.
   //   See also https://github.com/tapis-project/openapi-apps/blob/dev/AppsAPI.yaml
-  public enum RuntimeOption {NONE, SINGULARITY_START, SINGULARITY_RUN}
+  public enum RuntimeOption {NONE, SINGULARITY_RUN}
   public enum FileInputMode {OPTIONAL, REQUIRED, FIXED}
   public enum ArgInputMode {REQUIRED, FIXED, INCLUDE_ON_DEMAND, INCLUDE_BY_DEFAULT}
 
@@ -962,20 +961,6 @@ public final class App
     if (containerized && StringUtils.isBlank(containerImage))
     {
       errMessages.add(LibUtils.getMsg("APPLIB_CONTAINERIZED_NOIMAGE"));
-    }
-
-    // If containerized and SINGULARITY then RuntimeOptions must be provided and include one and only one of
-    //   SINGULARITY_START, SINGULARITY_RUN
-    if (containerized && Runtime.SINGULARITY.equals(runtime))
-    {
-      // If options list contains both or neither of START and RUN then reject.
-      if ( runtimeOptions == null ||
-           (runtimeOptions.contains(RuntimeOption.SINGULARITY_RUN) && runtimeOptions.contains(RuntimeOption.SINGULARITY_START))
-           ||
-           !(runtimeOptions.contains(RuntimeOption.SINGULARITY_RUN) || runtimeOptions.contains(RuntimeOption.SINGULARITY_START)))
-      {
-        errMessages.add(LibUtils.getMsg("APPLIB_CONTAINERIZED_SING_OPT", SING_OPT_LIST));
-      }
     }
 
     // If containerized and ZIP then validate containerImage - must be absolute path or valid sourceUrl
