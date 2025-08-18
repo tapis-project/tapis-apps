@@ -121,6 +121,8 @@ public class PermsResource
     if (_log.isTraceEnabled())
       ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId,"userName="+userName);
 
+    ApiUtils.checkRestrictedSvcs(rUser);
+
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
     resp = ApiUtils.checkAppExists(appsService, rUser, appId, "grantUserPerms");
@@ -193,6 +195,8 @@ public class PermsResource
     if (_log.isTraceEnabled())
       ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId,"userName="+userName);
 
+    ApiUtils.checkRestrictedSvcs(rUser);
+
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
     resp = ApiUtils.checkAppExists(appsService, rUser, appId, "getUserPerms");
@@ -249,6 +253,8 @@ public class PermsResource
     // Trace this request.
     if (_log.isTraceEnabled())
       ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId,"userName="+userName,"permission="+permissionStr);
+
+    ApiUtils.checkRestrictedSvcs(rUser);
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists
@@ -317,6 +323,8 @@ public class PermsResource
     // Trace this request.
     if (_log.isTraceEnabled())
       ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId,"userName="+userName);
+
+    ApiUtils.checkRestrictedSvcs(rUser);
 
     // ------------------------- Check prerequisites -------------------------
     // Check that the app exists

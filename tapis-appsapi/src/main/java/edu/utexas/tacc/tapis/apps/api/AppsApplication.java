@@ -1,6 +1,8 @@
 package edu.utexas.tacc.tapis.apps.api;
 
 import java.net.URI;
+import java.util.HashSet;
+import java.util.Set;
 import javax.ws.rs.ApplicationPath;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -33,6 +35,7 @@ import edu.utexas.tacc.tapis.apps.service.AppsService;
 import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
 import edu.utexas.tacc.tapis.apps.service.ServiceClientsFactory;
 import edu.utexas.tacc.tapis.apps.service.ServiceContextFactory;
+import static edu.utexas.tacc.tapis.apps.service.AppsServiceImpl.JOBS_SERVICE;
 
 /*
  * Main startup class for the web application. Uses Jersey and Grizzly frameworks.
@@ -56,6 +59,8 @@ import edu.utexas.tacc.tapis.apps.service.ServiceContextFactory;
 @ApplicationPath("/")
 public class AppsApplication extends ResourceConfig
 {
+  // List of Tapis services allowed to call this service with a service JWT.
+  public static final Set<String> SVCLIST_TRUSTED = new HashSet<>(Set.of(JOBS_SERVICE));
   // We must be running on a specific site and this will never change
   private static String siteId;
   public static String getSiteId() {return siteId;}

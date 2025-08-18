@@ -68,9 +68,9 @@ public class AppsServiceImpl implements AppsService
   private static final String PERM_SPEC_PREFIX = "app";
   private static final String PERM_SPEC_TEMPLATE = "app:%s:%s:%s";
 
+  public static final String JOBS_SERVICE = TapisConstants.SERVICE_NAME_JOBS;
   private static final String SERVICE_NAME = TapisConstants.SERVICE_NAME_APPS;
   private static final String FILES_SERVICE = TapisConstants.SERVICE_NAME_FILES;
-  private static final String JOBS_SERVICE = TapisConstants.SERVICE_NAME_JOBS;
   private static final Set<String> SVCLIST_IMPERSONATE = new HashSet<>(Set.of(JOBS_SERVICE));
   private static final Set<String> SVCLIST_RESOURCETENANT = new HashSet<>(Set.of(JOBS_SERVICE));
 
