@@ -4,14 +4,17 @@ import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.gson.JsonElement;
 
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
+import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.threadlocal.TapisThreadContext;
 import edu.utexas.tacc.tapis.sharedapi.utils.TapisRestUtils;
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
+import edu.utexas.tacc.tapis.apps.api.AppsApplication;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
 
 
@@ -181,5 +184,11 @@ public class ApiUtils
     if (strParms != null && strParms.length > 0) argListStr = String.join(",", strParms);
     String msg = ApiUtils.getMsgAuth("APPAPI_TRACE_REQUEST", rUser, className, opName, reqUrl, argListStr);
     _log.trace(msg);
+  }
+
+  // Simple wrapper for checking restricted svc permissions
+  public static void checkRestrictedSvcs(ResourceRequestUser rUser)
+  {
+    TapisRestUtils.checkServiceRestrictions(TapisConstants.SERVICE_NAME_APPS, AppsApplication.SVCLIST_TRUSTED, rUser);
   }
 }

@@ -188,6 +188,8 @@ public class AppResource
     // Trace this request.
     if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString());
 
+    ApiUtils.checkRestrictedSvcs(rUser);
+
     // ------------------------- Extract and validate payload -------------------------
     // Read the payload into a string.
     String rawJson;
@@ -329,6 +331,8 @@ public class AppResource
     if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(),
                                                    "appId="+appId,"appVersion="+appVersion);
 
+    ApiUtils.checkRestrictedSvcs(rUser);
+
     // ------------------------- Extract and validate payload -------------------------
     // Read the payload into a string.
     String rawJson;
@@ -445,6 +449,8 @@ public class AppResource
     // Trace this request.
     if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(),
                                                    "appId="+appId,"appVersion="+appVersion);
+
+    ApiUtils.checkRestrictedSvcs(rUser);
 
     // ------------------------- Extract and validate payload -------------------------
     // Read the payload into a string.
@@ -719,6 +725,8 @@ public class AppResource
                                                    "requireExecPerm="+requireExecPerm,
                                                    "resourceTenant="+resourceTenant);
 
+    ApiUtils.checkRestrictedSvcs(rUser);
+
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
     if (selectList == null || selectList.isEmpty()) selectList = DEFAULT_GETAPP_ATTRS;
 
@@ -783,6 +791,8 @@ public class AppResource
                           "appId="+appId, "appVersion="+appVersion, "requireExecPerm="+requireExecPerm,
                           "impersonationId="+impersonationId, "resourceTenant="+resourceTenant);
 
+    ApiUtils.checkRestrictedSvcs(rUser);
+
     List<String> selectList = threadContext.getSearchParameters().getSelectList();
     if (selectList == null || selectList.isEmpty()) selectList = DEFAULT_GETAPP_ATTRS;
 
@@ -844,6 +854,8 @@ public class AppResource
                                                    "showDeleted="+showDeleted, "listType="+listType,
                                                    "impersonationId="+impersonationId);
 
+    ApiUtils.checkRestrictedSvcs(rUser);
+
     // ThreadContext designed to never return null for SearchParameters
     SearchParameters srchParms = threadContext.getSearchParameters();
 
@@ -895,6 +907,8 @@ public class AppResource
     // Trace this request.
     if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted,
                                                    "listType="+listType);
+
+    ApiUtils.checkRestrictedSvcs(rUser);
 
     // Create search list based on query parameters
     // Note that some validation is done for each condition but the back end will handle translating LIKE wildcard
@@ -968,6 +982,8 @@ public class AppResource
     // Trace this request.
     if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "showDeleted="+showDeleted,
                                                    "listType="+listType);
+
+    ApiUtils.checkRestrictedSvcs(rUser);
 
     // ------------------------- Extract and validate payload -------------------------
     // Read the payload into a string.
@@ -1108,6 +1124,8 @@ public class AppResource
     if (_log.isTraceEnabled()) ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(),
             "appId="+appId, "version="+version);
 
+    ApiUtils.checkRestrictedSvcs(rUser);
+
     boolean isEnabled;
     try
     {
@@ -1173,6 +1191,8 @@ public class AppResource
       else
         ApiUtils.logRequest(rUser, className, opName, _request.getRequestURL().toString(), "appId="+appId);
     }
+
+    ApiUtils.checkRestrictedSvcs(rUser);
 
     // ---------------------------- Make service call to update the app -------------------------------
     int changeCount;
