@@ -1,3 +1,4 @@
+#!/bin/bash
 #NOTE / WARNING:
 #  This is basically a copy of the script used by tapis-deployer to create the DB initially.
 #  It is only occasionally synced with the actual script used in production.
