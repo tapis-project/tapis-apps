@@ -1267,7 +1267,7 @@ public class AppResource
           apiJobAttrs.execSystemExecDir, apiJobAttrs.execSystemInputDir, apiJobAttrs.execSystemOutputDir,
           apiJobAttrs.dtnSystemInputDir, apiJobAttrs.dtnSystemOutputDir,
           apiJobAttrs.execSystemLogicalQueue, apiJobAttrs.archiveSystemId, apiJobAttrs.archiveSystemDir, apiJobAttrs.archiveOnAppError,
-          apiJobAttrs.isMpi, apiJobAttrs.mpiCmd, apiJobAttrs.cmdPrefix,
+          apiJobAttrs.archiveMode, apiJobAttrs.isMpi, apiJobAttrs.mpiCmd, apiJobAttrs.cmdPrefix,
           apiJobAttrs.parameterSet, apiJobAttrs.fileInputs, apiJobAttrs.fileInputArrays, apiJobAttrs.nodeCount, apiJobAttrs.coresPerNode,
           apiJobAttrs.memoryMB, apiJobAttrs.maxMinutes, apiJobAttrs.subscriptions, apiJobAttrs.tags,
           req.tags, notes, null, false, null, null);
@@ -1299,7 +1299,7 @@ public class AppResource
           apiJobAttrs.execSystemExecDir, apiJobAttrs.execSystemInputDir, apiJobAttrs.execSystemOutputDir,
           apiJobAttrs.dtnSystemInputDir, apiJobAttrs.dtnSystemOutputDir,
           apiJobAttrs.execSystemLogicalQueue, apiJobAttrs.archiveSystemId, apiJobAttrs.archiveSystemDir, apiJobAttrs.archiveOnAppError,
-          apiJobAttrs.isMpi, apiJobAttrs.mpiCmd, apiJobAttrs.cmdPrefix,
+          apiJobAttrs.archiveMode, apiJobAttrs.isMpi, apiJobAttrs.mpiCmd, apiJobAttrs.cmdPrefix,
           apiJobAttrs.parameterSet, apiJobAttrs.fileInputs, apiJobAttrs.fileInputArrays, apiJobAttrs.nodeCount, apiJobAttrs.coresPerNode,
           apiJobAttrs.memoryMB, apiJobAttrs.maxMinutes, apiJobAttrs.subscriptions, apiJobAttrs.tags,
           req.tags, notes, null, false, null, null);

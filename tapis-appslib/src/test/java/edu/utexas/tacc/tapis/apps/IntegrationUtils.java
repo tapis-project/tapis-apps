@@ -9,6 +9,7 @@ import edu.utexas.tacc.tapis.apps.model.App.FileInputMode;
 import edu.utexas.tacc.tapis.apps.model.App.Runtime;
 import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 import edu.utexas.tacc.tapis.apps.model.DeliveryTarget.NotifDeliveryMethod;
+import edu.utexas.tacc.tapis.apps.model.JobAttributes.ArchiveModeEnum;
 import edu.utexas.tacc.tapis.apps.model.KeyValuePair.KeyValueInputMode;
 import edu.utexas.tacc.tapis.apps.model.ReqSubscribe.JobEventCategoryFilter;
 import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
@@ -158,6 +159,10 @@ public final class IntegrationUtils
   public static final boolean archiveOnAppErrorFalse = false;
   public static final boolean archiveOnAppErrorDefault = false;
   public static final Boolean archiveOnAppErrorNull = null;
+  public static final ArchiveModeEnum archiveModeAlways = ArchiveModeEnum.ALWAYS;
+  public static final ArchiveModeEnum archiveModeSkipOnFail = ArchiveModeEnum.SKIP_ON_FAIL;
+  public static final ArchiveModeEnum archiveModeNever = ArchiveModeEnum.NEVER;
+  public static final ArchiveModeEnum archiveModeNull = null;
   public static final Boolean isMpiTrue = true;
   public static final Boolean isMpiFalse = false;
   public static final Boolean isMpiDefault = false;
@@ -448,7 +453,7 @@ public final class IntegrationUtils
                  jobDescription1 +suffix, dynamicExecSystemTrue, execSystemConstraints1, execSystemId1,
                  execSystemExecDir1 +suffix, execSystemInputDir1 +suffix, execSystemOutputDir1 +suffix,
                  dtnSystemInputDir1 +suffix, dtnSystemOutputDir1 +suffix,
-                 execSystemLogicalQueue1, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue,
+                 execSystemLogicalQueue1, archiveSystemId1, archiveSystemDir1 +suffix, archiveOnAppErrorTrue, archiveModeAlways,
                  isMpiTrue, mpiCmd1, cmdPrefix1,
                  parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMB1, maxMinutes1, notifList1, jobTags1,
                  tags1, notes1, uuidNull, deletedFalse, createdNull, updatedNull);
@@ -470,7 +475,7 @@ public final class IntegrationUtils
             jobDescriptionNull, dynamicExecSystemDefault, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             dtnSystemInputDirNull, dtnSystemOutputDirNull,
-            execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorDefault,
+            execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorDefault, archiveModeNull,
             isMpiDefault, mpiCmdNull, cmdPrefixNull, parameterSetNull, finListNull, fiaListNull, App.DEFAULT_NODE_COUNT,
             App.DEFAULT_CORES_PER_NODE, App.DEFAULT_MEMORY_MB, App.DEFAULT_MAX_MINUTES, notifListNull, jobTagsNull,
             tagsNull, notesNull, uuidNull, deletedFalse, createdNull, updatedNull);
@@ -488,7 +493,7 @@ public final class IntegrationUtils
             jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
             execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2,
             dtnSystemInputDir2, dtnSystemOutputDir2, execSystemLogicalQueue2,
-            archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse,
+            archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse, archiveModeNever,
             isMpiFalse, mpiCmd2, cmdPrefix2,
             parameterSet2, finList2, fiaList2, nodeCount2, coresPerNode2, memoryMB2, maxMinutes2, notifList2, jobTags2,
             tags2, notes2, uuidNull, deletedFalse, createdNull, updatedNull);
@@ -504,7 +509,7 @@ public final class IntegrationUtils
     JobAttributes jobAttributes = new JobAttributes(jobDescription2, dynamicExecSystemFalse, execSystemConstraints2,
             execSystemId2, execSystemExecDir2, execSystemInputDir2, execSystemOutputDir2,
             dtnSystemInputDir2, dtnSystemOutputDir2, execSystemLogicalQueue2,
-            archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse,
+            archiveSystemId2, archiveSystemDir2, archiveOnAppErrorFalse, archiveModeNever,
             isMpiFalse, mpiCmd2, cmdPrefix2,
             parameterSet2, finList2, fiaList2, nodeCount2,
             coresPerNode2, memoryMB2, maxMinutes2, notifList2, jobTags2);
@@ -522,7 +527,7 @@ public final class IntegrationUtils
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             dtnSystemInputDirNull, dtnSystemOutputDirNull, execSystemLogicalQueueNull,
-            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, archiveModeNull,
             isMpiNull, mpiCmdNull, cmdPrefixNull,
             parameterSetNull, finListNull, fiaListNull, nodeCountNull,
             coresPerNodeNull, memoryMBNull, maxMinutesNull, notifListNull, jobTagsNull);
@@ -543,7 +548,7 @@ public final class IntegrationUtils
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemId2, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             dtnSystemInputDirNull, dtnSystemOutputDirNull, execSystemLogicalQueueNull,
-            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, archiveModeNull,
             isMpiNull, mpiCmdNull, cmdPrefixNull,
             parameterSet, finList3, fiaList3, nodeCountNull,
             coresPerNodeNull, memoryMBNull, maxMinutesNull, notifListNull, jobTagsNull);
@@ -562,7 +567,7 @@ public final class IntegrationUtils
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             dtnSystemInputDirNull, dtnSystemOutputDirNull, execSystemLogicalQueueNull,
-            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull,
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, archiveModeNull,
             isMpiNull, mpiCmdNull, cmdPrefixNull,
             parameterSet, finListNull, fiaListNull, nodeCountNull,
             coresPerNodeNull, memoryMBNull, maxMinutesNull, notifListNull, jobTagsNull);

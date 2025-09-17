@@ -303,6 +303,7 @@ public class AppsServiceTest
     app0.setArchiveSystemId(archiveSystemId2);
     app0.setArchiveSystemDir(archiveSystemDir2);
     app0.setArchiveOnAppError(archiveOnAppErrorFalse);
+    app0.setArchiveMode(archiveModeNever);
     app0.setIsMpi(isMpiFalse);
     app0.setMpiCmd(mpiCmd2);
     app0.setCmdPrefix(cmdPrefix2);
@@ -1766,6 +1767,7 @@ public class AppsServiceTest
     Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
     Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
     Assert.assertEquals(tmpApp.isArchiveOnAppError(), app0.isArchiveOnAppError());
+    Assert.assertEquals(tmpApp.getArchiveMode(), app0.getArchiveMode());
     Assert.assertEquals(tmpApp.getIsMpi(), app0.getIsMpi());
     Assert.assertEquals(tmpApp.getMpiCmd(), app0.getMpiCmd());
     Assert.assertEquals(tmpApp.getCmdPrefix(), app0.getCmdPrefix());
@@ -1932,6 +1934,7 @@ public class AppsServiceTest
 //    Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
 //    Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
 //    Assert.assertEquals(tmpApp.isArchiveOnAppError(), app0.isArchiveOnAppError());
+//    Assert.assertEquals(tmpApp.getArchiveMode(), app0.getArchiveMode());
 //    Assert.assertEquals(tmpApp.getIsMpi(), app0.getIsMpi());
 //    Assert.assertEquals(tmpApp.getMpiCmd(), app0.getMpiCmd());
 //    Assert.assertEquals(tmpApp.getCmdPrefix(), app0.getCmdPrefix());

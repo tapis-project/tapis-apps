@@ -11,10 +11,11 @@ https://tapis-project.github.io/live-docs
 ---------------------------------------------------------------------------
 ## 1.9.1 - 2025-08-19
 
-Enhancement.
+Enhancements.
 
 ### New features:
 - Add check for restricted services. Each authenticated endpoint now checks that an incoming service request is allowed.
+- Add attribute *archiveMode* to replace attribute *archiveOnAppError*. Three modes: ALWAYS, SKIP_ON_FAIL, NEVER
 
 ### Bug fixes:
 - None
