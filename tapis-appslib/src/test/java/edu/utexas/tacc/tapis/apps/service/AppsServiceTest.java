@@ -375,6 +375,7 @@ public class AppsServiceTest
     app0.setArchiveSystemId(archiveSystemId2);
     app0.setArchiveSystemDir(archiveSystemDir2);
     app0.setArchiveOnAppError(archiveOnAppErrorFalse);
+    app0.setArchiveMode(JobAttributes.ArchiveModeEnum.NEVER);
     app0.setIsMpi(isMpiFalse);
     app0.setMpiCmd(mpiCmd2);
     app0.setCmdPrefix(cmdPrefix2);
