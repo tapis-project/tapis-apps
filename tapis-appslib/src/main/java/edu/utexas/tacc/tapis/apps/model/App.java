@@ -7,17 +7,18 @@ import java.util.regex.Pattern;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import edu.utexas.tacc.tapis.shared.TapisConstants;
-import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
-import edu.utexas.tacc.tapis.shared.utils.PathSanitizer;
-import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
+import edu.utexas.tacc.tapis.shared.TapisConstants;
+import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
+import edu.utexas.tacc.tapis.shared.utils.PathSanitizer;
+import edu.utexas.tacc.tapis.shared.utils.TapisUtils;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
+import edu.utexas.tacc.tapis.apps.model.JobAttributes.ArchiveModeEnum;
 
 import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.KeyValueInputMode.FIXED;
 import static edu.utexas.tacc.tapis.apps.model.KeyValuePair.RESERVED_PREFIX;
@@ -139,6 +140,7 @@ public final class App
   public static final String ARCHIVESYSID_FIELD = "archiveSystemId";
   public static final String ARCHIVESYSDIR_FIELD = "archiveSystemDir";
   public static final String ARCHIVE_ON_APP_ERROR_FIELD = "archiveOnAppError";
+  public static final String ARCHIVE_MODE_FIELD = "archiveMode";
   public static final String ISMPI_FIELD = "isMpi";
   public static final String MPI_CMD_FIELD = "mpiCmd";
   public static final String CMD_PREFIX_FIELD = "cmdPrefix";
@@ -260,6 +262,7 @@ public final class App
   private String archiveSystemId;
   private String archiveSystemDir;
   private boolean archiveOnAppError;
+  private ArchiveModeEnum archiveMode;
   private boolean isMpi;
   private String mpiCmd;
   private String cmdPrefix;
@@ -352,6 +355,7 @@ public final class App
     archiveSystemId = LibUtils.stripStr(a.getArchiveSystemId());
     archiveSystemDir = LibUtils.stripStr(a.getArchiveSystemDir());
     archiveOnAppError = a.isArchiveOnAppError();
+    archiveMode = a.getArchiveMode();
     isMpi = a.getIsMpi();
     mpiCmd = LibUtils.stripStr(a.getMpiCmd());
     cmdPrefix = a.getCmdPrefix();
@@ -390,7 +394,7 @@ public final class App
              String dtnSystemInputDir1, String dtnSystemOutputDir1,
              String execSystemLogicalQueue1,
              String archiveSystemId1, String archiveSystemDir1, boolean archiveOnAppError1,
-             boolean isMpi1, String mpiCmd1, String cmdPrefix1,
+             ArchiveModeEnum archiveMode1, boolean isMpi1, String mpiCmd1, String cmdPrefix1,
              ParameterSet parameterSet1, List<FileInput> fileInputs1, List<FileInputArray> fileInputArrays1,
              int nodeCount1, int coresPerNode1, int memoryMB1, int maxMinutes1,
              List<ReqSubscribe> subscriptions1, String[] jobTags1,
@@ -429,6 +433,7 @@ public final class App
     archiveSystemId = LibUtils.stripStr(archiveSystemId1);
     archiveSystemDir = LibUtils.stripStr(archiveSystemDir1);
     archiveOnAppError = archiveOnAppError1;
+    archiveMode = archiveMode1;
     isMpi = isMpi1;
     mpiCmd = LibUtils.stripStr(mpiCmd1);
     cmdPrefix = cmdPrefix1;
@@ -490,6 +495,7 @@ public final class App
     archiveSystemId = LibUtils.stripStr(a.getArchiveSystemId());
     archiveSystemDir = LibUtils.stripStr(a.getArchiveSystemDir());
     archiveOnAppError = a.isArchiveOnAppError();
+    archiveMode = a.getArchiveMode();
     isMpi = a.getIsMpi();
     mpiCmd = LibUtils.stripStr(a.getMpiCmd());
     cmdPrefix = a.getCmdPrefix();
@@ -1301,6 +1307,9 @@ public final class App
 
   public boolean isArchiveOnAppError() { return archiveOnAppError; }
   public void setArchiveOnAppError(boolean b) { archiveOnAppError = b;  }
+
+  public ArchiveModeEnum getArchiveMode() { return archiveMode; }
+  public void setArchiveMode(ArchiveModeEnum a) { archiveMode = a;  }
 
   public boolean getIsMpi() { return isMpi; }
   public void setIsMpi(boolean b) { isMpi = b;  }

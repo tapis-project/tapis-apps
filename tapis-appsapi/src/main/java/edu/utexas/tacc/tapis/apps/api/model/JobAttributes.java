@@ -3,6 +3,7 @@ package edu.utexas.tacc.tapis.apps.api.model;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.FileInputArray;
+import edu.utexas.tacc.tapis.apps.model.JobAttributes.ArchiveModeEnum;
 import edu.utexas.tacc.tapis.apps.model.ReqSubscribe;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 
@@ -32,6 +33,7 @@ public final class JobAttributes
   public String archiveSystemId;
   public String archiveSystemDir;
   public boolean archiveOnAppError;
+  public ArchiveModeEnum archiveMode;
   public boolean isMpi;
   public String mpiCmd;
   public String cmdPrefix;
@@ -69,6 +71,7 @@ public final class JobAttributes
     archiveSystemId = a.getArchiveSystemId();
     archiveSystemDir = a.getArchiveSystemDir();
     archiveOnAppError = a.isArchiveOnAppError();
+    archiveMode = a.getArchiveMode();
     isMpi = a.getIsMpi();
     mpiCmd = a.getMpiCmd();
     cmdPrefix = a.getCmdPrefix();

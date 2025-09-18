@@ -10,6 +10,11 @@ import java.util.List;
 public final class JobAttributes
 {
   // ************************************************************************
+  // *********************** Enums ******************************************
+  // ************************************************************************
+  public enum ArchiveModeEnum  {ALWAYS, SKIP_ON_FAIL, NEVER}
+
+  // ************************************************************************
   // *********************** Fields *****************************************
   // ************************************************************************
   private final String description;
@@ -25,6 +30,7 @@ public final class JobAttributes
   private final String archiveSystemId;
   private final String archiveSystemDir;
   private final Boolean archiveOnAppError;
+  private final ArchiveModeEnum archiveMode;
   private final Boolean isMpi;
   private final String mpiCmd;
   private final String cmdPrefix;
@@ -49,8 +55,8 @@ public final class JobAttributes
                        String execSystemId1, String execSystemExecDir1, String execSystemInputDir1, String execSystemOutputDir1,
                        String dtnSystemInputDir1, String dtnSystemOutputDir1,
                        String execSystemLogicalQueue1, String archiveSystemId1, String archiveSystemDir1,
-                       Boolean archiveOnAppError1, Boolean isMpi1, String mpiCmd1, String cmdPrefix1,
-                       ParameterSet parameterSet1, List<FileInput> fileInputs1,
+                       Boolean archiveOnAppError1, ArchiveModeEnum archiveMode1, Boolean isMpi1,
+                       String mpiCmd1, String cmdPrefix1, ParameterSet parameterSet1, List<FileInput> fileInputs1,
                        List<FileInputArray> fileInputArrays1, Integer nodeCount1, Integer coresPerNode1, Integer memoryMB1,
                        Integer maxMinutes1, List<ReqSubscribe> subscriptions1, String[] tags1)
   {
@@ -67,6 +73,7 @@ public final class JobAttributes
     archiveSystemId = archiveSystemId1;
     archiveSystemDir = archiveSystemDir1;
     archiveOnAppError = archiveOnAppError1;
+    archiveMode = archiveMode1;
     isMpi = isMpi1;
     mpiCmd = mpiCmd1;
     cmdPrefix = cmdPrefix1;
@@ -97,6 +104,7 @@ public final class JobAttributes
   public String getArchiveSystemId() { return archiveSystemId; }
   public String getArchiveSystemDir() { return archiveSystemDir; }
   public Boolean getArchiveOnAppError() { return archiveOnAppError; }
+  public ArchiveModeEnum getArchiveMode() { return archiveMode; }
   public Boolean getIsMpi() { return isMpi; }
   public String getMpiCmd() { return mpiCmd; }
   public String getCmdPrefix() { return cmdPrefix; }

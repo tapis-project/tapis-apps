@@ -295,6 +295,11 @@ public class AppsVersions extends TableImpl<AppsVersionsRecord> {
      */
     public final TableField<AppsVersionsRecord, Boolean> VERSION_ENABLED = createField(DSL.name("version_enabled"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field("true", SQLDataType.BOOLEAN)), this, "");
 
+    /**
+     * The column <code>tapis_app.apps_versions.archive_mode</code>.
+     */
+    public final TableField<AppsVersionsRecord, String> ARCHIVE_MODE = createField(DSL.name("archive_mode"), SQLDataType.CLOB, this, "");
+
     private AppsVersions(Name alias, Table<AppsVersionsRecord> aliased) {
         this(alias, aliased, null);
     }
