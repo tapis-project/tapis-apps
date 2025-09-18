@@ -2033,6 +2033,7 @@ public class AppsServiceImpl implements AppsService
       if (jobAttrs.getArchiveSystemId() != null) app1.setArchiveSystemId(jobAttrs.getArchiveSystemId());
       if (jobAttrs.getArchiveSystemDir() != null) app1.setArchiveSystemDir(jobAttrs.getArchiveSystemDir());
       if (jobAttrs.getArchiveOnAppError() != null) app1.setArchiveOnAppError(jobAttrs.getArchiveOnAppError());
+      if (jobAttrs.getArchiveMode() != null) app1.setArchiveMode(jobAttrs.getArchiveMode());
       if (jobAttrs.getIsMpi() != null) app1.setIsMpi(jobAttrs.getIsMpi());
       if (jobAttrs.getMpiCmd() != null) app1.setMpiCmd(jobAttrs.getMpiCmd());
       if (jobAttrs.getCmdPrefix() != null) app1.setCmdPrefix(jobAttrs.getCmdPrefix());

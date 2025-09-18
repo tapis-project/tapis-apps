@@ -36,6 +36,7 @@ import edu.utexas.tacc.tapis.apps.model.App.RuntimeOption;
 import edu.utexas.tacc.tapis.apps.model.AppHistoryItem;
 import edu.utexas.tacc.tapis.apps.model.FileInput;
 import edu.utexas.tacc.tapis.apps.model.FileInputArray;
+import edu.utexas.tacc.tapis.apps.model.JobAttributes.ArchiveModeEnum;
 import edu.utexas.tacc.tapis.apps.model.ReqSubscribe;
 import edu.utexas.tacc.tapis.apps.model.ParameterSet;
 import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl.AuthListType;
@@ -173,6 +174,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       if (checkIfAppExists(db, app.getTenant(), app.getId(), app.getVersion(), false))
         throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_APP_EXISTS", rUser, app.getId(),
                                                             app.getVersion()));
+      // Get string value for archiveMode
+      var aMode = app.getArchiveMode();
+      String archiveModeStr = (aMode == null) ? null : aMode.name();
+
       // If no top level app entry this is the first version. Create the initial top level record
       if (!checkIfAppExists(db, app.getTenant(), app.getId(), null, false))
       {
@@ -221,6 +226,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, app.getArchiveSystemId())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, app.getArchiveSystemDir())
               .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, app.isArchiveOnAppError())
+              .set(APPS_VERSIONS.ARCHIVE_MODE, archiveModeStr)
               .set(APPS_VERSIONS.IS_MPI, app.getIsMpi())
               .set(APPS_VERSIONS.MPI_CMD, app.getMpiCmd())
               .set(APPS_VERSIONS.CMD_PREFIX, app.getCmdPrefix())
@@ -336,6 +342,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       UUID uuid = putApp.getUuid();
       if (uuid == null) uuid = getUUIDUsingDb(db, tenantId, appId, appVersion);
 
+      // Get string value for archiveMode
+      var aMode = putApp.getArchiveMode();
+      String archiveModeStr = (aMode == null) ? null : aMode.name();
+
       int appSeqId = getAppSeqIdUsingDb(db, tenantId, appId);
       int appVerSeqId = -1;
       var result = db.update(APPS_VERSIONS)
@@ -362,6 +372,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, putApp.getArchiveSystemId())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, putApp.getArchiveSystemDir())
               .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, putApp.isArchiveOnAppError())
+              .set(APPS_VERSIONS.ARCHIVE_MODE, archiveModeStr)
               .set(APPS_VERSIONS.IS_MPI, putApp.getIsMpi())
               .set(APPS_VERSIONS.MPI_CMD, putApp.getMpiCmd())
               .set(APPS_VERSIONS.CMD_PREFIX, putApp.getCmdPrefix())
@@ -469,6 +480,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       boolean doesExist = checkIfAppExists(db, tenant, appId, appVersion, false);
       if (!doesExist) throw new IllegalStateException(LibUtils.getMsgAuth("APPLIB_NOT_FOUND", rUser, appId));
 
+      // Get string value for archiveMode
+      var aMode = patchedApp.getArchiveMode();
+      String archiveModeStr = (aMode == null) ? null : aMode.name();
       int appSeqId = getAppSeqIdUsingDb(db, tenant, appId);
       int appVerSeqId = -1;
       var result = db.update(APPS_VERSIONS)
@@ -494,6 +508,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_ID, patchedApp.getArchiveSystemId())
               .set(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR, patchedApp.getArchiveSystemDir())
               .set(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR, patchedApp.isArchiveOnAppError())
+              .set(APPS_VERSIONS.ARCHIVE_MODE, archiveModeStr)
               .set(APPS_VERSIONS.IS_MPI, patchedApp.getIsMpi())
               .set(APPS_VERSIONS.MPI_CMD, patchedApp.getMpiCmd())
               .set(APPS_VERSIONS.CMD_PREFIX, patchedApp.getCmdPrefix())
@@ -1820,6 +1835,9 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       runtimeOptions = Arrays.stream(runtimeOptionsStrArray).map(RuntimeOption::valueOf).collect(Collectors.toList());
     }
 
+    // Convert archiveMode from string to enum
+    String aStr = r.get(APPS_VERSIONS.ARCHIVE_MODE);
+    ArchiveModeEnum archiveMode = StringUtils.isBlank(aStr) ? null : ArchiveModeEnum.valueOf(aStr);
     // Build lists for ParameterSet arguments, FileInputs, FileInputArrays.
     JsonElement parmSetJsonElement = r.get(APPS_VERSIONS.PARAMETER_SET);
 
@@ -1845,6 +1863,7 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
             r.get(APPS_VERSIONS.DTN_SYSTEM_INPUT_DIR), r.get(APPS_VERSIONS.DTN_SYSTEM_OUTPUT_DIR),
             r.get(APPS_VERSIONS.EXEC_SYSTEM_LOGICAL_QUEUE), r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_ID),
             r.get(APPS_VERSIONS.ARCHIVE_SYSTEM_DIR), r.get(APPS_VERSIONS.ARCHIVE_ON_APP_ERROR),
+            archiveMode,
             r.get(APPS_VERSIONS.IS_MPI), r.get(APPS_VERSIONS.MPI_CMD), r.get(APPS_VERSIONS.CMD_PREFIX),
             parmSet, fileInputs, fileInputArrays, r.get(APPS_VERSIONS.NODE_COUNT), r.get(APPS_VERSIONS.CORES_PER_NODE),
             r.get(APPS_VERSIONS.MEMORY_MB), r.get(APPS_VERSIONS.MAX_MINUTES), subscriptions,

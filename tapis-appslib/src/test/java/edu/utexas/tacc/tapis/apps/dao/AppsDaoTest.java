@@ -132,6 +132,7 @@ public class AppsDaoTest
     Assert.assertEquals(tmpApp.getArchiveSystemId(), app0.getArchiveSystemId());
     Assert.assertEquals(tmpApp.getArchiveSystemDir(), app0.getArchiveSystemDir());
     Assert.assertEquals(tmpApp.isArchiveOnAppError(), app0.isArchiveOnAppError());
+    Assert.assertEquals(tmpApp.getArchiveMode(), app0.getArchiveMode());
     Assert.assertEquals(tmpApp.getIsMpi(), app0.getIsMpi());
     Assert.assertEquals(tmpApp.getMpiCmd(), app0.getMpiCmd());
     Assert.assertEquals(tmpApp.getCmdPrefix(), app0.getCmdPrefix());
@@ -396,7 +397,7 @@ public class AppsDaoTest
             maxJobs1, maxJobsPerUser1, strictFileInputsFalse, IntegrationUtils.jobDescription1, dynamicExecSystemTrue,
             execSystemConstraints1, execSystemId1, execSystemExecDir1, execSystemInputDir1, execSystemOutputDir1,
             dtnSystemInputDir1, dtnSystemOutputDir1,
-            execSystemLogicalQueue1, archiveSystemIdNull, archiveSystemDir1, archiveOnAppErrorTrue,
+            execSystemLogicalQueue1, archiveSystemIdNull, archiveSystemDir1, archiveOnAppErrorTrue, archiveModeAlways,
             isMpiTrue, mpiCmd1, cmdPrefix1,
             parameterSet1, finList1, fiaList1, nodeCount1, coresPerNode1, memoryMB1, maxMinutes1, notifList1, jobTags1,
             tags1, notes1, uuidNull, isDeletedFalse, createdNull, updatedNull);
