@@ -28,8 +28,8 @@ COPY --chown=tapis:tapis /dependencies dependencies
 ENV TAPIS_REQUEST_LOGGING_FILTER_PREFIXES /v3/apps
 
 # Java module commands that are always needed (java 17 and later).
-ENV JAVA_MODULE_OPTS --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED \
-                     --add-opens java.base/java.util=ALL-UNNAMED
+ENV JAVA_MODULE_OPTS --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED \
+                     --add-opens=java.base/java.util=ALL-UNNAMED
 
 # Options for JVM
 # Most options are for allowing jmx and remote debug access
@@ -44,4 +44,4 @@ ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,address=8000,server=y,s
 # Server port, debug port and jmx port
 EXPOSE 8080 8000 9090
 
-CMD java -Xms4g -Xmx4g ${JAVA_MODULE_OPTS} -Dlogback.configurationFile=./logback.xml -cp "apps.jar:dependencies/*" edu.utexas.tacc.tapis.apps.api.AppsApplication
+CMD ["java","-Xms4g","-Xmx4g","-Dlogback.configurationFile=./logback.xml","-cp","apps.jar:dependencies/*","edu.utexas.tacc.tapis.apps.api.AppsApplication"]
