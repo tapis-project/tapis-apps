@@ -1,7 +1,6 @@
 package edu.utexas.tacc.tapis.apps.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,11 +14,9 @@ import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.utexas.tacc.tapis.security.client.model.SKShareHasPrivilegeParms;
 import edu.utexas.tacc.tapis.shared.TapisConstants;
 import edu.utexas.tacc.tapis.shared.i18n.MsgUtils;
 import edu.utexas.tacc.tapis.shared.threadlocal.OrderBy;
-import edu.utexas.tacc.tapis.systems.client.gen.model.LogicalQueue;
 import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
 import edu.utexas.tacc.tapis.apps.model.*;
@@ -31,23 +28,18 @@ import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
 import edu.utexas.tacc.tapis.search.parser.ASTParser;
 import edu.utexas.tacc.tapis.search.parser.ASTNode;
 import edu.utexas.tacc.tapis.search.SearchUtils;
-import edu.utexas.tacc.tapis.security.client.SKClient;
-import edu.utexas.tacc.tapis.security.client.gen.model.ReqShareResource;
-import edu.utexas.tacc.tapis.security.client.gen.model.SkShare;
-import edu.utexas.tacc.tapis.security.client.gen.model.SkShareList;
-import edu.utexas.tacc.tapis.security.client.model.SKShareDeleteShareParms;
-import edu.utexas.tacc.tapis.security.client.model.SKShareGetSharesParms;
 import edu.utexas.tacc.tapis.shared.exceptions.TapisException;
 import edu.utexas.tacc.tapis.shared.security.ServiceClients;
 import edu.utexas.tacc.tapis.shared.security.ServiceContext;
 import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 import edu.utexas.tacc.tapis.shared.utils.TapisGsonUtils;
-import edu.utexas.tacc.tapis.systems.client.SystemsClient;
+import edu.utexas.tacc.tapis.systems.client.gen.model.LogicalQueue;
 import edu.utexas.tacc.tapis.systems.client.gen.model.TapisSystem;
+import edu.utexas.tacc.tapis.systems.client.SystemsClient;
 
-import static edu.utexas.tacc.tapis.apps.service.AuthUtils.APPS_SHR_TYPE;
 import static edu.utexas.tacc.tapis.apps.service.AuthUtils.OP_SHARE;
 import static edu.utexas.tacc.tapis.apps.service.AuthUtils.OP_UNSHARE;
+import static edu.utexas.tacc.tapis.apps.service.AuthUtils.PERM_SPEC_PREFIX;
 import static edu.utexas.tacc.tapis.shared.TapisConstants.APPS_SERVICE;
 
 /*
@@ -65,21 +57,12 @@ public class AppsServiceImpl implements AppsService
   // Tracing.
   private static final Logger _log = LoggerFactory.getLogger(AppsServiceImpl.class);
 
-  private static final Set<Permission> ALL_PERMS = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY, Permission.EXECUTE));
-  private static final Set<Permission> READMODIFY_PERMS = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY));
-  // Permspec format for systems is "system:<tenant>:<perm_list>:<system_id>"
-  private static final String PERM_SPEC_PREFIX = "app";
-  private static final String PERM_SPEC_TEMPLATE = "app:%s:%s:%s";
-
   public static final String JOBS_SERVICE = TapisConstants.SERVICE_NAME_JOBS;
   public static final String SERVICE_NAME = TapisConstants.SERVICE_NAME_APPS;
 
   // Message keys
   private static final String ERROR_ROLLBACK = "APPLIB_ERROR_ROLLBACK";
   private static final String NOT_FOUND = "APPLIB_NOT_FOUND";
-
-  // NotAuthorizedException requires a Challenge, although it serves no purpose here.
-  private static final String NO_CHALLENGE = "NoChallenge";
 
   // Compiled regex for splitting around ":"
   private static final Pattern COLON_SPLIT = Pattern.compile(":");
@@ -88,6 +71,7 @@ public class AppsServiceImpl implements AppsService
   private static final String nullOwner = null;
   private static final String nullImpersonationId = null;
   private static final String nullTargetUser = null;
+  private static final Boolean nullVersionSpecified = null;
   private static final Set<Permission> nullPermSet = null;
   private static final AppShare nullAppsShare = null;
 
@@ -216,7 +200,7 @@ public class AppsServiceImpl implements AppsService
     // Creation of app and perms not in single DB transaction.
     // Use try/catch to rollback any writes in case of failure.
     boolean appCreated = false;
-    String appsPermSpecALL = authUtils.getPermSpecAllStr(tenant, appId);
+    String appsPermSpecALL = AuthUtils.getPermSpecAllStr(tenant, appId);
 
     try {
       // ------------------- Make Dao call to persist the app -----------------------------------
@@ -508,7 +492,6 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(appId) || StringUtils.isBlank(newOwnerName))
          throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
-    String oboUser = rUser.getOboUserId();
     String oboTenant = rUser.getOboTenantId();
 
     // ---------------------------- Check inputs ------------------------------------
@@ -516,7 +499,7 @@ public class AppsServiceImpl implements AppsService
          throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_CREATE_ERROR_ARG", rUser, appId));
 
     // App must already exist and not be deleted
-    checkForAppWithThrow(rUser,oboTenant, appId, false);
+    checkForAppWithThrow(rUser, oboTenant, appId, false);
 
     // Retrieve the old owner
     String oldOwnerName = dao.getAppOwner(oboTenant, appId);
@@ -530,13 +513,13 @@ public class AppsServiceImpl implements AppsService
     // ----------------- Make all updates --------------------
     // Changes not in single DB transaction.
     // Use try/catch to rollback any changes in case of failure.
-    String appsPermSpec = authUtils.getPermSpecAllStr(oboTenant, appId);
+    String appsPermSpec = AuthUtils.getPermSpecAllStr(oboTenant, appId);
     try
     {
       App app = getApp(rUser, appId, null, false, nullImpersonationId, null);
       // ------------------- Make Dao call to update the app owner -----------------------------------
       dao.updateAppOwner(rUser, oboTenant, appId, newOwnerName);
-      // NOTE: Leave all other existing system perm grants and share records in place.
+      // NOTE: Leave all other existing app perm grants and share records in place.
       // Update all share records to have new owner as grantor.
       authUtils.updateShareGrantorToNewOwner(rUser, app, newOwnerName);
     }
@@ -567,13 +550,16 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
     // If app does not exist then 0 changes
-    if (!dao.checkForApp(resourceTenantId, appId, true)) return 0;
+    App app = getApp(rUser, appId, null, false, nullImpersonationId, null);
+    if (app == null) return 0;
 
     // ------------------------- Check authorization -------------------------
    authUtils.checkAuthOwnerUnknown(rUser, op, appId);
 
-    // Remove SK artifacts
-    authUtils.removeSKArtifacts(rUser, resourceTenantId, appId);
+    // Remove SK permissions
+    authUtils.revokeAllSKPermissions(rUser, resourceTenantId, appId);
+    // Remove shareInfo associated with the app, including isPublic
+    authUtils.deleteAllShareInfo(rUser, app);
 
     // Delete the app
     return dao.hardDeleteApp(resourceTenantId, appId);
@@ -847,7 +833,7 @@ public class AppsServiceImpl implements AppsService
     else if (publicOnly) sharedIDs = authUtils.getSharedAppIDs(rUser, oboOrImpersonatedUser, true, false);
     else if (sharedOnly || mine) sharedIDs = authUtils.getSharedAppIDs(rUser, oboOrImpersonatedUser, false, true);
 
-    // Count all allowed systems matching the search conditions
+    // Count all allowed apps matching the search conditions
     return dao.getAppsCount(rUser, oboOrImpersonatedUser, verifiedSearchList, null, orderByList, startAfter,
                             versionSpecified, includeDeleted, listTypeEnum, viewableIDs, sharedIDs);
   }
@@ -1028,10 +1014,8 @@ public class AppsServiceImpl implements AppsService
     else if (sharedOnly || mine) sharedIDs = authUtils.getSharedAppIDs(rUser, rUser.getOboUserId(), false, true);
 
     // Pass in null for versionSpecified since the Dao makes the same call we would make, so no time saved doing it here.
-    Boolean versionSpecified = null;
-
     // Get all allowed apps matching the search conditions
-    List<App> apps = dao.getApps(rUser, null, null, searchAST, limit, orderByList, skip, startAfter, versionSpecified,
+    List<App> apps = dao.getApps(rUser, null, null, searchAST, limit, orderByList, skip, startAfter, nullVersionSpecified,
                                  includeDeleted, listTypeEnum, viewableIDs, sharedIDs);
     // Update dynamically computed info.
     // Fetch share info only if requested by caller
@@ -1098,7 +1082,7 @@ public class AppsServiceImpl implements AppsService
 
     String oboTenant = rUser.getOboTenantId();
 
-    // If system does not exist or has been deleted then throw an exception
+    // If app does not exist or has been deleted then throw an exception
     checkForAppWithThrow(rUser, oboTenant, appId, false);
 
 
@@ -1120,7 +1104,7 @@ public class AppsServiceImpl implements AppsService
     if (permissions.contains(Permission.MODIFY)) permissions.add(Permission.READ);
 
     // Create a set of individual permSpec entries based on the list passed in
-    Set<String> permSpecSet = authUtils.getPermSpecSet(oboTenant, appId, permissions);
+    Set<String> permSpecSet = AuthUtils.getPermSpecSet(oboTenant, appId, permissions);
 
     // Assign perms to user.
     // Start of updates. Will need to rollback on failure.
@@ -1225,7 +1209,7 @@ public class AppsServiceImpl implements AppsService
       {
         if (userPermSet.contains(perm))
         {
-          String permSpec = authUtils.getPermSpecStr(oboTenant, appId, perm);
+          String permSpec = AuthUtils.getPermSpecStr(oboTenant, appId, perm);
           try { appUtils.getSKClient(rUser).grantUserPermission(oboTenant, targetUser, permSpec); }
           catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "grantPerm", e.getMessage()));}
         }
@@ -1248,7 +1232,7 @@ public class AppsServiceImpl implements AppsService
    * @param rUser - ResourceRequestUser containing tenant, user and request info
    * @param appId - name of app
    * @param targetUser - Target user for operation
-   * @return List of permissions
+   * @return Set of permissions
    * @throws TapisException - for Tapis related exceptions
    */
   @Override
@@ -1332,47 +1316,22 @@ public class AppsServiceImpl implements AppsService
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
-    String oboOrImpersonatedUser = StringUtils.isBlank(impersonationId) ? rUser.getOboUserId() : impersonationId;
     String oboOrResourceTenant = StringUtils.isBlank(resourceTenant) ? rUser.getOboTenantId() : resourceTenant;
 
     //Make sure to never return null
-    AppShare retShare = new AppShare(false, Collections.EMPTY_SET, Collections.EMPTY_LIST, Collections.EMPTY_SET);
+    AppShare retShare = new AppShare(false, null, null, null);
 
     // We need owner to check auth and if app not there cannot find owner, so
-    // if app does not exist then return null
+    // if app does not exist then return an empty AppShare
     if (!dao.checkForApp(oboOrResourceTenant, appId, true)) return retShare;
 
     // ------------------------- Check authorization -------------------------
-   authUtils.checkAuthOwnerUnknown(rUser, op, appId);
+    authUtils.checkAuth(rUser, op, appId, nullOwner, nullTargetUser, nullPermSet, impersonationId);
 
     // ------------------- Make a call to retrieve the app sharing -----------------------
-    // Create SKShareGetSharesParms needed for SK calls.
-    var skParms = new SKShareGetSharesParms();
-    skParms.setResourceType(APPS_SHR_TYPE);
-    skParms.setTenant(oboOrResourceTenant);
-    skParms.setResourceId1(appId);
-
-    var userSet = new HashSet<String>();
-    
-    // First determine if app is publicly shared. Search for share to grantee ~public
-    skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
-    SkShareList skShares = appUtils.getSKClient(rUser).getShares(skParms);
-    // Set isPublic based on result.
-    boolean isPublic = (skShares != null && skShares.getShares() != null && !skShares.getShares().isEmpty());
-    // Now get all the users with whom the system has been shared
-    skParms.setGrantee(null);
-    skParms.setIncludePublicGrantees(false);
-    skShares = appUtils.getSKClient(rUser).getShares(skParms);
-    if (skShares != null && skShares.getShares() != null)
-    {
-      for (SkShare skShare : skShares.getShares())
-      {
-        userSet.add(skShare.getGrantee());
-      }
-    }
-
-    var shareInfo = new AppShare(isPublic, userSet);
-    return shareInfo;
+    // Call util method to fetch the shareInfo
+    AppShare appShare = authUtils.getAppShareInfo(rUser, oboOrResourceTenant, appId);
+    return appShare;
   }
   
   @Override
@@ -1677,7 +1636,7 @@ public class AppsServiceImpl implements AppsService
     if (!errMessages.isEmpty())
     {
       // Construct message reporting all errors
-      String allErrors = appUtils.getListOfErrors(rUser, app.getId(), errMessages);
+      String allErrors = AppUtils.getListOfErrors(rUser, app.getId(), errMessages);
       _log.error(allErrors);
       throw new IllegalStateException(allErrors);
     }
@@ -1698,7 +1657,7 @@ public class AppsServiceImpl implements AppsService
     for (String userPerm : userPerms)
     {
       if (StringUtils.isBlank(userPerm)) continue;
-      // Split based on :, permSpec has the format system:<tenant>:<perms>:<system_name>
+      // Split based on :, permSpec has the format app:<tenant>:<perms>:<app_name>
       // NOTE: This assumes value in last field is always an id and never a wildcard.
       String[] permFields = COLON_SPLIT.split(userPerm);
       if (permFields.length < 4) continue;
@@ -1707,7 +1666,7 @@ public class AppsServiceImpl implements AppsService
                       permFields[2].contains(Permission.MODIFY.name()) ||
                       permFields[2].contains(App.PERMISSION_WILDCARD)))
       {
-        // If system exists add ID to the list
+        // If app exists add ID to the list
         // else resource no longer exists or has been deleted so remove orphaned permissions
         if (dao.checkForApp(rUser.getOboTenantId(), permFields[3], false))
         {
@@ -1727,7 +1686,7 @@ public class AppsServiceImpl implements AppsService
 
   /**
    * Create an updated App based on the app created from a PUT request.
-   * Attributes that cannot be updated and must be filled in from the original system:
+   * Attributes that cannot be updated and must be filled in from the original app:
    *   tenant, id, owner, enabled, locked
    */
   private App createUpdatedApp(App origApp, App putApp)

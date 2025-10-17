@@ -1,5 +1,15 @@
 package edu.utexas.tacc.tapis.apps.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.inject.Inject;
+import javax.ws.rs.ForbiddenException;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.utexas.tacc.tapis.apps.model.App;
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
 import edu.utexas.tacc.tapis.security.client.SKClient;
@@ -15,17 +25,7 @@ import edu.utexas.tacc.tapis.sharedapi.security.ResourceRequestUser;
 import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.model.AppShare;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import javax.ws.rs.ForbiddenException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static edu.utexas.tacc.tapis.apps.model.App.*;
 import static edu.utexas.tacc.tapis.apps.service.AppsServiceImpl.JOBS_SERVICE;
@@ -45,11 +45,10 @@ public class AuthUtils
   // Permission constants
   // Permspec format for apps is "apps:<tenant>:<perm_list>:<app_id>"
   public static final String PERM_SPEC_TEMPLATE = "app:%s:%s:%s";
-  static final String PERM_SPEC_PREFIX = "app";
+  public static final String PERM_SPEC_PREFIX = "app";
   // Sets of individual permissions, for convenience
   static final Set<Permission> ALL_PERMS = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY, Permission.EXECUTE));
   private static final Set<Permission> READMODIFY_PERMS = new HashSet<>(Set.of(Permission.READ, Permission.MODIFY));
-  private static final Set<Permission> EXECUTE_PERMS = new HashSet<>(Set.of(Permission.EXECUTE));
 
   // Sharing constants
   static final String OP_SHARE = "share";
@@ -59,16 +58,13 @@ public class AuthUtils
 
   // Lists of services allowed to perform certain restricted functionality:
   //     impersonate user, set shared context, impersonate tenant
-  // TODO review
   private static final Set<String> SVCLIST_IMPERSONATE = new HashSet<>(Set.of(JOBS_SERVICE));
-  private static final Set<String> SVCLIST_SHAREDAPPCTX = new HashSet<>(Set.of(JOBS_SERVICE));
   private static final Set<String> SVCLIST_RESOURCETENANT = new HashSet<>(Set.of(JOBS_SERVICE));
 
 
   // Named and typed null values to make it clear what is being passed in to a method
   private static final String nullOwner = null;
   private static final String nullImpersonationId = null;
-  private static final String nullSharedAppCtx = null;
   private static final String nullTargetUser = null;
   private static final Set<Permission> nullPermSet = null;
 
@@ -464,7 +460,7 @@ public class AuthUtils
    * Remove all SK artifacts associated with an App: user permissions, App role
    * No checks are done for incoming arguments and the app must exist
    */
-  void removeSKArtifacts(ResourceRequestUser rUser, String resourceTenantId, String appId)
+  void revokeAllSKPermissions(ResourceRequestUser rUser, String resourceTenantId, String appId)
         throws TapisException, TapisClientException
   {
     // Use Security Kernel client to find all users with perms associated with the app.
@@ -485,7 +481,7 @@ public class AuthUtils
   AppShare getAppShareInfo(ResourceRequestUser rUser, String tenant, String appId)
         throws TapisException, TapisClientException
   {
-    // Attributes needed to create a SystemShare
+    // Attributes needed to create an AppShare
     boolean isPublic = false;
     var userSet = new HashSet<String>();
     Set<String> publicGrantors = Collections.emptySet();
@@ -497,7 +493,7 @@ public class AuthUtils
     skParms.setTenant(tenant);
     skParms.setResourceId1(appId);
 
-    // First determine if system is publicly shared. Search for shares to grantee ~public
+    // First determine if app is publicly shared. Search for shares to grantee ~public
     skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
     skShares = appUtils.getSKClient(rUser).getShares(skParms);
     // Set isPublic and publicGrantors based on result.
@@ -508,7 +504,7 @@ public class AuthUtils
       for (SkShare skShare : skShares.getShares()) { publicGrantors.add(skShare.getGrantor()); }
     }
 
-    // Now get all the users with whom the system has been shared and all individual skShare records.
+    // Now get all the users with whom the app has been shared and all individual skShare records.
     // We use a Set for usernames because for some purposes we only care about which users have a share record.
     // We also include a List of share records because we could have multiple grantors per user for a share.
     // Plus, we will need the list when we got to remove the share records. We want to make sure we remove all

@@ -31,7 +31,7 @@ public final class AppShare
   public AppShare(boolean publicShare1, Set<String> userIDs1, List<SkShare> skShares1, Set<String> publicGrantors1)
   {
     publicShare = publicShare1;
-    users = userIDs1;
+    users = (userIDs1 == null) ? Collections.emptySet() : userIDs1;
     skShares = (skShares1 == null || skShares1.isEmpty()) ? Collections.emptyList() : skShares1;
     publicGrantors = (publicGrantors1 == null || publicGrantors1.isEmpty()) ? Collections.emptySet() : publicGrantors1;
   }

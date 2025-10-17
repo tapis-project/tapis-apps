@@ -97,6 +97,8 @@ public class AppsServiceTest
         bind(AppsServiceImpl.class).to(AppsService.class);
         bind(AppsServiceImpl.class).to(AppsServiceImpl.class);
         bind(AppsDaoImpl.class).to(AppsDao.class);
+        bind(AppUtils.class).to(AppUtils.class);
+        bind(AuthUtils.class).to(AuthUtils.class);
         bindFactory(ServiceContextFactory.class).to(ServiceContext.class);
         bindFactory(ServiceClientsFactory.class).to(ServiceClients.class);
       }
@@ -481,8 +483,8 @@ public class AppsServiceTest
     ResourceRequestUser newOwnerAuth = rUser3;
 
     svc.createApp(origOwnerAuth, app0, createText);
-    App tmpApp = svc.getApp(origOwnerAuth, appId, appVersion, false, null, null);
-    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
+    App tmpApp   = svc.getApp(rOwner1, appId, appVersion, false, null, null);
+    Assert.assertNotNull(tmpApp, "Failed to create item: " + appId);
 
     // Grant shares and perms to old owner and a third user
     svc.grantUserPermissions(rOwner1, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
@@ -490,16 +492,15 @@ public class AppsServiceTest
     String rawDataShare = "{\"users\": [\"" + owner1 + "\", \"" + thirdUser + "\"]}";
     AppShare appShare = TapisGsonUtils.getGson().fromJson(rawDataShare, AppShare.class);
     svc.shareApp(rOwner1, appId, appShare);
-    tmpApp   = svc.getApp(rOwner1, appId, appVersion, false, null, null);
     appShare = svc.getAppShare(rOwner1, appId);
     Set<Permission> userPerms = svc.getUserPermissions(rOwner1, appId, owner1);
     userPerms = svc.getUserPermissions(rOwner1, appId, thirdUser);    // Change owner using api
 
     // Change the owner
-    svc.changeAppOwner(origOwnerAuth, app0.getId(), newOwnerName);
+    svc.changeAppOwner(origOwnerAuth, appId, newOwnerName);
 
     // Confirm new owner
-    tmpApp = svc.getApp(newOwnerAuth, app0.getId(), app0.getVersion(), false, null, null);
+    tmpApp = svc.getApp(newOwnerAuth, appId, appVersion, false, null, null);
     Assert.assertEquals(tmpApp.getOwner(), newOwnerName);
 
     // Check that shares and perms still in place.
@@ -535,17 +536,17 @@ public class AppsServiceTest
     Assert.assertFalse(userPerms.contains(Permission.MODIFY));
     // Original owner should not be able to modify app
     try {
-      svc.deleteApp(origOwnerAuth, app0.getId());
-      Assert.fail("Original owner should not have permission to update app after change of ownership. App name: " + app0.getId() +
-              " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
+      svc.deleteApp(origOwnerAuth, appId);
+      Assert.fail("Original owner should not have permission to update app after change of ownership. App name: " + appId +
+            " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
     } catch (Exception e) {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
     }
-    // Original owner should not be able to read system
+    // Original owner should not be able to read app
     try {
-      svc.getApp(origOwnerAuth, app0.getId(), app0.getVersion(), false, null, null);
-      Assert.fail("Original owner should not have permission to read app after change of ownership. App name: " + app0.getId() +
-              " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
+      svc.getApp(origOwnerAuth, appId, appVersion, false, null, null);
+      Assert.fail("Original owner should not have permission to read app after change of ownership. App name: " + appId +
+            " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
     } catch (Exception e) {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
     }
