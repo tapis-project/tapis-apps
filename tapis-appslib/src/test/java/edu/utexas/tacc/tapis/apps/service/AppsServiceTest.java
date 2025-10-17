@@ -465,29 +465,73 @@ public class AppsServiceTest
   }
 
   // Test changing app owner
+  // TODO Check that shares and perms remain in place.
+  // TODO Check that new owner can unshare from old owner
   @Test
   public void testChangeAppOwner() throws Exception
   {
     App app0 = apps[15];
+    String appId = app0.getId();
+    String appVersion = app0.getVersion();
     String createText = "{\"testChangeOwner\": \"0-create\"}";
     String origOwnerName = owner1;
     String newOwnerName = testUser3;
+    String thirdUser = testUser4;
     ResourceRequestUser origOwnerAuth = rOwner1;
     ResourceRequestUser newOwnerAuth = rUser3;
 
     svc.createApp(origOwnerAuth, app0, createText);
-    App tmpApp = svc.getApp(origOwnerAuth, app0.getId(), app0.getVersion(), false, null, null);
+    App tmpApp = svc.getApp(origOwnerAuth, appId, appVersion, false, null, null);
     Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
 
-    // Change owner using api
+    // Grant shares and perms to old owner and a third user
+    svc.grantUserPermissions(rOwner1, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
+    svc.grantUserPermissions(rOwner1, appId, thirdUser, testPermsREADMODIFY, rawDataEmptyJson);
+    String rawDataShare = "{\"users\": [\"" + owner1 + "\", \"" + thirdUser + "\"]}";
+    AppShare appShare = TapisGsonUtils.getGson().fromJson(rawDataShare, AppShare.class);
+    svc.shareApp(rOwner1, appId, appShare);
+    tmpApp   = svc.getApp(rOwner1, appId, appVersion, false, null, null);
+    appShare = svc.getAppShare(rOwner1, appId);
+    Set<Permission> userPerms = svc.getUserPermissions(rOwner1, appId, owner1);
+    userPerms = svc.getUserPermissions(rOwner1, appId, thirdUser);    // Change owner using api
+
+    // Change the owner
     svc.changeAppOwner(origOwnerAuth, app0.getId(), newOwnerName);
 
     // Confirm new owner
     tmpApp = svc.getApp(newOwnerAuth, app0.getId(), app0.getVersion(), false, null, null);
     Assert.assertEquals(tmpApp.getOwner(), newOwnerName);
 
+    // Check that shares and perms still in place.
+    // Check expected auxiliary updates have happened
+    // New owner should be able to retrieve permissions and old perms should be in place
+    userPerms = svc.getUserPermissions(rUser3, appId, owner1);
+    Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
+    Assert.assertTrue(userPerms.contains(Permission.READ));
+    Assert.assertTrue(userPerms.contains(Permission.MODIFY));
+    userPerms = svc.getUserPermissions(rUser3, appId, thirdUser);
+    Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
+    Assert.assertTrue(userPerms.contains(Permission.READ));
+    Assert.assertTrue(userPerms.contains(Permission.MODIFY));
+
+    // Old shares should also be in place
+    appShare = svc.getAppShare(rUser3, appId);
+    var userList = appShare.getUserList();
+    Assert.assertTrue(userList.contains(owner1));
+    Assert.assertTrue(userList.contains(thirdUser));
+
+    // Now revoke perms from old owner
+    svc.revokeUserPermissions(rUser3, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
+    // Unshare from old owner and confirm it happened
+    rawDataShare = "{\"users\": [\"" + owner1 + "\"]}";
+    appShare = TapisGsonUtils.getGson().fromJson(rawDataShare, AppShare.class);
+    svc.unshareApp(rUser3, appId, appShare);
+    appShare = svc.getAppShare(rUser3, appId);
+    Assert.assertNotNull(appShare);
+    Assert.assertFalse(appShare.getUserList().contains(owner1));
+
     // Original owner should no longer have modify permission
-    Set<Permission> userPerms = svc.getUserPermissions(newOwnerAuth, app0.getId(), origOwnerName);
+    userPerms = svc.getUserPermissions(newOwnerAuth, appId, origOwnerName);
     Assert.assertFalse(userPerms.contains(Permission.MODIFY));
     // Original owner should not be able to modify app
     try {
@@ -1616,11 +1660,11 @@ public class AppsServiceTest
     Assert.assertTrue(pass);
 
     // **************************  Sharing app  ***************************
-    svc.shareApp(rOwner, app0.getId(), appShare);
+    svc.shareApp(rOwner, appId, appShare);
 
     // Get app and verify shareInfo
     AppShare appShareTest = svc.getAppShare(rOwner, appId);
-    Assert.assertNotNull(appShareTest, "App Share information found.");
+    Assert.assertNotNull(appShareTest, "App Share information found for app: " + appId);
     // Retrieve users, test user is on the list
     boolean userFound = false;
     for (var user : appShareTest.getUserList())
@@ -1636,11 +1680,11 @@ public class AppsServiceTest
     Assert.assertFalse(app0.isPublic());
 
     // **************************  Unsharing app  ***************************
-    svc.unshareApp(rOwner, app0.getId(), appShare);
+    svc.unshareApp(rOwner, appId, appShare);
 
     // Get app and verify shareInfo
     appShareTest = svc.getAppShare(rOwner, appId);
-    Assert.assertNotNull(appShareTest, "App Share information found.");
+    Assert.assertNotNull(appShareTest, "App Share information found for app: " + appId);
     // Retrieve users, test user is not on the list
     userFound = false;
     for (var user : appShareTest.getUserList())
@@ -1665,31 +1709,31 @@ public class AppsServiceTest
     Assert.assertFalse(app0.isPublic());
 
     // Service call
-    svc.shareAppPublicly(rOwner, app0.getId());
+    svc.shareAppPublicly(rOwner, appId);
 
     // Test retrieval
-    appShareTest = svc.getAppShare(rOwner, app0.getId());
-    System.out.println("Found item: " + app0.getId());
+    appShareTest = svc.getAppShare(rOwner, appId);
+    System.out.println("Found item: " + appId);
 
     // Verify app share fields
-    Assert.assertNotNull(appShareTest, "App Share information found.");
+    Assert.assertNotNull(appShareTest, "App Share information found for app: " + appId);
     Assert.assertTrue(appShareTest.isPublic());
 
     // Verify shared app context when rUser0 fetches
-    app0 = svc.getApp(rUser0, app0.getId(), app0.getVersion(), true, null, null);
+    app0 = svc.getApp(rUser0, appId, app0.getVersion(), true, null, null);
     Assert.assertNotNull(app0.getSharedAppCtx());
     Assert.assertTrue(app0.isPublic());
 
     // **************************  Unsharing app publicly  ***************************
     // Service call
-    svc.unshareAppPublicly(rOwner, app0.getId());
+    svc.unshareAppPublicly(rOwner, appId);
 
     // Test retrieval using specified authn method
-    appShareTest = svc.getAppShare(rOwner, app0.getId());
-    System.out.println("Found item: " + app0.getId());
+    appShareTest = svc.getAppShare(rOwner, appId);
+    System.out.println("Found item: " + appId);
 
     // Verify app share fields
-    Assert.assertNotNull(appShareTest, "App Share information found.");
+    Assert.assertNotNull(appShareTest, "App Share information found for app: " + appId);
     Assert.assertFalse(appShareTest.isPublic());
 
     // rUser0 should no longer have access
