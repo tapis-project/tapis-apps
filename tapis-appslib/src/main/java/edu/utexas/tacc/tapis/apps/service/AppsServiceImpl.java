@@ -550,8 +550,12 @@ public class AppsServiceImpl implements AppsService
     if (StringUtils.isBlank(appId)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
 
     // If app does not exist then 0 changes
-    App app = getApp(rUser, appId, null, false, nullImpersonationId, null);
+    App app = dao.getApp(resourceTenantId, appId, null, true);
     if (app == null) return 0;
+    // Make sure app is in undeleted state before attempting to delete everything.
+    // Otherwise, the next call svc.getApp call returns null.
+    dao.updateDeleted(rUser, resourceTenantId, appId, false);
+    app = getApp(rUser, appId, null, false, nullImpersonationId, null);
 
     // ------------------------- Check authorization -------------------------
    authUtils.checkAuthOwnerUnknown(rUser, op, appId);

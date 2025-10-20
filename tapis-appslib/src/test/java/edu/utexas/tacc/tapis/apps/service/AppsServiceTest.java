@@ -1123,56 +1123,50 @@ public class AppsServiceTest
   {
     // Create an app
     App app0 = apps[9];
+    String appId = app0.getId();
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
-    // Create user perms for the app
+
+    // Owner should be able to grant/revoke for themselves in preparation for changeSystemOwner.
+    svc.grantUserPermissions(rOwner1, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
+    Set<Permission> userPerms = svc.getUserPermissions(rOwner1, appId, owner1);
+    Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
+    Assert.assertEquals(userPerms.size(), testPermsREADMODIFY.size(), "Incorrect number of perms returned.");
+    for (Permission perm: testPermsREADMODIFY) { if (!userPerms.contains(perm)) Assert.fail("User perms should contain permission: " + perm.name()); }
+    svc.revokeUserPermissions(rOwner1, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
+    int changeCount = svc.revokeUserPermissions(rOwner1, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
+    Assert.assertEquals(changeCount, 2, "Change count incorrect when revoking permissions.");
+    userPerms = svc.getUserPermissions(rOwner1, appId, owner1);
+    for (Permission perm: testPermsREADMODIFY) { if (userPerms.contains(perm)) Assert.fail("User perms should not contain permission: " + perm.name()); }
+
+    // Create non-owner user perms for the app
     Set<Permission> permsToCheck = testPermsALL;
-    svc.grantUserPermissions(rOwner1, app0.getId(), testUser4, permsToCheck, rawDataEmptyJson);
+    svc.grantUserPermissions(rOwner1, appId, testUser4, permsToCheck, rawDataEmptyJson);
     // Get the app perms for the user and make sure permissions are there
-    Set<Permission> userPerms = svc.getUserPermissions(rOwner1, app0.getId(), testUser4);
+    userPerms = svc.getUserPermissions(rOwner1, appId, testUser4);
     Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
     Assert.assertEquals(userPerms.size(), permsToCheck.size(), "Incorrect number of perms returned.");
     for (Permission perm: permsToCheck) { if (!userPerms.contains(perm)) Assert.fail("User perms should contain permission: " + perm.name()); }
     // Remove perms for the user. Should return a change count of 2
-    int changeCount = svc.revokeUserPermissions(rOwner1, app0.getId(), testUser4, permsToCheck, rawDataEmptyJson);
+    changeCount = svc.revokeUserPermissions(rOwner1, appId, testUser4, permsToCheck, rawDataEmptyJson);
     Assert.assertEquals(changeCount, permsToCheck.size(), "Change count incorrect when revoking permissions.");
     // Get the app perms for the user and make sure permissions are gone.
-    userPerms = svc.getUserPermissions(rOwner1, app0.getId(), testUser4);
+    userPerms = svc.getUserPermissions(rOwner1, appId, testUser4);
     for (Permission perm: permsToCheck) { if (userPerms.contains(perm)) Assert.fail("User perms should not contain permission: " + perm.name()); }
 
-    // Owner should not be able to update perms for themselves. Could be confusing since owner always authorized. Perms not checked.
-    boolean pass = false;
-    try {
-      svc.grantUserPermissions(rOwner1, app0.getId(), app0.getOwner(), testPermsREAD, rawDataEmptyJson);
-      Assert.fail("Update of perms by owner for owner should have thrown an exception");
-    } catch (Exception e) {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_PERM_OWNER_UPDATE"));
-      pass = true;
-    }
-    Assert.assertTrue(pass, "Update of perms by owner for owner did not throw correct exception");
-    pass = false;
-    try {
-      svc.revokeUserPermissions(rOwner1, app0.getId(), app0.getOwner(), testPermsREAD, rawDataEmptyJson);
-      Assert.fail("Update of perms by owner for owner should have thrown an exception");
-    } catch (Exception e) {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_PERM_OWNER_UPDATE"));
-      pass = true;
-    }
-    Assert.assertTrue(pass, "Update of perms by owner for owner did not throw correct exception");
-
     // Give testuser3 back some perms so we can test revokePerms auth when user is not the owner and is target user
-    svc.grantUserPermissions(rOwner1, app0.getId(), testUser3, testPermsREADMODIFY, rawDataEmptyJson);
+    svc.grantUserPermissions(rOwner1, appId, testUser3, testPermsREADMODIFY, rawDataEmptyJson);
 
     // Have testuser3 remove their own perms. Should return a change count of 2
-    changeCount = svc.revokeUserPermissions(rUser3, app0.getId(), testUser3, testPermsREADMODIFY, rawDataEmptyJson);
+    changeCount = svc.revokeUserPermissions(rUser3, appId, testUser3, testPermsREADMODIFY, rawDataEmptyJson);
     Assert.assertEquals(changeCount, 2, "Change count incorrect when revoking permissions as user - not owner.");
     // Get the system perms for the user and make sure permissions are gone.
-    userPerms = svc.getUserPermissions(rOwner1, app0.getId(), testUser3);
+    userPerms = svc.getUserPermissions(rOwner1, appId, testUser3);
     for (Permission perm: testPermsREADMODIFY) { if (userPerms.contains(perm)) Assert.fail("User perms should not contain permission: " + perm.name()); }
 
     // Give testuser3 back some perms so we can test revokePerms auth when user is not the owner and is not target user
-    svc.grantUserPermissions(rOwner1, app0.getId(), testUser3, testPermsREADMODIFY, rawDataEmptyJson);
+    svc.grantUserPermissions(rOwner1, appId, testUser3, testPermsREADMODIFY, rawDataEmptyJson);
     try {
-      svc.revokeUserPermissions(rUser2, app0.getId(), testUser3, testPermsREADMODIFY, rawDataEmptyJson);
+      svc.revokeUserPermissions(rUser2, appId, testUser3, testPermsREADMODIFY, rawDataEmptyJson);
       Assert.fail("Update of perms by non-owner user who is not target user should have thrown an exception");
     } catch (Exception e) {
       Assert.assertTrue(e.getMessage().contains("APPLIB_UNAUTH"));
