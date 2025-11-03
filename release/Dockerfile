@@ -17,6 +17,9 @@ WORKDIR /home/tapis/app
 # Copy jar file into place
 COPY --chown=tapis:tapis "apps.jar" .
 COPY --chown=tapis:tapis "logback.xml" .
+COPY --chown=tapis:tapis "logback.xml" "./logback.xml.orig"
+COPY --chown=tapis:tapis "logback.xml" "./logback.xml.info"
+COPY --chown=tapis:tapis "logback.xml.trace" "./logback.xml.trace"
 COPY --chown=tapis:tapis /dependencies dependencies
 
 # Environment variables for testing without JWT

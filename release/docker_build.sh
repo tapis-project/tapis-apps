@@ -52,8 +52,8 @@ fi
 
 # Copy Dockerfile to build dir
 cp Dockerfile $BUILD_DIR
-# Copy logback configuration file to build dir
-cp logback.xml $BUILD_DIR
+# Copy logback configuration files to build dir
+cp logback.xml* $BUILD_DIR
 
 # Move to the build directory
 cd $BUILD_DIR || exit
