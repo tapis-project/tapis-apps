@@ -15,7 +15,7 @@ public final class AppShare
   // ************************************************************************
   // *********************** Fields *****************************************
   // ************************************************************************
-  private final boolean publicShare; // Indicates of system is shared publicly with all users in tenant.
+  private final boolean publicShare; // Indicates if system is shared publicly with all users in tenant.
   private final Set<String> users; // Set of users that have the system shared with them.
   private final List<SkShare> skShares; // List of SkShare records. May be null if object created via Gson.fromJson().
   private final Set<String> publicGrantors; // Set of users who have granted "~public".

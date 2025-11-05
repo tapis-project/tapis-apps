@@ -1090,7 +1090,7 @@ public class AppsServiceImpl implements AppsService
     checkForAppWithThrow(rUser, oboTenant, appId, false);
 
 
-    // If so we threw an exception because this would be confusing since owner always has full permissions.
+    // Previously we threw an exception because this would be confusing since owner always has full permissions.
     // Due to a request (github issue #47) to change the behavior of changeSystemOwner we now allow owner to
     // grant/revoke permissions for themselves.
     // See previous code versions for implementation of checkForOwnerPermUpdate()
@@ -1174,7 +1174,7 @@ public class AppsServiceImpl implements AppsService
 
 
 
-    // If so we threw an exception because this would be confusing since owner always has full permissions.
+    // Previously we threw an exception because this would be confusing since owner always has full permissions.
     // Due to a request (github issue #47) to change the behavior of changeSystemOwner we now allow owner to
     // grant/revoke permissions for themselves.
     // See previous code versions for implementation of checkForOwnerPermUpdate()
