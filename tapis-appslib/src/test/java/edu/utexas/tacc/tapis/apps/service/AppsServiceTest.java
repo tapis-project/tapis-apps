@@ -467,8 +467,8 @@ public class AppsServiceTest
   }
 
   // Test changing app owner
-  // TODO Check that shares and perms remain in place.
-  // TODO Check that new owner can unshare from old owner
+  // Check that shares and perms remain in place.
+  // Check that new owner can unshare from old owner
   @Test
   public void testChangeAppOwner() throws Exception
   {
@@ -479,64 +479,64 @@ public class AppsServiceTest
     String origOwnerName = owner1;
     String newOwnerName = testUser3;
     String thirdUser = testUser4;
-    ResourceRequestUser origOwnerAuth = rOwner1;
-    ResourceRequestUser newOwnerAuth = rUser3;
+    ResourceRequestUser rOrigOwner = rOwner1;
+    ResourceRequestUser rNewOwner = rUser3;
 
-    svc.createApp(origOwnerAuth, app0, createText);
-    App tmpApp   = svc.getApp(rOwner1, appId, appVersion, false, null, null);
+    svc.createApp(rOrigOwner, app0, createText);
+    App tmpApp   = svc.getApp(rOrigOwner, appId, appVersion, false, null, null);
     Assert.assertNotNull(tmpApp, "Failed to create item: " + appId);
 
     // Grant shares and perms to old owner and a third user
-    svc.grantUserPermissions(rOwner1, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
-    svc.grantUserPermissions(rOwner1, appId, thirdUser, testPermsREADMODIFY, rawDataEmptyJson);
+    svc.grantUserPermissions(rOrigOwner, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
+    svc.grantUserPermissions(rOrigOwner, appId, thirdUser, testPermsREADMODIFY, rawDataEmptyJson);
     String rawDataShare = "{\"users\": [\"" + owner1 + "\", \"" + thirdUser + "\"]}";
     AppShare appShare = TapisGsonUtils.getGson().fromJson(rawDataShare, AppShare.class);
-    svc.shareApp(rOwner1, appId, appShare);
-    appShare = svc.getAppShare(rOwner1, appId);
+    svc.shareApp(rOrigOwner, appId, appShare);
+    appShare = svc.getAppShare(rOrigOwner, appId);
     Set<Permission> userPerms = svc.getUserPermissions(rOwner1, appId, owner1);
-    userPerms = svc.getUserPermissions(rOwner1, appId, thirdUser);    // Change owner using api
+    userPerms = svc.getUserPermissions(rOrigOwner, appId, thirdUser);    // Change owner using api
 
     // Change the owner
-    svc.changeAppOwner(origOwnerAuth, appId, newOwnerName);
+    svc.changeAppOwner(rOrigOwner, appId, newOwnerName);
 
     // Confirm new owner
-    tmpApp = svc.getApp(newOwnerAuth, appId, appVersion, false, null, null);
+    tmpApp = svc.getApp(rNewOwner, appId, appVersion, false, null, null);
     Assert.assertEquals(tmpApp.getOwner(), newOwnerName);
 
     // Check that shares and perms still in place.
     // Check expected auxiliary updates have happened
     // New owner should be able to retrieve permissions and old perms should be in place
-    userPerms = svc.getUserPermissions(rUser3, appId, owner1);
+    userPerms = svc.getUserPermissions(rNewOwner, appId, owner1);
     Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
     Assert.assertTrue(userPerms.contains(Permission.READ));
     Assert.assertTrue(userPerms.contains(Permission.MODIFY));
-    userPerms = svc.getUserPermissions(rUser3, appId, thirdUser);
+    userPerms = svc.getUserPermissions(rNewOwner, appId, thirdUser);
     Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
     Assert.assertTrue(userPerms.contains(Permission.READ));
     Assert.assertTrue(userPerms.contains(Permission.MODIFY));
 
     // Old shares should also be in place
-    appShare = svc.getAppShare(rUser3, appId);
+    appShare = svc.getAppShare(rNewOwner, appId);
     var userList = appShare.getUserList();
     Assert.assertTrue(userList.contains(owner1));
     Assert.assertTrue(userList.contains(thirdUser));
 
     // Now revoke perms from old owner
-    svc.revokeUserPermissions(rUser3, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
+    svc.revokeUserPermissions(rNewOwner, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
     // Unshare from old owner and confirm it happened
     rawDataShare = "{\"users\": [\"" + owner1 + "\"]}";
     appShare = TapisGsonUtils.getGson().fromJson(rawDataShare, AppShare.class);
-    svc.unshareApp(rUser3, appId, appShare);
-    appShare = svc.getAppShare(rUser3, appId);
+    svc.unshareApp(rNewOwner, appId, appShare);
+    appShare = svc.getAppShare(rNewOwner, appId);
     Assert.assertNotNull(appShare);
     Assert.assertFalse(appShare.getUserList().contains(owner1));
 
     // Original owner should no longer have modify permission
-    userPerms = svc.getUserPermissions(newOwnerAuth, appId, origOwnerName);
+    userPerms = svc.getUserPermissions(rNewOwner, appId, origOwnerName);
     Assert.assertFalse(userPerms.contains(Permission.MODIFY));
     // Original owner should not be able to modify app
     try {
-      svc.deleteApp(origOwnerAuth, appId);
+      svc.deleteApp(rOrigOwner, appId);
       Assert.fail("Original owner should not have permission to update app after change of ownership. App name: " + appId +
             " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
     } catch (Exception e) {
@@ -544,7 +544,7 @@ public class AppsServiceTest
     }
     // Original owner should not be able to read app
     try {
-      svc.getApp(origOwnerAuth, appId, appVersion, false, null, null);
+      svc.getApp(rOrigOwner, appId, appVersion, false, null, null);
       Assert.fail("Original owner should not have permission to read app after change of ownership. App name: " + appId +
             " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
     } catch (Exception e) {

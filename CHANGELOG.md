@@ -9,16 +9,27 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 25Q4.0 - 2025-10-??
+## 25Q4.0 - 2025-11-??
 
-Bug fix and enhancements.
+TBD Bug fix and enhancements.
+
+### New features:
+- TBD
+
+### Bug fixes:
+- changeOwner should preserve sharing records and allow new owner to unshare from old owner.
+
+---------------------------------------------------------------------------
+## 25Q4.0 - 2025-10-14
+
+Enhancements.
 
 ### New features:
 - Add check for restricted services. Each authenticated endpoint now checks that an incoming service request is allowed.
 - Add attribute *archiveMode* to replace attribute *archiveOnAppError*. Three modes: ALWAYS, SKIP_ON_FAIL, NEVER
 
 ### Bug fixes:
-- changeOwner should preserve sharing records and allow new owner to unshare from old owner.
+- None
 
 ---------------------------------------------------------------------------
 ## 1.9.0 - 2025-06-23
