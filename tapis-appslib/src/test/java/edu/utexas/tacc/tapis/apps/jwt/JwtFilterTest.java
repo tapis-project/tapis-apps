@@ -3,8 +3,10 @@ package edu.utexas.tacc.tapis.apps.jwt;
 import edu.utexas.tacc.tapis.apps.config.RuntimeParameters;
 import edu.utexas.tacc.tapis.apps.dao.AppsDao;
 import edu.utexas.tacc.tapis.apps.dao.AppsDaoImpl;
+import edu.utexas.tacc.tapis.apps.service.AppUtils;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
 import edu.utexas.tacc.tapis.apps.service.AppsServiceImpl;
+import edu.utexas.tacc.tapis.apps.service.AuthUtils;
 import edu.utexas.tacc.tapis.apps.service.ServiceClientsFactory;
 import edu.utexas.tacc.tapis.apps.service.ServiceContextFactory;
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
@@ -93,6 +95,8 @@ public class JwtFilterTest
         bind(AppsServiceImpl.class).to(AppsService.class);
         bind(AppsServiceImpl.class).to(AppsServiceImpl.class);
         bind(AppsDaoImpl.class).to(AppsDao.class);
+        bind(AppUtils.class).to(AppUtils.class);
+        bind(AuthUtils.class).to(AuthUtils.class);
         bindFactory(ServiceContextFactory.class).to(ServiceContext.class);
         bindFactory(ServiceClientsFactory.class).to(ServiceClients.class);
       }

@@ -1211,8 +1211,12 @@ public class AppResource
         changeCount = service.deleteApp(rUser, appId);
       else if (OP_UNDELETE.equals(opName))
         changeCount = service.undeleteApp(rUser, appId);
-      else
+      else if (OP_CHANGEOWNER.equals(opName))
         changeCount = service.changeAppOwner(rUser, appId, userName);
+      else
+      {
+        throw new UnsupportedOperationException("Operation not supported. Op: " + opName);
+      }
     }
     catch (IllegalStateException e)
     {

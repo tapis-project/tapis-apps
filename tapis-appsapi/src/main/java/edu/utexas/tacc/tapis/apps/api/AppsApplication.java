@@ -4,6 +4,9 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import javax.ws.rs.ApplicationPath;
+
+import edu.utexas.tacc.tapis.apps.service.AppUtils;
+import edu.utexas.tacc.tapis.apps.service.AuthUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -124,6 +127,8 @@ public class AppsApplication extends ResourceConfig
           bind(AppsServiceImpl.class).to(AppsService.class); // Used in Resource classes for most service calls
           bind(AppsServiceImpl.class).to(AppsServiceImpl.class); // Used in GeneralResource for checkDB
           bind(AppsDaoImpl.class).to(AppsDao.class); // Used in service impl
+          bind(AppUtils.class).to(AppUtils.class); // Used in service impl
+          bind(AuthUtils.class).to(AuthUtils.class); // Used in service impl
           bindFactory(ServiceContextFactory.class).to(ServiceContext.class); // Used in service impl and GeneralResource
           bindFactory(ServiceClientsFactory.class).to(ServiceClients.class); // Used in service impl
         }

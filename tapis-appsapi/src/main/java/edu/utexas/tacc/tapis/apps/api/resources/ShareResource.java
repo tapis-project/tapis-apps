@@ -214,7 +214,7 @@ public class ShareResource
 
     try
     {
-      // Retrieve share information
+      // Create share records
       appsService.shareApp(rUser, appId, appsShare);
     }
     // Pass through not found or not auth to let exception mapper handle it.

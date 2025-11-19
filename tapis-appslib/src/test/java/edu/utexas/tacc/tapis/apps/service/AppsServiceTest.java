@@ -97,6 +97,8 @@ public class AppsServiceTest
         bind(AppsServiceImpl.class).to(AppsService.class);
         bind(AppsServiceImpl.class).to(AppsServiceImpl.class);
         bind(AppsDaoImpl.class).to(AppsDao.class);
+        bind(AppUtils.class).to(AppUtils.class);
+        bind(AuthUtils.class).to(AuthUtils.class);
         bindFactory(ServiceContextFactory.class).to(ServiceContext.class);
         bindFactory(ServiceClientsFactory.class).to(ServiceClients.class);
       }
@@ -465,43 +467,86 @@ public class AppsServiceTest
   }
 
   // Test changing app owner
+  // Check that shares and perms remain in place.
+  // Check that new owner can unshare from old owner
   @Test
   public void testChangeAppOwner() throws Exception
   {
     App app0 = apps[15];
+    String appId = app0.getId();
+    String appVersion = app0.getVersion();
     String createText = "{\"testChangeOwner\": \"0-create\"}";
     String origOwnerName = owner1;
     String newOwnerName = testUser3;
-    ResourceRequestUser origOwnerAuth = rOwner1;
-    ResourceRequestUser newOwnerAuth = rUser3;
+    String thirdUser = testUser4;
+    ResourceRequestUser rOrigOwner = rOwner1;
+    ResourceRequestUser rNewOwner = rUser3;
 
-    svc.createApp(origOwnerAuth, app0, createText);
-    App tmpApp = svc.getApp(origOwnerAuth, app0.getId(), app0.getVersion(), false, null, null);
-    Assert.assertNotNull(tmpApp, "Failed to create item: " + app0.getId());
+    svc.createApp(rOrigOwner, app0, createText);
+    App tmpApp   = svc.getApp(rOrigOwner, appId, appVersion, false, null, null);
+    Assert.assertNotNull(tmpApp, "Failed to create item: " + appId);
 
-    // Change owner using api
-    svc.changeAppOwner(origOwnerAuth, app0.getId(), newOwnerName);
+    // Grant shares and perms to old owner and a third user
+    svc.grantUserPermissions(rOrigOwner, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
+    svc.grantUserPermissions(rOrigOwner, appId, thirdUser, testPermsREADMODIFY, rawDataEmptyJson);
+    String rawDataShare = "{\"users\": [\"" + owner1 + "\", \"" + thirdUser + "\"]}";
+    AppShare appShare = TapisGsonUtils.getGson().fromJson(rawDataShare, AppShare.class);
+    svc.shareApp(rOrigOwner, appId, appShare);
+    appShare = svc.getAppShare(rOrigOwner, appId);
+    Set<Permission> userPerms = svc.getUserPermissions(rOwner1, appId, owner1);
+    userPerms = svc.getUserPermissions(rOrigOwner, appId, thirdUser);    // Change owner using api
+
+    // Change the owner
+    svc.changeAppOwner(rOrigOwner, appId, newOwnerName);
 
     // Confirm new owner
-    tmpApp = svc.getApp(newOwnerAuth, app0.getId(), app0.getVersion(), false, null, null);
+    tmpApp = svc.getApp(rNewOwner, appId, appVersion, false, null, null);
     Assert.assertEquals(tmpApp.getOwner(), newOwnerName);
 
+    // Check that shares and perms still in place.
+    // Check expected auxiliary updates have happened
+    // New owner should be able to retrieve permissions and old perms should be in place
+    userPerms = svc.getUserPermissions(rNewOwner, appId, owner1);
+    Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
+    Assert.assertTrue(userPerms.contains(Permission.READ));
+    Assert.assertTrue(userPerms.contains(Permission.MODIFY));
+    userPerms = svc.getUserPermissions(rNewOwner, appId, thirdUser);
+    Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
+    Assert.assertTrue(userPerms.contains(Permission.READ));
+    Assert.assertTrue(userPerms.contains(Permission.MODIFY));
+
+    // Old shares should also be in place
+    appShare = svc.getAppShare(rNewOwner, appId);
+    var userList = appShare.getUserList();
+    Assert.assertTrue(userList.contains(owner1));
+    Assert.assertTrue(userList.contains(thirdUser));
+
+    // Now revoke perms from old owner
+    svc.revokeUserPermissions(rNewOwner, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
+    // Unshare from old owner and confirm it happened
+    rawDataShare = "{\"users\": [\"" + owner1 + "\"]}";
+    appShare = TapisGsonUtils.getGson().fromJson(rawDataShare, AppShare.class);
+    svc.unshareApp(rNewOwner, appId, appShare);
+    appShare = svc.getAppShare(rNewOwner, appId);
+    Assert.assertNotNull(appShare);
+    Assert.assertFalse(appShare.getUserList().contains(owner1));
+
     // Original owner should no longer have modify permission
-    Set<Permission> userPerms = svc.getUserPermissions(newOwnerAuth, app0.getId(), origOwnerName);
+    userPerms = svc.getUserPermissions(rNewOwner, appId, origOwnerName);
     Assert.assertFalse(userPerms.contains(Permission.MODIFY));
     // Original owner should not be able to modify app
     try {
-      svc.deleteApp(origOwnerAuth, app0.getId());
-      Assert.fail("Original owner should not have permission to update app after change of ownership. App name: " + app0.getId() +
-              " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
+      svc.deleteApp(rOrigOwner, appId);
+      Assert.fail("Original owner should not have permission to update app after change of ownership. App name: " + appId +
+            " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
     } catch (Exception e) {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
     }
-    // Original owner should not be able to read system
+    // Original owner should not be able to read app
     try {
-      svc.getApp(origOwnerAuth, app0.getId(), app0.getVersion(), false, null, null);
-      Assert.fail("Original owner should not have permission to read app after change of ownership. App name: " + app0.getId() +
-              " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
+      svc.getApp(rOrigOwner, appId, appVersion, false, null, null);
+      Assert.fail("Original owner should not have permission to read app after change of ownership. App name: " + appId +
+            " Old owner: " + origOwnerName + " New Owner: " + newOwnerName);
     } catch (Exception e) {
       Assert.assertTrue(e.getMessage().startsWith("APPLIB_UNAUTH"));
     }
@@ -1078,56 +1123,50 @@ public class AppsServiceTest
   {
     // Create an app
     App app0 = apps[9];
+    String appId = app0.getId();
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
-    // Create user perms for the app
+
+    // Owner should be able to grant/revoke for themselves in preparation for changeSystemOwner.
+    svc.grantUserPermissions(rOwner1, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
+    Set<Permission> userPerms = svc.getUserPermissions(rOwner1, appId, owner1);
+    Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
+    Assert.assertEquals(userPerms.size(), testPermsREADMODIFY.size(), "Incorrect number of perms returned.");
+    for (Permission perm: testPermsREADMODIFY) { if (!userPerms.contains(perm)) Assert.fail("User perms should contain permission: " + perm.name()); }
+    svc.revokeUserPermissions(rOwner1, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
+    int changeCount = svc.revokeUserPermissions(rOwner1, appId, owner1, testPermsREADMODIFY, rawDataEmptyJson);
+    Assert.assertEquals(changeCount, 2, "Change count incorrect when revoking permissions.");
+    userPerms = svc.getUserPermissions(rOwner1, appId, owner1);
+    for (Permission perm: testPermsREADMODIFY) { if (userPerms.contains(perm)) Assert.fail("User perms should not contain permission: " + perm.name()); }
+
+    // Create non-owner user perms for the app
     Set<Permission> permsToCheck = testPermsALL;
-    svc.grantUserPermissions(rOwner1, app0.getId(), testUser4, permsToCheck, rawDataEmptyJson);
+    svc.grantUserPermissions(rOwner1, appId, testUser4, permsToCheck, rawDataEmptyJson);
     // Get the app perms for the user and make sure permissions are there
-    Set<Permission> userPerms = svc.getUserPermissions(rOwner1, app0.getId(), testUser4);
+    userPerms = svc.getUserPermissions(rOwner1, appId, testUser4);
     Assert.assertNotNull(userPerms, "Null returned when retrieving perms.");
     Assert.assertEquals(userPerms.size(), permsToCheck.size(), "Incorrect number of perms returned.");
     for (Permission perm: permsToCheck) { if (!userPerms.contains(perm)) Assert.fail("User perms should contain permission: " + perm.name()); }
     // Remove perms for the user. Should return a change count of 2
-    int changeCount = svc.revokeUserPermissions(rOwner1, app0.getId(), testUser4, permsToCheck, rawDataEmptyJson);
+    changeCount = svc.revokeUserPermissions(rOwner1, appId, testUser4, permsToCheck, rawDataEmptyJson);
     Assert.assertEquals(changeCount, permsToCheck.size(), "Change count incorrect when revoking permissions.");
     // Get the app perms for the user and make sure permissions are gone.
-    userPerms = svc.getUserPermissions(rOwner1, app0.getId(), testUser4);
+    userPerms = svc.getUserPermissions(rOwner1, appId, testUser4);
     for (Permission perm: permsToCheck) { if (userPerms.contains(perm)) Assert.fail("User perms should not contain permission: " + perm.name()); }
 
-    // Owner should not be able to update perms for themselves. Could be confusing since owner always authorized. Perms not checked.
-    boolean pass = false;
-    try {
-      svc.grantUserPermissions(rOwner1, app0.getId(), app0.getOwner(), testPermsREAD, rawDataEmptyJson);
-      Assert.fail("Update of perms by owner for owner should have thrown an exception");
-    } catch (Exception e) {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_PERM_OWNER_UPDATE"));
-      pass = true;
-    }
-    Assert.assertTrue(pass, "Update of perms by owner for owner did not throw correct exception");
-    pass = false;
-    try {
-      svc.revokeUserPermissions(rOwner1, app0.getId(), app0.getOwner(), testPermsREAD, rawDataEmptyJson);
-      Assert.fail("Update of perms by owner for owner should have thrown an exception");
-    } catch (Exception e) {
-      Assert.assertTrue(e.getMessage().contains("APPLIB_PERM_OWNER_UPDATE"));
-      pass = true;
-    }
-    Assert.assertTrue(pass, "Update of perms by owner for owner did not throw correct exception");
-
     // Give testuser3 back some perms so we can test revokePerms auth when user is not the owner and is target user
-    svc.grantUserPermissions(rOwner1, app0.getId(), testUser3, testPermsREADMODIFY, rawDataEmptyJson);
+    svc.grantUserPermissions(rOwner1, appId, testUser3, testPermsREADMODIFY, rawDataEmptyJson);
 
     // Have testuser3 remove their own perms. Should return a change count of 2
-    changeCount = svc.revokeUserPermissions(rUser3, app0.getId(), testUser3, testPermsREADMODIFY, rawDataEmptyJson);
+    changeCount = svc.revokeUserPermissions(rUser3, appId, testUser3, testPermsREADMODIFY, rawDataEmptyJson);
     Assert.assertEquals(changeCount, 2, "Change count incorrect when revoking permissions as user - not owner.");
     // Get the system perms for the user and make sure permissions are gone.
-    userPerms = svc.getUserPermissions(rOwner1, app0.getId(), testUser3);
+    userPerms = svc.getUserPermissions(rOwner1, appId, testUser3);
     for (Permission perm: testPermsREADMODIFY) { if (userPerms.contains(perm)) Assert.fail("User perms should not contain permission: " + perm.name()); }
 
     // Give testuser3 back some perms so we can test revokePerms auth when user is not the owner and is not target user
-    svc.grantUserPermissions(rOwner1, app0.getId(), testUser3, testPermsREADMODIFY, rawDataEmptyJson);
+    svc.grantUserPermissions(rOwner1, appId, testUser3, testPermsREADMODIFY, rawDataEmptyJson);
     try {
-      svc.revokeUserPermissions(rUser2, app0.getId(), testUser3, testPermsREADMODIFY, rawDataEmptyJson);
+      svc.revokeUserPermissions(rUser2, appId, testUser3, testPermsREADMODIFY, rawDataEmptyJson);
       Assert.fail("Update of perms by non-owner user who is not target user should have thrown an exception");
     } catch (Exception e) {
       Assert.assertTrue(e.getMessage().contains("APPLIB_UNAUTH"));
@@ -1616,11 +1655,11 @@ public class AppsServiceTest
     Assert.assertTrue(pass);
 
     // **************************  Sharing app  ***************************
-    svc.shareApp(rOwner, app0.getId(), appShare);
+    svc.shareApp(rOwner, appId, appShare);
 
     // Get app and verify shareInfo
     AppShare appShareTest = svc.getAppShare(rOwner, appId);
-    Assert.assertNotNull(appShareTest, "App Share information found.");
+    Assert.assertNotNull(appShareTest, "App Share information found for app: " + appId);
     // Retrieve users, test user is on the list
     boolean userFound = false;
     for (var user : appShareTest.getUserList())
@@ -1636,11 +1675,11 @@ public class AppsServiceTest
     Assert.assertFalse(app0.isPublic());
 
     // **************************  Unsharing app  ***************************
-    svc.unshareApp(rOwner, app0.getId(), appShare);
+    svc.unshareApp(rOwner, appId, appShare);
 
     // Get app and verify shareInfo
     appShareTest = svc.getAppShare(rOwner, appId);
-    Assert.assertNotNull(appShareTest, "App Share information found.");
+    Assert.assertNotNull(appShareTest, "App Share information found for app: " + appId);
     // Retrieve users, test user is not on the list
     userFound = false;
     for (var user : appShareTest.getUserList())
@@ -1665,31 +1704,31 @@ public class AppsServiceTest
     Assert.assertFalse(app0.isPublic());
 
     // Service call
-    svc.shareAppPublicly(rOwner, app0.getId());
+    svc.shareAppPublicly(rOwner, appId);
 
     // Test retrieval
-    appShareTest = svc.getAppShare(rOwner, app0.getId());
-    System.out.println("Found item: " + app0.getId());
+    appShareTest = svc.getAppShare(rOwner, appId);
+    System.out.println("Found item: " + appId);
 
     // Verify app share fields
-    Assert.assertNotNull(appShareTest, "App Share information found.");
+    Assert.assertNotNull(appShareTest, "App Share information found for app: " + appId);
     Assert.assertTrue(appShareTest.isPublic());
 
     // Verify shared app context when rUser0 fetches
-    app0 = svc.getApp(rUser0, app0.getId(), app0.getVersion(), true, null, null);
+    app0 = svc.getApp(rUser0, appId, app0.getVersion(), true, null, null);
     Assert.assertNotNull(app0.getSharedAppCtx());
     Assert.assertTrue(app0.isPublic());
 
     // **************************  Unsharing app publicly  ***************************
     // Service call
-    svc.unshareAppPublicly(rOwner, app0.getId());
+    svc.unshareAppPublicly(rOwner, appId);
 
     // Test retrieval using specified authn method
-    appShareTest = svc.getAppShare(rOwner, app0.getId());
-    System.out.println("Found item: " + app0.getId());
+    appShareTest = svc.getAppShare(rOwner, appId);
+    System.out.println("Found item: " + appId);
 
     // Verify app share fields
-    Assert.assertNotNull(appShareTest, "App Share information found.");
+    Assert.assertNotNull(appShareTest, "App Share information found for app: " + appId);
     Assert.assertFalse(appShareTest.isPublic());
 
     // rUser0 should no longer have access
