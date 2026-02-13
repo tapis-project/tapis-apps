@@ -64,6 +64,7 @@ import edu.utexas.tacc.tapis.sharedapi.responses.RespResourceUrl;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultChangeCount;
 import edu.utexas.tacc.tapis.sharedapi.responses.results.ResultResourceUrl;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
+import edu.utexas.tacc.tapis.apps.model.JobAttributes.ArchiveModeEnum;
 import edu.utexas.tacc.tapis.apps.api.model.JobAttributes;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqPostApp;
 import edu.utexas.tacc.tapis.apps.api.requests.ReqPutApp;
@@ -72,7 +73,6 @@ import edu.utexas.tacc.tapis.apps.api.responses.RespAppHistory;
 import edu.utexas.tacc.tapis.apps.api.responses.RespApps;
 import edu.utexas.tacc.tapis.apps.api.utils.ApiUtils;
 import edu.utexas.tacc.tapis.apps.service.AppsService;
-
 import static edu.utexas.tacc.tapis.apps.model.App.*;
 
 /*
@@ -201,6 +201,11 @@ public class AppResource
       _log.error(msg, e);
       throw new BadRequestException(msg);
     }
+
+    // So far no need to scrub out secrets, so scrubbed and raw are the same.
+    String scrubbedJson = rawJson;
+    if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_CREATE_TRACE", rUser, scrubbedJson));
+
     // Create validator specification and validate the json against the schema
     JsonValidatorSpec spec = new JsonValidatorSpec(rawJson, FILE_APP_CREATE_REQUEST);
     try { JsonValidator.validate(spec); }
@@ -210,32 +215,32 @@ public class AppResource
       _log.error(msg, e);
       throw new BadRequestException(msg);
     }
+
+    // TODO/TBD move this to service layer?
     // ------------------------- Create an App from the json and validate constraints -------------------------
-    ReqPostApp req;
-    try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqPostApp.class); }
-    catch (JsonSyntaxException e)
-    {
-      msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
-      _log.error(msg, e);
-      throw new BadRequestException(msg);
-    }
-    // If req is null that is an unrecoverable error
-    if (req == null)
-    {
-      msg = ApiUtils.getMsgAuth(CREATE_ERR, rUser, "N/A", "ReqPostApp == null");
-      _log.error(msg);
-      throw new BadRequestException(msg);
-    }
+    App app = service.createAppFromPostRequest(rUser, rawJson);;
 
-    // Create an app from the request
-    App app = createAppFromPostRequest(rUser.getOboTenantId(), req, rawJson);
-
-    // So far no need to scrub out secrets, so scrubbed and raw are the same.
-    String scrubbedJson = rawJson;
-    if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_CREATE_TRACE", rUser, scrubbedJson));
-
-    // Fill in defaults and check constraints on App attributes
-    app.setDefaults();
+//TODO    ReqPostApp req;
+//    try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqPostApp.class); }
+//    catch (JsonSyntaxException e)
+//    {
+//      msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
+//      _log.error(msg, e);
+//      throw new BadRequestException(msg);
+//    }
+//    // If req is null that is an unrecoverable error
+//    if (req == null)
+//    {
+//      msg = ApiUtils.getMsgAuth(CREATE_ERR, rUser, "N/A", "ReqPostApp == null");
+//      _log.error(msg);
+//      throw new BadRequestException(msg);
+//    }
+//
+//    // Create an app from the request
+//    App app = createAppFromPostRequest(rUser.getOboTenantId(), req, rawJson);
+//
+//    // Fill in defaults and check constraints on App attributes
+//    app.setDefaults();
     resp = validateApp(app, rUser);
     if (resp != null) return resp;
 
@@ -1263,6 +1268,18 @@ public class AppResource
     // Extract Notes from the raw json.
     JsonObject notes = extractNotes(rawJson);
 
+    // TODO Post and Put are handled in this class (AppResource), but Patch is handled in the service layer.
+    //      We should handle everything in one class. Ideally everything gets moved to the service layer,
+    //      but that involves more refactoring and not clear if it is worth it at this point.
+    // TODO/TBD remove? Handled in updateAppFromRequest?
+    //  If archiveMode is not set then set it based on archiveOnAppError
+    if (apiJobAttrs.archiveMode == null)
+    {
+      if (apiJobAttrs.archiveOnAppError) apiJobAttrs.archiveMode = ArchiveModeEnum.ALWAYS;
+      else apiJobAttrs.archiveMode = ArchiveModeEnum.SKIP_ON_FAIL;
+    }
+
+    // NOTE: archiveMode+archiveOnAppError combination gets checked and updated as part of updateAppFromRequest
     // Create App
     var app = new App(-1, -1, tenantId, req.id, req.version, req.description, req.jobType, req.owner, req.enabled,
           req.versionEnabled, req.locked, DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
@@ -1276,7 +1293,7 @@ public class AppResource
           apiJobAttrs.memoryMB, apiJobAttrs.maxMinutes, apiJobAttrs.subscriptions, apiJobAttrs.tags,
           req.tags, notes, null, false, null, null);
     // Update App from request to get proper defaults
-    updateAppFromRequest(app, rawJson);
+    updateAppFromRequest(app, apiJobAttrs, rawJson);
     return app;
   }
 
@@ -1296,6 +1313,7 @@ public class AppResource
     boolean enabled = App.DEFAULT_ENABLED;
     boolean versionEnabled = App.DEFAULT_LOCKED;
     boolean locked = App.DEFAULT_LOCKED;
+    // NOTE: archiveMode+archiveOnAppError combination gets checked and updated as part of updateAppFromRequest
     var app = new App(-1, -1, tenantId, id, version, req.description, req.jobType, owner, enabled,
           versionEnabled, locked, DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
@@ -1308,7 +1326,7 @@ public class AppResource
           apiJobAttrs.memoryMB, apiJobAttrs.maxMinutes, apiJobAttrs.subscriptions, apiJobAttrs.tags,
           req.tags, notes, null, false, null, null);
     // Update App from request to get proper defaults
-    updateAppFromRequest(app, rawJson);
+    updateAppFromRequest(app, apiJobAttrs, rawJson);
     return app;
   }
 
@@ -1461,7 +1479,7 @@ public class AppResource
   /*
    * Fill in defaults as needed for JobType, maxJobs, maxJobsPerUser, NodeCount, CoresPerNode, MemoryMB, MaxMinutes
    */
-  private static void updateAppFromRequest(App app, String rawJson)
+  private static void updateAppFromRequest(App app, JobAttributes apiJobAttrs, String rawJson)
   {
     JsonObject topObj = TapisGsonUtils.getGson().fromJson(rawJson, JsonObject.class);
     if (!topObj.has(App.JOB_TYPE_FIELD)) app.setJobType(DEFAULT_JOB_TYPE);
@@ -1485,6 +1503,12 @@ public class AppResource
       app.setCoresPerNode(DEFAULT_CORES_PER_NODE);
       app.setMemoryMB(DEFAULT_MEMORY_MB);
       app.setMaxMinutes(DEFAULT_MAX_MINUTES);
+    }
+    // If archiveMode is not set then set it based on archiveOnAppError
+    if (apiJobAttrs.archiveMode == null)
+    {
+      if (apiJobAttrs.archiveOnAppError) app.setArchiveMode(ArchiveModeEnum.ALWAYS);
+      else app.setArchiveMode(ArchiveModeEnum.SKIP_ON_FAIL);
     }
   }
 

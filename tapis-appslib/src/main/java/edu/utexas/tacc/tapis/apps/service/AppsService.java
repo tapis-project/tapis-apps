@@ -25,6 +25,7 @@ public interface AppsService
 {
   void createApp(ResourceRequestUser rUser, App app, String rawData)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException;
+  App createAppFromPostRequest(ResourceRequestUser rUser, String rawJson);
 
   void patchApp(ResourceRequestUser rUser, String appId, String appVersion, PatchApp patchApp, String rawData)
           throws TapisException, TapisClientException, IllegalStateException, IllegalArgumentException, NotFoundException;

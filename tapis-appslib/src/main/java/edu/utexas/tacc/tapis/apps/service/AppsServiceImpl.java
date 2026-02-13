@@ -6,8 +6,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
+
+import com.google.gson.JsonSyntaxException;
+import edu.utexas.tacc.tapis.apps.client.gen.model.ReqPostApp;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jvnet.hk2.annotations.Service;
@@ -220,6 +224,36 @@ public class AppsServiceImpl implements AppsService
       catch (Exception e) {_log.warn(LibUtils.getMsgAuth(ERROR_ROLLBACK, rUser, appId, "hardDelete", e.getMessage()));}
       throw e0;
     }
+  }
+
+  /*
+   *
+   */
+  public App createAppFromPostRequest(ResourceRequestUser rUser, String rawJson)
+  {
+    ReqPostApp req;
+    String msg;
+    try { req = TapisGsonUtils.getGson().fromJson(rawJson, ReqPostApp.class); }
+    catch (JsonSyntaxException e)
+    {
+      msg = MsgUtils.getMsg(INVALID_JSON_INPUT, opName, e.getMessage());
+      _log.error(msg, e);
+      throw new BadRequestException(msg);
+    }
+    // If req is null that is an unrecoverable error
+    if (req == null)
+    {
+      msg = ApiUtils.getMsgAuth(CREATE_ERR, rUser, "N/A", "ReqPostApp == null");
+      _log.error(msg);
+      throw new BadRequestException(msg);
+    }
+
+    // Create an app from the request
+//TODO    App app = createAppFromPostRequest(rUser.getOboTenantId(), req, rawJson);
+
+    // Fill in defaults and check constraints on App attributes
+    app.setDefaults();
+
   }
 
   /**
@@ -894,7 +928,7 @@ public class AppsServiceImpl implements AppsService
     boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum); // Include only publicly shared
     boolean sharedOnly = AuthListType.SHARED_DIRECT.equals(listTypeEnum); // Include only shared directly with user
     boolean mine = AuthListType.MINE.equals(listTypeEnum);                // Include owned and directly shared with user
-    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);       // Include only directly granted READ/MODIFY
+    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);   // Include only directly granted READ/MODIFY
 
     // Build verified list of search conditions and check if any search conditions involve the version attribute
     boolean versionSpecified = false;
@@ -985,7 +1019,7 @@ public class AppsServiceImpl implements AppsService
     boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum); // Include only publicly shared
     boolean sharedOnly = AuthListType.SHARED_DIRECT.equals(listTypeEnum); // Include only shared directly with user
     boolean mine = AuthListType.MINE.equals(listTypeEnum);                // Include owned and directly shared with user
-    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);       // Include only directly granted READ/MODIFY
+    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);   // Include only directly granted READ/MODIFY
 
     // Validate and parse the sql string into an abstract syntax tree (AST)
     // The activemq parser validates and parses the string into an AST but there does not appear to be a way
@@ -1779,6 +1813,12 @@ public class AppsServiceImpl implements AppsService
       if (jobAttrs.getMaxMinutes() != null) app1.setMaxMinutes(jobAttrs.getMaxMinutes());
       if (jobAttrs.getSubscriptions() != null) app1.setSubscriptions(jobAttrs.getSubscriptions());
       if (jobAttrs.getTags() != null) app1.setJobTags(jobAttrs.getTags());
+      // If archiveOnAppError is provided but archiveMode is not then set archiveMode based on archiveOnAppError
+      if (jobAttrs.getArchiveOnAppError() != null && jobAttrs.getArchiveMode() == null)
+      {
+        if (jobAttrs.getArchiveOnAppError()) app1.setArchiveMode(JobAttributes.ArchiveModeEnum.ALWAYS);
+        else app1.setArchiveMode(JobAttributes.ArchiveModeEnum.SKIP_ON_FAIL);
+      }
       // End JobAttributes
     }
     if (p.getTags() != null) app1.setTags(p.getTags());
