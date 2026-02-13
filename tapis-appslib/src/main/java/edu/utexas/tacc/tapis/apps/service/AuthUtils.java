@@ -181,6 +181,7 @@ public class AuthUtils
     var skParms = new SKShareGetSharesParms();
     skParms.setResourceType(APPS_SHR_TYPE);
     skParms.setTenant(oboTenantId);
+
     // Set grantee based on whether we want just public or not.
     if (publicOnly) skParms.setGrantee(SKClient.PUBLIC_GRANTEE);
     else skParms.setGrantee(oboUser);

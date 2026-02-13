@@ -9,7 +9,7 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 25Q4.1 - 2025-??-??
+## 25Q4.1 - 2026-??-??
 
 TBD Bug fix and enhancements.
 
@@ -18,6 +18,8 @@ TBD Bug fix and enhancements.
 
 ### Bug fixes:
 - changeOwner should preserve sharing records and allow new owner to unshare from old owner.
+- Update archiveMode for existing records where archiveMode is not already set. This should have been during previous DB migration.
+- Fix handling of setting archiveMode during POST, PUT and PATCH operations.
 
 ---------------------------------------------------------------------------
 ## 25Q4.0 - 2025-10-14

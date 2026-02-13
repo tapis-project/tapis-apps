@@ -894,7 +894,7 @@ public class AppsServiceImpl implements AppsService
     boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum); // Include only publicly shared
     boolean sharedOnly = AuthListType.SHARED_DIRECT.equals(listTypeEnum); // Include only shared directly with user
     boolean mine = AuthListType.MINE.equals(listTypeEnum);                // Include owned and directly shared with user
-    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);       // Include only directly granted READ/MODIFY
+    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);   // Include only directly granted READ/MODIFY
 
     // Build verified list of search conditions and check if any search conditions involve the version attribute
     boolean versionSpecified = false;
@@ -985,7 +985,7 @@ public class AppsServiceImpl implements AppsService
     boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum); // Include only publicly shared
     boolean sharedOnly = AuthListType.SHARED_DIRECT.equals(listTypeEnum); // Include only shared directly with user
     boolean mine = AuthListType.MINE.equals(listTypeEnum);                // Include owned and directly shared with user
-    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);       // Include only directly granted READ/MODIFY
+    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);   // Include only directly granted READ/MODIFY
 
     // Validate and parse the sql string into an abstract syntax tree (AST)
     // The activemq parser validates and parses the string into an AST but there does not appear to be a way
@@ -1779,6 +1779,12 @@ public class AppsServiceImpl implements AppsService
       if (jobAttrs.getMaxMinutes() != null) app1.setMaxMinutes(jobAttrs.getMaxMinutes());
       if (jobAttrs.getSubscriptions() != null) app1.setSubscriptions(jobAttrs.getSubscriptions());
       if (jobAttrs.getTags() != null) app1.setJobTags(jobAttrs.getTags());
+      // If archiveOnAppError is provided but archiveMode is not then set archiveMode based on archiveOnAppError
+      if (jobAttrs.getArchiveOnAppError() != null && jobAttrs.getArchiveMode() == null)
+      {
+        if (jobAttrs.getArchiveOnAppError()) app1.setArchiveMode(JobAttributes.ArchiveModeEnum.ALWAYS);
+        else app1.setArchiveMode(JobAttributes.ArchiveModeEnum.SKIP_ON_FAIL);
+      }
       // End JobAttributes
     }
     if (p.getTags() != null) app1.setTags(p.getTags());
