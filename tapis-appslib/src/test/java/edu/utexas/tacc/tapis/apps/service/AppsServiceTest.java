@@ -282,7 +282,7 @@ public class AppsServiceTest
     System.out.println("Updated timestamp before: " + updatedStr1 + " after: " + updatedStr2);
     Assert.assertNotEquals(updatedStr1, updatedStr2, "Update timestamp was not updated. Both are: " + updatedStr1);
 
-    // Update original app definition with patched values so we can use the checkCommon method.
+    // Update original app definition with patched values, so we can use the checkCommon method.
     app0.setDescription(description2);
     app0.setRuntime(runtime2);
     app0.setRuntimeVersion(runtimeVersion2);
@@ -321,6 +321,24 @@ public class AppsServiceTest
     app0.setTags(tags2);
     app0.setNotes(notes2);
     //Check common app attributes:
+    checkCommonAppAttrs(app0, tmpApp);
+    // TODO Have put update with archiveOnAppError = true and archiveMode=null. archiveMode should get set to ALWAYS
+    // TODO debug, this currently fails
+    //       duh, because for putApp and createApp the only place this get checked and set is in AppResource, not the svc layer.
+    putApp.setArchiveMode(null);
+    putApp.setArchiveOnAppError(true);
+    svc.putApp(rOwner1, putApp, put1Text);
+    tmpApp = svc.getApp(rOwner1, appId, appVersion, false, null, null);
+    app0.setArchiveOnAppError(true);
+    app0.setArchiveMode(JobAttributes.ArchiveModeEnum.ALWAYS);
+    checkCommonAppAttrs(app0, tmpApp);
+    // TODO Have put update with archiveOnAppError = false and archiveMode=null. archiveMode should get set to SKIP_ON_FAIL
+    putApp.setArchiveMode(null);
+    putApp.setArchiveOnAppError(false);
+    svc.putApp(rOwner1, putApp, put1Text);
+    tmpApp = svc.getApp(rOwner1, appId, appVersion, false, null, null);
+    app0.setArchiveOnAppError(false);
+    app0.setArchiveMode(JobAttributes.ArchiveModeEnum.SKIP_ON_FAIL);
     checkCommonAppAttrs(app0, tmpApp);
   }
 

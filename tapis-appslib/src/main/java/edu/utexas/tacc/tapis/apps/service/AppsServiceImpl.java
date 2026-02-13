@@ -23,6 +23,7 @@ import edu.utexas.tacc.tapis.apps.model.*;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
+import edu.utexas.tacc.tapis.apps.model.JobAttributes.ArchiveModeEnum;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
 import edu.utexas.tacc.tapis.search.parser.ASTParser;
@@ -356,7 +357,6 @@ public class AppsServiceImpl implements AppsService
 
     // Create fully populated App with changes merged in
     App updatedApp = createUpdatedApp(origApp, putApp);
-
 
     // ------------------------- Check authorization -------------------------
     authUtils.checkAuthOwnerKnown(rUser, op, appId, origApp.getOwner());
@@ -1434,6 +1434,17 @@ public class AppsServiceImpl implements AppsService
   // **************************  Private Methods  ***************************
   // ************************************************************************
 
+  /*
+   * If archiveMode already set, then return it,
+   * else return appropriate setting based on archiveOnAppError
+   */
+  ArchiveModeEnum getDefaultArchiveMode(ArchiveModeEnum archiveMode, boolean archiveOnAppError)
+  {
+    if (archiveMode != null) return archiveMode;
+    if (archiveOnAppError) return ArchiveModeEnum.ALWAYS;
+    else return ArchiveModeEnum.SKIP_ON_FAIL;
+  }
+
   /**
    * Use dao to see if app exists. If not throw NOT_FOUND exception.
    * @param rUser - user making the request
@@ -1701,6 +1712,9 @@ public class AppsServiceImpl implements AppsService
     updatedApp.setEnabled(origApp.isEnabled());
     updatedApp.setVersionEnabled(origApp.isVersionEnabled());
     updatedApp.setLocked(origApp.isLocked());
+    // TODO putApp does not go through App.setDefaults, so we need to update archiveMode here as needed.
+    ArchiveModeEnum am = getDefaultArchiveMode(putApp.getArchiveMode(), putApp.isArchiveOnAppError());
+    updatedApp.setArchiveMode(am);
     return updatedApp;
   }
 
@@ -1782,8 +1796,8 @@ public class AppsServiceImpl implements AppsService
       // If archiveOnAppError is provided but archiveMode is not then set archiveMode based on archiveOnAppError
       if (jobAttrs.getArchiveOnAppError() != null && jobAttrs.getArchiveMode() == null)
       {
-        if (jobAttrs.getArchiveOnAppError()) app1.setArchiveMode(JobAttributes.ArchiveModeEnum.ALWAYS);
-        else app1.setArchiveMode(JobAttributes.ArchiveModeEnum.SKIP_ON_FAIL);
+        if (jobAttrs.getArchiveOnAppError()) app1.setArchiveMode(ArchiveModeEnum.ALWAYS);
+        else app1.setArchiveMode(ArchiveModeEnum.SKIP_ON_FAIL);
       }
       // End JobAttributes
     }
