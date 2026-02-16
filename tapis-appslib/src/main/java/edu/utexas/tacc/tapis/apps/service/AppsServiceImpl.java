@@ -23,6 +23,7 @@ import edu.utexas.tacc.tapis.apps.model.*;
 import edu.utexas.tacc.tapis.apps.model.App.JobType;
 import edu.utexas.tacc.tapis.apps.model.App.Permission;
 import edu.utexas.tacc.tapis.apps.model.App.AppOperation;
+import edu.utexas.tacc.tapis.apps.model.JobAttributes.ArchiveModeEnum;
 import edu.utexas.tacc.tapis.apps.utils.LibUtils;
 import edu.utexas.tacc.tapis.client.shared.exceptions.TapisClientException;
 import edu.utexas.tacc.tapis.search.parser.ASTParser;
@@ -356,7 +357,6 @@ public class AppsServiceImpl implements AppsService
 
     // Create fully populated App with changes merged in
     App updatedApp = createUpdatedApp(origApp, putApp);
-
 
     // ------------------------- Check authorization -------------------------
     authUtils.checkAuthOwnerKnown(rUser, op, appId, origApp.getOwner());
@@ -894,7 +894,7 @@ public class AppsServiceImpl implements AppsService
     boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum); // Include only publicly shared
     boolean sharedOnly = AuthListType.SHARED_DIRECT.equals(listTypeEnum); // Include only shared directly with user
     boolean mine = AuthListType.MINE.equals(listTypeEnum);                // Include owned and directly shared with user
-    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);       // Include only directly granted READ/MODIFY
+    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);   // Include only directly granted READ/MODIFY
 
     // Build verified list of search conditions and check if any search conditions involve the version attribute
     boolean versionSpecified = false;
@@ -985,7 +985,7 @@ public class AppsServiceImpl implements AppsService
     boolean publicOnly = AuthListType.SHARED_PUBLIC.equals(listTypeEnum); // Include only publicly shared
     boolean sharedOnly = AuthListType.SHARED_DIRECT.equals(listTypeEnum); // Include only shared directly with user
     boolean mine = AuthListType.MINE.equals(listTypeEnum);                // Include owned and directly shared with user
-    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);       // Include only directly granted READ/MODIFY
+    boolean readPermOnly = AuthListType.READ_PERM.equals(listTypeEnum);   // Include only directly granted READ/MODIFY
 
     // Validate and parse the sql string into an abstract syntax tree (AST)
     // The activemq parser validates and parses the string into an AST but there does not appear to be a way
@@ -1434,6 +1434,17 @@ public class AppsServiceImpl implements AppsService
   // **************************  Private Methods  ***************************
   // ************************************************************************
 
+  /*
+   * If archiveMode already set, then return it,
+   * else return appropriate setting based on archiveOnAppError
+   */
+  private ArchiveModeEnum getDefaultArchiveMode(ArchiveModeEnum archiveMode, boolean archiveOnAppError)
+  {
+    if (archiveMode != null) return archiveMode;
+    if (archiveOnAppError) return ArchiveModeEnum.ALWAYS;
+    else return ArchiveModeEnum.SKIP_ON_FAIL;
+  }
+
   /**
    * Use dao to see if app exists. If not throw NOT_FOUND exception.
    * @param rUser - user making the request
@@ -1701,6 +1712,9 @@ public class AppsServiceImpl implements AppsService
     updatedApp.setEnabled(origApp.isEnabled());
     updatedApp.setVersionEnabled(origApp.isVersionEnabled());
     updatedApp.setLocked(origApp.isLocked());
+    // putApp does not go through App.setDefaults, so we need to update archiveMode here as needed.
+    ArchiveModeEnum am = getDefaultArchiveMode(putApp.getArchiveMode(), putApp.isArchiveOnAppError());
+    updatedApp.setArchiveMode(am);
     return updatedApp;
   }
 
@@ -1779,6 +1793,12 @@ public class AppsServiceImpl implements AppsService
       if (jobAttrs.getMaxMinutes() != null) app1.setMaxMinutes(jobAttrs.getMaxMinutes());
       if (jobAttrs.getSubscriptions() != null) app1.setSubscriptions(jobAttrs.getSubscriptions());
       if (jobAttrs.getTags() != null) app1.setJobTags(jobAttrs.getTags());
+      // If archiveOnAppError is provided but archiveMode is not then set archiveMode based on archiveOnAppError
+      if (jobAttrs.getArchiveOnAppError() != null && jobAttrs.getArchiveMode() == null)
+      {
+        if (jobAttrs.getArchiveOnAppError()) app1.setArchiveMode(ArchiveModeEnum.ALWAYS);
+        else app1.setArchiveMode(ArchiveModeEnum.SKIP_ON_FAIL);
+      }
       // End JobAttributes
     }
     if (p.getTags() != null) app1.setTags(p.getTags());

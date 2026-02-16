@@ -549,6 +549,12 @@ public final class App
     {
       parameterSet.setEnvVariables(processEnvVariables(parameterSet.getEnvVariables()));
     }
+    // If archiveMode is null then set it based on the value of archiveOnAppError
+    if (archiveMode == null)
+    {
+      if (archiveOnAppError) archiveMode = ArchiveModeEnum.ALWAYS;
+      else archiveMode = ArchiveModeEnum.SKIP_ON_FAIL;
+    }
   }
 
   /**
