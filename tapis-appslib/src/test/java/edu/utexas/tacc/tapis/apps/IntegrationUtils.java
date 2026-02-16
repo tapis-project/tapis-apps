@@ -467,7 +467,7 @@ public final class IntegrationUtils
    *   containerized==true -> containterImage
    * NOTE: many args to constructor are primitives so cannot be set to null.
    */
-  public static App makeMinimalApp(App app, String id)
+  public static App makeMinimalApp(App app, String id, boolean archiveOnAppError, ArchiveModeEnum archiveMode)
   {
     return new App(-1, -1, tenantName, id, app.getVersion(), descriptionNull, App.DEFAULT_JOB_TYPE, ownerNull,
             App.DEFAULT_ENABLED, App.DEFAULT_ENABLED, App.DEFAULT_LOCKED, App.DEFAULT_CONTAINERIZED, runtimeNull, runtimeVersionNull, runtimeOptionsNull,
@@ -475,7 +475,7 @@ public final class IntegrationUtils
             jobDescriptionNull, dynamicExecSystemDefault, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             dtnSystemInputDirNull, dtnSystemOutputDirNull,
-            execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorDefault, archiveModeNull,
+            execSystemLogicalQueueNull, archiveSystemIdNull, archiveSystemDirNull, archiveOnAppError, archiveMode,
             isMpiDefault, mpiCmdNull, cmdPrefixNull, parameterSetNull, finListNull, fiaListNull, App.DEFAULT_NODE_COUNT,
             App.DEFAULT_CORES_PER_NODE, App.DEFAULT_MEMORY_MB, App.DEFAULT_MAX_MINUTES, notifListNull, jobTagsNull,
             tagsNull, notesNull, uuidNull, deletedFalse, createdNull, updatedNull);
@@ -560,14 +560,14 @@ public final class IntegrationUtils
    * Create a PatchApp in memory for use in testing.
    * Some attributes are to be updated: jobAttributes.parameterSet.appArgs
    */
-  public static PatchApp makePatchAppPartial3()
+  public static PatchApp makePatchAppPartial3(boolean archiveOnAppError, ArchiveModeEnum archiveMode)
   {
     ParameterSet parameterSet = new ParameterSet(appArgList3, containerArgListNull, schedulerOptionListNull,
                                                  envVariablesNull, archiveFilterNull, logConfigNull);
     JobAttributes jobAttributes = new JobAttributes(jobDescriptionNull, dynamicExecSystemNull, execSystemConstraintsNull,
             execSystemIdNull, execSystemExecDirNull, execSystemInputDirNull, execSystemOutputDirNull,
             dtnSystemInputDirNull, dtnSystemOutputDirNull, execSystemLogicalQueueNull,
-            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppErrorNull, archiveModeNull,
+            archiveSystemIdNull, archiveSystemDirNull, archiveOnAppError, archiveMode,
             isMpiNull, mpiCmdNull, cmdPrefixNull,
             parameterSet, finListNull, fiaListNull, nodeCountNull,
             coresPerNodeNull, memoryMBNull, maxMinutesNull, notifListNull, jobTagsNull);

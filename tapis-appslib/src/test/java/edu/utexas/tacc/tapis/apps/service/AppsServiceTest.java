@@ -220,18 +220,25 @@ public class AppsServiceTest
   }
 
   // Create an app using minimal attributes:
+  // Include checks that archiveMode is set correctly when archiveMode=null and archiveOnAppError is true or false
   @Test
   public void testCreateAppMinimal() throws Exception
   {
-    App app0 = makeMinimalApp(apps[11], apps[11].getId());
+    // Create specifying minimal attributes, but include archiveMode and archiveOnAppError
+    // archiveMode=null + archiveOnAppError=true should result in archiveMode=ALWAYS
+    App app0 = IntegrationUtils.makeMinimalApp(apps[11], apps[11].getId(), archiveOnAppErrorTrue, archiveModeNull);
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
     App tmpApp = svc.getApp(rOwner1, app0.getId(), app0.getVersion(), false, null, null);
+    app0.setArchiveOnAppError(true);
+    app0.setArchiveMode(archiveModeAlways);
     checkCommonAppMinimalAttrs(app0, tmpApp);
     // Make sure we can create and get an app ending with "-app"
-    app0 = IntegrationUtils.makeMinimalApp(app0, specialId1);
+    app0 = IntegrationUtils.makeMinimalApp(app0, specialId1, archiveOnAppErrorFalse, archiveModeNull);
     svc.createApp(rOwner1, app0, rawDataEmptyJson);
     tmpApp = svc.getApp(rOwner1, app0.getId(), app0.getVersion(), false, null, null);
     // Verify attributes
+    app0.setArchiveOnAppError(false);
+    app0.setArchiveMode(archiveModeSkipOnFail);
     checkCommonAppMinimalAttrs(app0, tmpApp);
   }
 
@@ -322,9 +329,7 @@ public class AppsServiceTest
     app0.setNotes(notes2);
     //Check common app attributes:
     checkCommonAppAttrs(app0, tmpApp);
-    // TODO Have put update with archiveOnAppError = true and archiveMode=null. archiveMode should get set to ALWAYS
-    // TODO debug, this currently fails
-    //       duh, because for putApp and createApp the only place this get checked and set is in AppResource, not the svc layer.
+    // Have put update with archiveOnAppError = true and archiveMode=null. archiveMode should get set to ALWAYS
     putApp.setArchiveMode(null);
     putApp.setArchiveOnAppError(true);
     svc.putApp(rOwner1, putApp, put1Text);
@@ -332,7 +337,7 @@ public class AppsServiceTest
     app0.setArchiveOnAppError(true);
     app0.setArchiveMode(JobAttributes.ArchiveModeEnum.ALWAYS);
     checkCommonAppAttrs(app0, tmpApp);
-    // TODO Have put update with archiveOnAppError = false and archiveMode=null. archiveMode should get set to SKIP_ON_FAIL
+    // Have put update with archiveOnAppError = false and archiveMode=null. archiveMode should get set to SKIP_ON_FAIL
     putApp.setArchiveMode(null);
     putApp.setArchiveOnAppError(false);
     svc.putApp(rOwner1, putApp, put1Text);
@@ -465,6 +470,7 @@ public class AppsServiceTest
     // ===========================================================
     // Test updating just one of the collections in JobAttributes.ParameterSet.
     //   jobAttributes.parameterSet.appArgs
+    // Also test setting archiveMode based on value of archiveOnAppError
     // ===========================================================
     app0 = apps[24];
     appId = app0.getId();
@@ -473,13 +479,28 @@ public class AppsServiceTest
     svc.createApp(rOwner1, app0, createText);
     // Create patchApp where some attributes are changed
     String patchPartialText3 = "{\"testPatch\": \"1-patchPartial3\"}";
-    PatchApp patchAppPartial3 = IntegrationUtils.makePatchAppPartial3();
+    // Update with archiveOnAppError = true and archiveMode=null. archiveMode should get set to ALWAYS
+    PatchApp patchAppPartial3 = IntegrationUtils.makePatchAppPartial3(archiveOnAppErrorTrue, archiveModeNull);
     // Update using patchApp
     svc.patchApp(rOwner1, appId, appVersion, patchAppPartial3, patchPartialText3);
     tmpAppPartial = svc.getApp(rOwner1, appId, appVersion, false, null, null);
     // Update original app definition with patched values
     app0.getParameterSet().setAppArgs(appArgList3);
     app0.setJobType(jobType2);
+    app0.setArchiveOnAppError(true);
+    app0.setArchiveMode(archiveModeAlways);
+    //Check common app attributes:
+    checkCommonAppAttrs(app0, tmpAppPartial);
+    // Update with archiveOnAppError = false and archiveMode=null. archiveMode should get set to SKIP_ON_FAIL
+    patchAppPartial3 = IntegrationUtils.makePatchAppPartial3(archiveOnAppErrorFalse, archiveModeNull);
+    // Update using patchApp
+    svc.patchApp(rOwner1, appId, appVersion, patchAppPartial3, patchPartialText3);
+    tmpAppPartial = svc.getApp(rOwner1, appId, appVersion, false, null, null);
+    // Update original app definition with patched values
+    app0.getParameterSet().setAppArgs(appArgList3);
+    app0.setJobType(jobType2);
+    app0.setArchiveOnAppError(false);
+    app0.setArchiveMode(archiveModeSkipOnFail);
     //Check common app attributes:
     checkCommonAppAttrs(app0, tmpAppPartial);
   }
@@ -822,7 +843,7 @@ public class AppsServiceTest
     for (String id : App.RESERVED_ID_SET)
     {
       System.out.println("Testing that create fails for reserved ID: " + id);
-      App tmpApp = IntegrationUtils.makeMinimalApp(app0, id);
+      App tmpApp = IntegrationUtils.makeMinimalApp(app0, id, archiveOnAppErrorDefault, archiveModeNull);
       System.out.println("  - Created in-memory app object with ID: " + tmpApp.getId());
       try
       {

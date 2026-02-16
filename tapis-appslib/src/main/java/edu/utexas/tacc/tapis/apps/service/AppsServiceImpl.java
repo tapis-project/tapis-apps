@@ -1438,7 +1438,7 @@ public class AppsServiceImpl implements AppsService
    * If archiveMode already set, then return it,
    * else return appropriate setting based on archiveOnAppError
    */
-  ArchiveModeEnum getDefaultArchiveMode(ArchiveModeEnum archiveMode, boolean archiveOnAppError)
+  private ArchiveModeEnum getDefaultArchiveMode(ArchiveModeEnum archiveMode, boolean archiveOnAppError)
   {
     if (archiveMode != null) return archiveMode;
     if (archiveOnAppError) return ArchiveModeEnum.ALWAYS;
@@ -1712,7 +1712,7 @@ public class AppsServiceImpl implements AppsService
     updatedApp.setEnabled(origApp.isEnabled());
     updatedApp.setVersionEnabled(origApp.isVersionEnabled());
     updatedApp.setLocked(origApp.isLocked());
-    // TODO putApp does not go through App.setDefaults, so we need to update archiveMode here as needed.
+    // putApp does not go through App.setDefaults, so we need to update archiveMode here as needed.
     ArchiveModeEnum am = getDefaultArchiveMode(putApp.getArchiveMode(), putApp.isArchiveOnAppError());
     updatedApp.setArchiveMode(am);
     return updatedApp;

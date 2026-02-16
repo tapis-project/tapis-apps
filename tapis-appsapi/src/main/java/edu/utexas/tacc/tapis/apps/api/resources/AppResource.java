@@ -204,8 +204,7 @@ public class AppResource
 
     // Trace Json received before validation against schema
     // So far no need to scrub out secrets, so scrubbed and raw are the same.
-    String scrubbedJson = rawJson;
-    if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_CREATE_TRACE", rUser, scrubbedJson));
+    if (_log.isTraceEnabled()) _log.trace(ApiUtils.getMsgAuth("APPAPI_CREATE_TRACE", rUser, rawJson));
 
     // Create validator specification and validate the json against the schema
     JsonValidatorSpec spec = new JsonValidatorSpec(rawJson, FILE_APP_CREATE_REQUEST);
@@ -245,7 +244,7 @@ public class AppResource
     String appId = app.getId();
     try
     {
-      service.createApp(rUser, app, scrubbedJson);
+      service.createApp(rUser, app, rawJson);
     }
     catch (IllegalStateException e)
     {
