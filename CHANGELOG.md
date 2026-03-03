@@ -9,12 +9,12 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
-## 25Q4.1 - 2026-??-??
+## 26Q1.0 - 2026-03-03
 
-TBD Bug fix and enhancements.
+Bug fixes and incremental improvements.
 
 ### New features:
-- TBD
+- None
 
 ### Bug fixes:
 - changeOwner should preserve sharing records and allow new owner to unshare from old owner.
