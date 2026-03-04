@@ -1443,7 +1443,7 @@ public class AppResource
     // This is a separate call from getApps() because unlike getApps() we do not want to include the limit or skip,
     //   and we do not need to fetch all the data. One benefit is that the method is simpler and easier to follow
     //   compared to attempting to fold everything into getApps().
-    if (computeTotal && limit > 0)
+    if (computeTotal && limit > -1)
     {
       totalCount = service.getAppsTotalCount(rUser, searchList, orderByList, startAfter, showDeleted,
                                              listType, impersonationId);

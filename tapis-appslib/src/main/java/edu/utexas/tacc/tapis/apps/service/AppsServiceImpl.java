@@ -876,6 +876,9 @@ public class AppsServiceImpl implements AppsService
     //  - allowed for certain Tapis services and for a tenant admin
     if (!StringUtils.isBlank(impersonationId)) authUtils.checkImpersonateUserAllowed(rUser, op, null, impersonationId, tenant);
 
+    // If limit == 0 no need to proceed
+    if (limit == 0) return new ArrayList<>();
+
     // Process listType. Figure out how we will filter based on authorization. OWNED, ALL, etc.
     // If no listType provided use the default
     if (StringUtils.isBlank(listType)) listType = DEFAULT_LIST_TYPE.name();
@@ -966,6 +969,9 @@ public class AppsServiceImpl implements AppsService
                                                           includeDeleted, listType, fetchShareInfo, null);
 
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
+
+    // If limit == 0 no need to proceed
+    if (limit == 0) return new ArrayList<>();
 
     // Process listType. Figure out how we will filter based on authorization. OWNED, ALL, etc.
     // If no listType provided use the default
