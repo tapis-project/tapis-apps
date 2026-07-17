@@ -9,6 +9,17 @@ You may also reference live-docs based on the openapi specification here:
 https://tapis-project.github.io/live-docs
 
 ---------------------------------------------------------------------------
+## 26Q2.1 - 2026-??-??
+
+Bug fix
+
+### New features:
+- None
+
+### Bug fixes:
+- Refresh attribute "updated" in top level apps table when a new version of an app is created. 
+
+---------------------------------------------------------------------------
 ## 26Q2.0 - 2026-05-07
 
 Shared code updates

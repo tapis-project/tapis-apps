@@ -254,8 +254,10 @@ public class AppsDaoImpl extends AbstractDao implements AppsDao
       appVerSeqId = record.getValue(APPS_VERSIONS.SEQ_ID);
 
       // Update top level table APPS
-      db.update(APPS).set(APPS.LATEST_VERSION, app.getVersion()).where(APPS.ID.eq(app.getId())).execute();
-
+      db.update(APPS)
+              .set(APPS.LATEST_VERSION, app.getVersion())
+              .set(APPS.UPDATED, TapisUtils.getUTCTimeNow())
+              .where(APPS.ID.eq(app.getId())).execute();
       // Persist change history record
       addUpdate(db, rUser, app.getTenant(), app.getId(), app.getVersion(), appSeqId, appVerSeqId, AppOperation.create,
                 changeDescription, rawData, app.getUuid());
