@@ -156,7 +156,7 @@ public class AppsServiceImpl implements AppsService
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (app == null) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     _log.trace(LibUtils.getMsgAuth("APPLIB_CREATE_TRACE", rUser, rawData));
-    String tenant = app.getTenant();
+    String tenant = rUser.getOboTenantId();
     String appId = app.getId();
     String appVersion = app.getVersion();
     if (StringUtils.isBlank(appVersion)) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
@@ -199,7 +199,7 @@ public class AppsServiceImpl implements AppsService
 
     // ----------------- Create all artifacts --------------------
     // Creation of app and perms not in single DB transaction.
-    // Use try/catch to rollback any writes in case of failure.
+    // Use try/catch to roll back any writes in case of failure.
     boolean appCreated = false;
     String appsPermSpecALL = AuthUtils.getPermSpecAllStr(tenant, appId);
 
@@ -325,7 +325,7 @@ public class AppsServiceImpl implements AppsService
     if (rUser == null) throw new IllegalArgumentException(LibUtils.getMsg("APPLIB_NULL_INPUT_AUTHUSR"));
     if (putApp == null) throw new IllegalArgumentException(LibUtils.getMsgAuth("APPLIB_NULL_INPUT_APP", rUser));
     // Extract various names for convenience
-    String tenant = putApp.getTenant();
+    String tenant = rUser.getOboTenantId();
     String appId = putApp.getId();
     String appVersion = putApp.getVersion();
 
@@ -1713,7 +1713,7 @@ public class AppsServiceImpl implements AppsService
   private App createUpdatedApp(App origApp, App putApp)
   {
     // Rather than exposing otherwise unnecessary setters we use a special constructor.
-    App updatedApp = new App(putApp, origApp.getTenant(), origApp.getId(), origApp.getVersion());
+    App updatedApp = new App(putApp, origApp.getTenant(), origApp.getId(), origApp.getVersion()); // TODO should this be app.getTenant
     updatedApp.setOwner(origApp.getOwner());
     updatedApp.setEnabled(origApp.isEnabled());
     updatedApp.setVersionEnabled(origApp.isVersionEnabled());

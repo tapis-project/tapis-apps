@@ -1271,7 +1271,7 @@ public class AppResource
     // Extract Notes from the raw json.
     JsonObject notes = extractNotes(rawJson);
 
-    // Create App
+    // Create App - tenantId must always be oboTenant, not tenant from incoming json
     var app = new App(-1, -1, tenantId, req.id, req.version, req.description, req.jobType, req.owner, req.enabled,
           req.versionEnabled, req.locked, DEFAULT_CONTAINERIZED,  req.runtime, req.runtimeVersion, req.runtimeOptions, req.containerImage,
           req.maxJobs, req.maxJobsPerUser, req.strictFileInputs,
